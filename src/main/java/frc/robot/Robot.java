@@ -59,6 +59,8 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
 
     public Robot() {
+        configureBindings();
+        
     }
 
 
