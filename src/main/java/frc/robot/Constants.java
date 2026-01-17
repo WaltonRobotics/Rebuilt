@@ -9,4 +9,8 @@ public class Constants {
         public static final double kFieldLengthMeters = Units.inchesToMeters(651.22); //take with a grain of salt - pulled from field dimensions (welded)
         public static final double kFieldWidthMeters = Units.inchesToMeters(317.69);
     }
+
+    public static class RobotK {
+        public static final String kLogTab = "Superstructure";
+    }
 }
