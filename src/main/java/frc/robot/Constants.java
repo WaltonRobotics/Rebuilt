@@ -1,5 +1,7 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.*;
+
 import org.photonvision.simulation.SimCameraProperties;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -7,7 +9,9 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
@@ -53,6 +57,11 @@ public class Constants {
     public static class FieldK {
         public static final double kFieldLengthMeters = Units.inchesToMeters(651.22); //take with a grain of salt - pulled from field dimensions (welded)
         public static final double kFieldWidthMeters = Units.inchesToMeters(317.69);
+
+        public static final Distance kBlueGoalX = Meters.of(4.63236665725708); //pulled from choreo LOLLERZ!
+        public static final Distance kBlueGoalY = Meters.of(4.01835823059082);
+
+        public static final Translation2d kBlueGoalLocation = new Translation2d(kBlueGoalX, kBlueGoalY);
 
         public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
     }
