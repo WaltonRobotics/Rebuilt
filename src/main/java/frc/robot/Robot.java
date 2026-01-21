@@ -4,218 +4,112 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
 
-import java.util.Optional;
-
-import org.photonvision.EstimatedRobotPose;
-
-import com.ctre.phoenix6.HootAutoReplay;
-import com.ctre.phoenix6.Utils;
-import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.swerve.SwerveRequest;
-
-import choreo.auto.AutoFactory;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.BooleanPublisher;
+import edu.wpi.first.networktables.BooleanSubscriber;
+import edu.wpi.first.networktables.BooleanTopic;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.networktables.DoubleTopic;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.*;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.Constants.VisionK;
-import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.vision.Vision;
-import frc.robot.vision.VisionSim;
-import frc.util.WaltLogger;
-import frc.util.WaltLogger.DoubleLogger;
+import frc.robot.subsystems.*;
+
+import frc.robot.util.*;
 
 public class Robot extends TimedRobot {
-    private final double kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private final double kMaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-    private final double kMaxHighAngularRate = RotationsPerSecond.of(1.5).in(RadiansPerSecond);
+  // Elastic Pub-Subs
+  public static NetworkTableInstance nte_inst = NetworkTableInstance.getDefault();
+  public static NetworkTable nte_Shooter = nte_inst.getTable("Shooter");
 
-    private final DoubleLogger log_stickDesiredFieldX = WaltLogger.logDouble("Swerve", "stick desired teleop x");
-    private final DoubleLogger log_stickDesiredFieldY = WaltLogger.logDouble("Swerve", "stick desired teleop y");
-    private final DoubleLogger log_stickDesiredFieldZRot = WaltLogger.logDouble("Swerve", "stick desired teleop z rot");
+  public static DoubleTopic BT_Shooter = nte_inst.getDoubleTopic("/Shooter/relativeShootingSpeed");
+  public static DoublePublisher pub_Shooter;
+  public static DoubleSubscriber sub_Shooter;
 
-    private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+  // variables
+  private Command m_autonomousCommand;
+  private final CommandXboxController xbox = new CommandXboxController(0);
 
-    /* Setting up bindings for necessary control of the swerve drive platform */
-    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-        .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-        .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-    private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+  // subsystems
+  private final Shooter shooter = new Shooter();
 
-    private final Telemetry logger = new Telemetry(MaxSpeed);
+  public Robot() {
+    initPubSubs();
+    configureBindings();
+  }
 
-    private final CommandXboxController driver = new CommandXboxController(0);
+  public void initPubSubs() {
+    pub_Shooter = BT_Shooter.publish();
+    pub_Shooter.accept(0);
+    sub_Shooter = BT_Shooter.subscribe(0.0);
+  }
 
-    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-    private Command m_autonomousCommand;
-    private final AutoFactory autoFactory = drivetrain.createAutoFactory();
+  public void configureBindings() {
+    xbox.rightTrigger().whileTrue(shooter.shoot(sub_Shooter));
+  }
 
-    private final VisionSim visionSim = new VisionSim();
-    private final Vision camera1 = new Vision(VisionK.kCamera1CamName, VisionK.kCamera1CamSimVisualName, VisionK.kCamera1CamRoboToCam, visionSim, VisionK.kCamera1SimProps);
-    private final Vision camera2 = new Vision(VisionK.kCamera2CamName, VisionK.kCamera2CamSimVisualName, VisionK.kCamera2CamRoboToCam, visionSim, VisionK.kCamera2SimProps);
+  @Override
+  public void robotPeriodic() {
+    CommandScheduler.getInstance().run();
 
-    // this should be updated with all of our cameras
-    private final Vision[] cameras = {camera1, camera2};
+    // System.out.println(sub_Shooter.getAsDouble() + "");
+  }
 
-    /* log and replay timestamp and joystick data */
-    private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
-        .withTimestampReplay()
-        .withJoystickReplay();
+  @Override
+  public void disabledInit() {}
 
-    public Robot() {
-        configureBindings();
+  @Override
+  public void disabledPeriodic() {}
+
+  @Override
+  public void disabledExit() {}
+
+  @Override
+  public void autonomousInit() {
+    if (m_autonomousCommand != null) {
+      CommandScheduler.getInstance().schedule(m_autonomousCommand);
     }
+  }
 
-    private Command driveCommand() {
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
-        // Drivetrain will execute this command periodically
-        return drivetrain.applyRequest(() -> {
-            var angularRate = driver.leftTrigger().getAsBoolean() ? 
-            kMaxHighAngularRate : kMaxAngularRate;
-        
-            var driverXVelo = -driver.getLeftY() * kMaxTranslationSpeed;
-            var driverYVelo = -driver.getLeftX() * kMaxTranslationSpeed;
-            var driverYawRate = -driver.getRightX() * angularRate;
+  @Override
+  public void autonomousPeriodic() {}
 
-            log_stickDesiredFieldX.accept(driverXVelo);
-            log_stickDesiredFieldY.accept(driverYVelo);
-            log_stickDesiredFieldZRot.accept(driverYawRate);
-            
-            return drive
-            .withVelocityX(driverXVelo) // Drive forward with Y (forward)
-            .withVelocityY(driverYVelo) // Drive left with X (left)
-            .withRotationalRate(driverYawRate); // Drive counterclockwise with negative X (left)
-            }
-        );
+  @Override
+  public void autonomousExit() {}
+
+  @Override
+  public void teleopInit() {
+    if (m_autonomousCommand != null) {
+      m_autonomousCommand.cancel();
     }
+  }
 
-    private void configureBindings() {
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
-        drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
-        );
+  @Override
+  public void teleopPeriodic() {
+  }
 
-        // Idle while the robot is disabled. This ensures the configured
-        // neutral mode is applied to the drive motors while disabled.
-        final var idle = new SwerveRequest.Idle();
-        RobotModeTriggers.disabled().whileTrue(
-            drivetrain.applyRequest(() -> idle).ignoringDisable(true)
-        );
+  @Override
+  public void teleopExit() {}
 
-        driver.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        driver.b().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))
-        ));
+  @Override
+  public void testInit() {
+    CommandScheduler.getInstance().cancelAll();
+  }
 
-        // Run SysId routines when holding back/start and X/Y.
-        // Note that each routine should be run exactly once in a single log.
-        driver.back().and(driver.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        driver.back().and(driver.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        driver.start().and(driver.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        driver.start().and(driver.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+  @Override
+  public void testPeriodic() {}
 
-        // Reset the field-centric heading on left bumper press.
-        driver.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+  @Override
+  public void testExit() {}
 
-        drivetrain.registerTelemetry(logger::telemeterize);
-    }
-
-    public Command getAutonomousCommand() {
-        // Simple Auton (hardcoded)
-        final var idle = new SwerveRequest.Idle();
-        return Commands.sequence(
-            autoFactory.resetOdometry("testAlexandra"),
-            autoFactory.trajectoryCmd("testAlexandra")
-        );
-    }
-
-    @Override
-    public void robotPeriodic() {
-        m_timeAndJoystickReplay.update();
-        CommandScheduler.getInstance().run(); 
-
-        for (Vision camera : cameras) {
-            Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
-            if (estimatedPoseOptional.isPresent()) {
-                EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
-                Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
-                var ctreTime = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
-                drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());
-            }
-        }
-    }
-
-    @Override
-    public void disabledInit() {}
-
-    @Override
-    public void disabledPeriodic() {}
-
-    @Override
-    public void disabledExit() {}
-
-    @Override
-    public void autonomousInit() {
-        m_autonomousCommand = getAutonomousCommand();
-
-        if (m_autonomousCommand != null) {
-            CommandScheduler.getInstance().schedule(m_autonomousCommand);
-        }
-    }
-
-    @Override
-    public void autonomousPeriodic() {}
-
-    @Override
-    public void autonomousExit() {}
-
-    @Override
-    public void teleopInit() {
-        if (m_autonomousCommand != null) {
-            CommandScheduler.getInstance().cancel(m_autonomousCommand);
-        }
-    }
-
-    @Override
-    public void teleopPeriodic() {}
-
-    @Override
-    public void teleopExit() {}
-
-    @Override
-    public void testInit() {
-        CommandScheduler.getInstance().cancelAll();
-    }
-
-    @Override
-    public void testPeriodic() {}
-
-    @Override
-    public void testExit() {}
-
-    @Override
-    public void simulationPeriodic() {
-        SwerveDriveState robotState = drivetrain.getState();
-        Pose2d robotPose = robotState.Pose;
-        visionSim.simulationPeriodic(robotPose);
-        drivetrain.simulationPeriodic();
-    }
 }
