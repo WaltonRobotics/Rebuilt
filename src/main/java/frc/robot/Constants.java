@@ -55,13 +55,6 @@ public class Constants {
     }
 
     public static class FieldK {
-        public static final double kFieldLengthMeters = Units.inchesToMeters(651.22); //take with a grain of salt - pulled from field dimensions (welded)
-        public static final double kFieldWidthMeters = Units.inchesToMeters(317.69);
-
-        public static final Distance kBlueGoalX = Meters.of(4.63236665725708); //pulled from choreo LOLLERZ!
-        public static final Distance kBlueGoalY = Meters.of(4.01835823059082);
-
-        public static final Translation2d kBlueGoalLocation = new Translation2d(kBlueGoalX, kBlueGoalY);
 
         public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
     }
