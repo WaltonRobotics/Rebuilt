@@ -1,11 +1,10 @@
 // package frc.robot.subsystems;
 
 // import javax.sound.sampled.Control;
+// import javax.xml.transform.OutputKeys;
 
 // import com.ctre.phoenix6.hardware.TalonFX;
-
-// import edu.wpi.first.units.AngleUnit;
-
+// import com.ctre.phoenix6.StatusCode;
 // import com.ctre.phoenix6.configs.*;
 // import com.ctre.phoenix6.controls.*;
 
@@ -14,9 +13,6 @@
 
 // public class Turret {
 
-//     //  ---------------- Constants --------------------
-    
-//     // Motor stuff
 //     private final TalonFX m_motor = new TalonFX(11);
 //     // private TalonFXConfiguration talonFXConfigs = new TalonFXConfiguration();
 //     // private final TalonFXConfigurator talonFXConfigurator = m_motor.getConfigurator();
@@ -28,26 +24,23 @@
 //     private double currentPos;
 
 //     public Turret() {
-//         // TODO apply config
-
 //         m_motor.getConfigurator().apply(new TalonFXConfiguration());
-
-//         currentPos = kHomingPos;
-//         m_motor.setPosition(0);
-//         moveToPos(currentPos);
-        
+//         moveToPos(kHomingPos);
 //     }
 
-//     private double getPos() {
+//     public double getPosRotations() {
 //         return m_motor.getPosition().getValue().abs(Units.Rotations);
 //     }
+
+//     public double getPosMysteryUnits() { // placeholder name bc we dont know the units
+//         return currentPos; 
+//     } 
     
 //     public boolean moveToPos(double pos) {
-//         // TODO get current pos for reasons unknown
 //         if (kMinPos < pos && kMaxPos > pos) {
 //             currentPos = pos;
-//             m_motor.setPosition(currentPos);
-//             return true;
+//             StatusCode code = m_motor.setControl(new MotionMagicVoltage(currentPos / 360)); // 360 is a placeholder, i dont know what unit the contants are in
+//             return code == StatusCode.OK;
 //         } 
 //         else {
 //             return false;
