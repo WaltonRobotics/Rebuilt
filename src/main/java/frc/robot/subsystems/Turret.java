@@ -30,10 +30,15 @@ public class Turret {
         return currentPos; 
     } 
     
+    /**
+     * Rotates turret to specified position.
+     * @param pos Position in [mystery unit]
+     * @return If rotation was successful
+     */
     public boolean moveToPos(double pos) {
         if (kMinPos < pos && kMaxPos > pos) {
             currentPos = pos;
-            StatusCode code = m_motor.setControl(new MotionMagicVoltage(currentPos / 360)); // 360 is a placeholder, i dont know what unit the constants are in
+            StatusCode code = m_motor.setControl(new MotionMagicVoltage(currentPos / 360)); // 360 is a placeholder, we dont know what unit the constants are in
             return code == StatusCode.OK;
         } 
         else {
