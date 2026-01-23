@@ -14,7 +14,6 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory;
@@ -35,7 +34,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Detection;
-import frc.robot.Constants.DetectionK;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -69,19 +67,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.Position);
 
-    //schtuff i siphoned from 5940
+    //FROM 5940
     private ChassisSpeeds desired = new ChassisSpeeds();
     private boolean fieldRelative = false;
 
     Detection detection = new Detection();
 
-    //is this m_pathThetaController?
-    private final PIDController turnPID = new PIDController(0.05, 0, 0); //dummy values, should probably be in constants??
-
-    private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
-        .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
-
-    
         /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
         private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
             new SysIdRoutine.Config(
@@ -395,6 +386,21 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         public void requestVelocity(ChassisSpeeds speeds, boolean fieldRelative) {
             this.desired = speeds;
             this.fieldRelative = fieldRelative;
+
+            if (this.fieldRelative)
+                this.setControl(
+                    new SwerveRequest.FieldCentric()
+                        .withVelocityX(desired.vxMetersPerSecond)
+                        .withVelocityY(desired.vyMetersPerSecond)
+                        .withRotationalRate(desired.omegaRadiansPerSecond)
+                );
+            else
+                this.setControl(
+                    new SwerveRequest.RobotCentric()
+                        .withVelocityX(desired.vxMetersPerSecond)
+                        .withVelocityY(desired.vyMetersPerSecond)
+                        .withRotationalRate(desired.omegaRadiansPerSecond)
+                );
         }
 
         /** 
@@ -403,29 +409,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         public Command swerveToObject() {
             PhotonTrackedTarget closestTarget = detection.getClosestObject();
             double targetYaw = closestTarget.yaw;
-            double rotationOutput = turnPID.calculate(targetYaw, 7.04);
+            double rotationOutput = m_pathThetaController.calculate(targetYaw, 7.04); //not 100% sure if this is the correct PID controller
 
-            double backwardVelocty = -1.0; //should tune value + is our intake on the front or back of our robot?
             
+            //TODO: have backwardVelocity change depending on whether intake detects fuel or how close fuel is (based off of area) 
+            double backwardVelocity = -0.5;
+
             return Commands.run(
-                () -> requestVelocity(new ChassisSpeeds(backwardVelocty, 0.0, rotationOutput), false)
-            );
-        }
-
-        /**
-         * swerveToObject iteration two ᕕ༼✿•̀︿•́༽ᕗ
-         */
-        public Command moveToObject(Pose2d destination) {
-            return Commands.run(
-                () -> {
-                    Pose2d curPose = getState().Pose;
-
-                    double xSpeed = DetectionK.m_detectionXController.calculate(curPose.getX(), destination.getX());
-                    double ySpeed = DetectionK.m_detectionYController.calculate(curPose.getY(), destination.getY());
-                    double thetaSpeed = DetectionK.m_detectionThetaController.calculate(curPose.getRotation().getRadians(), destination.getRotation().getRadians());
-
-                    setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
-                }
+                () -> requestVelocity(new ChassisSpeeds(backwardVelocity, 0.0, rotationOutput), false)
             );
         }
 }
