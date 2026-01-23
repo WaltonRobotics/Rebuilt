@@ -32,16 +32,23 @@ public class Robot extends TimedRobot {
   public static NetworkTableInstance nte_inst = NetworkTableInstance.getDefault();
   public static NetworkTable nte_Shooter = nte_inst.getTable("Shooter");
 
-  public static DoubleTopic BT_Shooter = nte_inst.getDoubleTopic("/Shooter/relativeShootingSpeed");
+  public static DoubleTopic DT_Shooter = nte_inst.getDoubleTopic("/Shooter/relativeShootingSpeed");
   public static DoublePublisher pub_Shooter;
   public static DoubleSubscriber sub_Shooter;
 
+  public static DoubleTopic DT_Turret = nte_inst.getDoubleTopic("/Shooter/turretPositon");
+  public static DoublePublisher pub_Turrert;
+  public static DoubleSubscriber sub_Turret;
+
   // variables
   private Command m_autonomousCommand;
-  private final CommandXboxController xbox = new CommandXboxController(0);
+  private final CommandXboxController driver = new CommandXboxController(0);
+  private final CommandXboxController manip = new CommandXboxController(1);
+
 
   // subsystems
   private final Shooter shooter = new Shooter();
+  private final Turret turret = new Turret();
 
   public Robot() {
     initPubSubs();
@@ -49,13 +56,19 @@ public class Robot extends TimedRobot {
   }
 
   public void initPubSubs() {
-    pub_Shooter = BT_Shooter.publish();
+    pub_Shooter = DT_Shooter.publish();
     pub_Shooter.accept(0);
-    sub_Shooter = BT_Shooter.subscribe(0.0);
+    sub_Shooter = DT_Shooter.subscribe(0.0);
+
+    pub_Turrert = DT_Turret.publish();
+    pub_Turrert.accept(0);
+    sub_Turret = DT_Turret.subscribe(turret.kHomingPos);
   }
 
   public void configureBindings() {
-    xbox.rightTrigger().whileTrue(shooter.shoot(sub_Shooter));
+    driver.rightTrigger().whileTrue(shooter.shoot(sub_Shooter));
+    driver.leftTrigger().whileTrue(turret.spin(sub_Turret));
+    // manip.rightTrigger().whileTrue(turret.spin(sub_Turret));
   }
 
   @Override
