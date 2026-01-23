@@ -51,7 +51,7 @@ public class Constants {
         public static final String kCamera2CamSimVisualName = "camera2VisionEstimation";
     }
 
-    public static class DetectionK {
+    public static class TrackingK {
         //all dummy values – should tune (〜^∇^)〜
         public static final PIDController m_detectionXController  = new PIDController(7,0,0.1);
         public static final PIDController m_detectionYController  = new PIDController(7,0,0.1);

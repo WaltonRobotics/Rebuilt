@@ -9,14 +9,7 @@ import org.photonvision.PhotonUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.VisionK;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class Detection {
     private final PhotonCamera camera = new PhotonCamera(VisionK.kCamera1CamName); //probably will be intake camera
@@ -67,14 +60,5 @@ public class Detection {
         }
 
         return closestTarget;
-    }
-
-    /**
-    * PhotonTrackedTarget to Pose2d
-    */
-    public Pose2d targetToPose(PhotonTrackedTarget target) {
-        Transform3d transform = target.getBestCameraToTarget();
-        Pose2d pose = new Pose2d(transform.getX(), transform.getY(), transform.getRotation().toRotation2d());
-        return pose;
     }
 }
