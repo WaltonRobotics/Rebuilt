@@ -51,14 +51,6 @@ public class Constants {
         public static final String kCamera2CamSimVisualName = "camera2VisionEstimation";
     }
 
-    public static class TrackingK {
-        //all dummy values – should tune (〜^∇^)〜
-        public static final PIDController m_detectionXController  = new PIDController(7,0,0.1);
-        public static final PIDController m_detectionYController  = new PIDController(7,0,0.1);
-        public static final PIDController m_detectionThetaController  = new PIDController(10,0,0.1);
-
-    }
-
     public static class FieldK {
         public static final double kFieldLengthMeters = Units.inchesToMeters(651.22); //take with a grain of salt - pulled from field dimensions (welded)
         public static final double kFieldWidthMeters = Units.inchesToMeters(317.69);
