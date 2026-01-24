@@ -5,7 +5,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import static edu.wpi.first.units.Units.Rotations;
 
-import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.controls.*;
 
