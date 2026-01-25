@@ -107,6 +107,10 @@ public class Vision {
         List<PhotonPipelineResult> unreadCameraResults = m_camera.getAllUnreadResults();
 
         for (var change : unreadCameraResults) {
+            // Remove excluded April Tags
+            change.getTargets().removeIf(
+                    tgt -> excludedAprilTagsID.contains(tgt.getFiducialId()));
+
             visionEst = photonEstimator.update(change);
             updateEstimationStdDevs(visionEst, change.getTargets());
             log_stdDevs.accept(curStdDevs.getData());
@@ -152,7 +156,7 @@ public class Vision {
             // Precalculation - see how many tags we found, and calculate an average-distance metric
             for (var tgt : targets) {
                 var tagPose = photonEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
-                if (tagPose.isEmpty() && !excludedAprilTagsID.contains(tgt.getFiducialId())) continue;
+                if (tagPose.isEmpty()) continue;
                 numTags++;
                 avgDist +=
                         tagPose
