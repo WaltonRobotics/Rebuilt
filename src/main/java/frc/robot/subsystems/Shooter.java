@@ -2,6 +2,8 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
@@ -23,14 +25,16 @@ public class Shooter extends SubsystemBase {
     // motors + control requests
     private final TalonFX m_leader = new TalonFX(kLeaderCANID); //X60
     private final TalonFX m_follower = new TalonFX(kFollowerCANID); //X60
-    private final VelocityVoltage m_VelocityRequest = new VelocityVoltage(0);
+    private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0);
 
     private final TalonFX m_hood = new TalonFX(kHoodCANID); //X44
+    private final PositionVoltage m_positionRequest = new PositionVoltage(0);
+
     private final TalonFX m_turret = new TalonFX(kTurretCANID); //X44
 
     // speeds
-    private final double m_passSpeed = 0.0; //TODO: Update Speeds
-    private final double m_scoreSpeed = 0.0;
+    private final double m_passSpeed = 7.0; //TODO: Update Speeds
+    private final double m_scoreSpeed = 5.5;
 
     // logic booleans
     private boolean m_spunUp = false;
@@ -45,8 +49,10 @@ public class Shooter extends SubsystemBase {
     }
 
     // loggers
-    private final BooleanLogger log_exitBeamBreak = WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
     private final DoubleLogger log_shooterRPM = WaltLogger.logDouble(kLogTab, "shooterRPM");
+    private final DoubleLogger log_hoodPosition = WaltLogger.logDouble(kLogTab, "hoodPosition");
+
+    private final BooleanLogger log_exitBeamBreak = WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
     private final BooleanLogger log_spunUp = WaltLogger.logBoolean(kLogTab, "spunUp");
 
     /* CONSTRUCTOR */
@@ -62,7 +68,7 @@ public class Shooter extends SubsystemBase {
     /* COMMANDS */
     // Shooter Commands (Veloity Control)
     public void setVelocity(double desiredVelocity) {
-        m_leader.setControl(m_VelocityRequest.withVelocity(desiredVelocity));
+        m_leader.setControl(m_velocityRequest.withVelocity(desiredVelocity));
     }
 
     public Command setVelocityCmd(double desiredVelocity) {
@@ -73,15 +79,28 @@ public class Shooter extends SubsystemBase {
         return setVelocityCmd(m_scoreSpeed);
     }
 
+    public Command pass() {
+        return setVelocityCmd(m_passSpeed);
+    }
+
     // Hood Commands (Basic Position Control)
+    public void setPosition(double desiredPosition) {
+        m_hood.setControl(m_positionRequest.withPosition(desiredPosition));
+    }
+
+    public Command setPositionCmd(double desiredPosition) {
+        return runOnce(() -> setPosition(desiredPosition));
+    }
 
     // Turret Commands (Motionmagic Angle Control); Saarth will work on this via "2021-Gamechangers" code
 
 
     @Override
     public void periodic() {
-        log_exitBeamBreak.accept(trg_exitBeamBreak);
         log_shooterRPM.accept(m_leader.getVelocity().getValueAsDouble());
+        log_hoodPosition.accept(m_hood.getPosition().getValueAsDouble());
+
+        log_exitBeamBreak.accept(trg_exitBeamBreak);
         log_spunUp.accept(m_spunUp);
     }
 
