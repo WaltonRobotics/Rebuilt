@@ -3,6 +3,9 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import com.ctre.phoenix6.sim.TalonFXSimState;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+
 import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.configs.*;
@@ -10,21 +13,30 @@ import com.ctre.phoenix6.controls.*;
 
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.*;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.WaltLogger;
+import frc.robot.util.WaltLogger.DoubleLogger;
 
 public class Turret extends SubsystemBase {
 
     private final TalonFX m_motor = new TalonFX(11);
 
-    private final MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0);
-    
+    private final MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(Angle.ofBaseUnits(0, Units.Degrees));
+
+    private final DoubleLogger log_turretSimPositionMysteryUnits = WaltLogger.logDouble("Turret Logs", "Position in Mystery Units");
+    private final DoubleLogger log_turretSimPositionRotations = WaltLogger.logDouble("Turret Logs", "Position in Rotations");
+
+    // private final FlywheelSim turretSim = new FlywheelSim(null, null, null);
+
     // Motor Positions (for max/min assume exclusive) NOT rotations (mystery units)
     private final double kMaxPos = 135;
     private final double kMinPos = -821;
     public final double kHomingPos = 0;
     private final double kFrontFacingPos = -330;
     private final double kUnitsPerRotation = 1360; // 1360 units per rotation
+    private final double kUnitsPerDegree = kUnitsPerRotation / 360.0;
 
     private double currentPos;
 
@@ -48,6 +60,10 @@ public class Turret extends SubsystemBase {
         return m_motor.getPosition().getValue().in(Units.Rotations);
     }
 
+    public double getPosDegrees() {
+        return m_motor.getPosition().getValue().in(Units.Degrees);
+    }
+
     public double getPosMysteryUnits() { // placeholder name bc we dont know the units
         return currentPos; 
     } 
@@ -55,24 +71,33 @@ public class Turret extends SubsystemBase {
     /**
      * Rotates turret to specified position.
      * @param pos Position in [mystery unit]
-     * @return If rotation was successful
      */
     public void moveToPosMysteryUnits(double pos) {
         if (kMinPos < pos && kMaxPos > pos) {
             currentPos = pos;
-            m_motor.setControl(m_MMVReq.withPosition(pos / kUnitsPerRotation));
+            m_motor.setControl(m_MMVReq.withPosition(Angle.ofBaseUnits(pos / kUnitsPerDegree, Units.Degrees)));
         }
     }
 
     /**
      * Rotates turret to specified position.
      * @param pos Position in rotations
-     * @return If rotation was successful
      */
     public void moveToPosRotations(double rots) {
         if (kMinPos / kUnitsPerRotation < rots && kMaxPos / kUnitsPerRotation > rots) {
             currentPos = rots * kUnitsPerRotation;
-            m_motor.setControl(m_MMVReq.withPosition(rots));
+            m_motor.setControl(m_MMVReq.withPosition(Angle.ofBaseUnits(rots / 360, Units.Degrees)));
+        }
+    }
+
+    /**
+     * Rotates turret to specified position.
+     * @param pos Position in degrees
+     */
+    public void moveToPosDegrees(double degs) {
+        if (kMinPos / kUnitsPerDegree < degs && kMaxPos / kUnitsPerDegree > degs) {
+            currentPos = degs * kUnitsPerDegree;
+            m_motor.setControl(m_MMVReq.withPosition(Angle.ofBaseUnits(degs, Units.Degrees)));
         }
     }
 
@@ -82,35 +107,35 @@ public class Turret extends SubsystemBase {
         });
     }
 
-    public void moveToMaxMysteryUnits() {
+    public void moveToMax() {
         moveToPosMysteryUnits(kMaxPos - 0.1);
     }
 
-    public void moveToMinMysteryUnits() {
+    public void moveToMin() {
         moveToPosMysteryUnits(kMinPos + 0.1);
     }
 
-    public void moveToHomeMysteryUnits() {
+    public void moveToHome() {
         moveToPosMysteryUnits(kHomingPos);
     }
 
-    public void moveToFrontFacingMysteryUnits() {
-        moveToPosMysteryUnits(0);
+    public void moveToFrontFacing() {
+        moveToPosMysteryUnits(kFrontFacingPos);
     }
 
-    public void moveToMaxRotations() {
-        moveToPosRotations(kMaxPos - 0.1);
+    /*
+    @Override
+    public void simulationPeriodic() {
+        TalonFXSimState m_simMotor = new TalonFXSimState(m_motor);
+        moveToPosRotations(0.5);
+        m_motor.getSimState().setRawRotorPosition(getPosRotations());
+        // moveToPosRotations(0.5);
+        logValue(getPosRotations());
     }
 
-    public void moveToMinRotations() {
-        moveToPosRotations(kMinPos + 0.1);
+    private void logValue(double val) {
+        log_turretSimPositionMysteryUnits.accept(val * kUnitsPerRotation);
+        log_turretSimPositionRotations.accept(val);
     }
-
-    public void moveToHomeRotations() {
-        moveToPosRotations(kHomingPos);
-    }
-
-    public void moveToFrontFacingRotations() {
-        moveToPosRotations(kFrontFacingPos);
-    }
+        */
 }
