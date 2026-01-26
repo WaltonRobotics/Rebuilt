@@ -2,6 +2,11 @@ package frc.robot;
 
 import org.photonvision.simulation.SimCameraProperties;
 
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -11,6 +16,39 @@ import edu.wpi.first.math.util.Units;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
+
+    public static class ShooterK {
+        public static final String kLogTab = "Shooter";
+
+        // IDs
+        public static final int kLeaderCANID = 1; //TODO: Update CANID number
+        public static final int kFollowerCANID = 2; //TODO: Update CANID number
+        public static final int kHoodCANID = 3; //TODO: Update CANID number
+        public static final int kTurretCANID = 4; //TODO: Update CANID number
+
+        public static final int kExitBeamBreakChannel = 0; //TODO: Update channel number
+
+        // Configs
+        public static final TalonFXConfiguration kLeaderTalonFXConfiguration = new TalonFXConfiguration()
+            .withMotorOutput(new MotorOutputConfigs()
+                .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
+                .withNeutralMode(NeutralModeValue.Brake));
+
+        public static final TalonFXConfiguration kFollowerTalonFXConfiguration = new TalonFXConfiguration()
+            .withMotorOutput(new MotorOutputConfigs()
+                .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
+                .withNeutralMode(NeutralModeValue.Brake));
+
+        public static final TalonFXConfiguration kHoodTalonFXConfiguration = new TalonFXConfiguration()
+            .withMotorOutput(new MotorOutputConfigs()
+                .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
+                .withNeutralMode(NeutralModeValue.Brake));
+        
+        public static final TalonFXConfiguration kTurretTalonFXConfiguration = new TalonFXConfiguration()
+            .withMotorOutput(new MotorOutputConfigs()
+                .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
+                .withNeutralMode(NeutralModeValue.Brake));
+    }
 
     public static class VisionK {
         public static final SimCameraProperties kCamera1SimProps = new SimCameraProperties();
