@@ -28,7 +28,7 @@ public class Constants {
 
         public static final int kExitBeamBreakChannel = 0; //TODO: Update channel number
 
-        // Configs
+        // Configs, TODO: Check what more configs would be necessary
         public static final TalonFXConfiguration kLeaderTalonFXConfiguration = new TalonFXConfiguration()
             .withMotorOutput(new MotorOutputConfigs()
                 .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
