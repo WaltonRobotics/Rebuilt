@@ -4,13 +4,19 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import com.ctre.phoenix6.sim.TalonFXSimState;
+
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import edu.wpi.first.wpilibj.simulation.SimDeviceSim;
+import edu.wpi.first.wpilibj.simulation.XboxControllerSim;
 
 import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.controls.*;
 
+import edu.wpi.first.hal.SimDevice;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.*;
 import edu.wpi.first.units.measure.Angle;
@@ -27,8 +33,7 @@ public class Turret extends SubsystemBase {
 
     private final DoubleLogger log_turretSimPositionMysteryUnits = WaltLogger.logDouble("Turret Logs", "Position in Mystery Units");
     private final DoubleLogger log_turretSimPositionRotations = WaltLogger.logDouble("Turret Logs", "Position in Rotations");
-
-    // private final FlywheelSim turretSim = new FlywheelSim(null, null, null);
+    private final DoubleLogger log_turretSimPositionDegrees = WaltLogger.logDouble("Turret Logs", "Position in Degrees");
 
     // Motor Positions (for max/min assume exclusive) NOT rotations (mystery units)
     private final double kMaxPos = 135;
@@ -38,7 +43,7 @@ public class Turret extends SubsystemBase {
     private final double kUnitsPerRotation = 1360; // 1360 units per rotation
     private final double kUnitsPerDegree = kUnitsPerRotation / 360.0;
 
-    private double currentPos;
+    private double currentPos = kHomingPos;
 
     public Turret() {
         m_motor.getConfigurator().apply(new TalonFXConfiguration()
@@ -81,7 +86,7 @@ public class Turret extends SubsystemBase {
 
     /**
      * Rotates turret to specified position.
-     * @param pos Position in rotations
+     * @param rots Position in rotations
      */
     public void moveToPosRotations(double rots) {
         if (kMinPos / kUnitsPerRotation < rots && kMaxPos / kUnitsPerRotation > rots) {
@@ -92,7 +97,7 @@ public class Turret extends SubsystemBase {
 
     /**
      * Rotates turret to specified position.
-     * @param pos Position in degrees
+     * @param degs Position in degrees
      */
     public void moveToPosDegrees(double degs) {
         if (kMinPos / kUnitsPerDegree < degs && kMaxPos / kUnitsPerDegree > degs) {
@@ -123,19 +128,25 @@ public class Turret extends SubsystemBase {
         moveToPosMysteryUnits(kFrontFacingPos);
     }
 
-    /*
+
+    public void simulationInit() {
+        var m_motorSim = m_motor.getSimState();
+        m_motorSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
+        m_motorSim.setRawRotorPosition(0);
+    }
+
     @Override
     public void simulationPeriodic() {
-        TalonFXSimState m_simMotor = new TalonFXSimState(m_motor);
-        moveToPosRotations(0.5);
-        m_motor.getSimState().setRawRotorPosition(getPosRotations());
-        // moveToPosRotations(0.5);
+        var m_motorSim = m_motor.getSimState();
+        moveToFrontFacing();
+        m_motorSim.setRawRotorPosition(currentPos / kUnitsPerRotation);
+        // currentPos += 0.2;
         logValue(getPosRotations());
     }
 
     private void logValue(double val) {
         log_turretSimPositionMysteryUnits.accept(val * kUnitsPerRotation);
         log_turretSimPositionRotations.accept(val);
+        log_turretSimPositionDegrees.accept(val * 360);
     }
-        */
 }
