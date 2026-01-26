@@ -39,6 +39,8 @@ public class Constants {
                 .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
                 .withNeutralMode(NeutralModeValue.Brake));
 
+        // TODO: I assume we would want the Hood and Turret to move at a constant high velocity
+        //       so we should probably configure that here
         public static final TalonFXConfiguration kHoodTalonFXConfiguration = new TalonFXConfiguration()
             .withMotorOutput(new MotorOutputConfigs()
                 .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
