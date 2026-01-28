@@ -9,6 +9,7 @@ import org.photonvision.PhotonUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants.VisionK;
 
 public class Detection {
@@ -35,7 +36,6 @@ public class Detection {
      * sort and find closest target
      */
     public PhotonTrackedTarget getClosestObject() {
-        
         processCameraData();
         PhotonTrackedTarget closestTarget = targetList.get(0);
         double minDistance = 

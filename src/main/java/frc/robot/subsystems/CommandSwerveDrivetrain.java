@@ -34,7 +34,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Detection;
+import frc.robot.Robot;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.vision.VisionSim;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -71,7 +73,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private ChassisSpeeds desired = new ChassisSpeeds();
     private boolean fieldRelative = false;
 
-    Detection detection = new Detection();
+    private final Detection detection = new Detection();
+    private final VisionSim visionSim = new VisionSim();
 
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
@@ -406,11 +409,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     /** 
      * moves to closest object
     */
-    public Command swerveToObject() {
-        PhotonTrackedTarget closestTarget = detection.getClosestObject();
-        double targetYaw = closestTarget.yaw;
+    public Command swerveToObject(PhotonTrackedTarget target) {
+        double targetYaw = target.yaw;
         double rotationOutput = m_pathThetaController.calculate(targetYaw, 7.04); //not 100% sure if this is the correct PID controller
-
         
         //TODO: have backwardVelocity change depending on whether intake detects fuel or how close fuel is (based off of area) 
         double backwardVelocity = -0.5;
