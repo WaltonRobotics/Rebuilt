@@ -10,8 +10,7 @@ import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
-import static frc.robot.Constants.ShooterK.kLogTab;
-import static frc.robot.Constants.TurretK.*;
+import static frc.robot.Constants.ShooterK.*;
 import frc.robot.FieldConstants;
 import frc.robot.RobotState;
 import frc.util.AllianceFlipUtil;
