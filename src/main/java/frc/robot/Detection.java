@@ -37,25 +37,29 @@ public class Detection {
      */
     public PhotonTrackedTarget getClosestObject() {
         processCameraData();
-        PhotonTrackedTarget closestTarget = targetList.get(0);
-        double minDistance = 
-            PhotonUtils.calculateDistanceToTargetMeters(
-                    1,  //dummy (move ts to constants)
-                    2,  //dummy (move ts to constants)
-                    3,  //dummy (move ts to constants)
+        PhotonTrackedTarget closestTarget = new PhotonTrackedTarget();
+
+        if (targetList.size() > 0) {
+            closestTarget = targetList.get(0);
+            double minDistance = 
+                PhotonUtils.calculateDistanceToTargetMeters(
+                    0,  //dummy (move ts to constants)
+                    0,  //dummy (move ts to constants)
+                    0,  //dummy (move ts to constants)
                     closestTarget.pitch);
                     
-        for (PhotonTrackedTarget target : targetList) {
-            double distance = 
-                PhotonUtils.calculateDistanceToTargetMeters(
-                    1,  //dummy (move ts to constants)
-                    2,  //dummy (move ts to constants)
-                    3,  //dummy (move ts to constants)
-                    target.pitch);
+            for (PhotonTrackedTarget target : targetList) {
+                double distance = 
+                    PhotonUtils.calculateDistanceToTargetMeters(
+                        0,  //dummy (move ts to constants)
+                        0,  //dummy (move ts to constants)
+                        0,  //dummy (move ts to constants)
+                        target.pitch);
 
-            if (distance < minDistance) {
-                closestTarget = target;
-                minDistance = distance;
+                if (distance < minDistance) {
+                    closestTarget = target;
+                    minDistance = distance;
+                }
             }
         }
 
