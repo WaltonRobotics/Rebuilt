@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -24,27 +24,28 @@ import static frc.util.GeomUtil.*;
 
 //TODO: Make sure to go back and comment effectively line by line to ensure that youngins are able to understand (this code is basically self explanatory so long as you understand sotm)
 public class ShotCalculation {
-    private Rotation2d lastTurretAngle;
-    private double lastHoodAngle;
-    private Rotation2d turretAngle;
-    private double hoodAngle = Double.NaN; //make sure that we dont set angle to zero :skull:
-    private double turretVelocity;
-    private double hoodVelocity;
+    private Rotation2d m_lastTurretAngle;
+    private double m_lastHoodAngle;
+    private Rotation2d m_turretAngle;
+    private double m_hoodAngle = Double.NaN; //make sure that we dont set angle to zero :skull:
+    private double m_turretVelocity;
+    private double m_hoodVelocity;
 
     //TODO: Change the 0.02 to whatever our loop time will be
-    private final LinearFilter turretAngleFilter = 
+    private final LinearFilter m_turretAngleFilter = 
         LinearFilter.movingAverage((int)(0.1 / 0.02));
-    private final LinearFilter hoodAngleFilter = 
+    private final LinearFilter m_hoodAngleFilter = 
         LinearFilter.movingAverage((int) (0.1 / 0.02));
 
-    private static double minDistance;
-    private static double maxDistance;
-    private static double phaseDelay;
-    private static InterpolatingTreeMap<Double, Rotation2d> shotHoodAngleMap = 
+    private static double m_minDistance;
+    private static double m_maxDistance;
+    private static double m_phaseDelay;
+
+    private static InterpolatingTreeMap<Double, Rotation2d> m_shotHoodAngleMap = 
         new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), Rotation2d::interpolate);
-    private static InterpolatingDoubleTreeMap shotFlywheelSpeedMap = 
+    private static InterpolatingDoubleTreeMap m_shotFlywheelSpeedMap = 
         new InterpolatingDoubleTreeMap();
-    private static InterpolatingDoubleTreeMap timeOfFlightMap = 
+    private static InterpolatingDoubleTreeMap m_timeOfFlightMap = 
         new InterpolatingDoubleTreeMap();
 
     private final Pose2dLogger log_lookaheadPose =  WaltLogger.logPose2d(kLogTab, "lookaheadPose");
@@ -66,41 +67,41 @@ public class ShotCalculation {
     
     //lookup table produced from MA 1/20/26
     static {
-        minDistance = 1.17;
-        maxDistance = 5.63;
-        phaseDelay = 0.05; //dummy value
+        m_minDistance = 1.17;
+        m_maxDistance = 5.63;
+        m_phaseDelay = 0.05; //dummy value
     
-        shotHoodAngleMap.put(1.17, Rotation2d.fromDegrees(19.0));
-        shotHoodAngleMap.put(1.55, Rotation2d.fromDegrees(19.0));
-        shotHoodAngleMap.put(1.96, Rotation2d.fromDegrees(19.0));
-        shotHoodAngleMap.put(2.14, Rotation2d.fromDegrees(20.0));
-        shotHoodAngleMap.put(2.40, Rotation2d.fromDegrees(21.0));
-        shotHoodAngleMap.put(2.78, Rotation2d.fromDegrees(22.0));
-        shotHoodAngleMap.put(3.10, Rotation2d.fromDegrees(24.0));
-        shotHoodAngleMap.put(3.44, Rotation2d.fromDegrees(26.0));
-        shotHoodAngleMap.put(3.84, Rotation2d.fromDegrees(27.0));
-        shotHoodAngleMap.put(4.60, Rotation2d.fromDegrees(32.0));
-        shotHoodAngleMap.put(5.12, Rotation2d.fromDegrees(33.0));
-        shotHoodAngleMap.put(5.63, Rotation2d.fromDegrees(36.0));
+        m_shotHoodAngleMap.put(1.17, Rotation2d.fromDegrees(19.0));
+        m_shotHoodAngleMap.put(1.55, Rotation2d.fromDegrees(19.0));
+        m_shotHoodAngleMap.put(1.96, Rotation2d.fromDegrees(19.0));
+        m_shotHoodAngleMap.put(2.14, Rotation2d.fromDegrees(20.0));
+        m_shotHoodAngleMap.put(2.40, Rotation2d.fromDegrees(21.0));
+        m_shotHoodAngleMap.put(2.78, Rotation2d.fromDegrees(22.0));
+        m_shotHoodAngleMap.put(3.10, Rotation2d.fromDegrees(24.0));
+        m_shotHoodAngleMap.put(3.44, Rotation2d.fromDegrees(26.0));
+        m_shotHoodAngleMap.put(3.84, Rotation2d.fromDegrees(27.0));
+        m_shotHoodAngleMap.put(4.60, Rotation2d.fromDegrees(32.0));
+        m_shotHoodAngleMap.put(5.12, Rotation2d.fromDegrees(33.0));
+        m_shotHoodAngleMap.put(5.63, Rotation2d.fromDegrees(36.0));
     
-        shotFlywheelSpeedMap.put(1.17, 185.0);
-        shotFlywheelSpeedMap.put(1.55, 205.0);
-        shotFlywheelSpeedMap.put(1.96, 225.0);
-        shotFlywheelSpeedMap.put(2.14, 225.0);
-        shotFlywheelSpeedMap.put(2.40, 225.0);
-        shotFlywheelSpeedMap.put(2.78, 230.0);
-        shotFlywheelSpeedMap.put(3.10, 235.0);
-        shotFlywheelSpeedMap.put(3.44, 238.0);
-        shotFlywheelSpeedMap.put(3.84, 245.0);
-        shotFlywheelSpeedMap.put(4.60, 252.0);
-        shotFlywheelSpeedMap.put(5.12, 265.0);
-        shotFlywheelSpeedMap.put(5.63, 270.0);
+        m_shotFlywheelSpeedMap.put(1.17, 185.0);
+        m_shotFlywheelSpeedMap.put(1.55, 205.0);
+        m_shotFlywheelSpeedMap.put(1.96, 225.0);
+        m_shotFlywheelSpeedMap.put(2.14, 225.0);
+        m_shotFlywheelSpeedMap.put(2.40, 225.0);
+        m_shotFlywheelSpeedMap.put(2.78, 230.0);
+        m_shotFlywheelSpeedMap.put(3.10, 235.0);
+        m_shotFlywheelSpeedMap.put(3.44, 238.0);
+        m_shotFlywheelSpeedMap.put(3.84, 245.0);
+        m_shotFlywheelSpeedMap.put(4.60, 252.0);
+        m_shotFlywheelSpeedMap.put(5.12, 265.0);
+        m_shotFlywheelSpeedMap.put(5.63, 270.0);
     
-        timeOfFlightMap.put(5.68, 1.16);
-        timeOfFlightMap.put(4.55, 1.12);
-        timeOfFlightMap.put(3.15, 1.11);
-        timeOfFlightMap.put(1.88, 1.09);
-        timeOfFlightMap.put(1.38, 0.90);
+        m_timeOfFlightMap.put(5.68, 1.16);
+        m_timeOfFlightMap.put(4.55, 1.12);
+        m_timeOfFlightMap.put(3.15, 1.11);
+        m_timeOfFlightMap.put(1.88, 1.09);
+        m_timeOfFlightMap.put(1.38, 0.90);
     }
 
     /**
@@ -121,9 +122,9 @@ public class ShotCalculation {
         estimatedPose =
             estimatedPose.exp(
                 new Twist2d(
-                    robotRelativeVelocity.vxMetersPerSecond * phaseDelay,
-                    robotRelativeVelocity.vyMetersPerSecond * phaseDelay,
-                    robotRelativeVelocity.omegaRadiansPerSecond * phaseDelay));
+                    robotRelativeVelocity.vxMetersPerSecond * m_phaseDelay,
+                    robotRelativeVelocity.vyMetersPerSecond * m_phaseDelay,
+                    robotRelativeVelocity.omegaRadiansPerSecond * m_phaseDelay));
 
         
         /* CALCULATING DISTANCE FROM TURRET TO TARGET */
@@ -154,7 +155,7 @@ public class ShotCalculation {
 
         //loop to converge onto one specific value
         for (int i = 0; i < 20; i++) {
-            timeOfFlight = timeOfFlightMap.get(lookaheadTurretToTargetDistance);
+            timeOfFlight = m_timeOfFlightMap.get(lookaheadTurretToTargetDistance);
             double offsetX = turretVelocityX * timeOfFlight;
             double offsetY = turretVelocityY * timeOfFlight;
             lookaheadPose = 
@@ -167,36 +168,36 @@ public class ShotCalculation {
 
         /* calculate the parameters for shooting while compensating for robot velocity */
 
-        turretAngle = target.minus(lookaheadPose.getTranslation()).getAngle();
-        hoodAngle = shotHoodAngleMap.get(lookaheadTurretToTargetDistance).getRadians();
+        m_turretAngle = target.minus(lookaheadPose.getTranslation()).getAngle();
+        m_hoodAngle = m_shotHoodAngleMap.get(lookaheadTurretToTargetDistance).getRadians();
 
         //ensure that our shooter subsystem angles are NOT empty
-        if (lastTurretAngle == null)
-            lastTurretAngle = turretAngle;
-        if (Double.isNaN(lastHoodAngle))
-            lastHoodAngle = hoodAngle;
+        if (m_lastTurretAngle == null)
+            m_lastTurretAngle = m_turretAngle;
+        if (Double.isNaN(m_lastHoodAngle))
+            m_lastHoodAngle = m_hoodAngle;
 
             
         //TODO: Change the 0.02 to whatever our loop time will be
-        turretVelocity = 
-            turretAngleFilter.calculate(
-                turretAngle.minus(lastTurretAngle).getRadians() / 0.02);
-        hoodVelocity = 
-            hoodAngleFilter.calculate(
-                (hoodAngle - lastHoodAngle) / 0.02);
+        m_turretVelocity = 
+            m_turretAngleFilter.calculate(
+                m_turretAngle.minus(m_lastTurretAngle).getRadians() / 0.02);
+        m_hoodVelocity = 
+            m_hoodAngleFilter.calculate(
+                (m_hoodAngle - m_lastHoodAngle) / 0.02);
 
-        lastTurretAngle = turretAngle;
-        lastHoodAngle = hoodAngle;
+        m_lastTurretAngle = m_turretAngle;
+        m_lastHoodAngle = m_hoodAngle;
 
         latestParameters =
             new ShootingParameters(
-                lookaheadTurretToTargetDistance >= minDistance
-                    && lookaheadTurretToTargetDistance <= maxDistance,
-                turretAngle,
-                turretVelocity,
-                hoodAngle, 
-                hoodVelocity, 
-                shotFlywheelSpeedMap.get(lookaheadTurretToTargetDistance));
+                lookaheadTurretToTargetDistance >= m_minDistance
+                    && lookaheadTurretToTargetDistance <= m_maxDistance,
+                m_turretAngle,
+                m_turretVelocity,
+                m_hoodAngle, 
+                m_hoodVelocity, 
+                m_shotFlywheelSpeedMap.get(lookaheadTurretToTargetDistance));
 
         log_lookaheadPose.accept(lookaheadPose);
         log_turretToTargetDistance.accept(turretToTargetDistance);
