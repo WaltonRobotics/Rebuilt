@@ -2,13 +2,20 @@ package frc.robot.vision;
 
 import static frc.robot.Constants.FieldK.kTagLayout;
 
+import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.simulation.VisionTargetSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 
@@ -42,8 +49,14 @@ public class VisionSim {
         return m_photonVisionSim.getDebugField();
     }
 
-    public PhotonTrackedTarget addFuel(Trigger detectedFuel) {
-        PhotonTrackedTarget simFuel = new PhotonTrackedTarget(30, 0, 10, 30, -1, -1, -1, null, null, 0, null, null);
-        return simFuel;
+    public Command addFuel() {
+        TargetModel targetModel = new TargetModel(Units.inchesToMeters(5.91));
+        Pose3d targetPose = new Pose3d(0,0,0, new Rotation3d(0,0,Math.PI)); //dummy values
+        VisionTargetSim visionTarget = new VisionTargetSim(targetPose, targetModel);
+
+        return Commands.sequence(
+            Commands.runOnce(() -> m_photonVisionSim.addVisionTargets(visionTarget)),
+            Commands.print("--------------------ADDED FUEL--------------------")
+        );
     }
 }

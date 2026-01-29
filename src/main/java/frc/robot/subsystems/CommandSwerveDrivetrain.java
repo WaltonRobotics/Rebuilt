@@ -386,38 +386,31 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * @param speeds
      * @param fieldRelative NOTE: we might need to change this depending on what our robo is
      */
-    public void requestVelocity(ChassisSpeeds speeds, boolean fieldRelative) {
+    public void requestVelocity(ChassisSpeeds speeds) {
         this.desired = speeds;
-        this.fieldRelative = fieldRelative;
 
-        if (this.fieldRelative)
-            this.setControl(
-                new SwerveRequest.FieldCentric()
-                    .withVelocityX(desired.vxMetersPerSecond)
-                    .withVelocityY(desired.vyMetersPerSecond)
-                    .withRotationalRate(desired.omegaRadiansPerSecond)
-            );
-        else
-            this.setControl(
-                new SwerveRequest.RobotCentric()
-                    .withVelocityX(desired.vxMetersPerSecond)
-                    .withVelocityY(desired.vyMetersPerSecond)
-                    .withRotationalRate(desired.omegaRadiansPerSecond)
-            );
+        this.setControl(
+            new SwerveRequest.FieldCentric()
+                .withVelocityX(desired.vxMetersPerSecond)
+                .withVelocityY(desired.vyMetersPerSecond)
+                .withRotationalRate(desired.omegaRadiansPerSecond)
+        );
     }
 
     /** 
      * moves to closest object
     */
-    public Command swerveToObject(PhotonTrackedTarget target) {
+    public Command swerveToObject() {
+        PhotonTrackedTarget target = detection.getClosestObject();
         double targetYaw = target.yaw;
         double rotationOutput = m_pathThetaController.calculate(targetYaw, 7.04); //not 100% sure if this is the correct PID controller
         
         //TODO: have backwardVelocity change depending on whether intake detects fuel or how close fuel is (based off of area) 
         double backwardVelocity = -0.5;
 
-        return Commands.run(
-            () -> requestVelocity(new ChassisSpeeds(backwardVelocity, 0.0, rotationOutput), false)
+        return Commands.sequence(
+            Commands.print("------------------TARGET YAW : " + target.yaw + " ------------------------"),
+            Commands.run(() -> requestVelocity(new ChassisSpeeds(backwardVelocity, 0.0, rotationOutput)))
         );
     }
 }

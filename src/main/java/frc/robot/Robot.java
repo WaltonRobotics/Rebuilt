@@ -65,8 +65,6 @@ public class Robot extends TimedRobot {
     private final Vision camera1 = new Vision(VisionK.kCamera1CamName, VisionK.kCamera1CamSimVisualName, VisionK.kCamera1CamRoboToCam, visionSim, VisionK.kCamera1SimProps);
     private final Vision camera2 = new Vision(VisionK.kCamera2CamName, VisionK.kCamera2CamSimVisualName, VisionK.kCamera2CamRoboToCam, visionSim, VisionK.kCamera2SimProps);
 
-    private final Detection detection = new Detection();
-
     // this should be updated with all of our cameras
     private final Vision[] cameras = {camera1, camera2};
 
@@ -110,7 +108,7 @@ public class Robot extends TimedRobot {
     private void configureBindings() {
 
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
-        driver.x().onTrue(drivetrain.swerveToObject(detection.getClosestObject()));
+        driver.x().onTrue(drivetrain.swerveToObject());
 
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
@@ -149,7 +147,8 @@ public class Robot extends TimedRobot {
     }
 
     public void configureSimBindings() {
-        driver.x().onTrue(drivetrain.swerveToObject(visionSim.addFuel(driver.a())));
+        driver.x().whileTrue(drivetrain.swerveToObject());
+        driver.b().whileTrue(visionSim.addFuel());
 
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
