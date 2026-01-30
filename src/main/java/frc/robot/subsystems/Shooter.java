@@ -58,7 +58,7 @@ public class Shooter extends SubsystemBase {
         return new Trigger(loop, () -> !m_exitBeamBreak.get());
     }
 
-    // simulation
+    // sim
     private final FlywheelSim m_FlywheelSim = new FlywheelSim(
         LinearSystemId.createFlywheelSystem(
             DCMotor.getKrakenX44(2), 
@@ -128,15 +128,13 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        var talonFXSim = m_leader.getSimState();
+        var m_leaderSim = m_leader.getSimState();
 
-        m_FlywheelSim.setInputVoltage(talonFXSim.getMotorVoltage());
+        m_FlywheelSim.setInputVoltage(m_leaderSim.getMotorVoltage());
         m_FlywheelSim.update(0.020);
 
-        double velocityRPS = m_FlywheelSim.getAngularVelocityRPM() / 60;
-
-        talonFXSim.setRotorVelocity(velocityRPS);
-        talonFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        m_leaderSim.setRotorVelocity(m_FlywheelSim.getAngularVelocityRPM() / 60);
+        m_leaderSim.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 
 }
