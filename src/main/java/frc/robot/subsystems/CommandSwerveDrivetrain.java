@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.Constants.RobotK.kLogTab;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -25,7 +24,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -39,9 +38,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Detection;
 import frc.robot.Robot;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
-import frc.robot.vision.VisionSim;
-import frc.util.WaltLogger;
-import frc.util.WaltLogger.DoubleLogger;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -74,14 +70,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.Position);
 
-    //FROM 5940
-    private ChassisSpeeds desired = new ChassisSpeeds();
-    private boolean fieldRelative = false;
-
     private final Detection detection = new Detection();
-    private final VisionSim visionSim = new VisionSim();
-
-    private DoubleLogger log_rotationalOutput = new WaltLogger.DoubleLogger(kLogTab, "rotational output");
 
     private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
@@ -392,47 +381,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     /**
-     * it requests a desired veolcity – method siphoned from 5940
-     * @param speeds
-     * @param fieldRelative NOTE: we might need to change this depending on what our robo is
+     * robot goes to detected target
+     * 
+     * if in simulation, create a pose3d for a fake target
      */
-    public void requestVelocity(ChassisSpeeds speeds) {
-        this.desired = speeds;
-
-        this.setControl(
-            new SwerveRequest.FieldCentric()
-                .withVelocityX(desired.vxMetersPerSecond)
-                .withVelocityY(desired.vyMetersPerSecond)
-                .withRotationalRate(desired.omegaRadiansPerSecond)
-        );
-    }
-
-    /** 
-     * moves to closest object
-    */
     public Command swerveToObject() {
-        boolean sawFuel = false;
+        
         PhotonTrackedTarget target = detection.getClosestObject();
-  
-        double targetYaw = target.yaw;
-        double rotationOutput = m_pathThetaController.calculate(targetYaw, 0); //not 100% sure if this is the correct PID controller
-        log_rotationalOutput.accept(rotationOutput);
+        Pose3d fakeTarget = new Pose3d(16,4,2, new Rotation3d(0,0,Math.PI));
 
-        //TODO: have backwardVelocity change depending on whether intake detects fuel or how close fuel is (based off of area) 
-        double backwardVelocity = -0.5;
-
-        return Commands.sequence(
-            Commands.print("------------------DETECTED FUEL : " + sawFuel + " ------------------------"),
-            Commands.run(() -> requestVelocity(new ChassisSpeeds(backwardVelocity, 0, rotationOutput)))
-        );
-    }
-
-    /**
-     * yet another iteration of swerveToObject (ಥ _ʖಥ)
-     */
-    public Command toTrackTarget() {
-        PhotonTrackedTarget target = detection.getClosestObject();
         Pose2d destination = faceFuelPose(getState().Pose, detection.targetToPose(target));
+        Pose2d fakeDestination = faceFuelPose(getState().Pose, fakeTarget);
 
         return Commands.run(
             () -> {
@@ -442,10 +401,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 double ySpeed = m_pathYController.calculate(curPose.getY(), destination.getY());
                 double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), destination.getRotation().getRadians());
 
+                if (Robot.isSimulation()) {
+                    xSpeed = m_pathXController.calculate(curPose.getX(), fakeDestination.getX());
+                    ySpeed = m_pathYController.calculate(curPose.getY(), fakeDestination.getY());
+                    thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), fakeDestination.getRotation().getRadians());
+                }
+
+
                 setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
             }
         );
-
     }
 
     public static Pose2d faceFuelPose(Pose2d robotPose, Pose3d fuelLocation) {
