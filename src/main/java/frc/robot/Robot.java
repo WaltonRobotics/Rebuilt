@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 
@@ -24,7 +25,7 @@ import edu.wpi.first.wpilibj2.command.button.*;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.*;
-
+import frc.robot.subsystems.TurretSim.PhysicsSim;
 import frc.robot.util.*;
 
 public class Robot extends TimedRobot {
@@ -125,4 +126,17 @@ public class Robot extends TimedRobot {
   @Override
   public void testExit() {}
 
+  @Override
+  public void simulationInit() {
+    turret.getMotor().getSimState().setMotorType(TalonFXSimState.MotorType.KrakenX44);
+    turret.getMotor().getSimState().setRawRotorPosition(0);
+    PhysicsSim.getInstance().addTalonFX(turret.getMotor(), 0.001);
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    turret.moveToPosRotations(driver.getLeftY());
+    PhysicsSim.getInstance().run();
+    turret.logData();
+  }
 }

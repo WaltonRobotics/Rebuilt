@@ -5,6 +5,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
@@ -13,17 +14,24 @@ import edu.wpi.first.wpilibj.simulation.XboxControllerSim;
 
 import static edu.wpi.first.units.Units.Rotations;
 
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.controls.*;
 
-import edu.wpi.first.hal.SimDevice;
+import edu.wpi.first.math.system.LinearSystem;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.*;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
+import frc.robot.subsystems.TurretSim.PhysicsSim;
 import frc.robot.util.WaltLogger;
+import frc.robot.util.WaltLogger.BooleanLogger;
 import frc.robot.util.WaltLogger.DoubleLogger;
+import frc.robot.util.WaltLogger.StringLogger;
 
 public class Turret extends SubsystemBase {
 
@@ -31,9 +39,15 @@ public class Turret extends SubsystemBase {
 
     private final MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(Angle.ofBaseUnits(0, Units.Degrees));
 
+    private final XboxController m_controller = new XboxController(0);
+
     private final DoubleLogger log_turretSimPositionMysteryUnits = WaltLogger.logDouble("Turret Logs", "Position in Mystery Units");
     private final DoubleLogger log_turretSimPositionRotations = WaltLogger.logDouble("Turret Logs", "Position in Rotations");
     private final DoubleLogger log_turretSimPositionDegrees = WaltLogger.logDouble("Turret Logs", "Position in Degrees");
+
+    private final BooleanLogger log_hasReachedPos = WaltLogger.logBoolean("Turret Logs", "Reached mmv");
+
+    private final DoubleLogger log_mmvPos = WaltLogger.logDouble("Turret Logs", "mmv position");
 
     // Motor Positions (for max/min assume exclusive) NOT rotations (mystery units)
     private final double kMaxPos = 135;
@@ -57,16 +71,20 @@ public class Turret extends SubsystemBase {
                 .withForwardSoftLimitThreshold(Rotations.of(0.78))
                 .withReverseSoftLimitEnable(false)
                 .withReverseSoftLimitThreshold(Rotations.of(0.02))
-            )
+            ).withMotionMagic(new MotionMagicConfigs())
         );
     }
 
+    public TalonFX getMotor() {
+        return m_motor;
+    }
+    
     public double getPosRotations() {
-        return m_motor.getPosition().getValue().in(Units.Rotations);
+        return m_motor.getPosition(true).getValue().in(Units.Rotations);
     }
 
     public double getPosDegrees() {
-        return m_motor.getPosition().getValue().in(Units.Degrees);
+        return m_motor.getPosition(true).getValue().in(Units.Degrees);
     }
 
     public double getPosMysteryUnits() { // placeholder name bc we dont know the units
@@ -80,18 +98,19 @@ public class Turret extends SubsystemBase {
     public void moveToPosMysteryUnits(double pos) {
         if (kMinPos < pos && kMaxPos > pos) {
             currentPos = pos;
-            m_motor.setControl(m_MMVReq.withPosition(Angle.ofBaseUnits(pos / kUnitsPerDegree, Units.Degrees)));
+            m_motor.setControl(m_MMVReq.withPosition(Angle.ofRelativeUnits(pos / kUnitsPerDegree, Units.Degrees)));
         }
     }
 
     /**
      * Rotates turret to specified position.
+     * 
      * @param rots Position in rotations
      */
     public void moveToPosRotations(double rots) {
         if (kMinPos / kUnitsPerRotation < rots && kMaxPos / kUnitsPerRotation > rots) {
             currentPos = rots * kUnitsPerRotation;
-            m_motor.setControl(m_MMVReq.withPosition(Angle.ofBaseUnits(rots / 360, Units.Degrees)));
+            m_motor.setControl(m_MMVReq.withPosition(Angle.ofRelativeUnits(rots, Units.Rotations)));
         }
     }
 
@@ -102,7 +121,7 @@ public class Turret extends SubsystemBase {
     public void moveToPosDegrees(double degs) {
         if (kMinPos / kUnitsPerDegree < degs && kMaxPos / kUnitsPerDegree > degs) {
             currentPos = degs * kUnitsPerDegree;
-            m_motor.setControl(m_MMVReq.withPosition(Angle.ofBaseUnits(degs, Units.Degrees)));
+            m_motor.setControl(m_MMVReq.withPosition(Angle.ofRelativeUnits(degs, Units.Degrees)));
         }
     }
 
@@ -128,25 +147,18 @@ public class Turret extends SubsystemBase {
         moveToPosMysteryUnits(kFrontFacingPos);
     }
 
-
     public void simulationInit() {
         var m_motorSim = m_motor.getSimState();
         m_motorSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
         m_motorSim.setRawRotorPosition(0);
     }
 
-    @Override
-    public void simulationPeriodic() {
-        var m_motorSim = m_motor.getSimState();
-        moveToFrontFacing();
-        m_motorSim.setRawRotorPosition(currentPos / kUnitsPerRotation);
-        // currentPos += 0.2;
-        logValue(getPosRotations());
-    }
+    public void logData() {
+        log_turretSimPositionMysteryUnits.accept(getPosMysteryUnits());
+        log_turretSimPositionRotations.accept(getPosRotations());
+        log_turretSimPositionDegrees.accept(getPosDegrees());
+        log_hasReachedPos.accept(m_motor.getMotionMagicAtTarget().getValue());
+        log_mmvPos.accept(m_MMVReq.Position * kUnitsPerRotation);
 
-    private void logValue(double val) {
-        log_turretSimPositionMysteryUnits.accept(val * kUnitsPerRotation);
-        log_turretSimPositionRotations.accept(val);
-        log_turretSimPositionDegrees.accept(val * 360);
     }
 }
