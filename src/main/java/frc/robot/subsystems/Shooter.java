@@ -6,10 +6,20 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.sim.ChassisReference;
+import com.ctre.phoenix6.sim.TalonFXSimState;
 
+import edu.wpi.first.math.system.LinearSystem;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.util.datalog.BooleanLogEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.event.EventLoop;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -48,6 +58,15 @@ public class Shooter extends SubsystemBase {
         return new Trigger(loop, () -> !m_exitBeamBreak.get());
     }
 
+    // simulation
+    private final FlywheelSim m_FlywheelSim = new FlywheelSim(
+        LinearSystemId.createFlywheelSystem(
+            DCMotor.getKrakenX44(2), 
+            0.000349, // J for 2 3" 0.53lb flywheels
+            1), // TODO: dummy value
+        DCMotor.getKrakenX44(2) // returns gearbox
+    );
+
     // loggers
     private final DoubleLogger log_shooterRPM = WaltLogger.logDouble(kLogTab, "shooterRPM");
     private final DoubleLogger log_hoodPosition = WaltLogger.logDouble(kLogTab, "hoodPosition");
@@ -63,6 +82,10 @@ public class Shooter extends SubsystemBase {
         m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
 
         m_follower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed)); //TODO: check if MotorAlignmentValue is Opposed or Aligned
+
+        var talonFXSim = m_leader.getSimState();
+        talonFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
+        talonFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX60);
     }
 
     /* COMMANDS */
@@ -94,7 +117,6 @@ public class Shooter extends SubsystemBase {
 
     // Turret Commands (Motionmagic Angle Control); Saarth will work on this via "2021-Gamechangers" code
 
-
     @Override
     public void periodic() {
         log_shooterRPM.accept(m_leader.getVelocity().getValueAsDouble());
@@ -102,6 +124,19 @@ public class Shooter extends SubsystemBase {
 
         log_exitBeamBreak.accept(trg_exitBeamBreak);
         log_spunUp.accept(m_spunUp);
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        var talonFXSim = m_leader.getSimState();
+
+        m_FlywheelSim.setInputVoltage(talonFXSim.getMotorVoltage());
+        m_FlywheelSim.update(0.020);
+
+        double velocityRPS = m_FlywheelSim.getAngularVelocityRPM() / 60;
+
+        talonFXSim.setRotorVelocity(velocityRPS);
+        talonFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 
 }

@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.VisionK;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Shooter;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
 import frc.util.WaltLogger;
@@ -57,6 +58,7 @@ public class Robot extends TimedRobot {
 
     private final CommandXboxController driver = new CommandXboxController(0);
 
+    /* SUBSYSTEMS */
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     private Command m_autonomousCommand;
     private final AutoFactory autoFactory = drivetrain.createAutoFactory();
@@ -67,6 +69,8 @@ public class Robot extends TimedRobot {
 
     // this should be updated with all of our cameras
     private final Vision[] cameras = {camera1, camera2};
+
+    private final Shooter shooter = new Shooter();
 
     /* log and replay timestamp and joystick data */
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -102,6 +106,7 @@ public class Robot extends TimedRobot {
     }
 
     private void configureBindings() {
+        /* SWERVE BINDS */
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
@@ -136,6 +141,12 @@ public class Robot extends TimedRobot {
         driver.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         drivetrain.registerTelemetry(logger::telemeterize);
+
+        /* CUSTOM BINDS */
+        driver.povUp().onTrue(shooter.score());
+        driver.povDown().onTrue(shooter.pass());
+        driver.povLeft().onTrue(shooter.setPositionCmd(10));
+        driver.povRight().onTrue(shooter.setPositionCmd(5));
     }
 
     public Command getAutonomousCommand() {
@@ -161,6 +172,9 @@ public class Robot extends TimedRobot {
                 drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());
             }
         }
+
+        // periodics
+        shooter.periodic();
     }
 
     @Override
@@ -217,5 +231,6 @@ public class Robot extends TimedRobot {
         Pose2d robotPose = robotState.Pose;
         visionSim.simulationPeriodic(robotPose);
         drivetrain.simulationPeriodic();
+        shooter.simulationPeriodic();
     }
 }

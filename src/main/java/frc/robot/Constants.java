@@ -2,7 +2,9 @@ package frc.robot;
 
 import org.photonvision.simulation.SimCameraProperties;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -21,19 +23,35 @@ public class Constants {
         public static final String kLogTab = "Shooter";
 
         // IDs
-        public static final int kLeaderCANID = 1; //TODO: Update CANID number
-        public static final int kFollowerCANID = 2; //TODO: Update CANID number
-        public static final int kHoodCANID = 3; //TODO: Update CANID number
-        public static final int kTurretCANID = 4; //TODO: Update CANID number
+        public static final int kLeaderCANID = 21; //TODO: Update CANID number
+        public static final int kFollowerCANID = 22; //TODO: Update CANID number
+        public static final int kHoodCANID = 23; //TODO: Update CANID number
+        public static final int kTurretCANID = 24; //TODO: Update CANID number
 
         public static final int kExitBeamBreakChannel = 0; //TODO: Update channel number
 
+        // Gear Ratios
+        public static final double kLeaderGearRatio = 5.0;  //TODO: Update gear ratio
+
         // Configs, TODO: Check what more configs would be necessary
+        private static final Slot0Configs kLeaderSlot0Configs = new Slot0Configs()   //Note to self (hrehaan): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
+            .withKS(0.25)  //TODO: I don't even know anymore
+            .withKV(0.12)
+            .withKA(0.01)
+            .withKP(0.16)
+            .withKI(0)
+            .withKD(0);
+        private static final CurrentLimitsConfigs kLeaderCurrentLimitConfigs = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(110)
+            .withSupplyCurrentLimit(40)
+            .withStatorCurrentLimitEnable(true);
         public static final TalonFXConfiguration kLeaderTalonFXConfiguration = new TalonFXConfiguration()
             .withMotorOutput(new MotorOutputConfigs()
                 .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
-                .withNeutralMode(NeutralModeValue.Brake));
-
+                .withNeutralMode(NeutralModeValue.Brake))
+            .withSlot0(kLeaderSlot0Configs)
+            .withCurrentLimits(kLeaderCurrentLimitConfigs);
+            
         public static final TalonFXConfiguration kFollowerTalonFXConfiguration = new TalonFXConfiguration()
             .withMotorOutput(new MotorOutputConfigs()
                 .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
