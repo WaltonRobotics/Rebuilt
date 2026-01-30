@@ -2,6 +2,10 @@ package frc.robot;
 
 import org.photonvision.simulation.SimCameraProperties;
 
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -59,5 +63,28 @@ public class Constants {
 
     public static class RobotK {
         public static final String kLogTab = "Superstructure";
+    }
+
+    public static class TransferK {
+        public static String kLogTab = "Transfer";
+
+        // IDs
+        public static final int kSpinnerCANID = 1;
+        public static final int kExhaustCANID = 2; //TODO: make ids accurate
+        
+        // Gains
+        public static final Slot0Configs kSpinnerSlot0Configs = new Slot0Configs() //TODO: make gains accurate
+            .withKS(0.1)
+            .withKV(0.12)
+            .withKP(0.11)
+            .withKI(0)
+            .withKD(0);
+
+        public static final Slot1Configs kExhaustSlot1Configs = new Slot1Configs()
+            .withKS(0.1)
+            .withKV(0.12)
+            .withKP(0.11)
+            .withKI(0)
+            .withKD(0);
     }
 }
