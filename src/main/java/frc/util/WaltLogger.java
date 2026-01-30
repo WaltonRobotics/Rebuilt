@@ -2,7 +2,6 @@ package frc.util;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -142,6 +141,30 @@ public class WaltLogger {
 
     public static Translation3dLogger logTranslation3d(String table, String name, PubSubOption... options) {
         return new Translation3dLogger(table, name, options);
+    }
+
+    public static final class Translation3dArrayLogger implements Consumer<Translation3d[]> {
+        public final StructArrayPublisher<Translation3d> ntPub;
+        public final StructArrayLogEntry<Translation3d> logEntry;
+
+        public Translation3dArrayLogger(String subTable, String name, PubSubOption... options) {
+            StructArrayTopic<Translation3d> topic = logTable.getSubTable(subTable).getStructArrayTopic(name, new Translation3dStruct());
+            ntPub = topic.publish(options);
+            logEntry = StructArrayLogEntry.create(DataLogManager.getLog(), "Robot/" + subTable + "/" + name, new Translation3dStruct());
+        }
+
+        @Override
+        public void accept(Translation3d[] values) {
+            if (shouldPublishNt()) {
+                ntPub.set(values);
+            } else {
+                logEntry.append(values);
+            }
+        }
+    }
+
+    public static Translation3dArrayLogger logTranslation3dArray(String table, String name, PubSubOption... options) {
+        return new Translation3dArrayLogger(table, name, options);
     }
 
     public static final class Translation2dLogger implements Consumer<Translation2d> {

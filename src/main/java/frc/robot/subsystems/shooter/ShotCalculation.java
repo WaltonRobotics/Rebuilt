@@ -114,8 +114,6 @@ public class ShotCalculation {
             return latestParameters;
         }
 
-
-
         /* CALCULATING ESTIMATED POSE */
         Pose2d estimatedPose = RobotState.getInstance().getEstimatedPose();
         ChassisSpeeds robotRelativeVelocity = RobotState.getInstance().getRobotVelocity();
