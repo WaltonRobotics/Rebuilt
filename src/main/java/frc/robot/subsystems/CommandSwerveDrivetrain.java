@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.Constants.RobotK.kLogTab;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -14,6 +15,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory;
@@ -21,6 +23,7 @@ import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
@@ -37,6 +40,8 @@ import frc.robot.Detection;
 import frc.robot.Robot;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.vision.VisionSim;
+import frc.util.WaltLogger;
+import frc.util.WaltLogger.DoubleLogger;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -75,6 +80,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private final Detection detection = new Detection();
     private final VisionSim visionSim = new VisionSim();
+
+    private DoubleLogger log_rotationalOutput = new WaltLogger.DoubleLogger(kLogTab, "rotational output");
+
+    private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
+        .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
 
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
@@ -401,16 +411,53 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * moves to closest object
     */
     public Command swerveToObject() {
+        boolean sawFuel = false;
         PhotonTrackedTarget target = detection.getClosestObject();
+  
         double targetYaw = target.yaw;
-        double rotationOutput = m_pathThetaController.calculate(targetYaw, 7.04); //not 100% sure if this is the correct PID controller
-        
+        double rotationOutput = m_pathThetaController.calculate(targetYaw, 0); //not 100% sure if this is the correct PID controller
+        log_rotationalOutput.accept(rotationOutput);
+
         //TODO: have backwardVelocity change depending on whether intake detects fuel or how close fuel is (based off of area) 
         double backwardVelocity = -0.5;
 
         return Commands.sequence(
-            Commands.print("------------------TARGET YAW : " + target.yaw + " ------------------------"),
-            Commands.run(() -> requestVelocity(new ChassisSpeeds(backwardVelocity, 0.0, rotationOutput)))
+            Commands.print("------------------DETECTED FUEL : " + sawFuel + " ------------------------"),
+            Commands.run(() -> requestVelocity(new ChassisSpeeds(backwardVelocity, 0, rotationOutput)))
+        );
+    }
+
+    /**
+     * yet another iteration of swerveToObject (ಥ _ʖಥ)
+     */
+    public Command toTrackTarget() {
+        PhotonTrackedTarget target = detection.getClosestObject();
+        Pose2d destination = faceFuelPose(getState().Pose, detection.targetToPose(target));
+
+        return Commands.run(
+            () -> {
+                Pose2d curPose = getState().Pose;
+
+                double xSpeed = m_pathXController.calculate(curPose.getX(), destination.getX());
+                double ySpeed = m_pathYController.calculate(curPose.getY(), destination.getY());
+                double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), destination.getRotation().getRadians());
+
+                setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
+            }
+        );
+
+    }
+
+    public static Pose2d faceFuelPose(Pose2d robotPose, Pose3d fuelLocation) {
+        double dx = fuelLocation.getX() - robotPose.getX();
+        double dy = fuelLocation.getY() - robotPose.getY();
+
+        Rotation2d desiredRotation = new Rotation2d(Math.atan2(dy, dx)).plus(Rotation2d.fromDegrees(180));
+
+        return new Pose2d(
+            fuelLocation.getX(),
+            fuelLocation.getY(),
+            desiredRotation
         );
     }
 }
