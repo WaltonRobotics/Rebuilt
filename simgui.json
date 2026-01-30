@@ -1,6 +1,11 @@
 {
   "HALProvider": {
     "Other Devices": {
+      "Talon FX (v6)[11]": {
+        "header": {
+          "open": true
+        }
+      },
       "Talon FX (v6)[11]/Rotor Sensor": {
         "header": {
           "open": true
@@ -16,6 +21,12 @@
   "NetworkTables": {
     "transitory": {
       "Robot": {
+        "MMV logs": {
+          "open": true
+        },
+        "Sim Logs": {
+          "open": true
+        },
         "Turret Logs": {
           "open": true
         },
