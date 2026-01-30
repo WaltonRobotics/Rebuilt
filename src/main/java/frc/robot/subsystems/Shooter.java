@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -59,7 +60,7 @@ public class Shooter extends SubsystemBase {
     }
 
     // sim
-    private final FlywheelSim m_FlywheelSim = new FlywheelSim(
+    private final FlywheelSim m_flywheelSim = new FlywheelSim(
         LinearSystemId.createFlywheelSystem(
             DCMotor.getKrakenX44(2), 
             0.000349, // J for 2 3" 0.53lb flywheels
@@ -130,10 +131,10 @@ public class Shooter extends SubsystemBase {
     public void simulationPeriodic() {
         var m_leaderSim = m_leader.getSimState();
 
-        m_FlywheelSim.setInputVoltage(m_leaderSim.getMotorVoltage());
-        m_FlywheelSim.update(0.020);
+        m_flywheelSim.setInputVoltage(m_leaderSim.getMotorVoltage());
+        m_flywheelSim.update(0.020);
 
-        m_leaderSim.setRotorVelocity(m_FlywheelSim.getAngularVelocityRPM() / 60);
+        m_leaderSim.setRotorVelocity(m_flywheelSim.getAngularVelocityRPM() / 60);
         m_leaderSim.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 
