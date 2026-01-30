@@ -1,7 +1,5 @@
 package frc.robot.vision;
 
-import edu.wpi.first.apriltag.AprilTag;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -13,9 +11,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import frc.robot.Robot;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,9 +43,6 @@ public class Vision {
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.5, 1.5, 6.24);
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 6.24);
 
-    //Ignore trench April Tags
-    public final HashSet<Integer> excludedAprilTagsID = new HashSet<> (Arrays.asList(1, 6, 7, 12, 17, 22, 23, 28));
-
     private final StructPublisher<Pose2d> log_camPose;
     private final DoubleArrayPublisher log_stdDevs;
 
@@ -61,13 +53,8 @@ public class Vision {
         m_simVisualName = simVisualName;
         m_visionSim = visionSim;
 
-        // Filter out excluded April Tags
-        List<AprilTag> tags = new ArrayList<> (kTagLayout.getTags());
-        tags.removeIf(tag -> excludedAprilTagsID.contains(tag.ID));
-        AprilTagFieldLayout filteredTagLayout = new AprilTagFieldLayout(tags, kTagLayout.getFieldLength(), kTagLayout.getFieldWidth());
-
         photonEstimator =
-                new PhotonPoseEstimator(filteredTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, roboToCam);
+                new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, roboToCam);
         photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
         log_camPose = NetworkTableInstance.getDefault()
