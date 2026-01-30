@@ -2,15 +2,15 @@ package frc.robot.subsystems;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.function.DoubleSupplier;
+// import java.util.function.DoubleSupplier;
 
-import com.ctre.phoenix6.controls.Follower;
+// import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
+// import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 
-import edu.wpi.first.networktables.DoubleSubscriber;
+// import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,7 +24,7 @@ public class Intake extends SubsystemBase {
     private final TalonFX m_intakeRollerMotor = new TalonFX(1);
     
     private MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true).withSlot(0);
-    private VoltageOut m_rollerVoltOut = new VoltageOut(/*put value here */);
+    private VoltageOut m_rollerVoltOut = new VoltageOut(12);
 
     private VoltageOut zeroingVoltageCtrlReq = new VoltageOut(-0.75); // TODO change this to whatever necessary
 
@@ -44,7 +44,7 @@ public class Intake extends SubsystemBase {
     }
 
     public Command spinIntakeRollers(){
-        return Commands.runOnce(() -> m_intakeRollerMotor.setVoltage(/* put voltage here */));
+        return Commands.runOnce(() -> m_intakeRollerMotor.setVoltage(12));
     }
 
     public Command intakeToAngle(double degs){
