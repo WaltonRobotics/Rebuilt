@@ -99,8 +99,6 @@ public class Detection {
         Pose3d targetPose =
             cameraPointingAtTarget.plus(new Transform3d(1.0, 0.0, 0.0, new Rotation3d()));
 
-
-
         return targetPose;
     }
 }

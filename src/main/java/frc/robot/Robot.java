@@ -147,9 +147,7 @@ public class Robot extends TimedRobot {
     }
 
     public void configureSimBindings() {
-        //driver.x().whileTrue(drivetrain.toTrackTarget());
         driver.x().whileTrue(drivetrain.swerveToObject());
-        driver.b().onTrue(visionSim.addFuel());
 
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
