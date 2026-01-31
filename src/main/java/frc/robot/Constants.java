@@ -45,12 +45,13 @@ public class Constants {
             .withStatorCurrentLimit(110)
             .withSupplyCurrentLimit(40)
             .withStatorCurrentLimitEnable(true);
+        public static final MotorOutputConfigs kLeaderOutputConfigs = new MotorOutputConfigs()
+            .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
+            .withNeutralMode(NeutralModeValue.Brake);
         public static final TalonFXConfiguration kLeaderTalonFXConfiguration = new TalonFXConfiguration()
-            .withMotorOutput(new MotorOutputConfigs()
-                .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
-                .withNeutralMode(NeutralModeValue.Brake))
             .withSlot0(kLeaderSlot0Configs)
-            .withCurrentLimits(kLeaderCurrentLimitConfigs);
+            .withCurrentLimits(kLeaderCurrentLimitConfigs)
+            .withMotorOutput(kLeaderOutputConfigs);
         
         // TODO: mimics the leader, so it doesn't need its own configs - right?
         public static final TalonFXConfiguration kFollowerTalonFXConfiguration = new TalonFXConfiguration()
@@ -60,11 +61,26 @@ public class Constants {
 
         // TODO: I assume we would want the Hood and Turret to move at a constant high velocity
         //       so we should probably configure that here
+        private static final Slot0Configs kHoodSlot0Configs = new Slot0Configs()
+            .withKS(0.25)
+            .withKV(0.06)
+            .withKA(0.01)
+            .withKP(0.2)
+            .withKI(0)
+            .withKD(0);
+        private static final CurrentLimitsConfigs kHoodCurrentLimitConfigs = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(110)
+            .withSupplyCurrentLimit(40)
+            .withStatorCurrentLimitEnable(true);
+        public static final MotorOutputConfigs kHoodOutputConfigs = new MotorOutputConfigs()
+            .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
+            .withNeutralMode(NeutralModeValue.Brake);
         public static final TalonFXConfiguration kHoodTalonFXConfiguration = new TalonFXConfiguration()
-            .withMotorOutput(new MotorOutputConfigs()
-                .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
-                .withNeutralMode(NeutralModeValue.Brake));
+            .withSlot0(kHoodSlot0Configs)
+            .withCurrentLimits(kHoodCurrentLimitConfigs)
+            .withMotorOutput(kHoodOutputConfigs);
         
+        // TODO: add rest of configs
         public static final TalonFXConfiguration kTurretTalonFXConfiguration = new TalonFXConfiguration()
             .withMotorOutput(new MotorOutputConfigs()
                 .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW

@@ -43,14 +43,20 @@ public class Shooter extends SubsystemBase {
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID); //X44
 
-    // speeds
+    // speeds (should these be moved to Constants.java? if we move it to constants, then we only need one vel command right?)
     private final double m_passSpeed = 7.0; //TODO: Update Speeds
     private final double m_scoreSpeed = 5.5;
+
+    // pos
+    private final double m_scorePosRads = 10;
+    private final double m_passPosRads = 5;
+    private final double m_scorePosRots = m_scorePosRads / (2*Math.PI);
+    private final double m_passPosRots = m_passPosRads / (2*Math.PI);
 
     // logic booleans
     private boolean m_spunUp = false;
 
-    // beam breaks (if needed)
+    // beam breaks (if we have one on the shooter)
     public DigitalInput m_exitBeamBreak = new DigitalInput(kExitBeamBreakChannel);
 
     public final Trigger trg_exitBeamBreak = new Trigger(() -> !m_exitBeamBreak.get()); //true when beam is broken
@@ -59,13 +65,28 @@ public class Shooter extends SubsystemBase {
         return new Trigger(loop, () -> !m_exitBeamBreak.get());
     }
 
-    // sim
+    // sim (TODO: Update dummy numbers)
     private final FlywheelSim m_flywheelSim = new FlywheelSim(
         LinearSystemId.createFlywheelSystem(
-            DCMotor.getKrakenX44(2), 
+            DCMotor.getKrakenX60(2), 
             0.000349, // J for 2 3" 0.53lb flywheels
             1), // TODO: dummy value
-        DCMotor.getKrakenX44(2) // returns gearbox
+        DCMotor.getKrakenX60(2) // returns gearbox
+    );
+
+    private final SingleJointedArmSim m_hoodSim = new SingleJointedArmSim(
+        LinearSystemId.createSingleJointedArmSystem(
+            DCMotor.getKrakenX44(1),
+            0.0005,  // Dummy J Value
+            1.5 // dummy gearing value
+        ),
+        DCMotor.getKrakenX44(1),
+        1.5,   //dummy gearing value
+        0.5,
+        0,
+        20,
+        false,
+        5
     );
 
     // loggers
@@ -84,9 +105,18 @@ public class Shooter extends SubsystemBase {
 
         m_follower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed)); //TODO: check if MotorAlignmentValue is Opposed or Aligned
 
-        var talonFXSim = m_leader.getSimState();
-        talonFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
-        talonFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX60);
+        initSim();
+    }
+
+    //TODO: update orientation values
+    private void initSim() {
+        var m_leaderSim = m_leader.getSimState();
+        m_leaderSim.Orientation = ChassisReference.CounterClockwise_Positive;
+        m_leaderSim.setMotorType(TalonFXSimState.MotorType.KrakenX60);
+
+        var m_hoodSim = m_hood.getSimState();
+        m_hoodSim.Orientation = ChassisReference.CounterClockwise_Positive;
+        m_hoodSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
     }
 
     /* COMMANDS */
@@ -116,6 +146,14 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> setPosition(desiredPosition));
     }
 
+    public Command setScorePos() {
+        return setPositionCmd(m_scorePosRots);
+    }
+
+    public Command setPassPos() {
+        return setPositionCmd(m_passPosRots);
+    }
+
     // Turret Commands (Motionmagic Angle Control); Saarth will work on this via "2021-Gamechangers" code
 
     @Override
@@ -129,13 +167,23 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        var m_leaderSim = m_leader.getSimState();
+        // Shooter
+        var m_leaderFXSim = m_leader.getSimState();
 
-        m_flywheelSim.setInputVoltage(m_leaderSim.getMotorVoltage());
+        m_flywheelSim.setInputVoltage(m_leaderFXSim.getMotorVoltage());
         m_flywheelSim.update(0.020);
 
-        m_leaderSim.setRotorVelocity(m_flywheelSim.getAngularVelocityRPM() / 60);
-        m_leaderSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        m_leaderFXSim.setRotorVelocity(m_flywheelSim.getAngularVelocityRPM() / 60);
+        m_leaderFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+
+        // Hood
+        var m_hoodFXSim = m_hood.getSimState();
+
+        m_hoodSim.setInputVoltage(m_hoodFXSim.getMotorVoltage());
+        m_hoodSim.update(0.020);
+
+        m_hoodFXSim.setRawRotorPosition(m_hoodSim.getAngleRads() / (2*Math.PI));
+        m_hoodFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 
 }
