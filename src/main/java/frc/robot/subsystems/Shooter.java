@@ -126,8 +126,12 @@ public class Shooter extends SubsystemBase {
 
     /* COMMANDS */
     // Shooter Commands (Veloity Control)
-    public Command setVelocityCmd(ShooterVelocity velocity) {
+    public Command setShooterVelocityCmd(ShooterVelocity velocity) {
         return runOnce(() -> m_leader.setControl(m_velocityRequest.withVelocity(velocity.RPS)));
+    }
+
+    public Command setShooterVelocityVariableCmd(double rps) {
+        return runOnce(() -> m_leader.setControl(m_velocityRequest.withVelocity(rps)));
     }
 
     // Hood Commands (Basic Position Control)
@@ -138,6 +142,10 @@ public class Shooter extends SubsystemBase {
     // Turret Commands (Motionmagic Angle Control)
     public Command setTurretPositionCmd(TurretPosition position) {
         return runOnce(() -> m_turret.setControl(m_MMVRequest.withPosition(position.rots)));
+    }
+
+    public Command setTurretPositionVariableCmd(double rots) {
+        return runOnce(() -> m_turret.setControl(m_MMVRequest.withPosition(rots)));
     }
 
     /* PERIODICS */

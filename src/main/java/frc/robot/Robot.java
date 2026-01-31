@@ -146,12 +146,14 @@ public class Robot extends TimedRobot {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
-        driver.povUp().onTrue(shooter.setVelocityCmd(ShooterVelocity.SCORE));
-        driver.povDown().onTrue(shooter.setVelocityCmd(ShooterVelocity.PASS));
+        driver.povUp().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.SCORE));
+        driver.povDown().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.PASS));
         driver.povLeft().onTrue(shooter.setHoodPositionCmd(HoodPosition.SCORE));
         driver.povRight().onTrue(shooter.setHoodPositionCmd(HoodPosition.PASS));
         driver.leftBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.SCORE));
         driver.rightBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.PASS));
+        driver.leftTrigger().onTrue(shooter.setTurretPositionCmd(TurretPosition.MIN));
+        driver.rightTrigger().onTrue(shooter.setTurretPositionCmd(TurretPosition.MAX));
     }
 
     public Command getAutonomousCommand() {
