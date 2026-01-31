@@ -57,10 +57,7 @@ public class Constants {
 
         public static final int kExitBeamBreakChannel = 0; //TODO: Update channel number
 
-        // Gear Ratios
-        public static final double kLeaderGearRatio = 5.0;  //TODO: Update gear ratio
-
-        // Configs, TODO: Check what more configs would be necessary
+        // Configs, TODO: Check what more configs would be necessary/Optimize current ones
         private static final Slot0Configs kLeaderSlot0Configs = new Slot0Configs()   //Note to self (hrehaan): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
             .withKS(0.25)  //TODO: I don't even know anymore
             .withKV(0.06)
@@ -73,7 +70,7 @@ public class Constants {
             .withSupplyCurrentLimit(40)
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kLeaderOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
+            .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
             .withNeutralMode(NeutralModeValue.Brake);
         public static final TalonFXConfiguration kLeaderTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kLeaderSlot0Configs)
