@@ -42,6 +42,7 @@ public class Shooter extends SubsystemBase {
     private final PositionVoltage m_positionRequest = new PositionVoltage(0);
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID); //X44
+    private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0);
 
     // logic booleans
     private boolean m_spunUp = false;
@@ -79,9 +80,19 @@ public class Shooter extends SubsystemBase {
         HoodPosition.INIT.rots * (2*Math.PI)
     );
 
+    private final DCMotorSim m_turretSim = new DCMotorSim(
+        LinearSystemId.createDCMotorSystem(
+            DCMotor.getKrakenX44(1),
+            0.0005,  // Dummy J value
+            1.5 // dummy gearing value
+        ),
+        DCMotor.getKrakenX44(1) // returns gearbox
+    );
+
     // loggers
     private final DoubleLogger log_shooterRPS = WaltLogger.logDouble(kLogTab, "shooterRPS");
     private final DoubleLogger log_hoodPositionRots = WaltLogger.logDouble(kLogTab, "hoodPositionRots");
+    private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble(kLogTab, "turretPositionRots");
 
     private final BooleanLogger log_exitBeamBreak = WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
     private final BooleanLogger log_spunUp = WaltLogger.logBoolean(kLogTab, "spunUp");
@@ -100,13 +111,17 @@ public class Shooter extends SubsystemBase {
 
     //TODO: update orientation values
     private void initSim() {
-        var m_leaderSim = m_leader.getSimState();
-        m_leaderSim.Orientation = ChassisReference.CounterClockwise_Positive;
-        m_leaderSim.setMotorType(TalonFXSimState.MotorType.KrakenX60);
+        var m_leaderFXSim = m_leader.getSimState();
+        m_leaderFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
+        m_leaderFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX60);
 
-        var m_hoodSim = m_hood.getSimState();
-        m_hoodSim.Orientation = ChassisReference.CounterClockwise_Positive;
-        m_hoodSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
+        var m_hoodFXSim = m_hood.getSimState();
+        m_hoodFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
+        m_hoodFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
+
+        var m_turretFXSim = m_turret.getSimState();
+        m_turretFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
+        m_turretFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
     }
 
     /* COMMANDS */
@@ -116,16 +131,20 @@ public class Shooter extends SubsystemBase {
     }
 
     // Hood Commands (Basic Position Control)
-    public Command setPositionCmd(HoodPosition position) {
+    public Command setHoodPositionCmd(HoodPosition position) {
         return runOnce(() -> m_hood.setControl(m_positionRequest.withPosition(position.rots)));
     }
 
-    // Turret Commands (Motionmagic Angle Control); Saarth will work on this via "2021-Gamechangers" code
+    // Turret Commands (Motionmagic Angle Control)
+    public Command setTurretPositionCmd(TurretPosition position) {
+        return runOnce(() -> m_turret.setControl(m_MMVRequest.withPosition(position.rots)));
+    }
 
     @Override
     public void periodic() {
         log_shooterRPS.accept(m_leader.getVelocity().getValueAsDouble());
         log_hoodPositionRots.accept(m_hood.getPosition().getValueAsDouble());
+        log_turretPositionRots.accept(m_turret.getPosition().getValueAsDouble());
 
         log_exitBeamBreak.accept(trg_exitBeamBreak);
         log_spunUp.accept(m_spunUp);
@@ -150,6 +169,14 @@ public class Shooter extends SubsystemBase {
 
         m_hoodFXSim.setRawRotorPosition(m_hoodSim.getAngleRads() / (2*Math.PI));
         m_hoodFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-    }
 
+        // Turret
+        var m_turretFXSim = m_turret.getSimState();
+
+        m_turretSim.setInputVoltage(m_turretFXSim.getMotorVoltage());
+        m_turretSim.update(0.020);
+
+        m_turretFXSim.setRawRotorPosition(m_turretSim.getAngularPositionRotations());
+        m_turretFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+    }
 }

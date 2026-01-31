@@ -3,8 +3,10 @@ package frc.robot;
 import org.photonvision.simulation.SimCameraProperties;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -49,7 +51,20 @@ public class Constants {
             }
         }
 
-        // IDs
+        public enum TurretPosition {
+            MIN(0),
+            HOME(10),
+            SCORE(20),
+            PASS(30),
+            MAX(40);
+
+            public double rots;
+            private TurretPosition(double rots) {
+                this.rots = rots;
+            }
+        }
+
+        /* IDS */
         public static final int kLeaderCANID = 21; //TODO: Update CANID number
         public static final int kFollowerCANID = 22; //TODO: Update CANID number
         public static final int kHoodCANID = 23; //TODO: Update CANID number
@@ -57,7 +72,8 @@ public class Constants {
 
         public static final int kExitBeamBreakChannel = 0; //TODO: Update channel number
 
-        // Configs, TODO: Check what more configs would be necessary/Optimize current ones
+        /* CONFIGS */
+        // TODO: Check what more configs would be necessary/Optimize current ones
         private static final Slot0Configs kLeaderSlot0Configs = new Slot0Configs()   //Note to self (hrehaan): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
             .withKS(0.25)  //TODO: I don't even know anymore
             .withKV(0.06)
@@ -104,11 +120,37 @@ public class Constants {
             .withCurrentLimits(kHoodCurrentLimitConfigs)
             .withMotorOutput(kHoodOutputConfigs);
         
-        // TODO: add rest of configs
+        private static final Slot0Configs kTurretSlot0Configs = new Slot0Configs()
+            .withKS(0.25)
+            .withKV(0.06)
+            .withKA(0.01)
+            .withKP(0.2)
+            .withKI(0)
+            .withKD(0);
+        private static final CurrentLimitsConfigs kTurretCurrentLimitConfigs = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(110)
+            .withSupplyCurrentLimit(40)
+            .withStatorCurrentLimitEnable(true);
+        private static final MotorOutputConfigs kTurretOutputConfigs = new MotorOutputConfigs()
+            .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
+            .withNeutralMode(NeutralModeValue.Brake)
+            .withPeakForwardDutyCycle(0.1)
+            .withPeakReverseDutyCycle(0.1);
+        private static final MotionMagicConfigs kTurretMotionMagicConfigs = new MotionMagicConfigs()
+            .withMotionMagicCruiseVelocity(20)
+            .withMotionMagicAcceleration(100)
+            .withMotionMagicJerk(0);
+        private static final SoftwareLimitSwitchConfigs kTurretSoftwareLimitSwitchConfigs = new SoftwareLimitSwitchConfigs()
+            .withForwardSoftLimitEnable(false)
+            .withForwardSoftLimitThreshold(0.78)
+            .withReverseSoftLimitEnable(false)
+            .withReverseSoftLimitThreshold(0.02);
         public static final TalonFXConfiguration kTurretTalonFXConfiguration = new TalonFXConfiguration()
-            .withMotorOutput(new MotorOutputConfigs()
-                .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
-                .withNeutralMode(NeutralModeValue.Brake));
+            .withSlot0(kTurretSlot0Configs)
+            .withCurrentLimits(kTurretCurrentLimitConfigs)
+            .withMotorOutput(kTurretOutputConfigs)
+            .withMotionMagic(kTurretMotionMagicConfigs)
+            .withSoftwareLimitSwitch(kTurretSoftwareLimitSwitchConfigs);
     }
 
     public static class VisionK {

@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.VisionK;
 import frc.robot.Constants.ShooterK.HoodPosition;
 import frc.robot.Constants.ShooterK.ShooterSpeed;
+import frc.robot.Constants.ShooterK.TurretPosition;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Shooter;
@@ -147,8 +148,10 @@ public class Robot extends TimedRobot {
         /* CUSTOM BINDS */
         driver.povUp().onTrue(shooter.setVelocityCmd(ShooterSpeed.SCORE));
         driver.povDown().onTrue(shooter.setVelocityCmd(ShooterSpeed.PASS));
-        driver.povLeft().onTrue(shooter.setPositionCmd(HoodPosition.SCORE));
-        driver.povRight().onTrue(shooter.setPositionCmd(HoodPosition.PASS));
+        driver.povLeft().onTrue(shooter.setHoodPositionCmd(HoodPosition.SCORE));
+        driver.povRight().onTrue(shooter.setHoodPositionCmd(HoodPosition.PASS));
+        driver.leftBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.SCORE));
+        driver.rightBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.PASS));
     }
 
     public Command getAutonomousCommand() {
