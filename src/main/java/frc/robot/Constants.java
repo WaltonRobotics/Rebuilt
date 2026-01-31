@@ -20,12 +20,13 @@ import edu.wpi.first.math.util.Units;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
+    public static final double kSimPeriodicUpdateInterval = 0.020;
 
     public static class ShooterK {
         public static final String kLogTab = "Shooter";
 
         /* CONSTANTS */
-        public enum ShooterSpeed {
+        public enum ShooterVelocity {
             // in RPS
             ZERO(0),
             SCORE(5.5),
@@ -33,7 +34,7 @@ public class Constants {
             MAX(20);
 
             public double RPS;
-            private ShooterSpeed(double RPS) {
+            private ShooterVelocity(double RPS) {
                 this.RPS = RPS;
             }
         }
@@ -100,7 +101,7 @@ public class Constants {
                 .withNeutralMode(NeutralModeValue.Brake));
 
         // TODO: I assume we would want the Hood and Turret to move at a constant high velocity
-        //       so we should probably configure that here
+        //       so we should probably configure that here?
         private static final Slot0Configs kHoodSlot0Configs = new Slot0Configs()
             .withKS(0.25)
             .withKV(0.06)
