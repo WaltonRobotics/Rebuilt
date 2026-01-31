@@ -24,9 +24,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import static frc.robot.Constants.ShooterK.*;
 
 import frc.robot.Constants;
-import frc.robot.Constants.ShooterK.HoodPosition;
-import frc.robot.Constants.ShooterK.ShooterVelocity;
-import frc.robot.Constants.ShooterK.TurretPosition;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -192,4 +189,45 @@ public class Shooter extends SubsystemBase {
         m_turretFXSim.setRawRotorPosition(m_turretSim.getAngularPositionRotations());
         m_turretFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
+
+    /* CONSTANTS */
+    public enum ShooterVelocity {
+        // in RPS
+        ZERO(0),
+        SCORE(5.5),
+        PASS(7),
+        MAX(20);
+
+        public double RPS;
+        private ShooterVelocity(double RPS) {
+            this.RPS = RPS;
+        }
+    }
+
+    public enum HoodPosition {
+        MIN(0),
+        INIT(5),
+        SCORE(10),
+        PASS(20),
+        MAX(40);
+
+        public double rots;
+        private HoodPosition(double rots) {
+            this.rots = rots;
+        }
+    }
+
+    public enum TurretPosition {
+        MIN(0),
+        HOME(10),
+        SCORE(20),
+        PASS(30),
+        MAX(40);
+
+        public double rots;
+        private TurretPosition(double rots) {
+            this.rots = rots;
+        }
+    }
+
 }
