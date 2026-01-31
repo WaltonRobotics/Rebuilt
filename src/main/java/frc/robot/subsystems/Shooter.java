@@ -111,21 +111,13 @@ public class Shooter extends SubsystemBase {
 
     /* COMMANDS */
     // Shooter Commands (Veloity Control)
-    public void setVelocity(double desiredVelocity) {
-        m_leader.setControl(m_velocityRequest.withVelocity(desiredVelocity));
-    }
-
     public Command setVelocityCmd(ShooterSpeed speed) {
-        return runOnce(() -> setVelocity(speed.RPS));
+        return runOnce(() -> m_leader.setControl(m_velocityRequest.withVelocity(speed.RPS)));
     }
 
     // Hood Commands (Basic Position Control)
-    public void setPosition(double desiredPosition) {
-        m_hood.setControl(m_positionRequest.withPosition(desiredPosition));
-    }
-
     public Command setPositionCmd(HoodPosition position) {
-        return runOnce(() -> setPosition(position.rots));
+        return runOnce(() -> m_hood.setControl(m_positionRequest.withPosition(position.rots)));
     }
 
     // Turret Commands (Motionmagic Angle Control); Saarth will work on this via "2021-Gamechangers" code
