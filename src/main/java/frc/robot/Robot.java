@@ -145,8 +145,8 @@ public class Robot extends TimedRobot {
         /* CUSTOM BINDS */
         driver.povUp().onTrue(shooter.score());
         driver.povDown().onTrue(shooter.pass());
-        driver.povLeft().onTrue(shooter.setPositionCmd(10));
-        driver.povRight().onTrue(shooter.setPositionCmd(5));
+        driver.povLeft().onTrue(shooter.setScorePos());
+        driver.povRight().onTrue(shooter.setPassPos());
     }
 
     public Command getAutonomousCommand() {
