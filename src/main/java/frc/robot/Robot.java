@@ -28,7 +28,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.VisionK;
 import frc.robot.Constants.ShooterK.HoodPosition;
-import frc.robot.Constants.ShooterK.ShooterSpeed;
+import frc.robot.Constants.ShooterK.ShooterVelocity;
 import frc.robot.Constants.ShooterK.TurretPosition;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -146,8 +146,8 @@ public class Robot extends TimedRobot {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
-        driver.povUp().onTrue(shooter.setVelocityCmd(ShooterSpeed.SCORE));
-        driver.povDown().onTrue(shooter.setVelocityCmd(ShooterSpeed.PASS));
+        driver.povUp().onTrue(shooter.setVelocityCmd(ShooterVelocity.SCORE));
+        driver.povDown().onTrue(shooter.setVelocityCmd(ShooterVelocity.PASS));
         driver.povLeft().onTrue(shooter.setHoodPositionCmd(HoodPosition.SCORE));
         driver.povRight().onTrue(shooter.setHoodPositionCmd(HoodPosition.PASS));
         driver.leftBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.SCORE));
