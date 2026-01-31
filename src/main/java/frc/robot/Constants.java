@@ -22,6 +22,33 @@ public class Constants {
     public static class ShooterK {
         public static final String kLogTab = "Shooter";
 
+        /* CONSTANTS */
+        public enum ShooterSpeed {
+            // in RPS
+            ZERO(0),
+            SCORE(5.5),
+            PASS(7),
+            MAX(20);
+
+            public double RPS;
+            private ShooterSpeed(double RPS) {
+                this.RPS = RPS;
+            }
+        }
+
+        public enum HoodPosition {
+            MIN(0),
+            INIT(5),
+            SCORE(10),
+            PASS(20),
+            MAX(40);
+
+            public double rots;
+            private HoodPosition(double rots) {
+                this.rots = rots;
+            }
+        }
+
         // IDs
         public static final int kLeaderCANID = 21; //TODO: Update CANID number
         public static final int kFollowerCANID = 22; //TODO: Update CANID number
@@ -45,7 +72,7 @@ public class Constants {
             .withStatorCurrentLimit(110)
             .withSupplyCurrentLimit(40)
             .withStatorCurrentLimitEnable(true);
-        public static final MotorOutputConfigs kLeaderOutputConfigs = new MotorOutputConfigs()
+        private static final MotorOutputConfigs kLeaderOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
             .withNeutralMode(NeutralModeValue.Brake);
         public static final TalonFXConfiguration kLeaderTalonFXConfiguration = new TalonFXConfiguration()
@@ -72,7 +99,7 @@ public class Constants {
             .withStatorCurrentLimit(110)
             .withSupplyCurrentLimit(40)
             .withStatorCurrentLimitEnable(true);
-        public static final MotorOutputConfigs kHoodOutputConfigs = new MotorOutputConfigs()
+        private static final MotorOutputConfigs kHoodOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
             .withNeutralMode(NeutralModeValue.Brake);
         public static final TalonFXConfiguration kHoodTalonFXConfiguration = new TalonFXConfiguration()

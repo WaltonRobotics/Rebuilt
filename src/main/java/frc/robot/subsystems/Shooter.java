@@ -43,16 +43,6 @@ public class Shooter extends SubsystemBase {
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID); //X44
 
-    // speeds (should these be moved to Constants.java? if we move it to constants, then we only need one vel command right?)
-    private final double m_passSpeed = 7.0; //TODO: Update Speeds
-    private final double m_scoreSpeed = 5.5;
-
-    // pos
-    private final double m_scorePosRads = 10;
-    private final double m_passPosRads = 5;
-    private final double m_scorePosRots = m_scorePosRads / (2*Math.PI);
-    private final double m_passPosRots = m_passPosRads / (2*Math.PI);
-
     // logic booleans
     private boolean m_spunUp = false;
 
@@ -83,15 +73,15 @@ public class Shooter extends SubsystemBase {
         DCMotor.getKrakenX44(1),
         1.5,   //dummy gearing value
         0.5,
-        0,
-        20,
+        HoodPosition.MIN.rots * (2*Math.PI),
+        HoodPosition.MAX.rots * (2*Math.PI),
         false,
-        5
+        HoodPosition.INIT.rots * (2*Math.PI)
     );
 
     // loggers
-    private final DoubleLogger log_shooterRPM = WaltLogger.logDouble(kLogTab, "shooterRPM");
-    private final DoubleLogger log_hoodPosition = WaltLogger.logDouble(kLogTab, "hoodPosition");
+    private final DoubleLogger log_shooterRPS = WaltLogger.logDouble(kLogTab, "shooterRPS");
+    private final DoubleLogger log_hoodPositionRots = WaltLogger.logDouble(kLogTab, "hoodPositionRots");
 
     private final BooleanLogger log_exitBeamBreak = WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
     private final BooleanLogger log_spunUp = WaltLogger.logBoolean(kLogTab, "spunUp");
@@ -125,16 +115,8 @@ public class Shooter extends SubsystemBase {
         m_leader.setControl(m_velocityRequest.withVelocity(desiredVelocity));
     }
 
-    public Command setVelocityCmd(double desiredVelocity) {
-        return runOnce(() -> setVelocity(desiredVelocity));
-    }
-
-    public Command score() {
-        return setVelocityCmd(m_scoreSpeed);
-    }
-
-    public Command pass() {
-        return setVelocityCmd(m_passSpeed);
+    public Command setVelocityCmd(ShooterSpeed speed) {
+        return runOnce(() -> setVelocity(speed.RPS));
     }
 
     // Hood Commands (Basic Position Control)
@@ -142,24 +124,16 @@ public class Shooter extends SubsystemBase {
         m_hood.setControl(m_positionRequest.withPosition(desiredPosition));
     }
 
-    public Command setPositionCmd(double desiredPosition) {
-        return runOnce(() -> setPosition(desiredPosition));
-    }
-
-    public Command setScorePos() {
-        return setPositionCmd(m_scorePosRots);
-    }
-
-    public Command setPassPos() {
-        return setPositionCmd(m_passPosRots);
+    public Command setPositionCmd(HoodPosition position) {
+        return runOnce(() -> setPosition(position.rots));
     }
 
     // Turret Commands (Motionmagic Angle Control); Saarth will work on this via "2021-Gamechangers" code
 
     @Override
     public void periodic() {
-        log_shooterRPM.accept(m_leader.getVelocity().getValueAsDouble());
-        log_hoodPosition.accept(m_hood.getPosition().getValueAsDouble());
+        log_shooterRPS.accept(m_leader.getVelocity().getValueAsDouble());
+        log_hoodPositionRots.accept(m_hood.getPosition().getValueAsDouble());
 
         log_exitBeamBreak.accept(trg_exitBeamBreak);
         log_spunUp.accept(m_spunUp);
