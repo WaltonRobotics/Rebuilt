@@ -1,5 +1,8 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -14,6 +17,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
@@ -70,6 +77,19 @@ public class Constants {
             tags.removeIf(tag -> excludedAprilTagsID.contains(tag.ID));
             kTagLayout = new AprilTagFieldLayout(tags, fieldLayout.getFieldLength(), fieldLayout.getFieldWidth());
         }
+    }
+
+    public static class AutoAlignK {
+        //Obtain the correct tag ID based on alliance color, default to blue side
+        public static int towerTagID = DriverStation.getAlliance().get().equals(Alliance.Blue) 
+                                || DriverStation.getAlliance().isEmpty() ? 15 : 31;
+
+        //Placeholder tolerances - to be tuned
+        //Delete this comment when done tuning
+        public static final Distance kFieldTranslationTol = Meters.of(0); //meters
+        public static final Angle kFieldRotationTol = Degrees.of(0); //degrees
+
+        public static final double kFinishVelTol = 0; //meters per second
     }
 
     public static class RobotK {
