@@ -9,6 +9,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 
@@ -44,7 +45,7 @@ public class Transfer extends SubsystemBase {
     );  
     
     // Loggers
-    private final DoubleLogger log_spinnerVelocityRPS = WaltLogger.logDouble(kLogTab, "shooterVelocityRPS");
+    private final DoubleLogger log_spinnerVelocityRPS = WaltLogger.logDouble(kLogTab, "spinnerVelocityRPS");
     private final DoubleLogger log_exhaustVelocityRPS = WaltLogger.logDouble(kLogTab, "exhaustVelocityRPS");
 
     /* CONSTRUCTOR */
@@ -55,20 +56,20 @@ public class Transfer extends SubsystemBase {
         initSim();
     }
 
-    public void startSpinner(double rps) {
-        m_spinner.setControl(new VelocityVoltage(rps));
+    public Command startSpinner(double rps) {
+        return runOnce(() -> m_spinner.setControl(new VelocityVoltage(rps)));
     }
 
-    public void stopSpinner() {
-        m_spinner.setControl(new VelocityVoltage(0));
+    public Command stopSpinner() {
+        return runOnce(() -> m_spinner.setControl(new VelocityVoltage(0)));
     }
 
-    public void startExhaust(double rps) {
-        m_exhaust.setControl(new VelocityVoltage(rps));
+    public Command startExhaust(double rps) {
+        return runOnce(() -> m_exhaust.setControl(new VelocityVoltage(rps)));
     }
 
-    public void stopExhaust() {
-        m_exhaust.setControl(new VelocityVoltage(0));
+    public Command stopExhaust() {
+        return runOnce(() -> m_exhaust.setControl(new VelocityVoltage(0)));
     }
 
     //TODO: Change orientation if necessary

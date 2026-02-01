@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.VisionK;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Swerve;
+import frc.robot.subsystems.Transfer;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
 import frc.util.WaltLogger;
@@ -67,6 +68,8 @@ public class Robot extends TimedRobot {
 
     // this should be updated with all of our cameras
     private final Vision[] cameras = {camera1, camera2};
+
+    private final Transfer transfer = new Transfer();
 
     /* log and replay timestamp and joystick data */
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -136,6 +139,12 @@ public class Robot extends TimedRobot {
         driver.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         drivetrain.registerTelemetry(logger::telemeterize);
+
+        /* CUSTOM BINDS */
+        driver.leftBumper().onTrue(transfer.startSpinner(0.5));
+        driver.rightBumper().onTrue(transfer.stopSpinner());
+        driver.leftTrigger().onTrue(transfer.startExhaust(2));
+        driver.rightTrigger().onTrue(transfer.stopExhaust());
     }
 
     public Command getAutonomousCommand() {
@@ -161,6 +170,9 @@ public class Robot extends TimedRobot {
                 drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());
             }
         }
+
+        // Periodics
+        transfer.periodic();
     }
 
     @Override
@@ -217,5 +229,6 @@ public class Robot extends TimedRobot {
         Pose2d robotPose = robotState.Pose;
         visionSim.simulationPeriodic(robotPose);
         drivetrain.simulationPeriodic();
+        transfer.simulationPeriodic();
     }
 }
