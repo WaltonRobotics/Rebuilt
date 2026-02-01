@@ -71,8 +71,8 @@ public class Constants {
         
         /* IDS */
         //TODO: Make ids accurate
-        public static final int kSpinnerCANID = 1;
-        public static final int kExhaustCANID = 2;
+        public static final int kSpinnerCANID = 21;
+        public static final int kExhaustCANID = 22;
         
         /* CONFIGS */
         //TODO: Make configs accurate
