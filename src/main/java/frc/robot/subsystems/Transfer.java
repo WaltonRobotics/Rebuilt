@@ -21,15 +21,18 @@ import frc.util.WaltLogger.DoubleLogger;
 
 public class Transfer extends SubsystemBase {
     /* VARIABLES */
-    // Motors
+    // Motors and Control Requests
     private final TalonFX m_spinner = new TalonFX(kSpinnerCANID); // X60
     private final TalonFX m_exhaust = new TalonFX(kExhaustCANID); // X60
+
+    private final VelocityVoltage m_spinnerVelocityRequest = new VelocityVoltage(0);
+    private final VelocityVoltage m_exhaustVelocityRequest = new VelocityVoltage(0);
 
     // Simulation, TODO: update sim values (J and gearing)
     private final DCMotorSim m_spinnerSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX60(1),
-            0.01,                   
+            0.0005,                   
             1.5
         ),
         DCMotor.getKrakenX60(1)
@@ -38,7 +41,7 @@ public class Transfer extends SubsystemBase {
     private final DCMotorSim m_exhaustSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX60(1),
-            0.01,                    
+            0.0005,                    
             1.5
         ),
         DCMotor.getKrakenX60(1)
@@ -50,26 +53,26 @@ public class Transfer extends SubsystemBase {
 
     /* CONSTRUCTOR */
     public Transfer() {
-        m_spinner.getConfigurator().apply(kSpinnerSlot0Configs);
-        m_exhaust.getConfigurator().apply(kExhaustSlot1Configs);
+        m_spinner.getConfigurator().apply(kSpinnerTalonFXConfiguration);
+        m_exhaust.getConfigurator().apply(kExhaustTalonFXConfiguration);
 
         initSim();
     }
 
     public Command startSpinner(double rps) {
-        return runOnce(() -> m_spinner.setControl(new VelocityVoltage(rps)));
+        return runOnce(() -> m_spinner.setControl(m_spinnerVelocityRequest.withVelocity(rps)));
     }
 
     public Command stopSpinner() {
-        return runOnce(() -> m_spinner.setControl(new VelocityVoltage(0)));
+        return runOnce(() -> m_spinner.setControl(m_spinnerVelocityRequest.withVelocity(0)));
     }
 
     public Command startExhaust(double rps) {
-        return runOnce(() -> m_exhaust.setControl(new VelocityVoltage(rps)));
+        return runOnce(() -> m_exhaust.setControl(m_exhaustVelocityRequest.withVelocity(rps)));
     }
 
     public Command stopExhaust() {
-        return runOnce(() -> m_exhaust.setControl(new VelocityVoltage(0)));
+        return runOnce(() -> m_exhaust.setControl(m_exhaustVelocityRequest.withVelocity(0)));
     }
 
     //TODO: Change orientation if necessary
