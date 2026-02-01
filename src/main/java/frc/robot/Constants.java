@@ -15,6 +15,7 @@ import edu.wpi.first.math.util.Units;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
+    public static final double kSimPeriodicUpdateInterval = 0.020;
 
     public static class VisionK {
         public static final SimCameraProperties kCamera1SimProps = new SimCameraProperties();
@@ -67,13 +68,15 @@ public class Constants {
 
     public static class TransferK {
         public static String kLogTab = "Transfer";
-
-        // IDs
-        public static final int kSpinnerCANID = 1;
-        public static final int kExhaustCANID = 2; //TODO: make ids accurate
         
-        // Gains
-        public static final Slot0Configs kSpinnerSlot0Configs = new Slot0Configs() //TODO: make gains accurate
+        /* IDS */
+        //TODO: Make ids accurate
+        public static final int kSpinnerCANID = 1;
+        public static final int kExhaustCANID = 2;
+        
+        /* CONFIGS */
+        //TODO: Make configs accurate
+        public static final Slot0Configs kSpinnerSlot0Configs = new Slot0Configs()
             .withKS(0.1)
             .withKV(0.12)
             .withKP(0.11)
