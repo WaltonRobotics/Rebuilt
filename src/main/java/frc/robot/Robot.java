@@ -31,8 +31,8 @@ import frc.robot.subsystems.Shooter.ShooterVelocity;
 import frc.robot.subsystems.Shooter.HoodPosition;
 import frc.robot.subsystems.Shooter.TurretPosition;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Swerve;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
 import frc.util.WaltLogger;
@@ -61,8 +61,7 @@ public class Robot extends TimedRobot {
 
     private final CommandXboxController driver = new CommandXboxController(0);
 
-    /* SUBSYSTEMS */
-    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    public final Swerve drivetrain = TunerConstants.createDrivetrain();
     private Command m_autonomousCommand;
     private final AutoFactory autoFactory = drivetrain.createAutoFactory();
 
