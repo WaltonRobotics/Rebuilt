@@ -34,14 +34,14 @@ public class Constants {
         public static final int kExitBeamBreakChannel = 0; //TODO: Update channel number
 
         /* CONFIGS */
-        // TODO: Check what more configs would be necessary/Optimize current ones
+        // TODO: Check what more configs would be necessary
         private static final Slot0Configs kLeaderSlot0Configs = new Slot0Configs()   //Note to self (hrehaan) (and saarth cuz i did the same thing): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
             .withKS(0)
             .withKV(0.1217)
             .withKA(0)
             .withKP(0)
             .withKI(0)
-            .withKD(0);
+            .withKD(0); // kP was causing the werid sinusoid behavior, kS and kA were adding inconsistency with the destination values
         private static final CurrentLimitsConfigs kLeaderCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(110)
             .withSupplyCurrentLimit(40)
@@ -62,13 +62,16 @@ public class Constants {
 
         // TODO: I assume we would want the Hood and Turret to move at a constant high velocity
         //       so we should probably configure that here?
+        //
+        //       that's not exactly how it works - i'm not sure either but kV is more like a boost to velo than velo itself
+        //       so in cases like the turret there's no kV
         private static final Slot0Configs kHoodSlot0Configs = new Slot0Configs()
             .withKS(0)
             .withKV(1)
             .withKA(0)
             .withKP(0.85)
             .withKI(0.1)
-            .withKD(0);
+            .withKD(0); // kP was too low making the slope less steep, kS and kA were adding weird behavior, added kI to account for kP overshooting
         private static final CurrentLimitsConfigs kHoodCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(110)
             .withSupplyCurrentLimit(40)
@@ -82,12 +85,12 @@ public class Constants {
             .withMotorOutput(kHoodOutputConfigs);
         
         private static final Slot0Configs kTurretSlot0Configs = new Slot0Configs()
-            .withKS(0.25)
-            .withKV(0.06)
-            .withKA(0.01)
-            .withKP(0.2)
+            .withKS(0)
+            .withKV(0)
+            .withKA(0)
+            .withKP(3)
             .withKI(0)
-            .withKD(0);
+            .withKD(0); // kP was too low making the slope less steep, kS kV and kA were causing rlly weird behavior (jumping up/down way further than targeted position)
         private static final CurrentLimitsConfigs kTurretCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(110)
             .withSupplyCurrentLimit(40)
