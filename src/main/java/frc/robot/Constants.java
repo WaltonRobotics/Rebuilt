@@ -35,11 +35,11 @@ public class Constants {
 
         /* CONFIGS */
         // TODO: Check what more configs would be necessary/Optimize current ones
-        private static final Slot0Configs kLeaderSlot0Configs = new Slot0Configs()   //Note to self (hrehaan): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
-            .withKS(0.25)  //TODO: I don't even know anymore
-            .withKV(0.06)
-            .withKA(0.01)
-            .withKP(0.2)
+        private static final Slot0Configs kLeaderSlot0Configs = new Slot0Configs()   //Note to self (hrehaan) (and saarth cuz i did the same thing): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
+            .withKS(0)
+            .withKV(0.1217)
+            .withKA(0)
+            .withKP(0)
             .withKI(0)
             .withKD(0);
         private static final CurrentLimitsConfigs kLeaderCurrentLimitConfigs = new CurrentLimitsConfigs()
