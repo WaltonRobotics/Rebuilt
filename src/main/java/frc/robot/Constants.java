@@ -1,7 +1,13 @@
 package frc.robot;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+
 import org.photonvision.simulation.SimCameraProperties;
 
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.controller.PIDController;
@@ -55,7 +61,16 @@ public class Constants {
         public static final double kFieldLengthMeters = Units.inchesToMeters(651.22); //take with a grain of salt - pulled from field dimensions (welded)
         public static final double kFieldWidthMeters = Units.inchesToMeters(317.69);
 
-        public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
+        public static final AprilTagFieldLayout kTagLayout;
+
+        //Ignore trench April Tags
+        static {
+            HashSet<Integer> excludedAprilTagsID = new HashSet<> (Arrays.asList(1, 6, 7, 12, 17, 22, 23, 28));
+            AprilTagFieldLayout fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
+            List<AprilTag> tags = new ArrayList<> (fieldLayout.getTags());
+            tags.removeIf(tag -> excludedAprilTagsID.contains(tag.ID));
+            kTagLayout = new AprilTagFieldLayout(tags, fieldLayout.getFieldLength(), fieldLayout.getFieldWidth());
+        }
     }
 
     public static class RobotK {
