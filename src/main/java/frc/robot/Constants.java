@@ -3,11 +3,8 @@ package frc.robot;
 import org.photonvision.simulation.SimCameraProperties;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.Slot1Configs;
-import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -98,23 +95,12 @@ public class Constants {
             .withNeutralMode(NeutralModeValue.Brake)
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);
-        private static final MotionMagicConfigs kSpinnerMotionMagicConfigs = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(20)
-            .withMotionMagicAcceleration(100)
-            .withMotionMagicJerk(0);
-        private static final SoftwareLimitSwitchConfigs kSpinnerSoftwareLimitSwitchConfigs = new SoftwareLimitSwitchConfigs()
-            .withForwardSoftLimitEnable(false)
-            .withForwardSoftLimitThreshold(1)
-            .withReverseSoftLimitEnable(false)
-            .withReverseSoftLimitThreshold(1);
         public static final TalonFXConfiguration kSpinnerTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kSpinnerSlot0Configs)
             .withCurrentLimits(kSpinnerCurrentLimitConfigs)
-            .withMotorOutput(kSpinnerMotorOutputConfigs)
-            .withMotionMagic(kSpinnerMotionMagicConfigs)
-            .withSoftwareLimitSwitch(kSpinnerSoftwareLimitSwitchConfigs);
+            .withMotorOutput(kSpinnerMotorOutputConfigs);
 
-        private static final Slot1Configs kExhaustSlot1Configs = new Slot1Configs()
+        private static final Slot0Configs kExhaustSlot0Configs = new Slot0Configs()
             .withKS(0.1)
             .withKV(0.12)
             .withKP(0.11)
@@ -130,20 +116,9 @@ public class Constants {
             .withNeutralMode(NeutralModeValue.Brake)
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);
-        private static final MotionMagicConfigs kExhaustMotionMagicConfigs = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(20)
-            .withMotionMagicAcceleration(100)
-            .withMotionMagicJerk(0);
-        private static final SoftwareLimitSwitchConfigs kExhaustSoftwareLimitSwitchConfigs = new SoftwareLimitSwitchConfigs()
-            .withForwardSoftLimitEnable(false)
-            .withForwardSoftLimitThreshold(1)
-            .withReverseSoftLimitEnable(false)
-            .withReverseSoftLimitThreshold(1);
         public static final TalonFXConfiguration kExhaustTalonFXConfiguration = new TalonFXConfiguration()
-            .withSlot1(kExhaustSlot1Configs)
+            .withSlot0(kExhaustSlot0Configs)
             .withCurrentLimits(kExhaustCurrentLimitConfigs)
-            .withMotorOutput(kExhaustMotorOutputConfigs)
-            .withMotionMagic(kExhaustMotionMagicConfigs)
-            .withSoftwareLimitSwitch(kExhaustSoftwareLimitSwitchConfigs);
+            .withMotorOutput(kExhaustMotorOutputConfigs);
     }
 }
