@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.VisionK;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Intake;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
 import frc.util.WaltLogger;
@@ -72,7 +73,7 @@ public class Robot extends TimedRobot {
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
         .withTimestampReplay()
         .withJoystickReplay();
-
+    Intake intake = new Intake();
     public Robot() {
         configureBindings();
     }
@@ -217,5 +218,8 @@ public class Robot extends TimedRobot {
         Pose2d robotPose = robotState.Pose;
         visionSim.simulationPeriodic(robotPose);
         drivetrain.simulationPeriodic();
+        intake.simulationPeriodic();
     }
+
+        
 }
