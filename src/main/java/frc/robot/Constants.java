@@ -63,11 +63,11 @@ public class Constants {
         // TODO: I assume we would want the Hood and Turret to move at a constant high velocity
         //       so we should probably configure that here?
         private static final Slot0Configs kHoodSlot0Configs = new Slot0Configs()
-            .withKS(0.25)
-            .withKV(0.06)
-            .withKA(0.01)
-            .withKP(0.2)
-            .withKI(0)
+            .withKS(0)
+            .withKV(1)
+            .withKA(0)
+            .withKP(0.85)
+            .withKI(0.1)
             .withKD(0);
         private static final CurrentLimitsConfigs kHoodCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(110)
