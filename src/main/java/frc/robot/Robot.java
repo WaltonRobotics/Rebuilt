@@ -146,10 +146,16 @@ public class Robot extends TimedRobot {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
-        driver.povUp().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.SCORE));
-        driver.povDown().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.PASS));
-        driver.povLeft().onTrue(shooter.setHoodPositionCmd(HoodPosition.SCORE));
-        driver.povRight().onTrue(shooter.setHoodPositionCmd(HoodPosition.PASS));
+        driver.povUp().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.ZERO));
+        driver.povRight().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.SCORE));
+        driver.povDown().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.MAX));
+        driver.povLeft().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.PASS));
+
+        driver.a().onTrue(shooter.setHoodPositionCmd(HoodPosition.MIN));
+        driver.b().onTrue(shooter.setHoodPositionCmd(HoodPosition.SCORE));
+        driver.x().onTrue(shooter.setHoodPositionCmd(HoodPosition.PASS));
+        driver.y().onTrue(shooter.setHoodPositionCmd(HoodPosition.MAX));
+
         driver.leftBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.SCORE));
         driver.rightBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.PASS));
         driver.leftTrigger().onTrue(shooter.setTurretPositionCmd(TurretPosition.MIN));
