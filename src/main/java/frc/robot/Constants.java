@@ -23,6 +23,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
@@ -30,6 +31,15 @@ public class Constants {
 
     public static class ShooterK {
         public static final String kLogTab = "Shooter";
+
+        /* MOTOR VALUES */
+        public static final double kShooterMomentOfInertia = 0.000349;  //J for 2 3" 0.53lb flywheels
+        public static final double kHoodMomentOfInertia = 0.000249;
+        public static final double kTurretMomentOfInertia = 0.0546;
+
+        public static final double kShooterGearing = 1/1;
+        public static final double kHoodGearing = 45/1;
+        public static final double kTurretGearing = 41.66666666/1;
 
         /* IDS */
         public static final int kLeaderCANID = 21; //TODO: Update CANID number
