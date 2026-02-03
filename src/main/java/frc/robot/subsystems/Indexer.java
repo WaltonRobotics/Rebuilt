@@ -12,28 +12,26 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-
-import static frc.robot.Constants.TransferK.*;
+import static frc.robot.Constants.IndexerK.*;
 
 import frc.robot.Constants;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
-public class Transfer extends SubsystemBase {
+public class Indexer extends SubsystemBase {
     /* VARIABLES */
     // Motors and Control Requests
     private final TalonFX m_spinner = new TalonFX(kSpinnerCANID); // X60
     private final TalonFX m_exhaust = new TalonFX(kExhaustCANID); // X60
 
-    private final VelocityVoltage m_spinnerVelocityRequest = new VelocityVoltage(0);
-    private final VelocityVoltage m_exhaustVelocityRequest = new VelocityVoltage(0);
+    private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0);
 
-    // Simulation, TODO: update sim values (J and gearing)
+    // Simulation
     private final DCMotorSim m_spinnerSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX60(1),
-            0.0005,                   
-            1.5
+            kSpinnerMomentOfInertia,
+            kSpinnerGearing
         ),
         DCMotor.getKrakenX60(1)
     );
@@ -41,8 +39,8 @@ public class Transfer extends SubsystemBase {
     private final DCMotorSim m_exhaustSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX60(1),
-            0.0005,                    
-            1.5
+            kExhaustMomentOfInertia,
+            kExhaustGearing
         ),
         DCMotor.getKrakenX60(1)
     );  
@@ -52,27 +50,11 @@ public class Transfer extends SubsystemBase {
     private final DoubleLogger log_exhaustVelocityRPS = WaltLogger.logDouble(kLogTab, "exhaustVelocityRPS");
 
     /* CONSTRUCTOR */
-    public Transfer() {
+    public Indexer() {
         m_spinner.getConfigurator().apply(kSpinnerTalonFXConfiguration);
         m_exhaust.getConfigurator().apply(kExhaustTalonFXConfiguration);
 
         initSim();
-    }
-
-    public Command startSpinner(double rps) {
-        return runOnce(() -> m_spinner.setControl(m_spinnerVelocityRequest.withVelocity(rps)));
-    }
-
-    public Command stopSpinner() {
-        return runOnce(() -> m_spinner.setControl(m_spinnerVelocityRequest.withVelocity(0)));
-    }
-
-    public Command startExhaust(double rps) {
-        return runOnce(() -> m_exhaust.setControl(m_exhaustVelocityRequest.withVelocity(rps)));
-    }
-
-    public Command stopExhaust() {
-        return runOnce(() -> m_exhaust.setControl(m_exhaustVelocityRequest.withVelocity(0)));
     }
 
     //TODO: Change orientation if necessary
@@ -86,13 +68,27 @@ public class Transfer extends SubsystemBase {
         m_exhaustFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX60);
     }
 
+    public Command startSpinner(double RPS) {
+        return runOnce(() -> m_spinner.setControl(m_velocityRequest.withVelocity(RPS)));
+    }
+
+    public Command stopSpinner() {
+        return runOnce(() -> m_spinner.setControl(m_velocityRequest.withVelocity(0)));
+    }
+
+    public Command startExhaust(double RPS) {
+        return runOnce(() -> m_exhaust.setControl(m_velocityRequest.withVelocity(RPS)));
+    }
+
+    public Command stopExhaust() {
+        return runOnce(() -> m_exhaust.setControl(m_velocityRequest.withVelocity(0)));
+    }
+
     /* PERIODICS */
     @Override
     public void periodic() {
         log_spinnerVelocityRPS.accept(m_spinner.getVelocity().getValueAsDouble());
         log_exhaustVelocityRPS.accept(m_exhaust.getVelocity().getValueAsDouble());
-
-        initSim();
     }
 
     @Override
@@ -103,7 +99,7 @@ public class Transfer extends SubsystemBase {
         m_spinnerSim.setInputVoltage(m_spinnerFXSim.getMotorVoltage());
         m_spinnerSim.update(Constants.kSimPeriodicUpdateInterval);
 
-        m_spinnerFXSim.setRawRotorPosition(m_spinnerSim.getAngularPositionRotations());
+        m_spinnerFXSim.setRotorVelocity(m_spinnerSim.getAngularVelocity());
         m_spinnerFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
         // Exhaust
@@ -112,7 +108,7 @@ public class Transfer extends SubsystemBase {
         m_exhaustSim.setInputVoltage(m_exhaustFXSim.getMotorVoltage());
         m_exhaustSim.update(Constants.kSimPeriodicUpdateInterval);
 
-        m_exhaustFXSim.setRawRotorPosition(m_exhaustSim.getAngularPositionRotations());
+        m_exhaustFXSim.setRotorVelocity(m_exhaustSim.getAngularVelocity());
         m_exhaustFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 }
