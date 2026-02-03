@@ -22,9 +22,7 @@ import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -36,7 +34,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Detection;
-import frc.robot.Robot;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -388,11 +385,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     public Command swerveToObject() {
         
         PhotonTrackedTarget target = detection.getClosestObject();
-        Pose3d fakeTarget = new Pose3d(16,4,2, new Rotation3d(0,0,Math.PI));
-
-        Pose2d destination = faceFuelPose(getState().Pose, detection.targetToPose(target));
-        Pose2d fakeDestination = faceFuelPose(getState().Pose, fakeTarget);
-
+        Pose2d destination = detection.targetToPose(getState().Pose, target);
+        
         return Commands.run(
             () -> {
                 Pose2d curPose = getState().Pose;
@@ -401,19 +395,12 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 double ySpeed = m_pathYController.calculate(curPose.getY(), destination.getY());
                 double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), destination.getRotation().getRadians());
 
-                if (Robot.isSimulation()) {
-                    xSpeed = m_pathXController.calculate(curPose.getX(), fakeDestination.getX());
-                    ySpeed = m_pathYController.calculate(curPose.getY(), fakeDestination.getY());
-                    thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), fakeDestination.getRotation().getRadians());
-                }
-
-
                 setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
             }
         );
     }
 
-    public static Pose2d faceFuelPose(Pose2d robotPose, Pose3d fuelLocation) {
+    public static Pose2d faceFuelPose(Pose2d robotPose, Pose2d fuelLocation) {
         double dx = fuelLocation.getX() - robotPose.getX();
         double dy = fuelLocation.getY() - robotPose.getY();
 

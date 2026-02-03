@@ -2,21 +2,17 @@ package frc.robot.vision;
 
 import static frc.robot.Constants.FieldK.kTagLayout;
 
-import org.photonvision.estimation.TargetModel;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.VisionSystemSim;
-import org.photonvision.simulation.VisionTargetSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 
 public class VisionSim {
@@ -49,14 +45,21 @@ public class VisionSim {
         return m_photonVisionSim.getDebugField();
     }
 
-    public Command addFuel() {
-        TargetModel targetModel = new TargetModel(Units.inchesToMeters(5.91));
-        Pose3d targetPose = new Pose3d(0,0,0, new Rotation3d(0,0,Math.PI)); //dummy values
-        VisionTargetSim visionTarget = new VisionTargetSim(targetPose, targetModel);
+    public List<PhotonTrackedTarget> addFuel() {
+        List<PhotonTrackedTarget> simTargetList = new LinkedList<>();
 
-        return Commands.sequence(
-            Commands.runOnce(() -> m_photonVisionSim.addVisionTargets(visionTarget)),
-            Commands.print("--------------------ADDED FUEL--------------------")
-        );
+        double simFuelYaw = 40;
+        double simFuelPitch = 30;
+        double simFuelRoll = 10;
+
+        Rotation3d fuelRotation = new Rotation3d(simFuelRoll, simFuelPitch, simFuelYaw);
+
+        PhotonTrackedTarget simFuel = new PhotonTrackedTarget(45, 30, 70, 20, -1, -1, -1, new Transform3d(5, 6, 0, fuelRotation), new Transform3d(), 0, new LinkedList<>(), new LinkedList<>());
+        PhotonTrackedTarget simFuelTwo = new PhotonTrackedTarget(45, 30, 100, 20, -1, -1, -1, new Transform3d(1,1,1, fuelRotation), new Transform3d(), 0, new LinkedList<>(), new LinkedList<>());
+
+        simTargetList.add(simFuel);
+        simTargetList.add(simFuelTwo);   
+        
+        return simTargetList;
     }
 }

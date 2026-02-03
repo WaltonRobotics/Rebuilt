@@ -10,16 +10,14 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants.VisionK;
+import frc.robot.vision.VisionSim;
 
 public class Detection {
     private final PhotonCamera camera = new PhotonCamera(VisionK.kCamera1CamName); //probably will be intake camera
+    private final VisionSim visionSim = new VisionSim();
 
     private List<PhotonTrackedTarget> targetList = new LinkedList<>();
 
@@ -45,22 +43,20 @@ public class Detection {
         processCameraData();
         PhotonTrackedTarget closestTarget = new PhotonTrackedTarget();
 
+        if (Robot.isSimulation()) {
+            targetList = visionSim.addFuel();
+        }
+
         if (targetList.size() > 0) {
-            closestTarget = targetList.get(0);
-            double minDistance = 
-                PhotonUtils.calculateDistanceToTargetMeters(
-                    0,  //dummy (move ts to constants)
-                    0,  //dummy (move ts to constants)
-                    0,  //dummy (move ts to constants)
-                    closestTarget.pitch);
+            double minDistance = 17.37; //in meters
                     
             for (PhotonTrackedTarget target : targetList) {
                 double distance = 
                     PhotonUtils.calculateDistanceToTargetMeters(
-                        0,  //dummy (move ts to constants)
-                        0,  //dummy (move ts to constants)
-                        0,  //dummy (move ts to constants)
-                        target.pitch);
+                        Units.inchesToMeters(28),  //dummy (move ts to constants)
+                        Units.inchesToMeters(5.91),  //dummy (move ts to constants)
+                        Units.degreesToRadians(-25),  //dummy (move ts to constants)
+                        Units.degreesToRadians(target.pitch));
 
                 if (distance < minDistance) {
                     closestTarget = target;
@@ -72,33 +68,11 @@ public class Detection {
         return closestTarget;
     }
 
-    public Pose3d targetToPose(PhotonTrackedTarget target) {
-        //all values in this class are dummies and should be looked over
-
-        Transform3d robotToCamera = 
-            new Transform3d(
-                Units.inchesToMeters(-1.572730),
-                Units.inchesToMeters(5.775637),
-                Units.inchesToMeters(37.497937),
-                new Rotation3d(
-                    Units.degreesToRadians(0.0),
-                    Units.degreesToRadians(30),
-                    Units.degreesToRadians(186.370246)));
+    public Pose2d targetToPose(Pose2d robotPose, PhotonTrackedTarget fuel) {
+        Transform2d fuelTransform = new Transform2d(fuel.getBestCameraToTarget().getMeasureX(), fuel.getBestCameraToTarget().getMeasureY(), fuel.getBestCameraToTarget().getRotation().toRotation2d());
         
-        Pose2d originalRobotPose = new Pose2d(0, 0, new Rotation2d());
+        Pose2d fuelPose = robotPose.transformBy(fuelTransform);
 
-        double targetPitch = -Math.toRadians(target.getPitch());
-        double targetYaw = -Math.toRadians(target.getYaw());
-
-        Pose3d cameraPoseZeroed = new Pose3d(originalRobotPose).transformBy(robotToCamera);
-
-        Pose3d cameraPointingAtTarget =
-            cameraPoseZeroed.transformBy(
-                new Transform3d(0, 0, 0, new Rotation3d(0.0, targetPitch, targetYaw)));
-
-        Pose3d targetPose =
-            cameraPointingAtTarget.plus(new Transform3d(1.0, 0.0, 0.0, new Rotation3d()));
-
-        return targetPose;
+        return fuelPose;
     }
 }
