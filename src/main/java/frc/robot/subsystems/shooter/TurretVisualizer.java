@@ -15,6 +15,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.FuelSim;
+import frc.robot.subsystems.Shooter;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.Pose3dLogger;
 import frc.util.WaltLogger.Translation3dArrayLogger;
@@ -58,8 +59,8 @@ public class TurretVisualizer {
     }
 
     public Command repeatedlyLaunchFuel(
-            Supplier<LinearVelocity> velSupplier, Supplier<Angle> angleSupplier, Turret turret) {
-        return turret.runOnce(() -> launchFuel(velSupplier.get(), angleSupplier.get()))
+            Supplier<LinearVelocity> velSupplier, Supplier<Angle> angleSupplier, Shooter shooter) {
+        return shooter.runOnce(() -> launchFuel(velSupplier.get(), angleSupplier.get()))
                 .andThen(Commands.waitSeconds(0.25))
                 .repeatedly();
     }

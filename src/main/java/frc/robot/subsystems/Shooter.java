@@ -9,6 +9,9 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -24,12 +27,26 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import static frc.robot.Constants.ShooterK.*;
 
 import frc.robot.Constants;
+import frc.robot.subsystems.shooter.ShotCalculation;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
+//TODO: for sohan - make sure to implement m_atGoal for turret and Hood (flywheel alr done)
 public class Shooter extends SubsystemBase {
     /* VARIABLES */
+
+    private Rotation2d m_goalAngle = Rotation2d.kZero;
+    private double m_goalVelocity = 0.0;
+    private double m_lastGoalAngle = 0.0;
+    private ShootingState m_shootState = ShootingState.ACTIVE_SHOOTING;
+    private boolean m_shooterAtGoal, m_turretAtGoal, m_hoodAtGoal = false;
+    private static final double m_torqueCurrentControlTolerance = 20.0;
+    private static final double m_atGoalDebounce = 0.2;
+
+    private Debouncer m_atGoalDebouncer = new Debouncer(m_atGoalDebounce, DebounceType.kFalling);
+
+
     // motors + control requests
     private final TalonFX m_leader = new TalonFX(kLeaderCANID); //X60
     private final TalonFX m_follower = new TalonFX(kFollowerCANID); //X60
@@ -40,6 +57,8 @@ public class Shooter extends SubsystemBase {
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID); //X44
     private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0);
+
+    private final ShotCalculation shotCalulator = new ShotCalculation();
 
     // logic booleans
     private boolean m_spunUp = false;
@@ -120,14 +139,49 @@ public class Shooter extends SubsystemBase {
         m_turretFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
         m_turretFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
     }
+    
+    public Rotation2d getGoalAngle() {
+        return m_goalAngle;
+    }
+    public void setGoalAngle(Rotation2d goalAngle) {
+        this.m_goalAngle = goalAngle;
+    }
+    public double getGoalVelocity() {
+        return m_goalVelocity;
+    }
+    public void setGoalVelocity(double goalVelocity) {
+        this.m_goalVelocity = goalVelocity;
+    }
+    public double getLastGoalAngle() {
+        return m_lastGoalAngle;
+    }
+    public void setLastGoalAngle(double lastGoalAngle) {
+        this.m_lastGoalAngle = lastGoalAngle;
+    }
+
+    private void setFieldRelativeTarget(Rotation2d angle, double velocity) {
+        this.m_goalAngle = angle;
+        this.m_goalVelocity = velocity;
+    }
+
+    public ShootingState getShootState() {
+        return m_shootState;
+    }
+
+    public void setShootState(ShootingState shootState) {
+        this.m_shootState = shootState;
+    }
 
     /* COMMANDS */
-    // Shooter Commands (Veloity Control)
+    // Shooter Commands (Velocity Control)
     public Command setShooterVelocityCmd(ShooterVelocity velocity) {
         return setShooterVelocityCmd(velocity.RPS);
     }
 
     public Command setShooterVelocityCmd(double RPS) {
+        boolean inTolerance = RPS <= m_torqueCurrentControlTolerance;
+        m_shooterAtGoal = m_atGoalDebouncer.calculate(inTolerance);
+
         return runOnce(() -> m_leader.setControl(m_velocityRequest.withVelocity(RPS)));
     }
 
@@ -149,6 +203,15 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> m_turret.setControl(m_MMVRequest.withPosition(rots)));
     }
 
+    public Command runTrackTargetActiveShootingCommand() {
+        return run(
+            () -> {
+                var params = shotCalulator.getParameters();
+                setFieldRelativeTarget(params.turretAngle(), params.turretVelocity());
+                setShootState(ShootingState.TRACKING);
+            });
+    }
+ 
     /* PERIODICS */
     @Override
     public void periodic() {
@@ -228,6 +291,11 @@ public class Shooter extends SubsystemBase {
         private TurretPosition(double rots) {
             this.rots = rots;
         }
+    }
+
+    public enum ShootingState {
+        ACTIVE_SHOOTING,
+        TRACKING;
     }
 
 }

@@ -30,6 +30,7 @@ import frc.robot.Constants.VisionK;
 import frc.robot.subsystems.Shooter.ShooterVelocity;
 import frc.robot.subsystems.Shooter.HoodPosition;
 import frc.robot.subsystems.Shooter.TurretPosition;
+import frc.robot.subsystems.shooter.ShotCalculation;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Swerve;
@@ -64,6 +65,7 @@ public class Robot extends TimedRobot {
     public final Swerve drivetrain = TunerConstants.createDrivetrain();
     private Command m_autonomousCommand;
     private final AutoFactory autoFactory = drivetrain.createAutoFactory();
+    private final ShotCalculation shotCalculator = new ShotCalculation();
 
 
     private final VisionSim visionSim = new VisionSim();
@@ -160,6 +162,13 @@ public class Robot extends TimedRobot {
         driver.rightBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.PASS));
         driver.leftTrigger().onTrue(shooter.setTurretPositionCmd(TurretPosition.MIN));
         driver.rightTrigger().onTrue(shooter.setTurretPositionCmd(TurretPosition.MAX));
+
+        driver
+            .rightBumper()
+            .negate()
+            .whileTrue(shooter.runTrackTargetActiveShootingCommand())
+            .and(() -> shotCalculator.getParameters().isValid())
+            .
     }
 
     public Command getAutonomousCommand() {
