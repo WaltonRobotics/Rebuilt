@@ -53,23 +53,24 @@ public class Shooter extends SubsystemBase {
         return new Trigger(loop, () -> !m_exitBeamBreak.get());
     }
 
-    // sim (TODO: Update dummy numbers)
+    // sim (TODO: double check constants)
     private final FlywheelSim m_flywheelSim = new FlywheelSim(
         LinearSystemId.createFlywheelSystem(
             DCMotor.getKrakenX60(2), 
-            0.000349, // J for 2 3" 0.53lb flywheels (double check accuracy)
-            1), // TODO: dummy value
+            kShooterMomentOfInertia,
+            kShooterGearing
+        ),
         DCMotor.getKrakenX60(2) // returns gearbox
     );
 
     private final SingleJointedArmSim m_hoodSim = new SingleJointedArmSim(
         LinearSystemId.createSingleJointedArmSystem(
             DCMotor.getKrakenX44(1),
-            0.0005,  // Dummy J Value
-            1.5 // dummy gearing value
+            kHoodMomentOfInertia,
+            kHoodGearing
         ),
         DCMotor.getKrakenX44(1),
-        1.5,   //dummy gearing value
+        kHoodGearing,
         0.5,
         HoodPosition.MIN.rots * (2*Math.PI),
         HoodPosition.MAX.rots * (2*Math.PI),
@@ -80,8 +81,8 @@ public class Shooter extends SubsystemBase {
     private final DCMotorSim m_turretSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX44(1),
-            0.0005,  // Dummy J value
-            1.5 // dummy gearing value
+            kTurretMomentOfInertia,
+            kTurretGearing
         ),
         DCMotor.getKrakenX44(1) // returns gearbox
     );
@@ -97,7 +98,7 @@ public class Shooter extends SubsystemBase {
     /* CONSTRUCTOR */
     public Shooter() {
         m_leader.getConfigurator().apply(kLeaderTalonFXConfiguration);
-        m_follower.getConfigurator().apply(kFollowerTalonFXConfiguration);  //TODO: should the follower use the leader's configs?
+        m_follower.getConfigurator().apply(kFollowerTalonFXConfiguration);
         m_hood.getConfigurator().apply(kHoodTalonFXConfiguration);
         m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
 
@@ -108,17 +109,17 @@ public class Shooter extends SubsystemBase {
 
     //TODO: update orientation values (if needed)
     private void initSim() {
-        var m_leaderFXSim = m_leader.getSimState();
-        m_leaderFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
-        m_leaderFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX60);
+        var leaderFXSim = m_leader.getSimState();
+        leaderFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
+        leaderFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX60);
 
-        var m_hoodFXSim = m_hood.getSimState();
-        m_hoodFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
-        m_hoodFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
+        var hoodFXSim = m_hood.getSimState();
+        hoodFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
+        hoodFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
 
-        var m_turretFXSim = m_turret.getSimState();
-        m_turretFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
-        m_turretFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
+        var turretFXSim = m_turret.getSimState();
+        turretFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
+        turretFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
     }
 
     /* COMMANDS */
@@ -163,34 +164,34 @@ public class Shooter extends SubsystemBase {
     @Override
     public void simulationPeriodic() {
         // Shooter
-        var m_leaderFXSim = m_leader.getSimState();
+        var leaderFXSim = m_leader.getSimState();
 
-        m_flywheelSim.setInputVoltage(m_leaderFXSim.getMotorVoltage());
+        m_flywheelSim.setInputVoltage(leaderFXSim.getMotorVoltage());
         m_flywheelSim.update(Constants.kSimPeriodicUpdateInterval);
 
-        m_leaderFXSim.setRotorVelocity(m_flywheelSim.getAngularVelocityRPM() / 60);
-        m_leaderFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        leaderFXSim.setRotorVelocity(m_flywheelSim.getAngularVelocity());
+        leaderFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
         // Hood
-        var m_hoodFXSim = m_hood.getSimState();
+        var hoodFXSim = m_hood.getSimState();
 
-        m_hoodSim.setInputVoltage(m_hoodFXSim.getMotorVoltage());
+        m_hoodSim.setInputVoltage(hoodFXSim.getMotorVoltage());
         m_hoodSim.update(Constants.kSimPeriodicUpdateInterval);
 
-        m_hoodFXSim.setRawRotorPosition(m_hoodSim.getAngleRads() / (2*Math.PI));
-        m_hoodFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        hoodFXSim.setRawRotorPosition(m_hoodSim.getAngleRads() / (2*Math.PI));
+        hoodFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
         // Turret
-        var m_turretFXSim = m_turret.getSimState();
+        var turretFXSim = m_turret.getSimState();
 
-        m_turretSim.setInputVoltage(m_turretFXSim.getMotorVoltage());
+        m_turretSim.setInputVoltage(turretFXSim.getMotorVoltage());
         m_turretSim.update(Constants.kSimPeriodicUpdateInterval);
 
-        m_turretFXSim.setRawRotorPosition(m_turretSim.getAngularPositionRotations());
-        m_turretFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        turretFXSim.setRawRotorPosition(m_turretSim.getAngularPositionRotations());
+        turretFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 
-    /* CONSTANTS */
+    /* CONSTANTS: THIS IS PROBABLY GETTING NUKED */
     public enum ShooterVelocity {
         // in RPS
         ZERO(0),

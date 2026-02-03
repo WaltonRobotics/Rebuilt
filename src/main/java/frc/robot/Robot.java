@@ -81,6 +81,7 @@ public class Robot extends TimedRobot {
 
     public Robot() {
         configureBindings();
+        configureTestBindings();    //this should be commented out during competition matches
     }
 
     private Command driveCommand() {
@@ -143,8 +144,9 @@ public class Robot extends TimedRobot {
         driver.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         drivetrain.registerTelemetry(logger::telemeterize);
+    }
 
-        /* CUSTOM BINDS */
+    private void configureTestBindings() {
         driver.povUp().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.ZERO));
         driver.povRight().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.SCORE));
         driver.povDown().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.MAX));
