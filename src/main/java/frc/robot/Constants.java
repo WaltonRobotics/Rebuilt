@@ -32,6 +32,8 @@ public class Constants {
 
     public static class ShooterK {
         public static final String kLogTab = "Shooter";
+        //cant really think of any other name but is where the turret is relative to the robot
+        public static final Transform3d kRobotToTurret = new Transform3d(0, 0, 0, Rotation3d.kZero); //DUMMY VALS
 
         /* IDS */
         public static final int kLeaderCANID = 21; //TODO: Update CANID number
@@ -179,11 +181,5 @@ public class Constants {
 
     public static class RobotK {
         public static final String kLogTab = "Superstructure";
-    }
-
-    public static class ShooterK {
-        public static final String kLogTab = "Shooter";
-        //cant really think of any other name but is where the turret is relative to the robot
-        public static final Transform3d kRobotToTurret = new Transform3d(0, 0, 0, Rotation3d.kZero); //DUMMY VALS
     }
 }
