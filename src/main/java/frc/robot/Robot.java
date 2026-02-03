@@ -27,7 +27,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.VisionK;
+import frc.robot.subsystems.Shooter.ShooterVelocity;
+import frc.robot.subsystems.Shooter.HoodPosition;
+import frc.robot.subsystems.Shooter.TurretPosition;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Swerve;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
@@ -69,6 +73,8 @@ public class Robot extends TimedRobot {
     // this should be updated with all of our cameras
     private final Vision[] cameras = {camera1, camera2};
 
+    private final Shooter shooter = new Shooter();
+
     /* log and replay timestamp and joystick data */
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
         .withTimestampReplay()
@@ -103,6 +109,7 @@ public class Robot extends TimedRobot {
     }
 
     private void configureBindings() {
+        /* SWERVE BINDS */
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
@@ -137,6 +144,22 @@ public class Robot extends TimedRobot {
         driver.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         drivetrain.registerTelemetry(logger::telemeterize);
+
+        /* CUSTOM BINDS */
+        driver.povUp().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.ZERO));
+        driver.povRight().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.SCORE));
+        driver.povDown().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.MAX));
+        driver.povLeft().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.PASS));
+
+        driver.a().onTrue(shooter.setHoodPositionCmd(HoodPosition.MIN));
+        driver.b().onTrue(shooter.setHoodPositionCmd(HoodPosition.SCORE));
+        driver.x().onTrue(shooter.setHoodPositionCmd(HoodPosition.PASS));
+        driver.y().onTrue(shooter.setHoodPositionCmd(HoodPosition.MAX));
+
+        driver.leftBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.SCORE));
+        driver.rightBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.PASS));
+        driver.leftTrigger().onTrue(shooter.setTurretPositionCmd(TurretPosition.MIN));
+        driver.rightTrigger().onTrue(shooter.setTurretPositionCmd(TurretPosition.MAX));
     }
 
     public Command getAutonomousCommand() {
@@ -162,6 +185,9 @@ public class Robot extends TimedRobot {
                 drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());
             }
         }
+
+        // periodics
+        shooter.periodic();
     }
 
     @Override
@@ -218,5 +244,6 @@ public class Robot extends TimedRobot {
         Pose2d robotPose = robotState.Pose;
         visionSim.simulationPeriodic(robotPose);
         drivetrain.simulationPeriodic();
+        shooter.simulationPeriodic();
     }
 }
