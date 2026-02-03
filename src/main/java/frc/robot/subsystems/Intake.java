@@ -9,9 +9,10 @@ import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 
+import edu.wpi.first.units.Units;
+
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -33,7 +34,7 @@ public class Intake extends SubsystemBase {
     private final TalonFX m_intakeRollerMotor = new TalonFX(IntakeK.kIntakeRollerCANID);
 
     private MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true).withSlot(0);
-    private VoltageOut m_rollerVoltOut = new VoltageOut(1);
+    private VoltageOut m_rollerVoltOut = new VoltageOut(12);
 
     private VoltageOut zeroingVoltageCtrlReq = new VoltageOut(-0.75); // TODO change this to whatever necessary
 
@@ -55,9 +56,11 @@ public class Intake extends SubsystemBase {
 
     // Logger stuff
     BooleanLogger log_isWorking = WaltLogger.logBoolean(IntakeK.kLogTab, "working");
-    DoubleLogger log_getRollerVoltOut = WaltLogger.logDouble(IntakeK.kLogTab, "rollerVoltOut");
+    DoubleLogger log_rollerVoltOut = WaltLogger.logDouble(IntakeK.kLogTab, "rollerVoltOut");
+    DoubleLogger log_rollerSpeed = WaltLogger.logDouble(IntakeK.kLogTab, "rollerSpeedt");
     DoubleLogger log_deployPosition = WaltLogger.logDouble(IntakeK.kLogTab, "deployPos");
 
+    // Simulators
     private final DCMotorSim m_deploySim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX44(1),
@@ -93,7 +96,7 @@ public class Intake extends SubsystemBase {
     }
 
     public Command spinIntakeRollers() {
-        return Commands.runOnce(() -> m_intakeRollerMotor.setVoltage(m_rollerVoltOut.Output));
+        return Commands.runOnce(() -> m_intakeRollerMotor.setVoltage(5));
     }
 
     public Command intakeToAngle(double degs) {
@@ -124,12 +127,13 @@ public class Intake extends SubsystemBase {
     }
 
     public void simulationPeriodic(){
-        // m_controller.a().onTrue(intakeToAngle(0));
-        // m_controller.b().onTrue(intakeToAngle(0.5));
-        // m_controller.x().onTrue(intakeToAngle(1));
+        m_controller.a().onTrue(intakeToAngle(0));
+        m_controller.b().onTrue(intakeToAngle(0.5));
+        m_controller.x().onTrue(intakeToAngle(1));
         log_isWorking.accept(true);
         spinIntakeRollers();
-        log_getRollerVoltOut.accept(m_intakeRollerMotor.getSupplyVoltage().getValueAsDouble());
-        // log_deployPosition.accept(m_intakeDeployMotor);
+        log_rollerVoltOut.accept(m_intakeRollerMotor.getMotorVoltage().getValueAsDouble());
+        log_rollerSpeed.accept(m_intakeRollerMotor.get());
+        log_deployPosition.accept(m_intakeDeployMotor.getPosition().getValue().in(Units.Rotations));
     }
 }
