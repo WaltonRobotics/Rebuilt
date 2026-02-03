@@ -163,12 +163,12 @@ public class Robot extends TimedRobot {
         driver.leftTrigger().onTrue(shooter.setTurretPositionCmd(TurretPosition.MIN));
         driver.rightTrigger().onTrue(shooter.setTurretPositionCmd(TurretPosition.MAX));
 
-        driver
-            .rightBumper()
-            .negate()
-            .whileTrue(shooter.runTrackTargetActiveShootingCommand())
-            .and(() -> shotCalculator.getParameters().isValid())
-            .
+        // driver
+        //     .rightBumper()
+        //     .negate()
+        //     .whileTrue(shooter.runTrackTargetActiveShootingCommand())
+        //     .and(() -> shotCalculator.getParameters().isValid())
+        //     .
     }
 
     public Command getAutonomousCommand() {
