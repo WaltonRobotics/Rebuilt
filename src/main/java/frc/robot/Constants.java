@@ -76,8 +76,8 @@ public class Constants {
     public static class IntakeK {
         public static final String kLogTab = "Intake";
 
-        public static final int kIntakeDeployCANID = 1;
-        public static final int kIntakeRollerCANID = 2; // TODO CHANGE TO CORRECT
+        public static final int kIntakeDeployCANID = 41;
+        public static final int kIntakeRollerCANID = 42; // TODO CHANGE TO CORRECT
 
         // deploy motor
         public static final int kDeployGearRatio = 40; // TODO: check if still accurate
@@ -100,20 +100,25 @@ public class Constants {
                 .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(kDeployMMAccel))
                 .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(kDeployMMJerk));
         private static final Slot0Configs kDeploySlot0Configs = new Slot0Configs()
-                .withKS(0.25)
-                .withKV(4)
+                .withKS(0)
+                .withKV(0)
                 .withKA(0)
-                .withKP(10)
+                .withKP(0.3)
                 .withKI(0)
                 .withKD(0);
         public static final MotorOutputConfigs kDeployMotorOutputConfigs = new MotorOutputConfigs()
                 .withNeutralMode(NeutralModeValue.Brake);
+        private static final MotionMagicConfigs kDeployMotionMagicConfigs = new MotionMagicConfigs()
+            .withMotionMagicCruiseVelocity(20)
+            .withMotionMagicAcceleration(100)
+            .withMotionMagicJerk(0);
         public static final TalonFXConfiguration kDeployConfiguration = new TalonFXConfiguration()
                 .withCurrentLimits(kDeployCurrentLimitConfigs)
                 .withFeedback(kDeployFeedbackConfigs)
                 .withMotionMagic(kDeployMagicConfigs)
                 .withSlot0(kDeploySlot0Configs)
-                .withMotorOutput(kDeployMotorOutputConfigs);
+                .withMotorOutput(kDeployMotorOutputConfigs)
+                .withMotionMagic(kDeployMotionMagicConfigs);
 
         // intake motor
         public static final int kIntakeGearRatio = 2;
@@ -129,12 +134,12 @@ public class Constants {
                 .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(10))
                 .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(100));
         private static final Slot0Configs kIntakeSlot0Configs = new Slot0Configs()
-                .withKS(0.25)
-                .withKV(0.12)
-                .withKA(0.01)
-                .withKP(60)
+                .withKS(0)
+                .withKV(1)
+                .withKA(0)
+                .withKP(0)
                 .withKI(0)
-                .withKD(0.5);
+                .withKD(0);
         public static final MotorOutputConfigs kIntakeMotorOutputConfigs = new MotorOutputConfigs()
                 .withInverted(InvertedValue.Clockwise_Positive);
         public static final TalonFXConfiguration kIntakeConfiguration = new TalonFXConfiguration()

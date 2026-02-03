@@ -69,11 +69,13 @@ public class Robot extends TimedRobot {
     // this should be updated with all of our cameras
     private final Vision[] cameras = {camera1, camera2};
 
+    private final Intake intake = new Intake();
+
     /* log and replay timestamp and joystick data */
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
         .withTimestampReplay()
         .withJoystickReplay();
-    Intake intake = new Intake();
+
     public Robot() {
         configureBindings();
     }
@@ -135,6 +137,10 @@ public class Robot extends TimedRobot {
 
         // Reset the field-centric heading on left bumper press.
         driver.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+
+        driver.a().onTrue(intake.intakeToAngle(0));
+        driver.b().onTrue(intake.intakeToAngle(0.5));
+        driver.x().onTrue(intake.intakeToAngle(1));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
@@ -220,6 +226,4 @@ public class Robot extends TimedRobot {
         drivetrain.simulationPeriodic();
         intake.simulationPeriodic();
     }
-
-        
 }
