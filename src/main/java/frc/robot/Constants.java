@@ -69,53 +69,55 @@ public class Constants {
         public static final String kLogTab = "Superstructure";
     }
 
-    public static class TransferK {
-        public static String kLogTab = "Transfer";
+    public static class IndexerK {
+        public static String kLogTab = "Indexer";
         
         /* IDS */
         //TODO: Make ids accurate
-        public static final int kSpinnerCANID = 9;
-        public static final int kExhaustCANID = 10;
+        public static final int kSpinnerCANID = 49;
+        public static final int kExhaustCANID = 50;
+
+        public static final double kSpinnerGearing = 3;
+        public static final double kExhaustGearing = 1/1.2;
+
+        public static final double kSpinnerMomentOfInertia = 0.001829;
+        public static final double kExhaustMomentOfInertia = 0.0001648;
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
         private static final Slot0Configs kSpinnerSlot0Configs = new Slot0Configs()
-            .withKS(0.1)
+            .withKS(0)
             .withKV(0.12)
-            .withKP(0.11)
+            .withKA(0)
+            .withKP(0)
             .withKI(0)
             .withKD(0);
         private static final CurrentLimitsConfigs kSpinnerCurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(70)
-            .withStatorCurrentLimitEnable(true)
-            .withSupplyCurrentLimit(120)
-            .withSupplyCurrentLimitEnable(true);
+            .withStatorCurrentLimit(140)
+            .withSupplyCurrentLimit(100)
+            .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kSpinnerMotorOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: CW or CCW?
-            .withNeutralMode(NeutralModeValue.Brake)
-            .withPeakForwardDutyCycle(0.1)
-            .withPeakReverseDutyCycle(0.1);
+            .withNeutralMode(NeutralModeValue.Brake);
         public static final TalonFXConfiguration kSpinnerTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kSpinnerSlot0Configs)
             .withCurrentLimits(kSpinnerCurrentLimitConfigs)
             .withMotorOutput(kSpinnerMotorOutputConfigs);
 
         private static final Slot0Configs kExhaustSlot0Configs = new Slot0Configs()
-            .withKS(0.1)
+            .withKS(0)
             .withKV(0.12)
-            .withKP(0.11)
+            .withKA(0)
+            .withKP(0)
             .withKI(0)
             .withKD(0);
         private static final CurrentLimitsConfigs kExhaustCurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(70)
-            .withStatorCurrentLimitEnable(true)
-            .withSupplyCurrentLimit(120)
-            .withSupplyCurrentLimitEnable(true);
+            .withStatorCurrentLimit(140)
+            .withSupplyCurrentLimit(100)
+            .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kExhaustMotorOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: CW or CCW?
-            .withNeutralMode(NeutralModeValue.Brake)
-            .withPeakForwardDutyCycle(0.1)
-            .withPeakReverseDutyCycle(0.1);
+            .withNeutralMode(NeutralModeValue.Brake);
         public static final TalonFXConfiguration kExhaustTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kExhaustSlot0Configs)
             .withCurrentLimits(kExhaustCurrentLimitConfigs)

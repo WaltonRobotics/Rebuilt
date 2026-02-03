@@ -5,6 +5,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.Constants.IndexerK.kLogTab;
 
 import java.util.Optional;
 
@@ -29,10 +30,11 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.VisionK;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Swerve;
-import frc.robot.subsystems.Transfer;
+import frc.robot.subsystems.Indexer;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
 import frc.util.WaltLogger;
+import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
 public class Robot extends TimedRobot {
@@ -43,6 +45,10 @@ public class Robot extends TimedRobot {
     private final DoubleLogger log_stickDesiredFieldX = WaltLogger.logDouble("Swerve", "stick desired teleop x");
     private final DoubleLogger log_stickDesiredFieldY = WaltLogger.logDouble("Swerve", "stick desired teleop y");
     private final DoubleLogger log_stickDesiredFieldZRot = WaltLogger.logDouble("Swerve", "stick desired teleop z rot");
+    private final BooleanLogger log_povUp = WaltLogger.logBoolean(kLogTab, "Pov Up");
+    private final BooleanLogger log_povRight = WaltLogger.logBoolean(kLogTab, "Pov Right");
+    private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
+    private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
 
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
@@ -69,7 +75,7 @@ public class Robot extends TimedRobot {
     // this should be updated with all of our cameras
     private final Vision[] cameras = {camera1, camera2};
 
-    private final Transfer transfer = new Transfer();
+    private final Indexer m_indexer = new Indexer();
 
     /* log and replay timestamp and joystick data */
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -141,10 +147,10 @@ public class Robot extends TimedRobot {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
-        driver.leftBumper().onTrue(transfer.startSpinner(0.5));
-        driver.rightBumper().onTrue(transfer.stopSpinner());
-        driver.leftTrigger().onTrue(transfer.startExhaust(2));
-        driver.rightTrigger().onTrue(transfer.stopExhaust());
+        driver.povUp().onTrue(m_indexer.startSpinner(20));
+        driver.povDown().onTrue(m_indexer.stopSpinner());
+        driver.povLeft().onTrue(m_indexer.startExhaust(40));
+        driver.povRight().onTrue(m_indexer.stopExhaust());
     }
 
     public Command getAutonomousCommand() {
@@ -172,7 +178,11 @@ public class Robot extends TimedRobot {
         }
 
         // Periodics
-        transfer.periodic();
+        m_indexer.periodic();
+        log_povUp.accept(driver.povUp());
+        log_povDown.accept(driver.povDown());
+        log_povLeft.accept(driver.povLeft());
+        log_povRight.accept(driver.povRight());
     }
 
     @Override
@@ -229,6 +239,6 @@ public class Robot extends TimedRobot {
         Pose2d robotPose = robotState.Pose;
         visionSim.simulationPeriodic(robotPose);
         drivetrain.simulationPeriodic();
-        transfer.simulationPeriodic();
+        m_indexer.simulationPeriodic();
     }
 }
