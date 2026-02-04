@@ -76,6 +76,14 @@ public class Constants {
     public static class IntakeK {
         public static final String kLogTab = "Intake";
 
+        /* MOTOR CONSTANTS */
+
+        public static final double kDeployMomentOfInertia = 0.0209;
+        public static final double kDeployGearing = 5/1;
+        
+        public static final double kRollerMomentOfInertia = 0.0867;
+        public static final double kRollerGearing = 1/2;
+
         public static final int kIntakeDeployCANID = 41;
         public static final int kIntakeRollerCANID = 42; // TODO CHANGE TO CORRECT
 
