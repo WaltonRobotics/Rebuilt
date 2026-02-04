@@ -101,10 +101,10 @@ public class Constants {
                 .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(kDeployMMJerk));
         private static final Slot0Configs kDeploySlot0Configs = new Slot0Configs()
                 .withKS(0)
-                .withKV(0)
+                .withKV(10)
                 .withKA(0)
-                .withKP(0.3)
-                .withKI(0)
+                .withKP(20)
+                .withKI(0.1)
                 .withKD(0);
         public static final MotorOutputConfigs kDeployMotorOutputConfigs = new MotorOutputConfigs()
                 .withNeutralMode(NeutralModeValue.Brake);
@@ -121,31 +121,32 @@ public class Constants {
                 .withMotionMagic(kDeployMotionMagicConfigs);
 
         // intake motor
-        public static final int kIntakeGearRatio = 2;
-        public static final int kIntakeSensorToMechanismRatio = kIntakeGearRatio;
-        private static final CurrentLimitsConfigs kIntakeCurrentLimitConfigs = new CurrentLimitsConfigs()
+        public static final int kRollerGearRatio = 2;
+        public static final int kRollerSensorToMechanismRatio = kRollerGearRatio;
+        private static final CurrentLimitsConfigs kRollerCurrentLimitConfigs = new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(110)
                 .withSupplyCurrentLimit(50)
                 .withStatorCurrentLimitEnable(true);
-        private static final FeedbackConfigs kIntakeFeedbackConfigs = new FeedbackConfigs()
-                .withSensorToMechanismRatio(kIntakeSensorToMechanismRatio);
-        private static final MotionMagicConfigs kIntakeMagicConfigs = new MotionMagicConfigs()
-                .withMotionMagicCruiseVelocity(RotationsPerSecond.of(1))
-                .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(10))
-                .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(100));
-        private static final Slot0Configs kIntakeSlot0Configs = new Slot0Configs()
-                .withKS(0)
+        private static final FeedbackConfigs kRollerFeedbackConfigs = new FeedbackConfigs()
+                .withSensorToMechanismRatio(kRollerSensorToMechanismRatio);
+        private static final MotionMagicConfigs kRollerMotionMagicConfigs = new MotionMagicConfigs()
+                .withMotionMagicCruiseVelocity(RotationsPerSecond.of(20))
+                .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(100))
+                .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(10));
+        private static final Slot0Configs kRollerSlot0Configs = new Slot0Configs()
+                .withKS(1)
                 .withKV(1)
-                .withKA(0)
-                .withKP(0)
-                .withKI(0)
-                .withKD(0);
-        public static final MotorOutputConfigs kIntakeMotorOutputConfigs = new MotorOutputConfigs()
+                .withKA(1)
+                .withKP(1)
+                .withKI(1)
+                .withKD(1);
+        public static final MotorOutputConfigs kRollerMotorOutputConfigs = new MotorOutputConfigs()
                 .withInverted(InvertedValue.Clockwise_Positive);
-        public static final TalonFXConfiguration kIntakeConfiguration = new TalonFXConfiguration()
-                .withCurrentLimits(kIntakeCurrentLimitConfigs)
-                .withFeedback(kIntakeFeedbackConfigs)
-                .withSlot0(kIntakeSlot0Configs)
-                .withMotorOutput(kIntakeMotorOutputConfigs);
+        public static final TalonFXConfiguration kRollerConfiguration = new TalonFXConfiguration()
+                .withCurrentLimits(kRollerCurrentLimitConfigs)
+                .withFeedback(kRollerFeedbackConfigs)
+                .withSlot0(kRollerSlot0Configs)
+                .withMotorOutput(kRollerMotorOutputConfigs)
+                .withMotionMagic(kRollerMotionMagicConfigs);
     }
 }
