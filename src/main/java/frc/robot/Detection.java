@@ -5,13 +5,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.util.Units;
 import frc.robot.Constants.VisionK;
 import frc.robot.vision.VisionSim;
 
@@ -48,28 +46,24 @@ public class Detection {
         }
 
         if (targetList.size() > 0) {
-            double minDistance = 17.37; //in meters
+            double closestArea = 0;
                     
             for (PhotonTrackedTarget target : targetList) {
-                double distance = 
-                    PhotonUtils.calculateDistanceToTargetMeters(
-                        Units.inchesToMeters(28),  //dummy (move ts to constants)
-                        Units.inchesToMeters(5.91),  //dummy (move ts to constants)
-                        Units.degreesToRadians(-25),  //dummy (move ts to constants)
-                        Units.degreesToRadians(target.pitch));
+                double area = target.getArea();
 
-                if (distance < minDistance) {
+                if (area > closestArea) {
                     closestTarget = target;
-                    minDistance = distance;
+                    closestArea = area;
                 }
             }
         }
-
         return closestTarget;
     }
 
     public Pose2d targetToPose(Pose2d robotPose, PhotonTrackedTarget fuel) {
-        Transform2d fuelTransform = new Transform2d(fuel.getBestCameraToTarget().getMeasureX(), fuel.getBestCameraToTarget().getMeasureY(), fuel.getBestCameraToTarget().getRotation().toRotation2d());
+        Transform2d fuelTransform = new Transform2d(
+            fuel.getBestCameraToTarget().getMeasureX(), fuel.getBestCameraToTarget().getMeasureY(), fuel.getBestCameraToTarget().getRotation().toRotation2d()
+        );
         
         Pose2d fuelPose = robotPose.transformBy(fuelTransform);
 

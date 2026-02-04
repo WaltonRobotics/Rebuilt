@@ -48,18 +48,20 @@ public class VisionSim {
     public List<PhotonTrackedTarget> addFuel() {
         List<PhotonTrackedTarget> simTargetList = new LinkedList<>();
 
-        double simFuelYaw = 40;
-        double simFuelPitch = 30;
-        double simFuelRoll = 10;
+        Rotation3d fuelRotation = new Rotation3d(10, 30, 45);
 
-        Rotation3d fuelRotation = new Rotation3d(simFuelRoll, simFuelPitch, simFuelYaw);
-
-        PhotonTrackedTarget simFuel = new PhotonTrackedTarget(45, 30, 70, 20, -1, -1, -1, new Transform3d(5, 6, 0, fuelRotation), new Transform3d(), 0, new LinkedList<>(), new LinkedList<>());
-        PhotonTrackedTarget simFuelTwo = new PhotonTrackedTarget(45, 30, 100, 20, -1, -1, -1, new Transform3d(1,1,1, fuelRotation), new Transform3d(), 0, new LinkedList<>(), new LinkedList<>());
-
+        PhotonTrackedTarget simFuel = new PhotonTrackedTarget(
+            45, 30, 70, 20, -1, -1, -1, new Transform3d(5, 6, 0, fuelRotation), new Transform3d(), 0, new LinkedList<>(), new LinkedList<>()
+        );
+        PhotonTrackedTarget simFuelTwo = new PhotonTrackedTarget(
+            45, 30, 100, 20, -1, -1, -1, new Transform3d(1,1,1, fuelRotation), new Transform3d(), 0, new LinkedList<>(), new LinkedList<>()
+        );
+        
         simTargetList.add(simFuel);
-        simTargetList.add(simFuelTwo);   
+        simTargetList.add(simFuelTwo);
+        
         
         return simTargetList;
     }
+
 }
