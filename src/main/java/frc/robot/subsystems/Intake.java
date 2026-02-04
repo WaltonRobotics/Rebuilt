@@ -31,8 +31,8 @@ import frc.robot.Constants.IntakeK;
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
-    private final TalonFX m_intakeDeployMotor = new TalonFX(IntakeK.kIntakeDeployCANID);
-    private final TalonFX m_intakeRollerMotor = new TalonFX(IntakeK.kIntakeRollerCANID);
+    private final TalonFX m_deployMotor = new TalonFX(IntakeK.kIntakeDeployCANID);
+    private final TalonFX m_rollerMotor = new TalonFX(IntakeK.kIntakeRollerCANID);
 
     private MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0);
     private VoltageOut m_rollerVoltOut = new VoltageOut(12);
@@ -67,47 +67,45 @@ public class Intake extends SubsystemBase {
     );
 
     public Intake() {
-        m_intakeDeployMotor.getConfigurator().apply(IntakeK.kDeployConfiguration);
-        m_intakeRollerMotor.getConfigurator().apply(IntakeK.kIntakeConfiguration);
+        m_deployMotor.getConfigurator().apply(IntakeK.kDeployConfiguration);
+        m_rollerMotor.getConfigurator().apply(IntakeK.kRollerConfiguration);
 
         initSim();
     }
 
     private void initSim() {
-        var deployFXSim = m_intakeDeployMotor.getSimState();
+        var deployFXSim = m_deployMotor.getSimState();
         deployFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
         deployFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX60);
 
-        var rollerFXSim = m_intakeDeployMotor.getSimState();
+        var rollerFXSim = m_deployMotor.getSimState();
         rollerFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
         rollerFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
     }
 
     public Command spinIntakeRollers() {
-        return runOnce(() -> m_intakeRollerMotor.setVoltage(m_rollerVoltOut.Output));
+        return runOnce(() -> m_rollerMotor.setVoltage(m_rollerVoltOut.Output));
     }
 
     public Command intakeToAngle(double rots) {
-        return runOnce(
-            () -> m_intakeDeployMotor.setControl(m_MMVRequest.withPosition(rots))
-        );
+        return runOnce(() -> m_deployMotor.setControl(m_MMVRequest.withPosition(rots)));
     }
 
     @Override
     public void periodic() {
         log_rollerVoltOut.accept(m_MMVRequest.Position);
-        log_rollerSpeed.accept(m_intakeRollerMotor.getVelocity().getValueAsDouble());
-        log_deployPosition.accept(m_intakeDeployMotor.getPosition().getValueAsDouble());
+        log_rollerSpeed.accept(m_rollerMotor.getSimState().getMotorVoltage());
+        log_deployPosition.accept(m_deployMotor.getPosition().getValueAsDouble());
     }
 
     @Override
     public void simulationPeriodic() {
-        var rollerFXSim = m_intakeRollerMotor.getSimState();
+        var deployFXSim = m_deployMotor.getSimState();
 
-        m_rollerSim.setInputVoltage(rollerFXSim.getMotorVoltage());
-        m_rollerSim.update(0.02);
+        m_deploySim.setInputVoltage(m_deployMotor.getSimState().getMotorVoltage());
+        m_deploySim.update(0.02);
         
-        rollerFXSim.setRawRotorPosition(m_rollerSim.getAngularPositionRotations());
-        rollerFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        deployFXSim.setRawRotorPosition(m_deploySim.getAngularPositionRotations());
+        deployFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 }
