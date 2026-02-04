@@ -78,35 +78,16 @@ public class Constants {
 
         /* MOTOR CONSTANTS */
 
+        // deploy motor
         public static final double kDeployMomentOfInertia = 0.0209;
         public static final double kDeployGearing = 5/1;
-        
-        public static final double kRollerMomentOfInertia = 0.0867;
-        public static final double kRollerGearing = 1.0/2;
 
-        public static final int kIntakeDeployCANID = 41;
-        public static final int kIntakeRollerCANID = 42; // TODO CHANGE TO CORRECT
-
-        // deploy motor
-        public static final int kDeployGearRatio = 40; // TODO: check if still accurate
-        public static final int kDeploySensorToMechanismRatio = kDeployGearRatio;
-        public static final int kAngleTolerance = 3; // DUMMY VALUE
-        public static final double kDeployMMVelo = 1;
-        public static final double kDeployMMAccel = 25;
-        public static final double kDeployMMJerk = 300;
-        public static final double kDeployMMVeloSlow = 0.65;
-        public static final double kDeployMMAccelSlow = 10;
+        public static final int kDeployCANID = 41; // TODO change to correct
 
         private static final CurrentLimitsConfigs kDeployCurrentLimitConfigs = new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(20)
                 .withSupplyCurrentLimit(20)
                 .withStatorCurrentLimitEnable(true);
-        private static final FeedbackConfigs kDeployFeedbackConfigs = new FeedbackConfigs()
-                .withSensorToMechanismRatio(kDeploySensorToMechanismRatio);
-        private static final MotionMagicConfigs kDeployMagicConfigs = new MotionMagicConfigs()
-                .withMotionMagicCruiseVelocity(RotationsPerSecond.of(kDeployMMVelo))
-                .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(kDeployMMAccel))
-                .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(kDeployMMJerk));
         private static final Slot0Configs kDeploySlot0Configs = new Slot0Configs()
                 .withKS(100)
                 .withKV(100)
@@ -122,37 +103,36 @@ public class Constants {
             .withMotionMagicJerk(0);
         public static final TalonFXConfiguration kDeployConfiguration = new TalonFXConfiguration()
                 .withCurrentLimits(kDeployCurrentLimitConfigs)
-                .withFeedback(kDeployFeedbackConfigs)
-                .withMotionMagic(kDeployMagicConfigs)
                 .withSlot0(kDeploySlot0Configs)
                 .withMotorOutput(kDeployMotorOutputConfigs)
                 .withMotionMagic(kDeployMotionMagicConfigs);
 
-        // intake motor
-        public static final int kRollerGearRatio = 2;
-        public static final int kRollerSensorToMechanismRatio = kRollerGearRatio;
+        // roller motor
+        public static final double kRollerMomentOfInertia = 0.02;
+        public static final double kRollerGearing = 1.0/2;
+
+        public static final int kRollerCANID = 42; // TODO change to correct
+
         private static final CurrentLimitsConfigs kRollerCurrentLimitConfigs = new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(110)
                 .withSupplyCurrentLimit(50)
                 .withStatorCurrentLimitEnable(true);
-        private static final FeedbackConfigs kRollerFeedbackConfigs = new FeedbackConfigs()
-                .withSensorToMechanismRatio(kRollerSensorToMechanismRatio);
         private static final MotionMagicConfigs kRollerMotionMagicConfigs = new MotionMagicConfigs()
                 .withMotionMagicCruiseVelocity(RotationsPerSecond.of(20))
                 .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(100))
                 .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(10));
         private static final Slot0Configs kRollerSlot0Configs = new Slot0Configs()
-                .withKS(1)
-                .withKV(1)
-                .withKA(1)
+                .withKS(0)
+                .withKV(10)
+                .withKA(0)
                 .withKP(1)
-                .withKI(1)
-                .withKD(1);
+                .withKI(0)
+                .withKD(0.4);
         public static final MotorOutputConfigs kRollerMotorOutputConfigs = new MotorOutputConfigs()
-                .withInverted(InvertedValue.Clockwise_Positive);
+                .withInverted(InvertedValue.Clockwise_Positive)
+                .withNeutralMode(NeutralModeValue.Brake);
         public static final TalonFXConfiguration kRollerConfiguration = new TalonFXConfiguration()
                 .withCurrentLimits(kRollerCurrentLimitConfigs)
-                .withFeedback(kRollerFeedbackConfigs)
                 .withSlot0(kRollerSlot0Configs)
                 .withMotorOutput(kRollerMotorOutputConfigs)
                 .withMotionMagic(kRollerMotionMagicConfigs);
