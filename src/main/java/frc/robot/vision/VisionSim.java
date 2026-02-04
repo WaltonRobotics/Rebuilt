@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import frc.robot.Detection;
 import frc.robot.Robot;
 
 public class VisionSim {
@@ -45,7 +46,7 @@ public class VisionSim {
         return m_photonVisionSim.getDebugField();
     }
 
-    public List<PhotonTrackedTarget> addFuel() {
+    public List<PhotonTrackedTarget> simFuelList() {
         List<PhotonTrackedTarget> simTargetList = new LinkedList<>();
 
         Rotation3d fuelRotation = new Rotation3d(10, 30, 45);
