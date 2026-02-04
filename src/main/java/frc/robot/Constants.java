@@ -15,12 +15,12 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
@@ -80,16 +80,44 @@ public class Constants {
     }
 
     public static class AutoAlignK {
-        //Obtain the correct tag ID based on alliance color, default to blue side
-        public static int towerTagID = DriverStation.getAlliance().get().equals(Alliance.Blue) 
-                                || DriverStation.getAlliance().isEmpty() ? 15 : 31;
-
         //Placeholder tolerances - to be tuned
         //Delete this comment when done tuning
         public static final Distance kFieldTranslationTol = Meters.of(0); //meters
         public static final Angle kFieldRotationTol = Degrees.of(0); //degrees
 
         public static final double kFinishVelTol = 0; //meters per second
+
+        public static final double kIntermediatePoseDistance = -Units.inchesToMeters(6); // value in meters
+        public static final Transform2d kIntermediatePoseTransform 
+            = new Transform2d(kIntermediatePoseDistance, 0, Rotation2d.kZero);
+
+            
+        public static double kXKP = 8;
+        public static double kYKP = 8;
+        public static double kThetaKP = 10;
+
+        // SUPER COOL AUTO ALIGN :sunglasses: - this should eventually allow you to replace all code using above constants
+
+        // TODO: these will really need tuning
+        // teleop speeds below
+        public static final double kMaxDimensionVel = 1.65; // m/s
+        public static final double kMaxDimensionAccel = 6; // m/s^2
+        public static final TrapezoidProfile.Constraints kXYConstraints = new TrapezoidProfile.Constraints(kMaxDimensionVel, kMaxDimensionAccel);
+        // Auton speeds below
+        public static final double kMaxDimensionVelEleUp = 2; // m/s
+        public static final double kMaxDimensionAccelEleUp = 3; // m/s^2
+        public static final TrapezoidProfile.Constraints kXYConstraintsAuton 
+            = new TrapezoidProfile.Constraints(kMaxDimensionVelEleUp,kMaxDimensionAccelEleUp);
+
+        public static final double kMaxThetaVel = 4; // rad/s
+        public static final double kMaxThetaAccel = 8; // rad/s^2
+        public static final TrapezoidProfile.Constraints kThetaConstraints = new TrapezoidProfile.Constraints(kMaxThetaVel, kMaxThetaAccel);
+        
+        /** <p>Arbitrary number to control how much a difference in rotation should affect tag selection. Higher means more weight
+         * <p> 0 means rotation difference has no weight, negative will literally bias it against tags that have more similar rotations */
+        public static final double kRotationWeight = 0.2;
+
+        public static final double kFutureDelta = 0.3; // seconds, TODO: needs tuning
     }
 
     public static class RobotK {

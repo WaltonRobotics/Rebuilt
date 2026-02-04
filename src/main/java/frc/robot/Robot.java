@@ -25,8 +25,11 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.AutoAlignK;
 import frc.robot.Constants.VisionK;
+import frc.robot.autoalign.MovingAutoAlign;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Swerve;
 import frc.robot.vision.Vision;
@@ -60,6 +63,10 @@ public class Robot extends TimedRobot {
     public final Swerve drivetrain = TunerConstants.createDrivetrain();
     private Command m_autonomousCommand;
     private final AutoFactory autoFactory = drivetrain.createAutoFactory();
+
+    //Auto Align bs
+    private final Trigger trg_leftTeleopAutoAlign = driver.x();
+
 
     private final VisionSim visionSim = new VisionSim();
     private final Vision camera1 = new Vision(VisionK.kCamera1CamName, VisionK.kCamera1CamSimVisualName, VisionK.kCamera1CamRoboToCam, visionSim, VisionK.kCamera1SimProps);
@@ -101,6 +108,14 @@ public class Robot extends TimedRobot {
         );
     }
 
+    Command autoAlignCmd() {
+    return MovingAutoAlign.autoAlignWithIntermediateTransformUntilInTolerances(
+      drivetrain, 
+      () -> MovingAutoAlign.tagPose, 
+      () -> AutoAlignK.kIntermediatePoseTransform
+    );//.alongWith(Commands.runOnce(cameraSnapshotFunc));
+  }
+
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
@@ -111,6 +126,10 @@ public class Robot extends TimedRobot {
                     .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
                     .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
+        );
+
+        trg_leftTeleopAutoAlign.whileTrue(
+        autoAlignCmd()
         );
 
         // Idle while the robot is disabled. This ensures the configured
