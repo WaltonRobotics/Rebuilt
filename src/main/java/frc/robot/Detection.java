@@ -1,7 +1,5 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -12,9 +10,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.Constants.VisionK;
-import frc.robot.generated.TunerConstants;
 import frc.robot.vision.VisionSim;
 
 
