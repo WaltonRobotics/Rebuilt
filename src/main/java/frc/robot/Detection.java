@@ -52,6 +52,7 @@ public class Detection {
             for (PhotonTrackedTarget target : targetList) {
                 double area = target.getArea();
 
+                //closer the target, the larger the area
                 if (area > closestArea) {
                     closestTarget = target;
                     closestArea = area;
