@@ -12,9 +12,11 @@ import com.ctre.phoenix6.sim.TalonFXSimState;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -27,22 +29,30 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import static frc.robot.Constants.ShooterK.*;
 
 import frc.robot.Constants;
+import frc.robot.RobotState;
 import frc.robot.subsystems.shooter.ShotCalculation;
+import frc.util.EqualsUtil;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
-//TODO: for sohan - make sure to implement m_atGoal for turret and Hood (flywheel alr done)
+//TODO: for sohan - make sure to implement m_atGoal for Hood
 public class Shooter extends SubsystemBase {
     /* VARIABLES */
 
     private Rotation2d m_goalAngle = Rotation2d.kZero;
     private double m_goalVelocity = 0.0;
     private double m_lastGoalAngle = 0.0;
+    private final double m_torqueCurrentControlTolerance = 20.0;
+    private final double m_atGoalDebounce = 0.2;
+    private double lastGoalAngle = 0.0;
+
     private ShootingState m_shootState = ShootingState.ACTIVE_SHOOTING;
+
     private boolean m_shooterAtGoal, m_turretAtGoal, m_hoodAtGoal = false;
-    private static final double m_torqueCurrentControlTolerance = 20.0;
-    private static final double m_atGoalDebounce = 0.2;
+    private boolean m_turretZeroed = false;
+
+    private State m_setpoint = new State();
 
     private Debouncer m_atGoalDebouncer = new Debouncer(m_atGoalDebounce, DebounceType.kFalling);
 
@@ -159,11 +169,6 @@ public class Shooter extends SubsystemBase {
         this.m_lastGoalAngle = lastGoalAngle;
     }
 
-    private void setFieldRelativeTarget(Rotation2d angle, double velocity) {
-        this.m_goalAngle = angle;
-        this.m_goalVelocity = velocity;
-    }
-
     public ShootingState getShootState() {
         return m_shootState;
     }
@@ -171,6 +176,18 @@ public class Shooter extends SubsystemBase {
     public void setShootState(ShootingState shootState) {
         this.m_shootState = shootState;
     }
+
+    private void zeroTurret() {
+        setTurretPositionCmd(TurretPosition.HOME);
+        m_turretZeroed = true;
+    }
+
+    private void setFieldRelativeTarget(Rotation2d angle, double velocity) {
+        this.m_goalAngle = angle;
+        this.m_goalVelocity = velocity;
+    }
+
+   
 
     /* COMMANDS */
     // Shooter Commands (Velocity Control)
@@ -215,6 +232,45 @@ public class Shooter extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
+        if (DriverStation.isDisabled() || !m_turretZeroed) {
+            m_turretAtGoal = false;
+        } else if (DriverStation.isEnabled() && m_turretZeroed) {
+            Rotation2d robotAngle = RobotState.getInstance().getRotation();
+            Rotation2d robotRelativeGoalAngle = m_goalAngle.minus(robotAngle);
+            boolean hasBestAngle = false;
+            double bestAngle = 0;
+            double minLegalAngle = switch (m_shootState) {
+                case ACTIVE_SHOOTING -> kMinAngle;
+                case TRACKING -> kMaxAngle;
+            };
+            double maxLegalAngle = switch (m_shootState) {
+                case ACTIVE_SHOOTING -> kMaxAngle;
+                case TRACKING -> kMinAngle;
+            };
+            double robotAngularVelocity = RobotState.getInstance().getFieldVelocity().omegaRadiansPerSecond;
+            double robotRelativeGoalVelocity = m_goalVelocity - robotAngularVelocity;
+
+            for (int i = -2; i < 3; i++) {
+                double potentialSetpoint = robotRelativeGoalAngle.getRadians() + Math.PI * 2.0 * i;
+
+                if (potentialSetpoint < minLegalAngle || potentialSetpoint > maxLegalAngle) {
+                    continue;
+                } else {
+                    if (!hasBestAngle) {
+                        bestAngle = potentialSetpoint;
+                        hasBestAngle = true;
+                    }
+                    if (Math.abs(lastGoalAngle - potentialSetpoint) < Math.abs(lastGoalAngle - bestAngle)) {
+                        bestAngle = potentialSetpoint;
+                    }
+                }
+            }
+            
+            m_turretAtGoal =
+                EqualsUtil.epsilonEquals(bestAngle, m_setpoint.position)
+                    && EqualsUtil.epsilonEquals(robotRelativeGoalVelocity, m_setpoint.velocity);
+        }
+        
         log_shooterVelocityRPS.accept(m_leader.getVelocity().getValueAsDouble());
         log_hoodPositionRots.accept(m_hood.getPosition().getValueAsDouble());
         log_turretPositionRots.accept(m_turret.getPosition().getValueAsDouble());

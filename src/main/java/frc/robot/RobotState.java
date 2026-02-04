@@ -78,5 +78,9 @@ public class RobotState {
     public void setRobotVelocity(ChassisSpeeds robotVelocity) {
         this.robotVelocity = robotVelocity;
     }
+    
+    public ChassisSpeeds getFieldVelocity() {
+        return ChassisSpeeds.fromRobotRelativeSpeeds(robotVelocity, getRotation());
+    }
 
 }

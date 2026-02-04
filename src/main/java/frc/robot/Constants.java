@@ -35,6 +35,9 @@ public class Constants {
         //cant really think of any other name but is where the turret is relative to the robot
         public static final Transform3d kRobotToTurret = new Transform3d(0, 0, 0, Rotation3d.kZero); //DUMMY VALS
 
+        public static final double kMinAngle = Units.degreesToRadians(-270.0);
+        public static final double kMaxAngle = Units.degreesToRadians(270.0);
+
         /* IDS */
         public static final int kLeaderCANID = 21; //TODO: Update CANID number
         public static final int kFollowerCANID = 22; //TODO: Update CANID number
