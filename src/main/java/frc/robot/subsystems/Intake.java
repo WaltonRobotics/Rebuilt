@@ -51,17 +51,17 @@ public class Intake extends SubsystemBase {
     private final DCMotorSim m_deploySim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX44(1),
-            0.0005,  // Dummy J value
-            1.5 // dummy gearing value
+            IntakeK.kDeployMomentOfInertia,
+            IntakeK.kDeployGearing
         ),
-        DCMotor.getKrakenX44(1) // returns gearbox
+        DCMotor.getKrakenX44(1)
     );
 
     private final DCMotorSim m_rollerSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX44(1),
-            0.0005,  // Dummy J value
-            1.5 // dummy gearing value
+            IntakeK.kRollerMomentOfInertia,
+            IntakeK.kRollerGearing
         ),
         DCMotor.getKrakenX44(1) // returns gearbox
     );
