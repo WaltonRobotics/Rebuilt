@@ -195,9 +195,9 @@ public class Shooter extends SubsystemBase {
     public enum ShooterVelocity {
         // in RPS
         ZERO(0),
-        SCORE(5.5),
-        PASS(7),
-        MAX(20);
+        SCORE(kShooterMaxRPS.magnitude() * 0.5),
+        PASS(kShooterMaxRPS.magnitude() * 0.8),
+        MAX(kShooterMaxRPS.magnitude());
 
         public double RPS;
         private ShooterVelocity(double RPS) {
@@ -206,11 +206,11 @@ public class Shooter extends SubsystemBase {
     }
 
     public enum HoodPosition {
-        MIN(0),
-        HOME(5),
-        SCORE(10),
-        PASS(20),
-        MAX(40);
+        MIN(kHoodMinRots.magnitude()),
+        HOME(kHoodMaxRots.magnitude() * 0.1),
+        SCORE(kHoodMaxRots.magnitude() * 0.5),
+        PASS(kHoodMaxRots.magnitude() * 0.8),
+        MAX(kHoodMaxRots.magnitude());
 
         public double rots;
         private HoodPosition(double rots) {
