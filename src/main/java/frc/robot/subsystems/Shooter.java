@@ -71,11 +71,11 @@ public class Shooter extends SubsystemBase {
         ),
         DCMotor.getKrakenX44(1),
         kHoodGearing,
-        0.5,
+        kHoodLength,
         HoodPosition.MIN.rots * (2*Math.PI),
         HoodPosition.MAX.rots * (2*Math.PI),
         false,
-        HoodPosition.INIT.rots * (2*Math.PI)
+        HoodPosition.HOME.rots * (2*Math.PI)
     );
 
     private final DCMotorSim m_turretSim = new DCMotorSim(
@@ -191,7 +191,7 @@ public class Shooter extends SubsystemBase {
         turretFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 
-    /* CONSTANTS: THIS IS PROBABLY GETTING NUKED */
+    /* CONSTANTS: THIS IS GETTING REMOVED FOR SOTM, KEPT RN FOR TESTING */
     public enum ShooterVelocity {
         // in RPS
         ZERO(0),
@@ -207,7 +207,7 @@ public class Shooter extends SubsystemBase {
 
     public enum HoodPosition {
         MIN(0),
-        INIT(5),
+        HOME(5),
         SCORE(10),
         PASS(20),
         MAX(40);
@@ -219,11 +219,11 @@ public class Shooter extends SubsystemBase {
     }
 
     public enum TurretPosition {
-        MIN(0),
-        HOME(10),
-        SCORE(20),
-        PASS(30),
-        MAX(40);
+        MIN(-kTurretMaxAngleFromHome.magnitude()),
+        HOME(0),
+        SCORE(kTurretMaxAngleFromHome.magnitude() * 0.3),
+        PASS(kTurretMaxAngleFromHome.magnitude() * 0.75),
+        MAX(kTurretMaxAngleFromHome.magnitude());
 
         public double rots;
         private TurretPosition(double rots) {

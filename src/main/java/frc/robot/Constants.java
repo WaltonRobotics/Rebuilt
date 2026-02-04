@@ -1,5 +1,8 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Rotations;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -23,6 +26,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 
 public class Constants {
@@ -32,7 +36,7 @@ public class Constants {
     public static class ShooterK {
         public static final String kLogTab = "Shooter";
 
-        /* MOTOR VALUES */
+        /* MOTOR CONSTANTS */
         public static final double kShooterMomentOfInertia = 0.000349;  //J for 2 3" 0.53lb flywheels
         public static final double kHoodMomentOfInertia = 0.000249;
         public static final double kTurretMomentOfInertia = 0.0546;
@@ -40,6 +44,12 @@ public class Constants {
         public static final double kShooterGearing = 1/1;
         public static final double kHoodGearing = 45/1;
         public static final double kTurretGearing = 41.66666666/1;
+
+        public static final double kHoodLength = 0.153924; // hood circumference (49 degrees)
+        public static final Angle kHoodMaxAngle = Degrees.of(40);
+        public static final Angle kHoodMaxRotations = Rotations.of(kHoodMaxAngle.magnitude());
+
+        public static final Angle kTurretMaxAngleFromHome = Rotations.of(0.75); //0.75 rots in each direction from home
 
         /* IDS */
         public static final int kLeaderCANID = 21; //TODO: Update CANID number
