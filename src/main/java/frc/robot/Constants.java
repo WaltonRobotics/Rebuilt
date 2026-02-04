@@ -2,6 +2,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +28,9 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Velocity;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
@@ -46,10 +49,14 @@ public class Constants {
         public static final double kTurretGearing = 41.66666666/1;
 
         public static final double kHoodLength = 0.153924; // hood circumference (49 degrees)
-        public static final Angle kHoodMaxAngle = Degrees.of(40);
-        public static final Angle kHoodMaxRotations = Rotations.of(kHoodMaxAngle.magnitude());
+        public static final Angle kHoodMinAngleDegs = Degrees.of(0);
+        public static final Angle kHoodMaxAngleDegs = Degrees.of(40);
+        public static final Angle kHoodMinRots = Rotations.of(kHoodMinAngleDegs.magnitude());
+        public static final Angle kHoodMaxRots = Rotations.of(kHoodMaxAngleDegs.magnitude());
 
         public static final Angle kTurretMaxAngleFromHome = Rotations.of(0.75); //0.75 rots in each direction from home
+
+        public static final AngularVelocity kShooterMaxRPS = RotationsPerSecond.of(100);   //Kraken X60 Max
 
         /* IDS */
         public static final int kLeaderCANID = 21; //TODO: Update CANID number
