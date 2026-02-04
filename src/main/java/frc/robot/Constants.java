@@ -3,6 +3,7 @@ package frc.robot;
 import org.photonvision.simulation.SimCameraProperties;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -80,47 +81,56 @@ public class Constants {
         public static final double kSpinnerGearing = 3;
         public static final double kExhaustGearing = 1/1.2;
 
-        public static final double kSpinnerMomentOfInertia = 0.001829;
+        public static final double kSpinnerMomentOfInertia = 0.00182905;
+        // public static final double kExhaustMomentOfInertia = 0.5;
         public static final double kExhaustMomentOfInertia = 0.0001648;
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
         private static final Slot0Configs kSpinnerSlot0Configs = new Slot0Configs()
             .withKS(0)
-            .withKV(0.12)
+            .withKV(15)
             .withKA(0)
             .withKP(0)
             .withKI(0)
             .withKD(0);
         private static final CurrentLimitsConfigs kSpinnerCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(140)
-            .withSupplyCurrentLimit(100)
-            .withStatorCurrentLimitEnable(true);
+            .withSupplyCurrentLimit(5)
+            .withStatorCurrentLimitEnable(true)
+            .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kSpinnerMotorOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: CW or CCW?
             .withNeutralMode(NeutralModeValue.Brake);
+        private static final FeedbackConfigs kSpinnerFeedbackConfigs = new FeedbackConfigs()
+            .withSensorToMechanismRatio(kSpinnerGearing);
         public static final TalonFXConfiguration kSpinnerTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kSpinnerSlot0Configs)
             .withCurrentLimits(kSpinnerCurrentLimitConfigs)
-            .withMotorOutput(kSpinnerMotorOutputConfigs);
+            .withMotorOutput(kSpinnerMotorOutputConfigs)
+            .withFeedback(kSpinnerFeedbackConfigs);
 
         private static final Slot0Configs kExhaustSlot0Configs = new Slot0Configs()
             .withKS(0)
-            .withKV(0.12)
+            .withKV(3)
             .withKA(0)
             .withKP(0)
             .withKI(0)
             .withKD(0);
         private static final CurrentLimitsConfigs kExhaustCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(140)
-            .withSupplyCurrentLimit(100)
-            .withStatorCurrentLimitEnable(true);
+            .withSupplyCurrentLimit(40)
+            .withStatorCurrentLimitEnable(true)
+            .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kExhaustMotorOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: CW or CCW?
             .withNeutralMode(NeutralModeValue.Brake);
+        private static final FeedbackConfigs kExhaustFeedbackConfigs = new FeedbackConfigs()
+            .withSensorToMechanismRatio(kExhaustGearing);
         public static final TalonFXConfiguration kExhaustTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kExhaustSlot0Configs)
             .withCurrentLimits(kExhaustCurrentLimitConfigs)
-            .withMotorOutput(kExhaustMotorOutputConfigs);
+            .withMotorOutput(kExhaustMotorOutputConfigs)
+            .withFeedback(kExhaustFeedbackConfigs);
     }
 }
