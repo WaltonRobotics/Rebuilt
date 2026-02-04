@@ -19,8 +19,8 @@ import frc.robot.Constants.IntakeK;
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
-    private final TalonFX m_deployMotor = new TalonFX(IntakeK.kIntakeDeployCANID);
-    private final TalonFX m_rollerMotor = new TalonFX(IntakeK.kIntakeRollerCANID);
+    private final TalonFX m_deployMotor = new TalonFX(IntakeK.kDeployCANID);
+    private final TalonFX m_rollerMotor = new TalonFX(IntakeK.kRollerCANID);
 
     private MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0);
     private VelocityVoltage m_veloVoltage = new VelocityVoltage(0);
