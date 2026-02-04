@@ -138,9 +138,14 @@ public class Robot extends TimedRobot {
         // Reset the field-centric heading on left bumper press.
         driver.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-        driver.a().onTrue(intake.intakeToAngle(0));
-        driver.b().onTrue(intake.intakeToAngle(0.5));
-        driver.x().onTrue(intake.intakeToAngle(1));
+        driver.a().onTrue(intake.deployToRots(0));
+        driver.b().onTrue(intake.deployToRots(0.5));
+        driver.x().onTrue(intake.deployToRots(1));
+
+        driver.povRight().onTrue(intake.spinRollers(10));
+        driver.povLeft().onTrue(intake.spinRollers(20));
+        driver.povUp().onTrue(intake.spinRollers(40));
+        driver.povDown().onTrue(intake.stopRollers());
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }

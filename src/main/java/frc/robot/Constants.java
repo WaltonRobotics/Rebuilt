@@ -82,7 +82,7 @@ public class Constants {
         public static final double kDeployGearing = 5/1;
         
         public static final double kRollerMomentOfInertia = 0.0867;
-        public static final double kRollerGearing = 1/2;
+        public static final double kRollerGearing = 1.0/2;
 
         public static final int kIntakeDeployCANID = 41;
         public static final int kIntakeRollerCANID = 42; // TODO CHANGE TO CORRECT
@@ -108,11 +108,11 @@ public class Constants {
                 .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(kDeployMMAccel))
                 .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(kDeployMMJerk));
         private static final Slot0Configs kDeploySlot0Configs = new Slot0Configs()
-                .withKS(0)
-                .withKV(10)
-                .withKA(0)
-                .withKP(20)
-                .withKI(0.1)
+                .withKS(100)
+                .withKV(100)
+                .withKA(100)
+                .withKP(40)
+                .withKI(0)
                 .withKD(0);
         public static final MotorOutputConfigs kDeployMotorOutputConfigs = new MotorOutputConfigs()
                 .withNeutralMode(NeutralModeValue.Brake);
