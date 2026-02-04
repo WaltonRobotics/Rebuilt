@@ -60,7 +60,6 @@ public class VisionSim {
         simTargetList.add(simFuel);
         simTargetList.add(simFuelTwo);
         
-        
         return simTargetList;
     }
 
