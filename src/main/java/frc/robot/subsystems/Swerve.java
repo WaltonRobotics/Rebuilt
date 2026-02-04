@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Detection;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.vision.VisionSim;
 
 /**
  * CommandSwerveDrivetrain: Class that extends the Phoenix 6 SwerveDrivetrain class 
@@ -68,6 +69,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         .withSteerRequestType(SteerRequestType.Position);
 
     private final Detection detection = new Detection();
+    private final VisionSim visionSim = new VisionSim();
 
     private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
@@ -386,6 +388,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         
         PhotonTrackedTarget target = detection.getClosestObject();
         Pose2d destination = detection.targetToPose(getState().Pose, target);
+        detection.addFuel(destination);
         
         return Commands.run(
             () -> {

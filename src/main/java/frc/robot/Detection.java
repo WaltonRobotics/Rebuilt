@@ -1,5 +1,7 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -10,8 +12,11 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.Constants.VisionK;
+import frc.robot.generated.TunerConstants;
 import frc.robot.vision.VisionSim;
+
 
 public class Detection {
     private final PhotonCamera camera = new PhotonCamera(VisionK.kCamera1CamName); //probably will be intake camera
@@ -42,7 +47,7 @@ public class Detection {
         PhotonTrackedTarget closestTarget = new PhotonTrackedTarget();
 
         if (Robot.isSimulation()) {
-            targetList = visionSim.addFuel();
+            targetList = visionSim.simFuelList();
         }
 
         if (targetList.size() > 0) {
@@ -68,5 +73,9 @@ public class Detection {
         Pose2d fuelPose = robotPose.transformBy(fuelTransform);
 
         return fuelPose;
+    }
+
+    public void addFuel(Pose2d destination) {
+        visionSim.getSimDebugField().getObject("fuel").setPose(destination);
     }
 }
