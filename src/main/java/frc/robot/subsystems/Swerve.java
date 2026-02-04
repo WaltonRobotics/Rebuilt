@@ -107,10 +107,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     );
 
     /*
-    * SysId routine for characterizing rotation.
-    * This is used to find PID gains for the FieldCentricFacingAngle HeadingController.
-    * See the documentation of SwerveRequest.SysIdSwerveRotation for info on importing the log to SysId.
-    */
+     * SysId routine for characterizing rotation.
+     * This is used to find PID gains for the FieldCentricFacingAngle HeadingController.
+     * See the documentation of SwerveRequest.SysIdSwerveRotation for info on importing the log to SysId.
+     */
     private final SysIdRoutine m_sysIdRoutineRotation = new SysIdRoutine(
         new SysIdRoutine.Config(
             /* This is in radians per second², but SysId only supports "volts per second" */
@@ -247,12 +247,12 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     @Override
     public void periodic() {
         /*
-        * Periodically try to apply the operator perspective.
-        * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
-        * This allows us to correct the perspective in case the robot code restarts mid-match.
-        * Otherwise, only check and apply the operator perspective if the DS is disabled.
-        * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
-        */
+         * Periodically try to apply the operator perspective.
+         * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
+         * This allows us to correct the perspective in case the robot code restarts mid-match.
+         * Otherwise, only check and apply the operator perspective if the DS is disabled.
+         * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
+         */
         if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
             DriverStation.getAlliance().ifPresent(allianceColor -> {
                 setOperatorPerspectiveForward(
