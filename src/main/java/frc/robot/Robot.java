@@ -111,6 +111,10 @@ public class Robot extends TimedRobot {
     }
 
     private void configureBindings() {
+
+        //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
+        driver.x().whileTrue(drivetrain.swerveToObject());
+
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
