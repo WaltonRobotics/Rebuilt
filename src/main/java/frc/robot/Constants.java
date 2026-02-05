@@ -81,22 +81,21 @@ public class Constants {
         public static final double kSpinnerGearing = 3;
         public static final double kExhaustGearing = 1/1.2;
 
-        public static final double kSpinnerMomentOfInertia = 0.00182905;
-        // public static final double kExhaustMomentOfInertia = 0.5;
-        public static final double kExhaustMomentOfInertia = 0.0001648;
+        public static final double kSpinnerMomentOfInertia = 0.00166190059;
+        public static final double kExhaustMomentOfInertia = 0.000215968064;
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
         private static final Slot0Configs kSpinnerSlot0Configs = new Slot0Configs()
-            .withKS(0)
-            .withKV(15)
+            .withKS(0.012)
+            .withKV(0.367)
             .withKA(0)
-            .withKP(0)
+            .withKP(0.08)
             .withKI(0)
-            .withKD(0);
+            .withKD(0.03);
         private static final CurrentLimitsConfigs kSpinnerCurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(140)
-            .withSupplyCurrentLimit(5)
+            .withStatorCurrentLimit(120)
+            .withSupplyCurrentLimit(70)
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kSpinnerMotorOutputConfigs = new MotorOutputConfigs()
@@ -111,15 +110,15 @@ public class Constants {
             .withFeedback(kSpinnerFeedbackConfigs);
 
         private static final Slot0Configs kExhaustSlot0Configs = new Slot0Configs()
-            .withKS(0)
-            .withKV(3)
+            .withKS(0.1124)
+            .withKV(0.102)
             .withKA(0)
-            .withKP(0)
+            .withKP(0.06)
             .withKI(0)
             .withKD(0);
         private static final CurrentLimitsConfigs kExhaustCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(140)
-            .withSupplyCurrentLimit(40)
+            .withSupplyCurrentLimit(60)
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kExhaustMotorOutputConfigs = new MotorOutputConfigs()

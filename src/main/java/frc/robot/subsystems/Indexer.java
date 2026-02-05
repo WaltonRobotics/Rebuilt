@@ -25,26 +25,26 @@ public class Indexer extends SubsystemBase {
     private final TalonFX m_spinner = new TalonFX(kSpinnerCANID); // X60
     private final TalonFX m_exhaust = new TalonFX(kExhaustCANID); // X60
 
-    private final VelocityVoltage m_spinnerVelocityRequest = new VelocityVoltage(0);
-    private final VelocityVoltage m_exhaustVelocityRequest = new VelocityVoltage(0);
+    private final VelocityVoltage m_spinnerVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
+    private final VelocityVoltage m_exhaustVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
 
     // Simulation
-    private final FlywheelSim m_spinnerSim = new FlywheelSim(
-        LinearSystemId.createFlywheelSystem(
-            DCMotor.getKrakenX60(1),
-            kSpinnerMomentOfInertia,
-            kSpinnerGearing
+    private final DCMotorSim m_spinnerSim = new DCMotorSim(
+        LinearSystemId.createDCMotorSystem(
+            DCMotor.getKrakenX60Foc(1),
+            kSpinnerMomentOfInertia, // 0.00182905
+            kSpinnerGearing // 3.0
         ),
-        DCMotor.getKrakenX60(1)
+        DCMotor.getKrakenX60Foc(1)
     );
 
     private final DCMotorSim m_exhaustSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX60(1),
+            DCMotor.getKrakenX60Foc(1),
             kExhaustMomentOfInertia,
             kExhaustGearing
         ),
-        DCMotor.getKrakenX60(1)
+        DCMotor.getKrakenX60Foc(1)
     );  
     
     // Loggers
@@ -101,7 +101,7 @@ public class Indexer extends SubsystemBase {
         m_spinnerSim.setInputVoltage(m_spinnerFXSim.getMotorVoltage());
         m_spinnerSim.update(Constants.kSimPeriodicUpdateInterval);
 
-        m_spinnerFXSim.setRotorVelocity(m_spinnerSim.getAngularVelocity());
+        m_spinnerFXSim.setRotorVelocity(m_spinnerSim.getAngularVelocity().times(kSpinnerGearing));
         m_spinnerFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
         // Exhaust
@@ -110,7 +110,7 @@ public class Indexer extends SubsystemBase {
         m_exhaustSim.setInputVoltage(m_exhaustFXSim.getMotorVoltage());
         m_exhaustSim.update(Constants.kSimPeriodicUpdateInterval);
 
-        m_exhaustFXSim.setRotorVelocity(m_exhaustSim.getAngularVelocity());
+        m_exhaustFXSim.setRotorVelocity(m_exhaustSim.getAngularVelocity().times(kExhaustGearing));
         m_exhaustFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 }
