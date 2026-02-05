@@ -143,7 +143,7 @@ public class Robot extends TimedRobot {
         driver.x().onTrue(intake.deployToRots(1));
 
         driver.povRight().onTrue(intake.spinRollers(10));
-        driver.povLeft().onTrue(intake.spinRollers(20));
+        driver.povLeft().onTrue(intake.spinRollers(20)); 
         driver.povUp().onTrue(intake.spinRollers(40));
         driver.povDown().onTrue(intake.stopRollers());
 
