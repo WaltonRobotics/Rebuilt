@@ -123,11 +123,11 @@ public class Constants {
                 .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(10));
         private static final Slot0Configs kRollerSlot0Configs = new Slot0Configs()
                 .withKS(0)
-                .withKV(10)
+                .withKV(0)
                 .withKA(0)
-                .withKP(1)
+                .withKP(0.5)
                 .withKI(0)
-                .withKD(0.4);
+                .withKD(0);
         public static final MotorOutputConfigs kRollerMotorOutputConfigs = new MotorOutputConfigs()
                 .withInverted(InvertedValue.Clockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Brake);
