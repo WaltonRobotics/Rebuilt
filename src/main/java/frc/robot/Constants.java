@@ -1,5 +1,6 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -27,6 +28,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -40,21 +42,23 @@ public class Constants {
         public static final String kLogTab = "Shooter";
 
         /* MOTOR CONSTANTS */
-        public static final double kShooterMomentOfInertia = 0.000349;  //J for 2 3" 0.53lb flywheels
-        public static final double kHoodMomentOfInertia = 0.000249;
-        public static final double kTurretMomentOfInertia = 0.0546;
+        public static final double kShooterMoI = 0.000349;  //J for 2 3" 0.53lb flywheels
+        public static final double kHoodMoI = 0.000249;
+        public static final double kTurretMoI = 0.104506595;
 
         public static final double kShooterGearing = 1/1;
         public static final double kHoodGearing = 45/1;
         public static final double kTurretGearing = 41.66666666/1;
 
         public static final double kHoodLength = 0.153924; // hood circumference (49 degrees)
-        public static final Angle kHoodMinAngleDegs = Degrees.of(0);
-        public static final Angle kHoodMaxAngleDegs = Degrees.of(40);
-        public static final Angle kHoodMinRots = Rotations.of(kHoodMinAngleDegs.magnitude());
-        public static final Angle kHoodMaxRots = Rotations.of(kHoodMaxAngleDegs.magnitude());
+        public static final Angle kHoodMinDegs = Degrees.of(0);
+        public static final Angle kHoodMaxDegs = Degrees.of(40);
+        public static final Angle kHoodMinRots = Rotations.of(Rotations.convertFrom(kHoodMinDegs.magnitude(), Degrees));
+        public static final Angle kHoodMaxRots = Rotations.of(Rotations.convertFrom(kHoodMaxDegs.magnitude(), Degrees));
 
-        public static final Angle kTurretMaxAngleFromHome = Rotations.of(0.75); //0.75 rots in each direction from home
+        public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.75); //0.75 rots in each direction from home
+        public static final Angle kTurretMinRots = Rotations.of(0 - kTurretMaxRotsFromHome.magnitude());
+        public static final Angle kTurretMaxRots = Rotations.of(0 + kTurretMaxRotsFromHome.magnitude());
 
         public static final AngularVelocity kShooterMaxRPS = RotationsPerSecond.of(100);   //Kraken X60 Max
 

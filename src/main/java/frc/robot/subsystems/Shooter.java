@@ -5,6 +5,9 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -57,7 +60,7 @@ public class Shooter extends SubsystemBase {
     private final FlywheelSim m_flywheelSim = new FlywheelSim(
         LinearSystemId.createFlywheelSystem(
             DCMotor.getKrakenX60(2), 
-            kShooterMomentOfInertia,
+            kShooterMoI,
             kShooterGearing
         ),
         DCMotor.getKrakenX60(2) // returns gearbox
@@ -66,22 +69,22 @@ public class Shooter extends SubsystemBase {
     private final SingleJointedArmSim m_hoodSim = new SingleJointedArmSim(
         LinearSystemId.createSingleJointedArmSystem(
             DCMotor.getKrakenX44(1),
-            kHoodMomentOfInertia,
+            kHoodMoI,
             kHoodGearing
         ),
         DCMotor.getKrakenX44(1),
         kHoodGearing,
         kHoodLength,
-        HoodPosition.MIN.rots * (2*Math.PI),
-        HoodPosition.MAX.rots * (2*Math.PI),
+        kHoodMinRots.magnitude() * (2*Math.PI),
+        kHoodMaxRots.magnitude() * (2*Math.PI),
         false,
-        HoodPosition.HOME.rots * (2*Math.PI)
+        kHoodMinRots.magnitude() * (2*Math.PI)
     );
 
     private final DCMotorSim m_turretSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX44(1),
-            kTurretMomentOfInertia,
+            kTurretMoI,
             kTurretGearing
         ),
         DCMotor.getKrakenX44(1) // returns gearbox
@@ -124,8 +127,8 @@ public class Shooter extends SubsystemBase {
 
     /* COMMANDS */
     // Shooter Commands (Veloity Control)
-    public Command setShooterVelocityCmd(ShooterVelocity velocity) {
-        return setShooterVelocityCmd(velocity.RPS);
+    public Command setShooterVelocityCmd(AngularVelocity RPS) {
+        return setShooterVelocityCmd(RPS.magnitude());
     }
 
     public Command setShooterVelocityCmd(double RPS) {
@@ -133,8 +136,8 @@ public class Shooter extends SubsystemBase {
     }
 
     // Hood Commands (Basic Position Control)
-    public Command setHoodPositionCmd(HoodPosition position) {
-        return setHoodPositionCmd(position.rots);
+    public Command setHoodPositionCmd(Angle rots) {
+        return setHoodPositionCmd(rots.magnitude());
     }
 
     public Command setHoodPositionCmd(double rots) {
@@ -142,8 +145,8 @@ public class Shooter extends SubsystemBase {
     }
 
     // Turret Commands (Motionmagic Angle Control)
-    public Command setTurretPositionCmd(TurretPosition position) {
-        return setTurretPositionCmd(position.rots);
+    public Command setTurretPositionCmd(Angle rots) {
+        return setTurretPositionCmd(rots.magnitude());
     }
 
     public Command setTurretPositionCmd(double rots) {
@@ -189,46 +192,6 @@ public class Shooter extends SubsystemBase {
 
         turretFXSim.setRawRotorPosition(m_turretSim.getAngularPositionRotations());
         turretFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-    }
-
-    /* CONSTANTS: THIS IS GETTING REMOVED FOR SOTM, KEPT RN FOR TESTING */
-    public enum ShooterVelocity {
-        // in RPS
-        ZERO(0),
-        SCORE(kShooterMaxRPS.magnitude() * 0.5),
-        PASS(kShooterMaxRPS.magnitude() * 0.8),
-        MAX(kShooterMaxRPS.magnitude());
-
-        public double RPS;
-        private ShooterVelocity(double RPS) {
-            this.RPS = RPS;
-        }
-    }
-
-    public enum HoodPosition {
-        MIN(kHoodMinRots.magnitude()),
-        HOME(kHoodMaxRots.magnitude() * 0.1),
-        SCORE(kHoodMaxRots.magnitude() * 0.5),
-        PASS(kHoodMaxRots.magnitude() * 0.8),
-        MAX(kHoodMaxRots.magnitude());
-
-        public double rots;
-        private HoodPosition(double rots) {
-            this.rots = rots;
-        }
-    }
-
-    public enum TurretPosition {
-        MIN(-kTurretMaxAngleFromHome.magnitude()),
-        HOME(0),
-        SCORE(kTurretMaxAngleFromHome.magnitude() * 0.3),
-        PASS(kTurretMaxAngleFromHome.magnitude() * 0.75),
-        MAX(kTurretMaxAngleFromHome.magnitude());
-
-        public double rots;
-        private TurretPosition(double rots) {
-            this.rots = rots;
-        }
     }
 
 }
