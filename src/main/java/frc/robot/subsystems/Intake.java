@@ -93,7 +93,8 @@ public class Intake extends SubsystemBase {
         m_deploySim.setInputVoltage(deployFXSim.getMotorVoltage());
         m_deploySim.update(0.02);
         
-        deployFXSim.setRawRotorPosition(m_deploySim.getAngularPositionRotations());
+        deployFXSim.setRawRotorPosition(m_deploySim.getAngularPositionRotations() * IntakeK.kDeployGearing);
+        deployFXSim.setRotorVelocity(m_deploySim.getAngularVelocityRPM() / 60 * IntakeK.kDeployGearing);
         deployFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
         var rollerFXSim = m_rollerMotor.getSimState();
@@ -101,8 +102,8 @@ public class Intake extends SubsystemBase {
         m_rollerSim.setInputVoltage(rollerFXSim.getMotorVoltage());
         m_rollerSim.update(0.02);
         
-        rollerFXSim.setRotorVelocity(m_rollerSim.getAngularVelocityRPM() / 60);
-
+        rollerFXSim.setRawRotorPosition(m_rollerSim.getAngularPositionRotations() * IntakeK.kRollerGearing);
+        rollerFXSim.setRotorVelocity(m_rollerSim.getAngularVelocityRPM() / 60 * IntakeK.kRollerGearing);
         rollerFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 }

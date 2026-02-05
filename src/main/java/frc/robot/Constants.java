@@ -92,7 +92,7 @@ public class Constants {
                 .withKS(0)
                 .withKV(0)
                 .withKA(0)
-                .withKP(0.9)
+                .withKP(0.57)
                 .withKI(0)
                 .withKD(0);
         public static final MotorOutputConfigs kDeployMotorOutputConfigs = new MotorOutputConfigs()
