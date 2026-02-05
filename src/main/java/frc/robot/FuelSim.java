@@ -245,7 +245,6 @@ public class FuelSim {
      */
     public void logFuels() {
         log_fuel.accept(fuels.stream().map((fuel) -> fuel.pos).toArray(Translation3d[]::new));
-
     }
 
     /**

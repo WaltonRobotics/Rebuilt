@@ -13,6 +13,8 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -26,11 +28,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radians;
 import static frc.robot.Constants.ShooterK.*;
 
 import frc.robot.Constants;
 import frc.robot.RobotState;
-import frc.robot.subsystems.shooter.ShotCalculation;
+import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.util.EqualsUtil;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
@@ -41,16 +45,21 @@ public class Shooter extends SubsystemBase {
     /* VARIABLES */
 
     private Rotation2d m_goalAngle = Rotation2d.kZero;
-    private double m_goalVelocity = 0.0;
-    private double m_lastGoalAngle = 0.0;
+    private double m_turretGoalVelocity = 0.0;
+    private double m_turretLastGoalAngle = 0.0;
     private final double m_torqueCurrentControlTolerance = 20.0;
     private final double m_atGoalDebounce = 0.2;
-    private double lastGoalAngle = 0.0;
+    private double m_hoodLastGoalAngle = 0.0;
+    private double m_hoodGoalAngle = 0.0;
+    private double m_hoodGoalVelocity = 0.0;
+    private static double m_hoodOffset = 0.0;
+    
 
     private ShootingState m_shootState = ShootingState.ACTIVE_SHOOTING;
 
     private boolean m_shooterAtGoal, m_turretAtGoal, m_hoodAtGoal = false;
     private boolean m_turretZeroed = false;
+    private boolean m_hoodZeroed = false;
 
     private State m_setpoint = new State();
 
@@ -63,12 +72,13 @@ public class Shooter extends SubsystemBase {
     private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0);
 
     private final TalonFX m_hood = new TalonFX(kHoodCANID); //X44
+
     private final PositionVoltage m_positionRequest = new PositionVoltage(0);
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID); //X44
     private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0);
 
-    private final ShotCalculation shotCalulator = new ShotCalculation();
+    private final ShotCalculator shotCalulator = new ShotCalculator();
 
     // logic booleans
     private boolean m_spunUp = false;
@@ -103,7 +113,7 @@ public class Shooter extends SubsystemBase {
         HoodPosition.MIN.rots * (2*Math.PI),
         HoodPosition.MAX.rots * (2*Math.PI),
         false,
-        HoodPosition.INIT.rots * (2*Math.PI)
+        HoodPosition.HOME.rots * (2*Math.PI)
     );
 
     private final DCMotorSim m_turretSim = new DCMotorSim(
@@ -157,16 +167,16 @@ public class Shooter extends SubsystemBase {
         this.m_goalAngle = goalAngle;
     }
     public double getGoalVelocity() {
-        return m_goalVelocity;
+        return m_turretGoalVelocity;
     }
     public void setGoalVelocity(double goalVelocity) {
-        this.m_goalVelocity = goalVelocity;
+        this.m_turretGoalVelocity = goalVelocity;
     }
     public double getLastGoalAngle() {
-        return m_lastGoalAngle;
+        return m_turretLastGoalAngle;
     }
     public void setLastGoalAngle(double lastGoalAngle) {
-        this.m_lastGoalAngle = lastGoalAngle;
+        this.m_turretLastGoalAngle = lastGoalAngle;
     }
 
     public ShootingState getShootState() {
@@ -183,11 +193,41 @@ public class Shooter extends SubsystemBase {
     }
 
     private void setFieldRelativeTarget(Rotation2d angle, double velocity) {
-        this.m_goalAngle = angle;
-        this.m_goalVelocity = velocity;
+        m_goalAngle = angle;
+        m_turretGoalVelocity = velocity;
     }
 
+    public double getHoodAngle() {
+        return m_hood.getPosition().getValue().in(Degrees);
+    }
+
+    private void zeroHood() {
+        setHoodPositionCmd(HoodPosition.HOME);
+        m_hoodZeroed = true;
+    }
+
+    public boolean atGoal() {
+        m_hoodAtGoal = 
+            DriverStation.isEnabled()
+                && m_hoodZeroed 
+                    && Math.abs(getHoodAngle() - m_hoodGoalAngle)
+                        <= Units.degreesToRadians(1.0);
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" + (m_hoodAtGoal && m_turretAtGoal
+                && m_shooterAtGoal) + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        return m_hoodAtGoal && m_turretAtGoal && m_shooterAtGoal;
+    }
+
+    private void setHoodGoalParams(double angle, double velocity) {
+        m_hoodGoalAngle = angle;
+        m_hoodGoalVelocity = velocity;
+    }
    
+    //sotm
+    private void setHoodPosition(double hoodAngle) {
+        m_hood.setControl(m_positionRequest.withPosition(hoodAngle));
+    }
+    
 
     /* COMMANDS */
     // Shooter Commands (Velocity Control)
@@ -224,8 +264,12 @@ public class Shooter extends SubsystemBase {
         return run(
             () -> {
                 var params = shotCalulator.getParameters();
+                atGoal();
                 setFieldRelativeTarget(params.turretAngle(), params.turretVelocity());
                 setShootState(ShootingState.TRACKING);
+                setHoodPosition(params.hoodAngle());
+                setShooterVelocityCmd(params.flywheelSpeed());
+                System.out.println( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + (m_hoodAtGoal && m_turretAtGoal && m_shooterAtGoal)+"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             });
     }
  
@@ -240,15 +284,15 @@ public class Shooter extends SubsystemBase {
             boolean hasBestAngle = false;
             double bestAngle = 0;
             double minLegalAngle = switch (m_shootState) {
-                case ACTIVE_SHOOTING -> kMinAngle;
-                case TRACKING -> kMaxAngle;
+                case ACTIVE_SHOOTING -> kTurretMinAngle;
+                case TRACKING -> kTurretMaxAngle;
             };
             double maxLegalAngle = switch (m_shootState) {
-                case ACTIVE_SHOOTING -> kMaxAngle;
-                case TRACKING -> kMinAngle;
+                case ACTIVE_SHOOTING -> kTurretMaxAngle;
+                case TRACKING -> kTurretMinAngle;
             };
             double robotAngularVelocity = RobotState.getInstance().getFieldVelocity().omegaRadiansPerSecond;
-            double robotRelativeGoalVelocity = m_goalVelocity - robotAngularVelocity;
+            double robotRelativeGoalVelocity = m_turretGoalVelocity - robotAngularVelocity;
 
             for (int i = -2; i < 3; i++) {
                 double potentialSetpoint = robotRelativeGoalAngle.getRadians() + Math.PI * 2.0 * i;
@@ -260,7 +304,7 @@ public class Shooter extends SubsystemBase {
                         bestAngle = potentialSetpoint;
                         hasBestAngle = true;
                     }
-                    if (Math.abs(lastGoalAngle - potentialSetpoint) < Math.abs(lastGoalAngle - bestAngle)) {
+                    if (Math.abs(m_turretLastGoalAngle - potentialSetpoint) < Math.abs(m_turretLastGoalAngle - bestAngle)) {
                         bestAngle = potentialSetpoint;
                     }
                 }
@@ -325,7 +369,7 @@ public class Shooter extends SubsystemBase {
 
     public enum HoodPosition {
         MIN(0),
-        INIT(5),
+        HOME(5),
         SCORE(10),
         PASS(20),
         MAX(40);

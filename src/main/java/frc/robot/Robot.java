@@ -5,6 +5,8 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.Constants.ShooterK.kRobotToTurret;
+import static frc.robot.Constants.ShooterK.kTurretPosition;
 
 import java.util.Optional;
 
@@ -18,7 +20,9 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -30,7 +34,8 @@ import frc.robot.Constants.VisionK;
 import frc.robot.subsystems.Shooter.ShooterVelocity;
 import frc.robot.subsystems.Shooter.HoodPosition;
 import frc.robot.subsystems.Shooter.TurretPosition;
-import frc.robot.subsystems.shooter.ShotCalculation;
+import frc.robot.subsystems.shooter.ShotCalculator;
+import frc.robot.subsystems.shooter.TurretVisualizer;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Swerve;
@@ -65,7 +70,10 @@ public class Robot extends TimedRobot {
     public final Swerve drivetrain = TunerConstants.createDrivetrain();
     private Command m_autonomousCommand;
     private final AutoFactory autoFactory = drivetrain.createAutoFactory();
-    private final ShotCalculation shotCalculator = new ShotCalculation();
+    private final ShotCalculator shotCalculator = new ShotCalculator();
+    private final TurretVisualizer m_turretVisualizer = new TurretVisualizer(
+        () -> new Pose3d(RobotState.getInstance().getEstimatedPose()),
+        () -> RobotState.getInstance().getRobotVelocity());
 
 
     private final VisionSim visionSim = new VisionSim();
@@ -159,17 +167,21 @@ public class Robot extends TimedRobot {
         driver.y().onTrue(shooter.setHoodPositionCmd(HoodPosition.MAX));
 
         driver.leftBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.SCORE));
-        driver.rightBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.PASS));
+        // driver.rightBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.PASS));
         driver.leftTrigger().onTrue(shooter.setTurretPositionCmd(TurretPosition.MIN));
         driver.rightTrigger().onTrue(shooter.setTurretPositionCmd(TurretPosition.MAX));
 
-        // driver
-        //     .rightBumper()
-        //     .negate()
-        //     .whileTrue(shooter.runTrackTargetActiveShootingCommand())
-        //     .and(() -> shotCalculator.getParameters().isValid())
-        //     .
-    }
+        driver
+            .rightBumper()
+            .negate()
+            .whileTrue(shooter.runTrackTargetActiveShootingCommand())
+            .and(() -> shotCalculator.getParameters().isValid())
+            .and(() -> shooter.atGoal());
+            // .whileFalse(m_turretVisualizer.repeatedlyLaunchFuel(
+            // () -> shotCalculator.getFuelPathVelocity(),
+            // () -> Degrees.of(shotCalculator.getParameters().hoodAngle()),
+            // shooter));    
+        }
 
     public Command getAutonomousCommand() {
         // Simple Auton (hardcoded)
@@ -254,5 +266,10 @@ public class Robot extends TimedRobot {
         visionSim.simulationPeriodic(robotPose);
         drivetrain.simulationPeriodic();
         shooter.simulationPeriodic();
+    }
+
+    @Override
+    public void simulationInit() {
+        FuelSim.getInstance().start();
     }
 }

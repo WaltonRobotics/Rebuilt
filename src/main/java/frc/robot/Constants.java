@@ -19,6 +19,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -34,9 +35,13 @@ public class Constants {
         public static final String kLogTab = "Shooter";
         //cant really think of any other name but is where the turret is relative to the robot
         public static final Transform3d kRobotToTurret = new Transform3d(0, 0, 0, Rotation3d.kZero); //DUMMY VALS
+        public static final Pose3d kTurretPosition = new Pose3d(RobotState.getInstance().getEstimatedPose());
 
-        public static final double kMinAngle = Units.degreesToRadians(-270.0);
-        public static final double kMaxAngle = Units.degreesToRadians(270.0);
+        public static final double kTurretMinAngle = Units.degreesToRadians(-270.0);
+        public static final double kTurretMaxAngle = Units.degreesToRadians(270.0);
+
+        public static final double kHoodMinAngle = Units.degreesToRadians(19);
+        public static final double kHoodMaxAngle = Units.degreesToRadians(51);
 
         /* IDS */
         public static final int kLeaderCANID = 21; //TODO: Update CANID number
