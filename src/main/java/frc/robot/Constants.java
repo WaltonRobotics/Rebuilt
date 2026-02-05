@@ -89,10 +89,10 @@ public class Constants {
                 .withSupplyCurrentLimit(20)
                 .withStatorCurrentLimitEnable(true);
         private static final Slot0Configs kDeploySlot0Configs = new Slot0Configs()
-                .withKS(100)
-                .withKV(100)
-                .withKA(100)
-                .withKP(40)
+                .withKS(0)
+                .withKV(0)
+                .withKA(0)
+                .withKP(0.9)
                 .withKI(0)
                 .withKD(0);
         public static final MotorOutputConfigs kDeployMotorOutputConfigs = new MotorOutputConfigs()
