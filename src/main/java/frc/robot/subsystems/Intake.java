@@ -22,8 +22,8 @@ public class Intake extends SubsystemBase {
     private final TalonFX m_deployMotor = new TalonFX(IntakeK.kDeployCANID);
     private final TalonFX m_rollerMotor = new TalonFX(IntakeK.kRollerCANID);
 
-    private MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0);
-    private VelocityVoltage m_veloVoltage = new VelocityVoltage(0);
+    private MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0);
+    private VelocityVoltage m_VVReq = new VelocityVoltage(0);
 
     // Loggers
     DoubleLogger log_targetDeployPos = WaltLogger.logDouble(IntakeK.kLogTab, "targetDeployPos");
@@ -34,11 +34,11 @@ public class Intake extends SubsystemBase {
     // Simulators
     private final DCMotorSim m_deploySim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX44(1),
+            DCMotor.getKrakenX60(1),
             IntakeK.kDeployMomentOfInertia,
             IntakeK.kDeployGearing
         ),
-        DCMotor.getKrakenX44(1)
+        DCMotor.getKrakenX60(1)
     );
 
     private final DCMotorSim m_rollerSim = new DCMotorSim(
@@ -67,21 +67,21 @@ public class Intake extends SubsystemBase {
     }
 
     public Command spinRollers(double rps) {
-        return runOnce(() -> m_rollerMotor.setControl(m_veloVoltage.withVelocity(rps)));
+        return runOnce(() -> m_rollerMotor.setControl(m_VVReq.withVelocity(rps)));
     }
 
     public Command stopRollers() {
-        return runOnce(() -> m_rollerMotor.setControl(m_veloVoltage.withVelocity(0)));
+        return runOnce(() -> m_rollerMotor.setControl(m_VVReq.withVelocity(0)));
     }
 
     public Command deployToRots(double rots) {
-        return runOnce(() -> m_deployMotor.setControl(m_MMVRequest.withPosition(rots)));
+        return runOnce(() -> m_deployMotor.setControl(m_MMVReq.withPosition(rots)));
     }
 
     @Override
     public void periodic() {
-        log_targetDeployPos.accept(m_MMVRequest.Position);
-        log_targetRollerVelo.accept(m_veloVoltage.Velocity);
+        log_targetDeployPos.accept(m_MMVReq.Position);
+        log_targetRollerVelo.accept(m_VVReq.Velocity);
         log_rollerVelocity.accept(m_rollerMotor.getVelocity().getValueAsDouble());
         log_deployPosition.accept(m_deployMotor.getPosition().getValueAsDouble());
     }
