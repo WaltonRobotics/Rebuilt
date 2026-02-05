@@ -147,10 +147,10 @@ public class Robot extends TimedRobot {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
-        driver.povUp().onTrue(m_indexer.startSpinner(30));
-        driver.povDown().onTrue(m_indexer.stopSpinner());
-        driver.povLeft().onTrue(m_indexer.startExhaust(108));
-        driver.povRight().onTrue(m_indexer.stopExhaust());
+        driver.povUp().onTrue(m_indexer.updateSpinner(30));
+        driver.povDown().onTrue(m_indexer.updateSpinner(0));
+        driver.povLeft().onTrue(m_indexer.updateExhaust(108));
+        driver.povRight().onTrue(m_indexer.updateExhaust(0));
     }
 
     public Command getAutonomousCommand() {
