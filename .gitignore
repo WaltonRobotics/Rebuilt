@@ -27,3 +27,7 @@ replay_pid*
 build/
 ctre_sim/
 logs/
+networktables.json
+simgui-ds.json
+simgui-window.json
+simgui.json
