@@ -227,6 +227,8 @@ import static frc.util.GeomUtil.*;
 // }
 
 //MA's exact code
+//TODO: Make sure to go back and look over 5000s code as a sanity check to makesure that im doing everything correctly
+// also add configureFuelSim(); into robot constructor 💀
 public class ShotCalculator {
     private static ShotCalculator instance;
 
