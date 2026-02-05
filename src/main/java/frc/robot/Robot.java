@@ -26,10 +26,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.VisionK;
-import frc.robot.subsystems.Shooter.ShooterVelocity;
-import frc.robot.subsystems.Shooter.HoodPosition;
-import frc.robot.subsystems.Shooter.TurretPosition;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Swerve;
@@ -147,20 +145,14 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
-        driver.povUp().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.ZERO));
-        driver.povRight().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.SCORE));
-        driver.povDown().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.MAX));
-        driver.povLeft().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.PASS));
+        driver.povUp().onTrue(shooter.setShooterVelocityCmd(0));
+        driver.povDown().onTrue(shooter.setShooterVelocityCmd(ShooterK.kShooterMaxRPS));
 
-        driver.a().onTrue(shooter.setHoodPositionCmd(HoodPosition.MIN));
-        driver.b().onTrue(shooter.setHoodPositionCmd(HoodPosition.SCORE));
-        driver.x().onTrue(shooter.setHoodPositionCmd(HoodPosition.PASS));
-        driver.y().onTrue(shooter.setHoodPositionCmd(HoodPosition.MAX));
+        driver.a().onTrue(shooter.setHoodPositionCmd(ShooterK.kHoodMinRots));
+        driver.y().onTrue(shooter.setHoodPositionCmd(ShooterK.kHoodMaxRots));
 
-        driver.leftBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.SCORE));
-        driver.rightBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.PASS));
-        driver.leftTrigger().onTrue(shooter.setTurretPositionCmd(TurretPosition.MIN));
-        driver.rightTrigger().onTrue(shooter.setTurretPositionCmd(TurretPosition.MAX));
+        driver.leftTrigger().onTrue(shooter.setTurretPositionCmd(ShooterK.kTurretMinRots));
+        driver.rightTrigger().onTrue(shooter.setTurretPositionCmd(ShooterK.kTurretMaxRots));
     }
 
     public Command getAutonomousCommand() {
