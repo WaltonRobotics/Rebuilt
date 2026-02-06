@@ -4,13 +4,126 @@
  "type":"Swerve",
  "variables":{
   "expressions":{},
-  "poses":{}
+  "poses":{
+   "climbPose":{
+    "x":{
+     "exp":"1.6358587741851807 m",
+     "val":1.6358587741851809
+    },
+    "y":{
+     "exp":"3.4719088077545166 m",
+     "val":3.4719088077545166
+    },
+    "heading":{
+     "exp":"pi rad",
+     "val":3.141592653589793
+    }
+   },
+   "fuelPickupFour":{
+    "x":{
+     "exp":"fuelPickupThree.x",
+     "val":7.767688274383545
+    },
+    "y":{
+     "exp":"3.741105318069458 m",
+     "val":3.741105318069458
+    },
+    "heading":{
+     "exp":"fuelPickupThree.heading",
+     "val":3.141592653589793
+    }
+   },
+   "fuelPickupOne":{
+    "x":{
+     "exp":"7.767688274383545 m",
+     "val":7.767688274383545
+    },
+    "y":{
+     "exp":"startingRight.y",
+     "val":2.251265048980713
+    },
+    "heading":{
+     "exp":"3.141592653589793 rad",
+     "val":3.141592653589793
+    }
+   },
+   "fuelPickupThree":{
+    "x":{
+     "exp":"fuelPickupTwo.x",
+     "val":7.767688274383545
+    },
+    "y":{
+     "exp":"3.297109842300415 m",
+     "val":3.297109842300415
+    },
+    "heading":{
+     "exp":"fuelPickupTwo.heading",
+     "val":3.141592653589793
+    }
+   },
+   "fuelPickupTwo":{
+    "x":{
+     "exp":"fuelPickupOne.x",
+     "val":7.767688274383545
+    },
+    "y":{
+     "exp":"2.819326162338257 m",
+     "val":2.819326162338257
+    },
+    "heading":{
+     "exp":"fuelPickupOne.heading",
+     "val":3.141592653589793
+    }
+   },
+   "overTheBump":{
+    "x":{
+     "exp":"5.795487403869629 m",
+     "val":5.795487403869629
+    },
+    "y":{
+     "exp":"startingRight.y",
+     "val":2.251265048980713
+    },
+    "heading":{
+     "exp":"startingRight.heading",
+     "val":2.3380149015041254
+    }
+   },
+   "shootPose":{
+    "x":{
+     "exp":"2.125295639038086 m",
+     "val":2.125295639038086
+    },
+    "y":{
+     "exp":"3.6933207511901855 m",
+     "val":3.6933207511901855
+    },
+    "heading":{
+     "exp":"1.9426348471900197 rad",
+     "val":1.9426348471900197
+    }
+   },
+   "startingRight":{
+    "x":{
+     "exp":"3.3882551193237305 m",
+     "val":3.3882551193237305
+    },
+    "y":{
+     "exp":"2.251265048980713 m",
+     "val":2.251265048980713
+    },
+    "heading":{
+     "exp":"2.3380149015041254 rad",
+     "val":2.3380149015041254
+    }
+   }
+  }
  },
  "config":{
   "frontLeft":{
    "x":{
-    "exp":"11 in",
-    "val":0.2794
+    "exp":"10.5 in",
+    "val":0.2667
    },
    "y":{
     "exp":"11 in",
@@ -19,8 +132,8 @@
   },
   "backLeft":{
    "x":{
-    "exp":"-11 in",
-    "val":-0.2794
+    "exp":"-10.5 in",
+    "val":-0.2667
    },
    "y":{
     "exp":"11 in",
@@ -28,45 +141,45 @@
    }
   },
   "mass":{
-   "exp":"150 lbs",
-   "val":68.0388555
+   "exp":"160 lbs",
+   "val":72.57477920000001
   },
   "inertia":{
    "exp":"6 kg m ^ 2",
    "val":6.0
   },
   "gearing":{
-   "exp":"6.5",
-   "val":6.5
+   "exp":"6.122448979591837",
+   "val":6.122448979591837
   },
   "radius":{
    "exp":"2 in",
    "val":0.0508
   },
   "vmax":{
-   "exp":"6000 RPM",
-   "val":628.3185307179587
+   "exp":"5768 RPM",
+   "val":604.0235475301976
   },
   "tmax":{
-   "exp":"1.2 N * m",
-   "val":1.2
+   "exp":"0.7 N * m",
+   "val":0.7
   },
   "cof":{
-   "exp":"1.5",
-   "val":1.5
+   "exp":"2.255",
+   "val":2.255
   },
   "bumper":{
    "front":{
-    "exp":"16 in",
-    "val":0.4064
+    "exp":"16.34375 in",
+    "val":0.41513125
    },
    "side":{
-    "exp":"16 in",
-    "val":0.4064
+    "exp":"16.84375 in",
+    "val":0.42783125
    },
    "back":{
-    "exp":"16 in",
-    "val":0.4064
+    "exp":"16.34375 in",
+    "val":0.41513125
    }
   },
   "differentialTrackWidth":{

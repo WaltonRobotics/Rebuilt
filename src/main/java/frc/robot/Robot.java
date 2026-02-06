@@ -146,8 +146,8 @@ public class Robot extends TimedRobot {
         // Simple Auton (hardcoded)
         final var idle = new SwerveRequest.Idle();
         return Commands.sequence(
-            autoFactory.resetOdometry("testAlexandra"),
-            autoFactory.trajectoryCmd("testAlexandra")
+            autoFactory.resetOdometry("ThreePickupAndClimb"),
+            autoFactory.trajectoryCmd("ThreePickupAndClimb")
         );
     }
 
