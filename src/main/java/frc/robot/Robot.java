@@ -19,6 +19,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -78,7 +79,7 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
 
     public Robot() {
-        configureBindings();
+        // configureBindings();
         configureTestBindings();    //this should be commented out during competition matches
     }
 
@@ -145,14 +146,14 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
-        driver.povUp().onTrue(shooter.setFlywheelVelocityCmd(0));
+        driver.povUp().onTrue(shooter.setFlywheelVelocityCmd(RotationsPerSecond.of(0)));
         driver.povDown().onTrue(shooter.setFlywheelVelocityCmd(ShooterK.kShooterMaxRPS));
 
         driver.a().onTrue(shooter.setHoodPositionCmd(ShooterK.kHoodMinRots));
         driver.y().onTrue(shooter.setHoodPositionCmd(ShooterK.kHoodMaxRots));
 
         driver.leftTrigger().onTrue(shooter.setTurretPositionCmd(ShooterK.kTurretMinRots));
-        driver.leftBumper().onTrue(shooter.setTurretPositionCmd(0));
+        driver.leftBumper().onTrue(shooter.setTurretPositionCmd(Rotations.of(0)));
         driver.rightTrigger().onTrue(shooter.setTurretPositionCmd(ShooterK.kTurretMaxRots));
     }
 

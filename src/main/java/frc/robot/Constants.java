@@ -138,12 +138,12 @@ public class Constants {
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);
         private static final MotionMagicConfigs kTurretMotionMagicConfigs = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(20)
+            .withMotionMagicCruiseVelocity(20)  //TODO: update MMV Configs
             .withMotionMagicAcceleration(100)
             .withMotionMagicJerk(0);
         private static final SoftwareLimitSwitchConfigs kTurretSoftwareLimitSwitchConfigs = new SoftwareLimitSwitchConfigs()
             .withForwardSoftLimitEnable(false)
-            .withForwardSoftLimitThreshold(0.78)
+            .withForwardSoftLimitThreshold(0.78)    //TODO: update threshold numbers
             .withReverseSoftLimitEnable(false)
             .withReverseSoftLimitThreshold(0.02);
         public static final TalonFXConfiguration kTurretTalonFXConfiguration = new TalonFXConfiguration()
