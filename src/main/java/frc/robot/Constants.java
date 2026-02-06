@@ -72,27 +72,27 @@ public class Constants {
 
         /* CONFIGS */
         // TODO: Check what more configs would be necessary
-        private static final Slot0Configs kLeaderSlot0Configs = new Slot0Configs()   //Note to self (hrehaan) (and saarth cuz i did the same thing): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
+        private static final Slot0Configs kFlywheelLeaderSlot0Configs = new Slot0Configs()   //Note to self (hrehaan) (and saarth cuz i did the same thing): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
             .withKS(0)
             .withKV(0.1217)
             .withKA(0)
             .withKP(0)
             .withKI(0)
             .withKD(0); // kP was causing the werid sinusoid behavior, kS and kA were adding inconsistency with the destination values
-        private static final CurrentLimitsConfigs kLeaderCurrentLimitConfigs = new CurrentLimitsConfigs()
+        private static final CurrentLimitsConfigs kFlywheelLeaderCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(110)
             .withSupplyCurrentLimit(40)
             .withStatorCurrentLimitEnable(true);
-        private static final MotorOutputConfigs kLeaderOutputConfigs = new MotorOutputConfigs()
+        private static final MotorOutputConfigs kFlywheelLeaderOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
             .withNeutralMode(NeutralModeValue.Brake);
-        public static final TalonFXConfiguration kLeaderTalonFXConfiguration = new TalonFXConfiguration()
-            .withSlot0(kLeaderSlot0Configs)
-            .withCurrentLimits(kLeaderCurrentLimitConfigs)
-            .withMotorOutput(kLeaderOutputConfigs);
+        public static final TalonFXConfiguration kFlywheelLeaderTalonFXConfiguration = new TalonFXConfiguration()
+            .withSlot0(kFlywheelLeaderSlot0Configs)
+            .withCurrentLimits(kFlywheelLeaderCurrentLimitConfigs)
+            .withMotorOutput(kFlywheelLeaderOutputConfigs);
         
         // TODO: mimics the leader, so it doesn't need its own configs - right?
-        public static final TalonFXConfiguration kFollowerTalonFXConfiguration = new TalonFXConfiguration()
+        public static final TalonFXConfiguration kFlywheelFollowerTalonFXConfiguration = new TalonFXConfiguration()
             .withMotorOutput(new MotorOutputConfigs()
                 .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
                 .withNeutralMode(NeutralModeValue.Brake));
