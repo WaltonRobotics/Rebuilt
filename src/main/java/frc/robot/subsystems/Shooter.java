@@ -100,8 +100,8 @@ public class Shooter extends SubsystemBase {
 
     /* CONSTRUCTOR */
     public Shooter() {
-        m_flywheelLeader.getConfigurator().apply(kLeaderTalonFXConfiguration);
-        m_flywheelFollower.getConfigurator().apply(kFollowerTalonFXConfiguration);
+        m_flywheelLeader.getConfigurator().apply(kFlywheelLeaderTalonFXConfiguration);
+        m_flywheelFollower.getConfigurator().apply(kFlywheelFollowerTalonFXConfiguration);
         m_hood.getConfigurator().apply(kHoodTalonFXConfiguration);
         m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
 
