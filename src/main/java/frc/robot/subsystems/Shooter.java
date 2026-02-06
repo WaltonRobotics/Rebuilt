@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import static frc.robot.Constants.ShooterK.*;
 
 import frc.robot.Constants;
+import frc.robot.Constants.ShooterK;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -36,13 +37,13 @@ public class Shooter extends SubsystemBase {
     // motors + control requests
     private final TalonFX m_flywheelLeader = new TalonFX(kLeaderCANID); //X60
     private final TalonFX m_flywheelFollower = new TalonFX(kFollowerCANID); //X60
-    private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0);
+    private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(true);
 
     private final TalonFX m_hood = new TalonFX(kHoodCANID); //X44
-    private final PositionVoltage m_positionRequest = new PositionVoltage(0);
+    private final PositionVoltage m_positionRequest = new PositionVoltage(0).withEnableFOC(true);
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID); //X44
-    private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0);
+    private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true);
 
     // logic booleans
     private boolean m_spunUp = false;
@@ -59,20 +60,20 @@ public class Shooter extends SubsystemBase {
     // sim (TODO: double check constants)
     private final FlywheelSim m_flywheelSim = new FlywheelSim(
         LinearSystemId.createFlywheelSystem(
-            DCMotor.getKrakenX60(2), 
+            DCMotor.getKrakenX60Foc(2), 
             kShooterMoI,
             kShooterGearing
         ),
-        DCMotor.getKrakenX60(2) // returns gearbox
+        DCMotor.getKrakenX60Foc(2) // returns gearbox
     );
 
     private final SingleJointedArmSim m_hoodSim = new SingleJointedArmSim(
         LinearSystemId.createSingleJointedArmSystem(
-            DCMotor.getKrakenX44(1),
+            DCMotor.getKrakenX44Foc(1),
             kHoodMoI,
             kHoodGearing
         ),
-        DCMotor.getKrakenX44(1),
+        DCMotor.getKrakenX44Foc(1),
         kHoodGearing,
         kHoodLength,
         kHoodMinRots.magnitude() * (2*Math.PI),
@@ -83,11 +84,11 @@ public class Shooter extends SubsystemBase {
 
     private final DCMotorSim m_turretSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX44(1),
+            DCMotor.getKrakenX44Foc(1),
             kTurretMoI,
             kTurretGearing
         ),
-        DCMotor.getKrakenX44(1) // returns gearbox
+        DCMotor.getKrakenX44Foc(1) // returns gearbox
     );
 
     // loggers
@@ -190,7 +191,7 @@ public class Shooter extends SubsystemBase {
         m_turretSim.setInputVoltage(turretFXSim.getMotorVoltage());
         m_turretSim.update(Constants.kSimPeriodicUpdateInterval);
 
-        turretFXSim.setRawRotorPosition(m_turretSim.getAngularPositionRotations());
+        turretFXSim.setRawRotorPosition(m_turretSim.getAngularPositionRotations() * ShooterK.kTurretGearing);
         turretFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 
