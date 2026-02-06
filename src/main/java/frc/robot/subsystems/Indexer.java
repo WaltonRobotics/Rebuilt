@@ -8,11 +8,13 @@ import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IndexerK.*;
 
 import frc.robot.Constants;
@@ -27,6 +29,9 @@ public class Indexer extends SubsystemBase {
 
     private final VelocityVoltage m_spinnerVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
     private final VelocityVoltage m_exhaustVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
+
+    private final AngularVelocity m_spinnerRPS = RotationsPerSecond.of(30);
+    private final AngularVelocity m_exhaustRPS = RotationsPerSecond.of(108);
 
     // Simulation
     private final DCMotorSim m_spinnerSim = new DCMotorSim(
@@ -78,12 +83,29 @@ public class Indexer extends SubsystemBase {
         motorSimState.Orientation = orientation;
         motorSimState.setMotorType(motorType);
     }
-    
-    public Command updateSpinner(double RPS) {
+
+    /* COMMANDS */
+    public Command startSpinner() {
+        return setSpinnerVelocityCmd(m_spinnerRPS);
+    }
+
+    public Command stopSpinner() {
+        return setSpinnerVelocityCmd(RotationsPerSecond.of(0));
+    }
+
+    public Command startExhaust() {
+        return setExhaustVelocityCmd(m_exhaustRPS);
+    }
+
+    public Command stopExhaust() {
+        return setExhaustVelocityCmd(RotationsPerSecond.of(0));
+    }
+
+    public Command setSpinnerVelocityCmd(AngularVelocity RPS) {
         return runOnce(() -> m_spinner.setControl(m_spinnerVelocityRequest.withVelocity(RPS)));
     }
 
-    public Command updateExhaust(double RPS) {
+    public Command setExhaustVelocityCmd(AngularVelocity RPS) {
         return runOnce(() -> m_exhaust.setControl(m_exhaustVelocityRequest.withVelocity(RPS)));
     }
 
