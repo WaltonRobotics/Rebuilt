@@ -61,18 +61,22 @@ public class Indexer extends SubsystemBase {
 
     //TODO: Change orientation if necessary
     private void initSim() {
-        initTalonFXSimState(m_spinner,
-        ChassisReference.CounterClockwise_Positive,
-        MotorType.KrakenX60);
+        initTalonFXSimState(
+            m_spinner.getSimState(),
+            ChassisReference.CounterClockwise_Positive,
+            MotorType.KrakenX60
+        );
         
-        initTalonFXSimState(m_exhaust,
-        ChassisReference.CounterClockwise_Positive,
-        MotorType.KrakenX60);
+        initTalonFXSimState(
+            m_exhaust.getSimState(),
+            ChassisReference.CounterClockwise_Positive,
+            MotorType.KrakenX60
+        );
     }
 
-    private void initTalonFXSimState(TalonFX motor, ChassisReference orientation, MotorType motorType) {
-        motor.getSimState().Orientation = orientation;
-        motor.getSimState().setMotorType(motorType);
+    private void initTalonFXSimState(TalonFXSimState motorSimState, ChassisReference orientation, MotorType motorType) {
+        motorSimState.Orientation = orientation;
+        motorSimState.setMotorType(motorType);
     }
     
     public Command updateSpinner(double RPS) {
@@ -90,24 +94,25 @@ public class Indexer extends SubsystemBase {
         log_exhaustVelocityRPS.accept(m_exhaust.getVelocity().getValueAsDouble());
     }
 
+    private void updateSimValues(
+        TalonFXSimState motorSimState,
+        DCMotorSim motorSim,
+        double simPeriodicUpdateInterval,
+        double gearing
+        ) {
+            motorSim.setInputVoltage(motorSimState.getMotorVoltage());
+            motorSim.update(simPeriodicUpdateInterval);
+
+            motorSimState.setRotorVelocity(motorSim.getAngularVelocity().times(gearing));
+            motorSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+    }
+
     @Override
     public void simulationPeriodic() {
         // Spinner  
-        var spinnerFXSim = m_spinner.getSimState();
-
-        m_spinnerSim.setInputVoltage(spinnerFXSim.getMotorVoltage());
-        m_spinnerSim.update(Constants.kSimPeriodicUpdateInterval);
-
-        spinnerFXSim.setRotorVelocity(m_spinnerSim.getAngularVelocity().times(kSpinnerGearing));
-        spinnerFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        updateSimValues(m_spinner.getSimState(), m_spinnerSim, Constants.kSimPeriodicUpdateInterval, kSpinnerGearing);
 
         // Exhaust
-        var exhaustFXSim = m_exhaust.getSimState();
-        
-        m_exhaustSim.setInputVoltage(exhaustFXSim.getMotorVoltage());
-        m_exhaustSim.update(Constants.kSimPeriodicUpdateInterval);
-
-        exhaustFXSim.setRotorVelocity(m_exhaustSim.getAngularVelocity().times(kExhaustGearing));
-        exhaustFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        updateSimValues(m_exhaust.getSimState(), m_exhaustSim, Constants.kSimPeriodicUpdateInterval, kExhaustGearing);
     }
 }
