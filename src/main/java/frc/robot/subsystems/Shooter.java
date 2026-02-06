@@ -34,8 +34,8 @@ import frc.util.WaltLogger.DoubleLogger;
 public class Shooter extends SubsystemBase {
     /* VARIABLES */
     // motors + control requests
-    private final TalonFX m_leader = new TalonFX(kLeaderCANID); //X60
-    private final TalonFX m_follower = new TalonFX(kFollowerCANID); //X60
+    private final TalonFX m_flywheelLeader = new TalonFX(kLeaderCANID); //X60
+    private final TalonFX m_flywheelFollower = new TalonFX(kFollowerCANID); //X60
     private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0);
 
     private final TalonFX m_hood = new TalonFX(kHoodCANID); //X44
@@ -91,7 +91,7 @@ public class Shooter extends SubsystemBase {
     );
 
     // loggers
-    private final DoubleLogger log_shooterVelocityRPS = WaltLogger.logDouble(kLogTab, "shooterVelocityRPS");
+    private final DoubleLogger log_flywheelVelocityRPS = WaltLogger.logDouble(kLogTab, "flywheelVelocityRPS");
     private final DoubleLogger log_hoodPositionRots = WaltLogger.logDouble(kLogTab, "hoodPositionRots");
     private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble(kLogTab, "turretPositionRots");
 
@@ -100,19 +100,19 @@ public class Shooter extends SubsystemBase {
 
     /* CONSTRUCTOR */
     public Shooter() {
-        m_leader.getConfigurator().apply(kLeaderTalonFXConfiguration);
-        m_follower.getConfigurator().apply(kFollowerTalonFXConfiguration);
+        m_flywheelLeader.getConfigurator().apply(kLeaderTalonFXConfiguration);
+        m_flywheelFollower.getConfigurator().apply(kFollowerTalonFXConfiguration);
         m_hood.getConfigurator().apply(kHoodTalonFXConfiguration);
         m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
 
-        m_follower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed)); //TODO: check if MotorAlignmentValue is Opposed or Aligned
+        m_flywheelFollower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed)); //TODO: check if MotorAlignmentValue is Opposed or Aligned
 
         initSim();
     }
 
     //TODO: update orientation values (if needed)
     private void initSim() {
-        var leaderFXSim = m_leader.getSimState();
+        var leaderFXSim = m_flywheelLeader.getSimState();
         leaderFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
         leaderFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX60);
 
@@ -127,12 +127,12 @@ public class Shooter extends SubsystemBase {
 
     /* COMMANDS */
     // Shooter Commands (Veloity Control)
-    public Command setShooterVelocityCmd(AngularVelocity RPS) {
-        return setShooterVelocityCmd(RPS.magnitude());
+    public Command setFlywheelVelocityCmd(AngularVelocity RPS) {
+        return setFlywheelVelocityCmd(RPS.magnitude());
     }
 
-    public Command setShooterVelocityCmd(double RPS) {
-        return runOnce(() -> m_leader.setControl(m_velocityRequest.withVelocity(RPS)));
+    public Command setFlywheelVelocityCmd(double RPS) {
+        return runOnce(() -> m_flywheelLeader.setControl(m_velocityRequest.withVelocity(RPS)));
     }
 
     // Hood Commands (Basic Position Control)
@@ -156,7 +156,7 @@ public class Shooter extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        log_shooterVelocityRPS.accept(m_leader.getVelocity().getValueAsDouble());
+        log_flywheelVelocityRPS.accept(m_flywheelLeader.getVelocity().getValueAsDouble());
         log_hoodPositionRots.accept(m_hood.getPosition().getValueAsDouble());
         log_turretPositionRots.accept(m_turret.getPosition().getValueAsDouble());
 
@@ -167,7 +167,7 @@ public class Shooter extends SubsystemBase {
     @Override
     public void simulationPeriodic() {
         // Shooter
-        var leaderFXSim = m_leader.getSimState();
+        var leaderFXSim = m_flywheelLeader.getSimState();
 
         m_flywheelSim.setInputVoltage(leaderFXSim.getMotorVoltage());
         m_flywheelSim.update(Constants.kSimPeriodicUpdateInterval);
