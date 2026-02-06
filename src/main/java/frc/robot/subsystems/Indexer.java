@@ -50,7 +50,7 @@ public class Indexer extends SubsystemBase {
             kExhaustGearing
         ),
         DCMotor.getKrakenX60Foc(1)
-    );  
+    );
     
     // Loggers
     private final DoubleLogger log_spinnerRPS = WaltLogger.logDouble(kLogTab, "spinnerRPS");
@@ -122,12 +122,11 @@ public class Indexer extends SubsystemBase {
         ) {
             DCMotorSim motorSim = isSpinner ? m_spinnerSim : m_exhaustSim;
             TalonFXSimState motorSimState = isSpinner ? m_spinner.getSimState() : m_exhaust.getSimState();
-            double gearing = isSpinner ? kSpinnerGearing : kExhaustGearing;
             
             motorSim.setInputVoltage(motorSimState.getMotorVoltage());
             motorSim.update(simPeriodicUpdateInterval);
 
-            motorSimState.setRotorVelocity(motorSim.getAngularVelocity().times(gearing));
+            motorSimState.setRotorVelocity(motorSim.getAngularVelocity().times(motorSim.getGearing()));
             motorSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 
