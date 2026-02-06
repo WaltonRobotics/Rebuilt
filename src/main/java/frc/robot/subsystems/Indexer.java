@@ -117,11 +117,13 @@ public class Indexer extends SubsystemBase {
     }
 
     private void updateSimValues(
-        TalonFXSimState motorSimState,
-        DCMotorSim motorSim,
-        double simPeriodicUpdateInterval,
-        double gearing
+        boolean isSpinner,
+        double simPeriodicUpdateInterval
         ) {
+            DCMotorSim motorSim = isSpinner ? m_spinnerSim : m_exhaustSim;
+            TalonFXSimState motorSimState = isSpinner ? m_spinner.getSimState() : m_exhaust.getSimState();
+            double gearing = isSpinner ? kSpinnerGearing : kExhaustGearing;
+            
             motorSim.setInputVoltage(motorSimState.getMotorVoltage());
             motorSim.update(simPeriodicUpdateInterval);
 
@@ -132,9 +134,9 @@ public class Indexer extends SubsystemBase {
     @Override
     public void simulationPeriodic() {
         // Spinner  
-        updateSimValues(m_spinner.getSimState(), m_spinnerSim, Constants.kSimPeriodicUpdateInterval, kSpinnerGearing);
+        updateSimValues(true, Constants.kSimPeriodicUpdateInterval);
 
         // Exhaust
-        updateSimValues(m_exhaust.getSimState(), m_exhaustSim, Constants.kSimPeriodicUpdateInterval, kExhaustGearing);
+        updateSimValues(false, Constants.kSimPeriodicUpdateInterval);
     }
 }
