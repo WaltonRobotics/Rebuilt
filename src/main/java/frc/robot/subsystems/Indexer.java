@@ -48,8 +48,8 @@ public class Indexer extends SubsystemBase {
     );  
     
     // Loggers
-    private final DoubleLogger log_spinnerVelocityRPS = WaltLogger.logDouble(kLogTab, "spinnerVelocityRPS");
-    private final DoubleLogger log_exhaustVelocityRPS = WaltLogger.logDouble(kLogTab, "exhaustVelocityRPS");
+    private final DoubleLogger log_spinnerRPS = WaltLogger.logDouble(kLogTab, "spinnerRPS");
+    private final DoubleLogger log_exhaustRPS = WaltLogger.logDouble(kLogTab, "exhaustRPS");
 
     /* CONSTRUCTOR */
     public Indexer() {
@@ -90,8 +90,8 @@ public class Indexer extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        log_spinnerVelocityRPS.accept(m_spinner.getVelocity().getValueAsDouble());
-        log_exhaustVelocityRPS.accept(m_exhaust.getVelocity().getValueAsDouble());
+        log_spinnerRPS.accept(m_spinner.getVelocity().getValueAsDouble());
+        log_exhaustRPS.accept(m_exhaust.getVelocity().getValueAsDouble());
     }
 
     private void updateSimValues(
