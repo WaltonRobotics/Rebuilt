@@ -145,13 +145,14 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
-        driver.povUp().onTrue(shooter.setShooterVelocityCmd(0));
-        driver.povDown().onTrue(shooter.setShooterVelocityCmd(ShooterK.kShooterMaxRPS));
+        driver.povUp().onTrue(shooter.setFlywheelVelocityCmd(0));
+        driver.povDown().onTrue(shooter.setFlywheelVelocityCmd(ShooterK.kShooterMaxRPS));
 
         driver.a().onTrue(shooter.setHoodPositionCmd(ShooterK.kHoodMinRots));
         driver.y().onTrue(shooter.setHoodPositionCmd(ShooterK.kHoodMaxRots));
 
         driver.leftTrigger().onTrue(shooter.setTurretPositionCmd(ShooterK.kTurretMinRots));
+        driver.leftBumper().onTrue(shooter.setTurretPositionCmd(0));
         driver.rightTrigger().onTrue(shooter.setTurretPositionCmd(ShooterK.kTurretMaxRots));
     }
 
