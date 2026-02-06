@@ -28,8 +28,8 @@ import frc.robot.Constants.IntakeK;
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
-    private final TalonFX m_deployMotor = new TalonFX(IntakeK.kDeployCANID);
-    private final TalonFX m_rollerMotor = new TalonFX(IntakeK.kRollerCANID);
+    private final TalonFX m_deploy = new TalonFX(IntakeK.kDeployCANID);
+    private final TalonFX m_rollers = new TalonFX(IntakeK.kRollersCANID);
 
     private MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0).withEnableFOC(true);
     private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
@@ -37,8 +37,8 @@ public class Intake extends SubsystemBase {
     // Loggers
     DoubleLogger log_deployRots = WaltLogger.logDouble(IntakeK.kLogTab, "deployRots");
     DoubleLogger log_targetDeployRots = WaltLogger.logDouble(IntakeK.kLogTab, "targetDeployRots");
-    DoubleLogger log_rollerRPS = WaltLogger.logDouble(IntakeK.kLogTab, "rollerRPS");
-    DoubleLogger log_targetRollerRPS = WaltLogger.logDouble(IntakeK.kLogTab, "targetRollerRPS");
+    DoubleLogger log_rollersRPS = WaltLogger.logDouble(IntakeK.kLogTab, "rollersRPS");
+    DoubleLogger log_targetRollersRPS = WaltLogger.logDouble(IntakeK.kLogTab, "targetRollersRPS");
 
     // Simulators
     private final DCMotorSim m_deploySim = new DCMotorSim(
@@ -50,29 +50,29 @@ public class Intake extends SubsystemBase {
         DCMotor.getKrakenX60Foc(1)
     );
 
-    private final DCMotorSim m_rollerSim = new DCMotorSim(
+    private final DCMotorSim m_rollersSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX44Foc(1),
-            IntakeK.kRollerMomentOfInertia,
-            IntakeK.kRollerGearing
+            IntakeK.kRollersMomentOfInertia,
+            IntakeK.kRollersGearing
         ),
         DCMotor.getKrakenX44Foc(1) // returns gearbox
     );
 
     public Intake() {
-        m_deployMotor.getConfigurator().apply(IntakeK.kDeployConfiguration);
-        m_rollerMotor.getConfigurator().apply(IntakeK.kRollerConfiguration);
+        m_deploy.getConfigurator().apply(IntakeK.kDeployConfiguration);
+        m_rollers.getConfigurator().apply(IntakeK.kRollersConfiguration);
         initSim();
     }
 
     private void initSim() {
-        var deployFXSim = m_deployMotor.getSimState();
+        var deployFXSim = m_deploy.getSimState();
         deployFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
         deployFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX60);
 
-        var rollerFXSim = m_deployMotor.getSimState();
-        rollerFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
-        rollerFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
+        var rollersFXSim = m_deploy.getSimState();
+        rollersFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
+        rollersFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
     }
 
     public Command setDeployPos(DeployPosition rots) {
@@ -80,28 +80,28 @@ public class Intake extends SubsystemBase {
     }
 
     public Command setDeployPos(Angle rots) {
-        return runOnce(() -> m_deployMotor.setControl(m_MMVReq.withPosition(rots)));
+        return runOnce(() -> m_deploy.setControl(m_MMVReq.withPosition(rots)));
     }
 
-    public Command setRollerSpeed(RollerVelocity RPS) {
-        return setRollerSpeed(RPS.RPS);
+    public Command setRollersSpeed(RollersVelocity RPS) {
+        return setRollersSpeed(RPS.RPS);
     }
 
-    public Command setRollerSpeed(AngularVelocity RPS) {
-        return runOnce(() -> m_rollerMotor.setControl(m_VVReq.withVelocity(RPS)));
+    public Command setRollersSpeed(AngularVelocity RPS) {
+        return runOnce(() -> m_rollers.setControl(m_VVReq.withVelocity(RPS)));
     }
 
     @Override
     public void periodic() {
         log_targetDeployRots.accept(m_MMVReq.Position);
-        log_targetRollerRPS.accept(m_VVReq.Velocity);
-        log_rollerRPS.accept(m_rollerMotor.getVelocity().getValueAsDouble());
-        log_deployRots.accept(m_deployMotor.getPosition().getValueAsDouble());
+        log_targetRollersRPS.accept(m_VVReq.Velocity);
+        log_rollersRPS.accept(m_rollers.getVelocity().getValueAsDouble());
+        log_deployRots.accept(m_deploy.getPosition().getValueAsDouble());
     }
 
     @Override
     public void simulationPeriodic() {
-        var deployFXSim = m_deployMotor.getSimState();
+        var deployFXSim = m_deploy.getSimState();
 
         m_deploySim.setInputVoltage(deployFXSim.getMotorVoltage());
         m_deploySim.update(0.02);
@@ -110,14 +110,14 @@ public class Intake extends SubsystemBase {
         deployFXSim.setRotorVelocity(m_deploySim.getAngularVelocity().times(IntakeK.kDeployGearing));
         deployFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
-        var rollerFXSim = m_rollerMotor.getSimState();
+        var rollersFXSim = m_rollers.getSimState();
 
-        m_rollerSim.setInputVoltage(rollerFXSim.getMotorVoltage());
-        m_rollerSim.update(0.02);
+        m_rollersSim.setInputVoltage(rollersFXSim.getMotorVoltage());
+        m_rollersSim.update(0.02);
         
-        rollerFXSim.setRawRotorPosition(m_rollerSim.getAngularPositionRotations() * IntakeK.kRollerGearing);
-        rollerFXSim.setRotorVelocity(m_rollerSim.getAngularVelocity().times(IntakeK.kRollerGearing));
-        rollerFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        rollersFXSim.setRawRotorPosition(m_rollersSim.getAngularPositionRotations() * IntakeK.kRollersGearing);
+        rollersFXSim.setRotorVelocity(m_rollersSim.getAngularVelocity().times(IntakeK.kRollersGearing));
+        rollersFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 
     public enum DeployPosition{
@@ -134,14 +134,14 @@ public class Intake extends SubsystemBase {
         }
     }
 
-    public enum RollerVelocity{
+    public enum RollersVelocity{
         MAX(50),
         MID(33),
         STOP(0);
 
         private AngularVelocity RPS;
 
-        private RollerVelocity(double RPS) {
+        private RollersVelocity(double RPS) {
             this.RPS = RotationsPerSecond.of(RPS);
         }
     }

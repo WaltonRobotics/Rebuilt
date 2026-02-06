@@ -109,33 +109,33 @@ public class Constants {
                 .withMotorOutput(kDeployMotorOutputConfigs)
                 .withMotionMagic(kDeployMotionMagicConfigs);
 
-        // roller motor
-        public static final double kRollerMomentOfInertia = 0.00005;
-        public static final double kRollerGearing = 1.0/2;
+        // rollers motor
+        public static final double kRollersMomentOfInertia = 0.00005;
+        public static final double kRollersGearing = 1.0/2;
 
-        public static final int kRollerCANID = 42; // TODO change to correct
+        public static final int kRollersCANID = 42; // TODO change to correct
 
-        private static final CurrentLimitsConfigs kRollerCurrentLimitConfigs = new CurrentLimitsConfigs()
+        private static final CurrentLimitsConfigs kRollersCurrentLimitConfigs = new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(120)
                 .withSupplyCurrentLimit(50)
                 .withStatorCurrentLimitEnable(true)
                 .withSupplyCurrentLimitEnable(true);
-        private static final Slot0Configs kRollerSlot0Configs = new Slot0Configs()
+        private static final Slot0Configs kRollersSlot0Configs = new Slot0Configs()
                 .withKS(0)
                 .withKV(0.19543973941)
                 .withKA(0)
                 .withKP(0)
                 .withKI(0)
                 .withKD(0);
-        public static final MotorOutputConfigs kRollerMotorOutputConfigs = new MotorOutputConfigs()
+        public static final MotorOutputConfigs kRollersMotorOutputConfigs = new MotorOutputConfigs()
                 .withInverted(InvertedValue.Clockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Brake);
-        public static final FeedbackConfigs kRollerFeedbackConfigs = new FeedbackConfigs()
-                .withSensorToMechanismRatio(1 / kRollerGearing);
-        public static final TalonFXConfiguration kRollerConfiguration = new TalonFXConfiguration()
-                .withCurrentLimits(kRollerCurrentLimitConfigs)
-                .withSlot0(kRollerSlot0Configs)
-                .withMotorOutput(kRollerMotorOutputConfigs)
-                .withFeedback(kRollerFeedbackConfigs);
+        public static final FeedbackConfigs kRollersFeedbackConfigs = new FeedbackConfigs()
+                .withSensorToMechanismRatio(1 / kRollersGearing);
+        public static final TalonFXConfiguration kRollersConfiguration = new TalonFXConfiguration()
+                .withCurrentLimits(kRollersCurrentLimitConfigs)
+                .withSlot0(kRollersSlot0Configs)
+                .withMotorOutput(kRollersMotorOutputConfigs)
+                .withFeedback(kRollersFeedbackConfigs);
     }
 }
