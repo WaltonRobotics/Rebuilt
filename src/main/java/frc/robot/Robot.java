@@ -30,6 +30,8 @@ import frc.robot.Constants.VisionK;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Intake.DeployPosition;
+import frc.robot.subsystems.Intake.RollerVelocity;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
 import frc.util.WaltLogger;
@@ -138,14 +140,13 @@ public class Robot extends TimedRobot {
         // Reset the field-centric heading on left bumper press.
         driver.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-        driver.a().onTrue(intake.deployToRots(0));
-        driver.b().onTrue(intake.deployToRots(0.5));
-        driver.x().onTrue(intake.deployToRots(1));
+        driver.a().onTrue(intake.setDeployPos(DeployPosition.RETRACTED));
+        driver.b().onTrue(intake.setDeployPos(DeployPosition.SAFE));
+        driver.x().onTrue(intake.setDeployPos(DeployPosition.DEPLOYED));
 
-        driver.povRight().onTrue(intake.spinRollers(10));
-        driver.povLeft().onTrue(intake.spinRollers(20)); 
-        driver.povUp().onTrue(intake.spinRollers(40));
-        driver.povDown().onTrue(intake.stopRollers());
+        driver.povRight().onTrue(intake.setRollerSpeed(RollerVelocity.MID));
+        driver.povDown().onTrue(intake.setRollerSpeed(RollerVelocity.STOP)); 
+        driver.povUp().onTrue(intake.setRollerSpeed(RollerVelocity.MAX));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }

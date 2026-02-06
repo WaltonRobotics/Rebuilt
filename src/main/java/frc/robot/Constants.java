@@ -89,10 +89,10 @@ public class Constants {
                 .withSupplyCurrentLimit(20)
                 .withStatorCurrentLimitEnable(true);
         private static final Slot0Configs kDeploySlot0Configs = new Slot0Configs()
-                .withKS(0)
+                .withKS(0.04)
                 .withKV(0)
                 .withKA(0)
-                .withKP(0.57)
+                .withKP(0.8)
                 .withKI(0)
                 .withKD(0);
         public static final MotorOutputConfigs kDeployMotorOutputConfigs = new MotorOutputConfigs()
@@ -101,6 +101,8 @@ public class Constants {
             .withMotionMagicCruiseVelocity(20)
             .withMotionMagicAcceleration(100)
             .withMotionMagicJerk(0);
+        public static final FeedbackConfigs kDeployFeedbackConfigs = new FeedbackConfigs()
+                .withSensorToMechanismRatio(1 / kDeployGearing);
         public static final TalonFXConfiguration kDeployConfiguration = new TalonFXConfiguration()
                 .withCurrentLimits(kDeployCurrentLimitConfigs)
                 .withSlot0(kDeploySlot0Configs)
@@ -108,33 +110,32 @@ public class Constants {
                 .withMotionMagic(kDeployMotionMagicConfigs);
 
         // roller motor
-        public static final double kRollerMomentOfInertia = 0.02;
+        public static final double kRollerMomentOfInertia = 0.00005;
         public static final double kRollerGearing = 1.0/2;
 
         public static final int kRollerCANID = 42; // TODO change to correct
 
         private static final CurrentLimitsConfigs kRollerCurrentLimitConfigs = new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(110)
+                .withStatorCurrentLimit(120)
                 .withSupplyCurrentLimit(50)
-                .withStatorCurrentLimitEnable(true);
-        private static final MotionMagicConfigs kRollerMotionMagicConfigs = new MotionMagicConfigs()
-                .withMotionMagicCruiseVelocity(RotationsPerSecond.of(20))
-                .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(100))
-                .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(10));
+                .withStatorCurrentLimitEnable(true)
+                .withSupplyCurrentLimitEnable(true);
         private static final Slot0Configs kRollerSlot0Configs = new Slot0Configs()
                 .withKS(0)
-                .withKV(0)
+                .withKV(0.19543973941)
                 .withKA(0)
-                .withKP(0.5)
+                .withKP(0)
                 .withKI(0)
                 .withKD(0);
         public static final MotorOutputConfigs kRollerMotorOutputConfigs = new MotorOutputConfigs()
                 .withInverted(InvertedValue.Clockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Brake);
+        public static final FeedbackConfigs kRollerFeedbackConfigs = new FeedbackConfigs()
+                .withSensorToMechanismRatio(1 / kRollerGearing);
         public static final TalonFXConfiguration kRollerConfiguration = new TalonFXConfiguration()
                 .withCurrentLimits(kRollerCurrentLimitConfigs)
                 .withSlot0(kRollerSlot0Configs)
                 .withMotorOutput(kRollerMotorOutputConfigs)
-                .withMotionMagic(kRollerMotionMagicConfigs);
+                .withFeedback(kRollerFeedbackConfigs);
     }
 }
