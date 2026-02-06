@@ -31,7 +31,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Intake.DeployPosition;
-import frc.robot.subsystems.Intake.RollerVelocity;
+import frc.robot.subsystems.Intake.RollersVelocity;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
 import frc.util.WaltLogger;
@@ -144,9 +144,9 @@ public class Robot extends TimedRobot {
         driver.b().onTrue(intake.setDeployPos(DeployPosition.SAFE));
         driver.x().onTrue(intake.setDeployPos(DeployPosition.DEPLOYED));
 
-        driver.povRight().onTrue(intake.setRollerSpeed(RollerVelocity.MID));
-        driver.povDown().onTrue(intake.setRollerSpeed(RollerVelocity.STOP)); 
-        driver.povUp().onTrue(intake.setRollerSpeed(RollerVelocity.MAX));
+        driver.povRight().onTrue(intake.setRollersSpeed(RollersVelocity.MID));
+        driver.povDown().onTrue(intake.setRollersSpeed(RollersVelocity.STOP)); 
+        driver.povUp().onTrue(intake.setRollersSpeed(RollersVelocity.MAX));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
