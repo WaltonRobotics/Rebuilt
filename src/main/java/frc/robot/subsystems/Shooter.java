@@ -61,8 +61,8 @@ public class Shooter extends SubsystemBase {
     private final FlywheelSim m_flywheelSim = new FlywheelSim(
         LinearSystemId.createFlywheelSystem(
             DCMotor.getKrakenX60Foc(2), 
-            kShooterMoI,
-            kShooterGearing
+            kFlywheelMoI,
+            kFlywheelGearing
         ),
         DCMotor.getKrakenX60Foc(2) // returns gearbox
     );
@@ -179,7 +179,7 @@ public class Shooter extends SubsystemBase {
         m_turretSim.setInputVoltage(turretFXSim.getMotorVoltage());
         m_turretSim.update(Constants.kSimPeriodicUpdateInterval);
 
-        turretFXSim.setRawRotorPosition(m_turretSim.getAngularPositionRotations() * ShooterK.kTurretGearing);
+        turretFXSim.setRawRotorPosition(m_turretSim.getAngularPositionRotations());
         turretFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 

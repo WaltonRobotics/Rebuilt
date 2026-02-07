@@ -13,6 +13,7 @@ import java.util.List;
 import org.photonvision.simulation.SimCameraProperties;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -42,11 +43,11 @@ public class Constants {
         public static final String kLogTab = "Shooter";
 
         /* MOTOR CONSTANTS */
-        public static final double kShooterMoI = 0.000349;  //J for 2 3" 0.53lb flywheels
+        public static final double kFlywheelMoI = 0.000349;  //J for 2 3" 0.53lb flywheels
         public static final double kHoodMoI = 0.000249;
         public static final double kTurretMoI = 0.104506595;
 
-        public static final double kShooterGearing = 1/1;
+        public static final double kFlywheelGearing = 1/1;
         public static final double kHoodGearing = 45/1;
         public static final double kTurretGearing = 41.66666666/1;
 
@@ -86,10 +87,13 @@ public class Constants {
         private static final MotorOutputConfigs kFlywheelLeaderOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
             .withNeutralMode(NeutralModeValue.Brake);
+        private static final FeedbackConfigs kFlywheelFeedbackConfigs = new FeedbackConfigs()
+            .withSensorToMechanismRatio(kFlywheelGearing);
         public static final TalonFXConfiguration kFlywheelLeaderTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kFlywheelLeaderSlot0Configs)
             .withCurrentLimits(kFlywheelLeaderCurrentLimitConfigs)
-            .withMotorOutput(kFlywheelLeaderOutputConfigs);
+            .withMotorOutput(kFlywheelLeaderOutputConfigs)
+            .withFeedback(kFlywheelFeedbackConfigs);
         
         // TODO: mimics the leader, so it doesn't need its own configs - right?
         public static final TalonFXConfiguration kFlywheelFollowerTalonFXConfiguration = new TalonFXConfiguration()
@@ -116,20 +120,23 @@ public class Constants {
         private static final MotorOutputConfigs kHoodOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
             .withNeutralMode(NeutralModeValue.Brake);
+        private static final FeedbackConfigs kHoodFeedbackConfigs = new FeedbackConfigs()
+            .withSensorToMechanismRatio(kHoodGearing);
         public static final TalonFXConfiguration kHoodTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kHoodSlot0Configs)
             .withCurrentLimits(kHoodCurrentLimitConfigs)
-            .withMotorOutput(kHoodOutputConfigs);
+            .withMotorOutput(kHoodOutputConfigs)
+            .withFeedback(kHoodFeedbackConfigs);
         
         private static final Slot0Configs kTurretSlot0Configs = new Slot0Configs()
             .withKS(0)
             .withKV(4.07)
             .withKA(0.02)
-            .withKP(0)  //3
+            .withKP(0)  //3 - testing values in Pheonix Tuner
             .withKI(0)
-            .withKD(0); // kP was too low making the slope less steep, kS kV and kA were causing rlly weird behavior (jumping up/down way further than targeted position)
+            .withKD(0); // OLD: kP was too low making the slope less steep, kS kV and kA were causing rlly weird behavior (jumping up/down way further than targeted position)
         private static final CurrentLimitsConfigs kTurretCurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(40)
+            .withStatorCurrentLimit(60)
             .withSupplyCurrentLimit(20)
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kTurretOutputConfigs = new MotorOutputConfigs()
@@ -146,12 +153,15 @@ public class Constants {
             .withForwardSoftLimitThreshold(0.78)    //TODO: update threshold numbers
             .withReverseSoftLimitEnable(false)
             .withReverseSoftLimitThreshold(0.02);
+        private static final FeedbackConfigs kTurretFeedbackConfigs = new FeedbackConfigs()
+            .withSensorToMechanismRatio(kTurretGearing);
         public static final TalonFXConfiguration kTurretTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kTurretSlot0Configs)
             .withCurrentLimits(kTurretCurrentLimitConfigs)
             .withMotorOutput(kTurretOutputConfigs)
             .withMotionMagic(kTurretMotionMagicConfigs)
-            .withSoftwareLimitSwitch(kTurretSoftwareLimitSwitchConfigs);
+            .withSoftwareLimitSwitch(kTurretSoftwareLimitSwitchConfigs)
+            .withFeedback(kTurretFeedbackConfigs);
     }
 
     public static class VisionK {
