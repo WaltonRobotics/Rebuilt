@@ -77,13 +77,18 @@ public class Constants {
         public static final String kLogTab = "Intake";
 
         /* MOTOR CONSTANTS */
-
-        // deploy motor
         public static final double kDeployMomentOfInertia = 0.0209;
         public static final double kDeployGearing = 5/1;
 
-        public static final int kDeployCANID = 41; // TODO change to correct
+        public static final double kRollersMomentOfInertia = 0.00005;
+        public static final double kRollersGearing = 1.0/2;
 
+        /* IDS */
+        public static final int kDeployCANID = 41; // TODO: change to correct
+        public static final int kRollersCANID = 42; // TODO: change to correct
+
+        /* CONFIGS */
+        //Deploy Motor
         private static final CurrentLimitsConfigs kDeployCurrentLimitConfigs = new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(20)
                 .withSupplyCurrentLimit(20)
@@ -109,12 +114,7 @@ public class Constants {
                 .withMotorOutput(kDeployMotorOutputConfigs)
                 .withMotionMagic(kDeployMotionMagicConfigs);
 
-        // rollers motor
-        public static final double kRollersMomentOfInertia = 0.00005;
-        public static final double kRollersGearing = 1.0/2;
-
-        public static final int kRollersCANID = 42; // TODO change to correct
-
+        //Rollers Motor
         private static final CurrentLimitsConfigs kRollersCurrentLimitConfigs = new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(120)
                 .withSupplyCurrentLimit(50)

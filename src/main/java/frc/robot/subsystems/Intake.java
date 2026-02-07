@@ -37,10 +37,11 @@ public class Intake extends SubsystemBase {
     // Loggers
     DoubleLogger log_deployRots = WaltLogger.logDouble(IntakeK.kLogTab, "deployRots");
     DoubleLogger log_targetDeployRots = WaltLogger.logDouble(IntakeK.kLogTab, "targetDeployRots");
+
     DoubleLogger log_rollersRPS = WaltLogger.logDouble(IntakeK.kLogTab, "rollersRPS");
     DoubleLogger log_targetRollersRPS = WaltLogger.logDouble(IntakeK.kLogTab, "targetRollersRPS");
 
-    // Simulators
+    // Sims
     private final DCMotorSim m_deploySim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX60Foc(1),
@@ -75,6 +76,7 @@ public class Intake extends SubsystemBase {
         rollersFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
     }
 
+    /* COMMANDS */
     public Command setDeployPos(DeployPosition rots) {
         return setDeployPos(rots.rots);
     }
