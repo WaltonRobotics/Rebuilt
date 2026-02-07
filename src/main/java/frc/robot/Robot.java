@@ -8,6 +8,8 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.Optional;
 
+import javax.xml.crypto.dsig.Transform;
+
 import org.photonvision.EstimatedRobotPose;
 
 import com.ctre.phoenix6.HootAutoReplay;
@@ -19,6 +21,9 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -26,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Autons.AutonFactory;
 import frc.robot.Constants.VisionK;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Swerve;
@@ -59,7 +65,10 @@ public class Robot extends TimedRobot {
 
     public final Swerve drivetrain = TunerConstants.createDrivetrain();
     private Command m_autonomousCommand;
+
+    //TODO: what the freakity is going on with these names
     private final AutoFactory autoFactory = drivetrain.createAutoFactory();
+    private final AutonFactory auton = new AutonFactory(autoFactory, drivetrain);
 
     private final VisionSim visionSim = new VisionSim();
     private final Vision camera1 = new Vision(VisionK.kCamera1CamName, VisionK.kCamera1CamSimVisualName, VisionK.kCamera1CamRoboToCam, visionSim, VisionK.kCamera1SimProps);
@@ -143,12 +152,28 @@ public class Robot extends TimedRobot {
     }
 
     public Command getAutonomousCommand() {
-        // Simple Auton (hardcoded)
-        final var idle = new SwerveRequest.Idle();
-        return Commands.sequence(
-            autoFactory.resetOdometry("ThreePickupAndClimb"),
-            autoFactory.trajectoryCmd("ThreePickupAndClimb")
-        );
+    //     // Simple Auton (hardcoded)
+    //     final var idle = new SwerveRequest.Idle();
+    //     Pose2d postPickup = new Pose2d(Distance.ofRelativeUnits(6.924767017364502, Meter), 
+    //                                     Distance.ofRelativeUnits(2.251265048980713, Meter), new Rotation2d(3.141592653589793));
+
+    //     return Commands.sequence(
+    //         autoFactory.resetOdometry("OnePickup"),
+    //         autoFactory.trajectoryCmd("OnePickup"),
+    //         Commands.race(
+    //             drivetrain.swerveToObject(),
+    //             Commands.waitSeconds(3)
+    //         ),
+    //         Commands.race(
+    //             drivetrain.toPose(postPickup),
+    //             Commands.waitSeconds(3)
+    //         ),
+    //         Commands.print("------------------PATH ONE DONE-----------------"),
+    //         autoFactory.resetOdometry("ToShoot"),
+    //         autoFactory.trajectoryCmd("ToShoot")
+    //     );
+
+        return auton.simpleAuton();
     }
 
     @Override

@@ -5,6 +5,34 @@
  "variables":{
   "expressions":{},
   "poses":{
+   "bumpAlliance":{
+    "x":{
+     "exp":"3.3882551193237305 m",
+     "val":3.3882551193237305
+    },
+    "y":{
+     "exp":"2.251265048980713 m",
+     "val":2.251265048980713
+    },
+    "heading":{
+     "exp":"2.3380149015041254 rad",
+     "val":2.3380149015041254
+    }
+   },
+   "bumpNeutral":{
+    "x":{
+     "exp":"5.795487403869629 m",
+     "val":5.795487403869629
+    },
+    "y":{
+     "exp":"bumpAlliance.y",
+     "val":2.251265048980713
+    },
+    "heading":{
+     "exp":"bumpAlliance.heading",
+     "val":2.3380149015041254
+    }
+   },
    "climbPose":{
     "x":{
      "exp":"1.6358587741851807 m",
@@ -22,11 +50,11 @@
    "fuelPickupFour":{
     "x":{
      "exp":"fuelPickupThree.x",
-     "val":7.767688274383545
+     "val":6.924767017364502
     },
     "y":{
-     "exp":"3.741105318069458 m",
-     "val":3.741105318069458
+     "exp":"3.636219024658203 m",
+     "val":3.636219024658203
     },
     "heading":{
      "exp":"fuelPickupThree.heading",
@@ -35,11 +63,11 @@
    },
    "fuelPickupOne":{
     "x":{
-     "exp":"7.767688274383545 m",
-     "val":7.767688274383545
+     "exp":"6.924767017364502 m",
+     "val":6.924767017364502
     },
     "y":{
-     "exp":"startingRight.y",
+     "exp":"bumpNeutral.y",
      "val":2.251265048980713
     },
     "heading":{
@@ -50,7 +78,7 @@
    "fuelPickupThree":{
     "x":{
      "exp":"fuelPickupTwo.x",
-     "val":7.767688274383545
+     "val":6.924767017364502
     },
     "y":{
      "exp":"3.297109842300415 m",
@@ -64,7 +92,7 @@
    "fuelPickupTwo":{
     "x":{
      "exp":"fuelPickupOne.x",
-     "val":7.767688274383545
+     "val":6.924767017364502
     },
     "y":{
      "exp":"2.819326162338257 m",
@@ -73,20 +101,6 @@
     "heading":{
      "exp":"fuelPickupOne.heading",
      "val":3.141592653589793
-    }
-   },
-   "overTheBump":{
-    "x":{
-     "exp":"5.795487403869629 m",
-     "val":5.795487403869629
-    },
-    "y":{
-     "exp":"startingRight.y",
-     "val":2.251265048980713
-    },
-    "heading":{
-     "exp":"startingRight.heading",
-     "val":2.3380149015041254
     }
    },
    "shootPose":{
@@ -101,20 +115,6 @@
     "heading":{
      "exp":"1.9426348471900197 rad",
      "val":1.9426348471900197
-    }
-   },
-   "startingRight":{
-    "x":{
-     "exp":"3.3882551193237305 m",
-     "val":3.3882551193237305
-    },
-    "y":{
-     "exp":"2.251265048980713 m",
-     "val":2.251265048980713
-    },
-    "heading":{
-     "exp":"2.3380149015041254 rad",
-     "val":2.3380149015041254
     }
    }
   }
