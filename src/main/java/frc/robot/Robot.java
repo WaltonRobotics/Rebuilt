@@ -69,11 +69,14 @@ public class Robot extends TimedRobot {
     private final AutoFactory autoFactory = drivetrain.createAutoFactory();
 
     private final VisionSim visionSim = new VisionSim();
-    private final Vision camera1 = new Vision(VisionK.kCamera1CamName, VisionK.kCamera1CamSimVisualName, VisionK.kCamera1CamRoboToCam, visionSim, VisionK.kCamera1SimProps);
-    private final Vision camera2 = new Vision(VisionK.kCamera2CamName, VisionK.kCamera2CamSimVisualName, VisionK.kCamera2CamRoboToCam, visionSim, VisionK.kCamera2SimProps);
 
     // this should be updated with all of our cameras
-    private final Vision[] cameras = {camera1, camera2};
+    private final Vision[] cameras = {
+        new Vision(VisionK.kCameras[0], visionSim),
+        new Vision(VisionK.kCameras[1], visionSim),
+        new Vision(VisionK.kCameras[2], visionSim),
+        new Vision(VisionK.kCameras[3], visionSim),
+    };
 
     private final Indexer m_indexer = new Indexer();
 

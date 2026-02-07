@@ -28,12 +28,36 @@ public class Constants {
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
     public static class VisionK {
+        public static final Camera[] kCameras = new Camera[4];
+        public static final String[] kSimCameraNames = {
+            "frontLeftCamera",
+            "frontRightCamera",
+            "backLeftCamera",
+            "backRightCamera"
+        };
+        public static final String kSimCameraSimVisualNames = "VisionEstimation"; //suffixed to each camera name
+        public static final Transform3d[] kSimCameraRoboToCam = {
+            Camera.transformToRobo(0 , 0, 0, 0, 0, 0 ),
+            Camera.transformToRobo(0 , 0, 0, 0, 0, 0 ),
+            Camera.transformToRobo(0 , 0, 0, 0, 0, 0 ),
+            Camera.transformToRobo(0 , 0, 0, 0, 0, 0 )
+        };
+
+        static {
+            for(int i = 0; i < kCameras.length; i++) {
+                kCameras[i] = new Camera(new SimCameraProperties(), kSimCameraNames[i], kSimCameraSimVisualNames, kSimCameraRoboToCam[i]);
+                //ThriftyCam properties as default
+                kCameras[i].setProps(1600, 1200, 55, 0.30, 0.10, 
+                                        60, 30, 15);
+            }
+        }
+
         public static final SimCameraProperties kCamera1SimProps = new SimCameraProperties();
         static {
-            //TODO: [INSERT CAMERA TYPE]
-            kCamera1SimProps.setCalibration(1920, 1080, Rotation2d.fromDegrees(128.2));
+            //ThirftyCam
+            kCamera1SimProps.setCalibration(1600, 1200, Rotation2d.fromDegrees(55));
             kCamera1SimProps.setCalibError(0.35, 0.10);
-            kCamera1SimProps.setFPS(35);
+            kCamera1SimProps.setFPS(60);
             kCamera1SimProps.setAvgLatencyMs(30);
             kCamera1SimProps.setLatencyStdDevMs(15);
         }
