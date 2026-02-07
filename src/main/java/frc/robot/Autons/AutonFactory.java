@@ -26,11 +26,10 @@ public class AutonFactory {
     
     /**
      * pickup and shoot one time
+     * simple, hardcoded auton
      * @return
      */
     public Command simpleAuton() {
-        // Simple Auton (hardcoded)
-        final var idle = new SwerveRequest.Idle();
 
         //can i somehow pull this directly from choreo and not have to do this
         Pose2d postPickup = new Pose2d(Distance.ofRelativeUnits(6.924767017364502, Meter), 
@@ -52,11 +51,43 @@ public class AutonFactory {
             ),
             Commands.race(
                 m_drivetrain.toPose(postPickup),
-                Commands.waitSeconds(3)
+                Commands.waitSeconds(2)
             ),
+
+            m_autoFactory.resetOdometry("NeutralToShoot"),
+            m_autoFactory.trajectoryCmd("NeutralToShoot")
+        );
+    }
+
+    /**
+     * goes to depot once and shoots
+     * another hardcoded auton (´;︵;`)
+     * @return
+     */
+    public Command oneDepotPickup() {
+        Pose2d postPickup = new Pose2d(Distance.ofRelativeUnits(1.1576627492904663, Meter), 
+            Distance.ofRelativeUnits(5.958622932434082, Meter), new Rotation2d(0));
+
+        var allianceOpt = DriverStation.getAlliance();
+        if (allianceOpt.isPresent() && allianceOpt.get().equals(Alliance.Red)) {
+            postPickup = AllianceFlipUtil.flip(postPickup);
+        }
+
+        return Commands.sequence(
+            m_autoFactory.resetOdometry("ToDepot"),
+            m_autoFactory.trajectoryCmd("ToDepot"),
             
-            m_autoFactory.resetOdometry("ToShoot"),
-            m_autoFactory.trajectoryCmd("ToShoot")
+            Commands.race(
+                m_drivetrain.swerveToObject(),
+                Commands.waitSeconds(3.5)
+            ),
+            Commands.race(
+                m_drivetrain.toPose(postPickup),
+                Commands.waitSeconds(3.5)
+            ),
+
+            m_autoFactory.resetOdometry("DepotToShoot"),
+            m_autoFactory.trajectoryCmd("DepotToShoot")
         );
     }
     

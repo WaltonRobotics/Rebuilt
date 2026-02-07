@@ -1,5 +1,5 @@
 {
- "name":"ToShoot",
+ "name":"NeutralToShoot",
  "version":3,
  "snapshot":{
   "waypoints":[
@@ -18,7 +18,7 @@
     {"x":{"exp":"fuelPickupOne.x", "val":6.924767017364502}, "y":{"exp":"fuelPickupOne.y", "val":2.251265048980713}, "heading":{"exp":"fuelPickupOne.heading", "val":3.141592653589793}, "intervals":31, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"bumpNeutral.x", "val":5.795487403869629}, "y":{"exp":"bumpNeutral.y", "val":2.251265048980713}, "heading":{"exp":"bumpNeutral.heading", "val":2.3380149015041254}, "intervals":29, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"bumpAlliance.x", "val":3.3882551193237305}, "y":{"exp":"bumpAlliance.y", "val":2.251265048980713}, "heading":{"exp":"bumpAlliance.heading", "val":2.3380149015041254}, "intervals":33, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"shootPose.x", "val":2.125295639038086}, "y":{"exp":"shootPose.y", "val":3.6933207511901855}, "heading":{"exp":"shootPose.heading", "val":1.9426348471900197}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":{"exp":"neutralShootPose.x", "val":2.125295639038086}, "y":{"exp":"neutralShootPose.y", "val":3.6933207511901855}, "heading":{"exp":"neutralShootPose.heading", "val":1.9426348471900197}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},

@@ -173,7 +173,7 @@ public class Robot extends TimedRobot {
     //         autoFactory.trajectoryCmd("ToShoot")
     //     );
 
-        return auton.simpleAuton();
+        return auton.oneDepotPickup();
     }
 
     @Override
