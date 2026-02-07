@@ -36,10 +36,10 @@ public class Constants {
         private static final String kSimCameraSimVisualNames = "VisionEstimation"; //suffixed to each camera name
         //TODO: Make these transforms accurate - they are currently just placeholders
         private static final Transform3d[] kSimCameraRoboToCam = {
-            Camera.transformToRobo(0 , 0, 0, 0, 0, 0 ),
-            Camera.transformToRobo(0 , 0, 0, 0, 0, 0 ),
-            Camera.transformToRobo(0 , 0, 0, 0, 0, 0 ),
-            Camera.transformToRobo(0 , 0, 0, 0, 0, 0 )
+            Camera.transformToRobo(0, 0, 0, 0, 0, 0),
+            Camera.transformToRobo(0, 0, 0, 0, 0, 0),
+            Camera.transformToRobo(0, 0, 0, 0, 0, 0),
+            Camera.transformToRobo(0, 0, 0, 0, 0, 0)
         };
         //TODO: Make these values accurate - they are currently just placeholders
         private static final double[] kSimCamAvgError = {0, 0, 0, 0};
