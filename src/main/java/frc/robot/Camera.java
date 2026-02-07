@@ -40,10 +40,6 @@ public class Camera {
         return new Transform3d(x, y, z, new Rotation3d(rotX, rotY, rotZ));
     }
 
-    public static Transform3d transformToRobo(double[] posAndRot) {
-        return transformToRobo(posAndRot[0], posAndRot[1], posAndRot[2], posAndRot[3], posAndRot[4], posAndRot[5]);
-    }
-
     public void setRoboToCam(Transform3d roboToCam) {
         m_roboToCam = roboToCam;
     }
@@ -53,29 +49,33 @@ public class Camera {
      * @param resX Resolution in the X direction (pixels)
      * @param resY Resolution in the Y direction (pixels)
      * @param fovDiag Diagonal field of view (degrees)
+     * @param fps Frames per second
+     * @param avgErrorPx Average calibration error (pixels)
+     * @param errorStdDevPx Standard deviation of calibration error (pixels)
+     * @param avgLatencyMs Average latency (milliseconds)
+     * @param latencyStdDevMs Standard deviation of latency (milliseconds)
      */
-    public void setCalibration(int resX, int resY, double fovDiag) {
+    public void setProps(int resX, int resY, double fovDiag, int fps, double avgErrorPx, double errorStdDevPx, int avgLatencyMs, int latencyStdDevMs) {
         m_simCameraProperties.setCalibration(resX, resY, Rotation2d.fromDegrees(fovDiag));
-    };
-
-    public void setCalibError(double avgErrorPx, double errorStdDevPx) {
-        m_simCameraProperties.setCalibError(avgErrorPx, errorStdDevPx);
-    };
-
-    public void setFPS(int fps) {
         m_simCameraProperties.setFPS(fps);
-    };
-
-    public void setProps(int resX, int resY, double fovDiag, double avgErrorPx, double errorStdDevPx, int fps, int avgLatencyMs, int latencyStdDevMs) {
-        setCalibration(resX, resY, fovDiag);
-        setCalibError(avgErrorPx, errorStdDevPx);
-        setFPS(fps);
-        setLatency(avgLatencyMs, latencyStdDevMs);
-    }
-
-    public void setLatency(int avgLatencyMs, int latencyStdDevMs) {
+        m_simCameraProperties.setCalibError(avgErrorPx, errorStdDevPx);
         m_simCameraProperties.setAvgLatencyMs(avgLatencyMs);
         m_simCameraProperties.setLatencyStdDevMs(latencyStdDevMs);
+    }
+
+    /**
+     * Sets the camera's simulated properties based on a predefined camera type.
+     * @param cameraType ex: "ThriftyCam"
+     */
+    public void setProps(String cameraType) {
+        switch(cameraType) {
+            case "ThriftyCam":
+                setProps(1600, 1200, 55, 60, 0.10, 
+                                        0.30, 30, 15);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown camera type: " + cameraType);
+        }
     }
 
     public Transform3d getRoboToCam() {
