@@ -5,8 +5,6 @@
 package frc.robot;
 
 import com.ctre.phoenix6.sim.TalonFXSimState;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
@@ -25,7 +23,7 @@ import edu.wpi.first.wpilibj2.command.button.*;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.*;
-import frc.robot.subsystems.TurretSim.PhysicsSim;
+// import frc.robot.subsystems.TurretSim.PhysicsSim;
 import frc.robot.util.*;
 
 public class Robot extends TimedRobot {
@@ -37,19 +35,19 @@ public class Robot extends TimedRobot {
   public static DoublePublisher pub_Shooter;
   public static DoubleSubscriber sub_Shooter;
 
-  public static DoubleTopic DT_Turret = nte_inst.getDoubleTopic("/Shooter/turretPositon");
-  public static DoublePublisher pub_Turrert;
-  public static DoubleSubscriber sub_Turret;
+  // public static DoubleTopic DT_Turret = nte_inst.getDoubleTopic("/Shooter/turretPositon");
+  // public static DoublePublisher pub_Turrert;
+  // public static DoubleSubscriber sub_Turret;
 
   // variables
   private Command m_autonomousCommand;
   private final CommandXboxController driver = new CommandXboxController(0);
-  private final CommandXboxController manip = new CommandXboxController(1);
+  // private final CommandXboxController manip = new CommandXboxController(1);
 
 
   // subsystems
   private final Shooter shooter = new Shooter();
-  private final Turret turret = new Turret();
+  // private final Turret turret = new Turret();
 
   public Robot() {
     initPubSubs();
@@ -61,14 +59,14 @@ public class Robot extends TimedRobot {
     pub_Shooter.accept(0);
     sub_Shooter = DT_Shooter.subscribe(0.0);
 
-    pub_Turrert = DT_Turret.publish();
-    pub_Turrert.accept(0);
-    sub_Turret = DT_Turret.subscribe(turret.kHomingPos);
+    // pub_Turrert = DT_Turret.publish();
+    // pub_Turrert.accept(0);
+    // sub_Turret = DT_Turret.subscribe(turret.kHomingPos);
   }
 
   public void configureBindings() {
     driver.rightTrigger().whileTrue(shooter.shoot(sub_Shooter));
-    driver.leftTrigger().whileTrue(turret.spin(sub_Turret));
+    // driver.leftTrigger().whileTrue(turret.spin(sub_Turret));
     // manip.rightTrigger().whileTrue(turret.spin(sub_Turret));
   }
 
@@ -128,15 +126,15 @@ public class Robot extends TimedRobot {
 
   @Override
   public void simulationInit() {
-    turret.getMotor().getSimState().setMotorType(TalonFXSimState.MotorType.KrakenX44);
-    turret.getMotor().getSimState().setRawRotorPosition(0);
-    PhysicsSim.getInstance().addTalonFX(turret.getMotor(), 0.001);
+    // turret.getMotor().getSimState().setMotorType(TalonFXSimState.MotorType.KrakenX44);
+    // turret.getMotor().getSimState().setRawRotorPosition(0);
+    // PhysicsSim.getInstance().addTalonFX(turret.getMotor(), 0.001);
   }
 
   @Override
   public void simulationPeriodic() {
-    turret.moveToPosRotations(driver.getLeftY());
-    PhysicsSim.getInstance().run();
-    turret.logData();
+    // turret.moveToPosRotations(driver.getLeftY());
+    // PhysicsSim.getInstance().run();
+    // turret.logData();
   }
 }
