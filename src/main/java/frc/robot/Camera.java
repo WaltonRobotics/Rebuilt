@@ -56,9 +56,37 @@ public class Camera {
      * @param latencyStdDevMs Standard deviation of latency (milliseconds)
      */
     public void setProps(int resX, int resY, double fovDiag, int fps, double avgErrorPx, double errorStdDevPx, int avgLatencyMs, int latencyStdDevMs) {
+        setCameraSpecs(resX, resY, fovDiag, fps);
+        setCalibError(avgErrorPx, errorStdDevPx);
+        setLatency(avgLatencyMs, latencyStdDevMs);
+    }
+
+    /**
+     * @param resX Resolution in the X direction (pixels)
+     * @param resY Resolution in the Y direction (pixels)
+     * @param fovDiag Diagonal field of view (degrees)
+     * @param fps Frames per second
+     */
+    public void setCameraSpecs(int resX, int resY, double fovDiag, int fps) {
         m_simCameraProperties.setCalibration(resX, resY, Rotation2d.fromDegrees(fovDiag));
         m_simCameraProperties.setFPS(fps);
+    }
+
+    /**
+     * Sets the camera's simulated error properties.
+     * @param avgErrorPx Average calibration error (pixels)
+     * @param errorStdDevPx Standard deviation of calibration error (pixels)
+     */
+    public void setCalibError(double avgErrorPx, double errorStdDevPx) {
         m_simCameraProperties.setCalibError(avgErrorPx, errorStdDevPx);
+    }
+
+    /**
+     * Sets the camera's simulated latency properties.
+     * @param avgLatencyMs Average latency (milliseconds)
+     * @param latencyStdDevMs Standard deviation of latency (milliseconds)
+     */
+    public void setLatency(int avgLatencyMs, int latencyStdDevMs) {
         m_simCameraProperties.setAvgLatencyMs(avgLatencyMs);
         m_simCameraProperties.setLatencyStdDevMs(latencyStdDevMs);
     }
@@ -67,11 +95,10 @@ public class Camera {
      * Sets the camera's simulated properties based on a predefined camera type.
      * @param cameraType ex: "ThriftyCam"
      */
-    public void setProps(String cameraType) {
+    public void setCameraSpecs(String cameraType) {
         switch(cameraType) {
-            case "ThriftyCam":
-                setProps(1600, 1200, 55, 60, 0.10, 
-                                        0.30, 30, 15);
+            case "ThriftyCam": //https://docs.thethriftybot.com/thriftycam
+                setCameraSpecs(1600, 1304, 55, 60);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown camera type: " + cameraType);
