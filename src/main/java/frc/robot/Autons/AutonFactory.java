@@ -52,9 +52,9 @@ public class AutonFactory {
             ),
             Commands.race(
                 m_drivetrain.toPose(postPickup),
-                Commands.waitSeconds(3)
+                Commands.waitSeconds(2)
             ),
-            
+
             m_autoFactory.resetOdometry("ToShoot"),
             m_autoFactory.trajectoryCmd("ToShoot")
         );
