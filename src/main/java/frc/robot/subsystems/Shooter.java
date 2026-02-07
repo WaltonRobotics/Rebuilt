@@ -161,7 +161,7 @@ public class Shooter extends SubsystemBase {
         m_flywheelSim.setInputVoltage(leaderFXSim.getMotorVoltage());
         m_flywheelSim.update(Constants.kSimPeriodicUpdateInterval);
 
-        leaderFXSim.setRotorVelocity(m_flywheelSim.getAngularVelocity());
+        leaderFXSim.setRotorVelocity(m_flywheelSim.getAngularVelocity().times(kFlywheelGearing));
         leaderFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
         // Hood
@@ -170,7 +170,8 @@ public class Shooter extends SubsystemBase {
         m_hoodSim.setInputVoltage(hoodFXSim.getMotorVoltage());
         m_hoodSim.update(Constants.kSimPeriodicUpdateInterval);
 
-        hoodFXSim.setRawRotorPosition(m_hoodSim.getAngleRads() / (2*Math.PI));
+        hoodFXSim.setRawRotorPosition(m_hoodSim.getAngleRads() / (2*Math.PI) * kHoodGearing);
+        hoodFXSim.setRotorVelocity(m_hoodSim.getVelocityRadPerSec() / (2*Math.PI) * kHoodGearing);
         hoodFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
         // Turret
@@ -179,7 +180,8 @@ public class Shooter extends SubsystemBase {
         m_turretSim.setInputVoltage(turretFXSim.getMotorVoltage());
         m_turretSim.update(Constants.kSimPeriodicUpdateInterval);
 
-        turretFXSim.setRawRotorPosition(m_turretSim.getAngularPositionRotations());
+        turretFXSim.setRawRotorPosition(m_turretSim.getAngularPositionRotations() * kTurretGearing);
+        turretFXSim.setRotorVelocity(m_turretSim.getAngularVelocity().times(kTurretGearing));
         turretFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 
