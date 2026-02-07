@@ -381,8 +381,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     /**
      * robot goes to detected target
-     * 
-     * if in simulation, create a pose3d for a fake target
      */
     public Command swerveToObject() {
         
@@ -390,6 +388,20 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         Pose2d destination = detection.targetToPose(getState().Pose, target);
         detection.addFuel(destination);
         
+        return Commands.run(
+            () -> {
+                Pose2d curPose = getState().Pose;
+
+                double xSpeed = m_pathXController.calculate(curPose.getX(), destination.getX());
+                double ySpeed = m_pathYController.calculate(curPose.getY(), destination.getY());
+                double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), destination.getRotation().getRadians());
+
+                setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
+            }
+        );
+    }
+
+    public Command toPose(Pose2d destination) {
         return Commands.run(
             () -> {
                 Pose2d curPose = getState().Pose;
