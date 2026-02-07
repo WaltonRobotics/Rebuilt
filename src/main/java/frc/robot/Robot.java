@@ -152,28 +152,7 @@ public class Robot extends TimedRobot {
     }
 
     public Command getAutonomousCommand() {
-    //     // Simple Auton (hardcoded)
-    //     final var idle = new SwerveRequest.Idle();
-    //     Pose2d postPickup = new Pose2d(Distance.ofRelativeUnits(6.924767017364502, Meter), 
-    //                                     Distance.ofRelativeUnits(2.251265048980713, Meter), new Rotation2d(3.141592653589793));
-
-    //     return Commands.sequence(
-    //         autoFactory.resetOdometry("OnePickup"),
-    //         autoFactory.trajectoryCmd("OnePickup"),
-    //         Commands.race(
-    //             drivetrain.swerveToObject(),
-    //             Commands.waitSeconds(3)
-    //         ),
-    //         Commands.race(
-    //             drivetrain.toPose(postPickup),
-    //             Commands.waitSeconds(3)
-    //         ),
-    //         Commands.print("------------------PATH ONE DONE-----------------"),
-    //         autoFactory.resetOdometry("ToShoot"),
-    //         autoFactory.trajectoryCmd("ToShoot")
-    //     );
-
-        //return auton.oneDepotPickup();
+        return auton.oneDepotPickup();
     }
 
     @Override
