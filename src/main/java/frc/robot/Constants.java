@@ -123,14 +123,14 @@ public class Constants {
         
         private static final Slot0Configs kTurretSlot0Configs = new Slot0Configs()
             .withKS(0)
-            .withKV(0)
-            .withKA(0)
-            .withKP(3)
+            .withKV(4.07)
+            .withKA(0.02)
+            .withKP(0)  //3
             .withKI(0)
             .withKD(0); // kP was too low making the slope less steep, kS kV and kA were causing rlly weird behavior (jumping up/down way further than targeted position)
         private static final CurrentLimitsConfigs kTurretCurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(110)
-            .withSupplyCurrentLimit(40)
+            .withStatorCurrentLimit(40)
+            .withSupplyCurrentLimit(20)
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kTurretOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
@@ -138,8 +138,8 @@ public class Constants {
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);
         private static final MotionMagicConfigs kTurretMotionMagicConfigs = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(20)  //TODO: update MMV Configs
-            .withMotionMagicAcceleration(100)
+            .withMotionMagicCruiseVelocity(110)  //TODO: update MMV Configs
+            .withMotionMagicAcceleration(20)
             .withMotionMagicJerk(0);
         private static final SoftwareLimitSwitchConfigs kTurretSoftwareLimitSwitchConfigs = new SoftwareLimitSwitchConfigs()
             .withForwardSoftLimitEnable(false)
