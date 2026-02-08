@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.Swerve;
 import frc.util.AllianceFlipUtil;
 
-public class AutonFactory {
+public class WaltAutonFactory {
     private final AutoFactory m_autoFactory;
     private final Swerve m_drivetrain;
 
@@ -27,7 +27,7 @@ public class AutonFactory {
         Distance.ofRelativeUnits(5.958622932434082, Meter), new Rotation2d(0));
     
 
-    public AutonFactory(AutoFactory autoFactory, Swerve drivetrain) {
+    public WaltAutonFactory(AutoFactory autoFactory, Swerve drivetrain) {
         m_autoFactory = autoFactory;
         m_drivetrain = drivetrain;
     }
