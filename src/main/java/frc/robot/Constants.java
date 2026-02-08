@@ -161,7 +161,6 @@ public class Constants {
                 .withMotorOutput(kRollersMotorOutputConfigs)
                 .withFeedback(kRollersFeedbackConfigs);
     }
-}
 
     public static class IndexerK {
         public static String kLogTab = "Indexer";
