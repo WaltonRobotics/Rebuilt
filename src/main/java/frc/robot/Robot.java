@@ -147,7 +147,7 @@ public class Robot extends TimedRobot {
 
     private void configureTestBindings() {
         driver.povUp().onTrue(shooter.setFlywheelVelocityCmd(RotationsPerSecond.of(0)));
-        driver.povDown().onTrue(shooter.setFlywheelVelocityCmd(ShooterK.kShooterMaxRPS));
+        driver.povDown().onTrue(shooter.setFlywheelVelocityCmd(ShooterK.kFlywheelMaxRPS));
 
         driver.a().onTrue(shooter.setHoodPositionCmd(ShooterK.kHoodMinRots));
         driver.y().onTrue(shooter.setHoodPositionCmd(ShooterK.kHoodMaxRots));

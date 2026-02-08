@@ -43,7 +43,7 @@ public class Constants {
         public static final String kLogTab = "Shooter";
 
         /* MOTOR CONSTANTS */
-        public static final double kFlywheelMoI = 0.000349;  //J for 2 3" 0.53lb flywheels
+        public static final double kFlywheelMoI = 0.000349 * 2;  //J for 4 3" 0.53lb flywheels
         public static final double kHoodMoI = 0.000249;
         public static final double kTurretMoI = 0.104506595;
 
@@ -61,7 +61,7 @@ public class Constants {
         public static final Angle kTurretMinRots = Rotations.of(0 - kTurretMaxRotsFromHome.magnitude());
         public static final Angle kTurretMaxRots = Rotations.of(0 + kTurretMaxRotsFromHome.magnitude());
 
-        public static final AngularVelocity kShooterMaxRPS = RotationsPerSecond.of(100);   //Kraken X60 Max
+        public static final AngularVelocity kFlywheelMaxRPS = RotationsPerSecond.of(5785/60 * (0.9));   //Kraken X60Foc Max (RPM: 5785)
 
         /* IDS */
         public static final int kLeaderCANID = 21; //TODO: Update CANID number
@@ -81,8 +81,8 @@ public class Constants {
             .withKI(0)
             .withKD(0); // kP was causing the werid sinusoid behavior, kS and kA were adding inconsistency with the destination values
         private static final CurrentLimitsConfigs kFlywheelLeaderCurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(110)
-            .withSupplyCurrentLimit(40)
+            .withStatorCurrentLimit(120)
+            .withSupplyCurrentLimit(50)
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kFlywheelLeaderOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
