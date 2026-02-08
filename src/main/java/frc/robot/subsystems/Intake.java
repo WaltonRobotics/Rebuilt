@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.TalonFXSimState;
+import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import com.ctre.phoenix6.sim.ChassisReference;
 
 import static edu.wpi.first.units.Units.Degree;
@@ -19,6 +20,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -45,7 +47,7 @@ public class Intake extends SubsystemBase {
     private final DCMotorSim m_deploySim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX60Foc(1),
-            IntakeK.kDeployMomentOfInertia,
+            IntakeK.kDeployMOI,
             IntakeK.kDeployGearing
         ),
         DCMotor.getKrakenX60Foc(1)
@@ -54,7 +56,7 @@ public class Intake extends SubsystemBase {
     private final DCMotorSim m_rollersSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX44Foc(1),
-            IntakeK.kRollersMomentOfInertia,
+            IntakeK.kRollersMOI,
             IntakeK.kRollersGearing
         ),
         DCMotor.getKrakenX44Foc(1) // returns gearbox
@@ -67,13 +69,14 @@ public class Intake extends SubsystemBase {
     }
 
     private void initSim() {
-        var deployFXSim = m_deploy.getSimState();
-        deployFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
-        deployFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX60);
+        initSim(m_deploy, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
+        initSim(m_rollers, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
+    }
 
-        var rollersFXSim = m_deploy.getSimState();
-        rollersFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
-        rollersFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
+    private void initSim(TalonFX motor, ChassisReference chassisReference, MotorType motorType) {
+        var simState = motor.getSimState();
+        simState.Orientation = chassisReference;
+        simState.setMotorType(motorType);
     }
 
     /* COMMANDS */
@@ -103,23 +106,19 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        var deployFXSim = m_deploy.getSimState();
+        simulateMotor(m_deploy, m_deploySim, IntakeK.kDeployGearing);
+        simulateMotor(m_rollers, m_rollersSim, IntakeK.kRollersGearing);
+    }
 
-        m_deploySim.setInputVoltage(deployFXSim.getMotorVoltage());
-        m_deploySim.update(0.02);
+    private void simulateMotor(TalonFX motor, DCMotorSim motorSim, double gearing) {
+        var simState = motor.getSimState();
+
+        motorSim.setInputVoltage(simState.getMotorVoltage());
+        motorSim.update(0.02);
         
-        deployFXSim.setRawRotorPosition(m_deploySim.getAngularPositionRotations() * IntakeK.kDeployGearing);
-        deployFXSim.setRotorVelocity(m_deploySim.getAngularVelocity().times(IntakeK.kDeployGearing));
-        deployFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-
-        var rollersFXSim = m_rollers.getSimState();
-
-        m_rollersSim.setInputVoltage(rollersFXSim.getMotorVoltage());
-        m_rollersSim.update(0.02);
-        
-        rollersFXSim.setRawRotorPosition(m_rollersSim.getAngularPositionRotations() * IntakeK.kRollersGearing);
-        rollersFXSim.setRotorVelocity(m_rollersSim.getAngularVelocity().times(IntakeK.kRollersGearing));
-        rollersFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        simState.setRawRotorPosition(motorSim.getAngularPositionRotations() * gearing);
+        simState.setRotorVelocity(motorSim.getAngularVelocity().times(gearing));
+        simState.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 
     public enum DeployPosition{
