@@ -22,6 +22,9 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import com.reduxrobotics.sensors.canandmag.Canandmag;
+import com.reduxrobotics.sensors.canandmag.CanandmagSettings;
+
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -68,6 +71,7 @@ public class Constants {
 
         public static final int kExitBeamBreakChannel = 0; //TODO: Update channel number
         public static final int kHoodChannel = 1;
+        public static final int kHoodEncoderChannel = 2;
 
         /* CONFIGS */
         // TODO: Check what more configs would be necessary
@@ -160,6 +164,9 @@ public class Constants {
             .withMotionMagic(kTurretMotionMagicConfigs)
             .withSoftwareLimitSwitch(kTurretSoftwareLimitSwitchConfigs)
             .withFeedback(kTurretFeedbackConfigs);
+
+        public static final CanandmagSettings kHoodEncoderSettings = new CanandmagSettings()
+            .setInvertDirection(false);
     }
 
     public static class VisionK {
