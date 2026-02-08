@@ -42,6 +42,7 @@ public class Shooter extends SubsystemBase {
     private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(true);
 
     private final Servo m_hood = new Servo(kHoodChannel);
+    // private final Canandmag canandmag = new Canandmag(0);
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID); //X44
     private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true);
