@@ -8,8 +8,6 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.Optional;
 
-import javax.xml.crypto.dsig.Transform;
-
 import org.photonvision.EstimatedRobotPose;
 
 import com.ctre.phoenix6.HootAutoReplay;
@@ -21,13 +19,9 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -66,9 +60,8 @@ public class Robot extends TimedRobot {
     public final Swerve drivetrain = TunerConstants.createDrivetrain();
     private Command m_autonomousCommand;
 
-    //TODO: what the freakity is going on with these names
     private final AutoFactory autoFactory = drivetrain.createAutoFactory();
-    private final WaltAutonFactory auton = new WaltAutonFactory(autoFactory, drivetrain);
+    private final WaltAutonFactory waltAutonFactory = new WaltAutonFactory(autoFactory, drivetrain);
 
     private final VisionSim visionSim = new VisionSim();
     private final Vision camera1 = new Vision(VisionK.kCamera1CamName, VisionK.kCamera1CamSimVisualName, VisionK.kCamera1CamRoboToCam, visionSim, VisionK.kCamera1SimProps);
@@ -152,7 +145,7 @@ public class Robot extends TimedRobot {
     }
 
     public Command getAutonomousCommand() {
-        return auton.fourNeutralPickup();
+        return waltAutonFactory.twoNeutralPickup();
     }
 
     @Override
