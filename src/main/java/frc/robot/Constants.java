@@ -54,8 +54,6 @@ public class Constants {
         public static final double kHoodLength = 0.153924; // hood circumference (49 degrees)
         public static final Angle kHoodMinDegs = Degrees.of(0);
         public static final Angle kHoodMaxDegs = Degrees.of(40);
-        public static final Angle kHoodMinRots = Rotations.of(Rotations.convertFrom(kHoodMinDegs.magnitude(), Degrees));
-        public static final Angle kHoodMaxRots = Rotations.of(Rotations.convertFrom(kHoodMaxDegs.magnitude(), Degrees));
 
         public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.75); //0.75 rots in each direction from home
         public static final Angle kTurretMinRots = Rotations.of(0 - kTurretMaxRotsFromHome.magnitude());
@@ -66,10 +64,10 @@ public class Constants {
         /* IDS */
         public static final int kLeaderCANID = 21; //TODO: Update CANID number
         public static final int kFollowerCANID = 22; //TODO: Update CANID number
-        public static final int kHoodCANID = 23; //TODO: Update CANID number
         public static final int kTurretCANID = 24; //TODO: Update CANID number
 
         public static final int kExitBeamBreakChannel = 0; //TODO: Update channel number
+        public static final int kHoodChannel = 1;
 
         /* CONFIGS */
         // TODO: Check what more configs would be necessary
