@@ -7,10 +7,14 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.util.datalog.BooleanLogEntry;
 
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
+
+import com.reduxrobotics.sensors.canandmag.Canandmag;
+import com.reduxrobotics.sensors.canandmag.CanandmagSettings;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -42,7 +46,7 @@ public class Shooter extends SubsystemBase {
     private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(true);
 
     private final Servo m_hood = new Servo(kHoodChannel);
-    // private final Canandmag canandmag = new Canandmag(0);
+    private final Canandmag m_hoodEncoder = new Canandmag(kHoodEncoderChannel);
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID); //X44
     private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true);
@@ -80,17 +84,21 @@ public class Shooter extends SubsystemBase {
 
     // loggers
     private final DoubleLogger log_flywheelVelocityRPS = WaltLogger.logDouble(kLogTab, "flywheelVelocityRPS");
-    private final DoubleLogger log_hoodPositionDegs = WaltLogger.logDouble(kLogTab, "hoodPositionDegs");
+    private final DoubleLogger log_hoodPositionDegs = WaltLogger.logDouble(kLogTab, "hoodPositionDegs");    //logs the encoder values
     private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble(kLogTab, "turretPositionRots");
 
     private final BooleanLogger log_exitBeamBreak = WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
     private final BooleanLogger log_spunUp = WaltLogger.logBoolean(kLogTab, "spunUp");
+
+    private final BooleanLogger log_hoodEncoderMagnetInRange = WaltLogger.logBoolean(kLogTab, "hoodEncoderMagnetInRange");
+    private final BooleanLogger log_hoodEncoderPresent = WaltLogger.logBoolean(kLogTab, "hoodEncoderPresent");
 
     /* CONSTRUCTOR */
     public Shooter() {
         m_flywheelLeader.getConfigurator().apply(kFlywheelLeaderTalonFXConfiguration);
         m_flywheelFollower.getConfigurator().apply(kFlywheelFollowerTalonFXConfiguration);
         m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
+        m_hoodEncoder.setSettings(kHoodEncoderSettings);    //if needed, we can add a position offset
 
         m_flywheelFollower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed)); //TODO: check if MotorAlignmentValue is Opposed or Aligned
 
@@ -128,11 +136,13 @@ public class Shooter extends SubsystemBase {
     @Override
     public void periodic() {
         log_flywheelVelocityRPS.accept(m_flywheelLeader.getVelocity().getValueAsDouble());
-        log_hoodPositionDegs.accept(m_hood.getAngle()); // gets the desired position, not actual position
+        log_hoodPositionDegs.accept(m_hoodEncoder.getPosition());
         log_turretPositionRots.accept(m_turret.getPosition().getValueAsDouble());
 
         log_exitBeamBreak.accept(trg_exitBeamBreak);
         log_spunUp.accept(m_spunUp);
+        log_hoodEncoderMagnetInRange.accept(m_hoodEncoder.magnetInRange());
+        log_hoodEncoderPresent.accept(m_hoodEncoder.isConnected());
     }
 
     @Override
