@@ -106,18 +106,18 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        simulateMotor(m_deploy, m_deploySim, IntakeK.kDeployGearing);
-        simulateMotor(m_rollers, m_rollersSim, IntakeK.kRollersGearing);
+        simulateMotor(m_deploy, m_deploySim);
+        simulateMotor(m_rollers, m_rollersSim);
     }
 
-    private void simulateMotor(TalonFX motor, DCMotorSim motorSim, double gearing) {
+    private void simulateMotor(TalonFX motor, DCMotorSim motorSim) {
         var simState = motor.getSimState();
 
         motorSim.setInputVoltage(simState.getMotorVoltage());
         motorSim.update(0.02);
         
-        simState.setRawRotorPosition(motorSim.getAngularPositionRotations() * gearing);
-        simState.setRotorVelocity(motorSim.getAngularVelocity().times(gearing));
+        simState.setRawRotorPosition(motorSim.getAngularPositionRotations() * motorSim.getGearing());
+        simState.setRotorVelocity(motorSim.getAngularVelocity().times(motorSim.getGearing()));
         simState.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 
