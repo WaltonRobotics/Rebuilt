@@ -152,7 +152,7 @@ public class Robot extends TimedRobot {
     }
 
     public Command getAutonomousCommand() {
-        return auton.oneDepotPickup();
+        return auton.fourNeutralPickup();
     }
 
     @Override
