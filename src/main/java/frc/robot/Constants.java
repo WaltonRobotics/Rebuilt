@@ -29,6 +29,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotBase;
 
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -36,6 +37,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import org.photonvision.simulation.SimCameraProperties;
 
 public class Constants {
+
     public static final boolean kDebugLoggingEnabled = true;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
@@ -223,5 +225,14 @@ public class Constants {
             .withCurrentLimits(kExhaustCurrentLimitConfigs)
             .withMotorOutput(kExhaustMotorOutputConfigs)
             .withFeedback(kExhaustFeedbackConfigs);
+    }
+
+    public static final robotMode kSimMode = robotMode.REPLAY;
+    public static final robotMode currentMode = RobotBase.isReal() ? robotMode.REAL : kSimMode;
+
+    public enum robotMode {
+        REAL,
+        SIM,
+        REPLAY
     }
 }

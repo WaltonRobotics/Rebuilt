@@ -10,6 +10,8 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 
@@ -102,6 +104,10 @@ public class Intake extends SubsystemBase {
         log_targetRollersRPS.accept(m_VVReq.Velocity);
         log_rollersRPS.accept(m_rollers.getVelocity().getValueAsDouble());
         log_deployRots.accept(m_deploy.getPosition().getValueAsDouble());
+        Logger.recordOutput("Intake/Deploy/targetPos", m_MMVReq.Position);
+        Logger.recordOutput("Intake/Deploy/actualPos", m_deploy.getPosition().getValueAsDouble());
+        Logger.recordOutput("Intake/Rollers/targetPos", m_VVReq.Velocity);
+        Logger.recordOutput("Intake/Rollers/actualPos", m_rollers.getVelocity().getValueAsDouble());
     }
 
     @Override
