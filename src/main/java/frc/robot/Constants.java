@@ -77,10 +77,10 @@ public class Constants {
         public static final String kLogTab = "Intake";
 
         /* MOTOR CONSTANTS */
-        public static final double kDeployMomentOfInertia = 0.0209;
+        public static final double kDeployMOI = 0.0209;
         public static final double kDeployGearing = 5/1;
 
-        public static final double kRollersMomentOfInertia = 0.00005;
+        public static final double kRollersMOI = 0.00005;
         public static final double kRollersGearing = 1.0/2;
 
         /* IDS */
