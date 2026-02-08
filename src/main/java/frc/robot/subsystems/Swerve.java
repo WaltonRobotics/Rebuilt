@@ -380,16 +380,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     /**
-     * robot goes to detected target
-     * 
-     * if in simulation, create a pose3d for a fake target
+     * robot goes to specified pose
+     * @param destination
+     * @return
      */
-    public Command swerveToObject() {
-        
-        PhotonTrackedTarget target = detection.getClosestObject();
-        Pose2d destination = detection.targetToPose(getState().Pose, target);
-        detection.addFuel(destination);
-        
+    public Command toPose(Pose2d destination) {
         return Commands.run(
             () -> {
                 Pose2d curPose = getState().Pose;
@@ -401,6 +396,18 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
             }
         );
+    }
+
+    /**
+     * robot goes to detected target
+     */
+    public Command swerveToObject() {
+        
+        PhotonTrackedTarget target = detection.getClosestObject();
+        Pose2d destination = detection.targetToPose(getState().Pose, target);
+        detection.addFuel(destination);
+        
+        return toPose(destination);
     }
 
     public static Pose2d faceFuelPose(Pose2d robotPose, Pose2d fuelLocation) {

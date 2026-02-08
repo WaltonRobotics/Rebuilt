@@ -54,11 +54,16 @@ public class VisionSim {
             45, 30, 70, 20, -1, -1, -1, new Transform3d(5, 6, 0, fuelRotation), new Transform3d(), 0, new LinkedList<>(), new LinkedList<>()
         );
         PhotonTrackedTarget simFuelTwo = new PhotonTrackedTarget(
-            45, 30, 100, 20, -1, -1, -1, new Transform3d(1,1,1, fuelRotation), new Transform3d(), 0, new LinkedList<>(), new LinkedList<>()
+            45, 30, 20, 20, -1, -1, -1, new Transform3d(1,1,1, fuelRotation), new Transform3d(), 0, new LinkedList<>(), new LinkedList<>()
         );
+        PhotonTrackedTarget simFuelThree = new PhotonTrackedTarget(
+            45, 30, 90, 20, -1, -1, -1, new Transform3d(8, 5, 0, fuelRotation), new Transform3d(), 0, new LinkedList<>(), new LinkedList<>()
+        );
+
         
         simTargetList.add(simFuel);
         simTargetList.add(simFuelTwo);
+        simTargetList.add(simFuelThree);
         
         return simTargetList;
     }
