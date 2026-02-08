@@ -31,7 +31,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.Autons.AutonFactory;
+import frc.robot.Autons.WaltAutonFactory;
 import frc.robot.Constants.VisionK;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Swerve;
@@ -68,7 +68,7 @@ public class Robot extends TimedRobot {
 
     //TODO: what the freakity is going on with these names
     private final AutoFactory autoFactory = drivetrain.createAutoFactory();
-    private final AutonFactory auton = new AutonFactory(autoFactory, drivetrain);
+    private final WaltAutonFactory auton = new WaltAutonFactory(autoFactory, drivetrain);
 
     private final VisionSim visionSim = new VisionSim();
     private final Vision camera1 = new Vision(VisionK.kCamera1CamName, VisionK.kCamera1CamSimVisualName, VisionK.kCamera1CamRoboToCam, visionSim, VisionK.kCamera1SimProps);
