@@ -16,6 +16,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
@@ -24,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static frc.robot.Constants.ShooterK.*;
 
 import frc.robot.Constants;
@@ -39,8 +41,7 @@ public class Shooter extends SubsystemBase {
     private final TalonFX m_flywheelFollower = new TalonFX(kFollowerCANID); //X60
     private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(true);
 
-    private final TalonFX m_hood = new TalonFX(kHoodCANID); //X44
-    private final PositionVoltage m_positionRequest = new PositionVoltage(0).withEnableFOC(true);
+    private final Servo m_hood = new Servo(kHoodChannel);
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID); //X44
     private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true);
@@ -67,21 +68,6 @@ public class Shooter extends SubsystemBase {
         DCMotor.getKrakenX60Foc(2) // returns gearbox
     );
 
-    private final SingleJointedArmSim m_hoodSim = new SingleJointedArmSim(
-        LinearSystemId.createSingleJointedArmSystem(
-            DCMotor.getKrakenX44Foc(1),
-            kHoodMoI,
-            kHoodGearing
-        ),
-        DCMotor.getKrakenX44Foc(1),
-        kHoodGearing,
-        kHoodLength,
-        kHoodMinRots.magnitude() * (2*Math.PI),
-        kHoodMaxRots.magnitude() * (2*Math.PI),
-        false,
-        kHoodMinRots.magnitude() * (2*Math.PI)
-    );
-
     private final DCMotorSim m_turretSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX44Foc(1),
@@ -93,7 +79,7 @@ public class Shooter extends SubsystemBase {
 
     // loggers
     private final DoubleLogger log_flywheelVelocityRPS = WaltLogger.logDouble(kLogTab, "flywheelVelocityRPS");
-    private final DoubleLogger log_hoodPositionRots = WaltLogger.logDouble(kLogTab, "hoodPositionRots");
+    private final DoubleLogger log_hoodPositionDegs = WaltLogger.logDouble(kLogTab, "hoodPositionDegs");
     private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble(kLogTab, "turretPositionRots");
 
     private final BooleanLogger log_exitBeamBreak = WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
@@ -103,7 +89,6 @@ public class Shooter extends SubsystemBase {
     public Shooter() {
         m_flywheelLeader.getConfigurator().apply(kFlywheelLeaderTalonFXConfiguration);
         m_flywheelFollower.getConfigurator().apply(kFlywheelFollowerTalonFXConfiguration);
-        m_hood.getConfigurator().apply(kHoodTalonFXConfiguration);
         m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
 
         m_flywheelFollower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed)); //TODO: check if MotorAlignmentValue is Opposed or Aligned
@@ -117,10 +102,6 @@ public class Shooter extends SubsystemBase {
         leaderFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
         leaderFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX60);
 
-        var hoodFXSim = m_hood.getSimState();
-        hoodFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
-        hoodFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
-
         var turretFXSim = m_turret.getSimState();
         turretFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
         turretFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
@@ -133,8 +114,8 @@ public class Shooter extends SubsystemBase {
     }
 
     // Hood Commands (Basic Position Control)
-    public Command setHoodPositionCmd(Angle rots) {
-        return runOnce(() -> m_hood.setControl(m_positionRequest.withPosition(rots)));
+    public Command setHoodPositionCmd(Angle degs) {
+        return runOnce(() -> m_hood.setAngle(degs.magnitude()));
     }
 
     // Turret Commands (Motionmagic Angle Control)
@@ -146,7 +127,7 @@ public class Shooter extends SubsystemBase {
     @Override
     public void periodic() {
         log_flywheelVelocityRPS.accept(m_flywheelLeader.getVelocity().getValueAsDouble());
-        log_hoodPositionRots.accept(m_hood.getPosition().getValueAsDouble());
+        log_hoodPositionDegs.accept(m_hood.getAngle()); // gets the desired position, not actual position
         log_turretPositionRots.accept(m_turret.getPosition().getValueAsDouble());
 
         log_exitBeamBreak.accept(trg_exitBeamBreak);
@@ -163,16 +144,6 @@ public class Shooter extends SubsystemBase {
 
         leaderFXSim.setRotorVelocity(m_flywheelSim.getAngularVelocity().times(kFlywheelGearing));
         leaderFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-
-        // Hood
-        var hoodFXSim = m_hood.getSimState();
-
-        m_hoodSim.setInputVoltage(hoodFXSim.getMotorVoltage());
-        m_hoodSim.update(Constants.kSimPeriodicUpdateInterval);
-
-        hoodFXSim.setRawRotorPosition(m_hoodSim.getAngleRads() / (2*Math.PI) * kHoodGearing);
-        hoodFXSim.setRotorVelocity(m_hoodSim.getVelocityRadPerSec() / (2*Math.PI) * kHoodGearing);
-        hoodFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
         // Turret
         var turretFXSim = m_turret.getSimState();

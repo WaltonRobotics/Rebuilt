@@ -149,8 +149,8 @@ public class Robot extends TimedRobot {
         driver.povUp().onTrue(shooter.setFlywheelVelocityCmd(RotationsPerSecond.of(0)));
         driver.povDown().onTrue(shooter.setFlywheelVelocityCmd(ShooterK.kFlywheelMaxRPS));
 
-        driver.a().onTrue(shooter.setHoodPositionCmd(ShooterK.kHoodMinRots));
-        driver.y().onTrue(shooter.setHoodPositionCmd(ShooterK.kHoodMaxRots));
+        driver.a().onTrue(shooter.setHoodPositionCmd(ShooterK.kHoodMinDegs));
+        driver.y().onTrue(shooter.setHoodPositionCmd(ShooterK.kHoodMaxDegs));
 
         driver.leftTrigger().onTrue(shooter.setTurretPositionCmd(ShooterK.kTurretMinRots));
         driver.leftBumper().onTrue(shooter.setTurretPositionCmd(Rotations.of(0)));
