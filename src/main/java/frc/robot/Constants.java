@@ -132,7 +132,7 @@ public class Constants {
             .withKS(0)
             .withKV(4.07)
             .withKA(0.02)
-            .withKP(0)  //3 - testing values in Pheonix Tuner
+            .withKP(120)  //3 - testing values in Pheonix Tuner
             .withKI(0)
             .withKD(0); // OLD: kP was too low making the slope less steep, kS kV and kA were causing rlly weird behavior (jumping up/down way further than targeted position)
         private static final CurrentLimitsConfigs kTurretCurrentLimitConfigs = new CurrentLimitsConfigs()
