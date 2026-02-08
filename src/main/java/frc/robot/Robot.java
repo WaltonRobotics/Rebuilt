@@ -29,6 +29,9 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.VisionK;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Intake.DeployPosition;
+import frc.robot.subsystems.Intake.RollersVelocity;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.Vision;
@@ -75,6 +78,8 @@ public class Robot extends TimedRobot {
     // this should be updated with all of our cameras
     private final Vision[] cameras = {camera1, camera2};
 
+    private final Intake intake = new Intake();
+  
     private final Indexer m_indexer = new Indexer();
 
     /* log and replay timestamp and joystick data */
@@ -147,6 +152,14 @@ public class Robot extends TimedRobot {
 
         // Reset the field-centric heading on left bumper press.
         driver.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+
+        driver.a().onTrue(intake.setDeployPos(DeployPosition.RETRACTED));
+        driver.b().onTrue(intake.setDeployPos(DeployPosition.SAFE));
+        driver.x().onTrue(intake.setDeployPos(DeployPosition.DEPLOYED));
+
+        driver.povRight().onTrue(intake.setRollersSpeed(RollersVelocity.MID));
+        driver.povDown().onTrue(intake.setRollersSpeed(RollersVelocity.STOP)); 
+        driver.povUp().onTrue(intake.setRollersSpeed(RollersVelocity.MAX));
 
         drivetrain.registerTelemetry(logger::telemeterize);
 
@@ -243,6 +256,7 @@ public class Robot extends TimedRobot {
         Pose2d robotPose = robotState.Pose;
         visionSim.simulationPeriodic(robotPose);
         drivetrain.simulationPeriodic();
+        intake.simulationPeriodic();
         m_indexer.simulationPeriodic();
     }
 }
