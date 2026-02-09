@@ -69,7 +69,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         .withSteerRequestType(SteerRequestType.Position);
 
     private final Detection detection = new Detection();
-    private final VisionSim visionSim = new VisionSim();
 
     private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
@@ -407,7 +406,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         Pose2d destination = detection.targetToPose(getState().Pose, target);
         detection.addFuel(destination);
         
-        return toPose(destination);
+        return Commands.parallel(
+            toPose(destination),
+            Commands.print("=========DESIRED TARGET: " + !target.equals(new PhotonTrackedTarget()) + "=====================")
+        );
     }
 
     public static Pose2d faceFuelPose(Pose2d robotPose, Pose2d fuelLocation) {

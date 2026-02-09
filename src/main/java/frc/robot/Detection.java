@@ -27,10 +27,12 @@ public class Detection {
         List<PhotonPipelineResult> results = camera.getAllUnreadResults();
 
         for (PhotonPipelineResult result : results) {
-            Optional<PhotonTrackedTarget> bestTarget = Optional.of(result.getBestTarget());
+            if (result.hasTargets()) {
+                Optional<PhotonTrackedTarget> bestTarget = Optional.of(result.getBestTarget());
 
-            if (bestTarget.isPresent()) {
-                targetList.add(bestTarget.get()); 
+                if (bestTarget.isPresent()) {
+                    targetList.add(bestTarget.get()); 
+                }
             }
         }
     }
@@ -59,6 +61,7 @@ public class Detection {
                 }
             }
         }
+
         return closestTarget;
     }
 
@@ -69,6 +72,7 @@ public class Detection {
         
         Pose2d fuelPose = robotPose.transformBy(fuelTransform);
 
+        //addFuel(fuelPose);
         return fuelPose;
     }
 
