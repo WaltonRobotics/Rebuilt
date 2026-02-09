@@ -10,6 +10,7 @@ import static frc.robot.Constants.IndexerK.kLogTab;
 import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.Utils;
@@ -23,14 +24,17 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Autons.AutonChooser;
 import frc.robot.Autons.WaltAutonFactory;
 import frc.robot.Constants.VisionK;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Indexer;
+import frc.robot.subsystems.Superstructure;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
 import frc.util.WaltLogger;
@@ -70,9 +74,12 @@ public class Robot extends TimedRobot {
     private final AutoFactory autoFactory = drivetrain.createAutoFactory();
     private final WaltAutonFactory waltAutonFactory = new WaltAutonFactory(autoFactory, drivetrain);
 
+    private boolean autonMade = false;
+
     private final VisionSim visionSim = new VisionSim();
     private final Vision camera1 = new Vision(VisionK.kCamera1CamName, VisionK.kCamera1CamSimVisualName, VisionK.kCamera1CamRoboToCam, visionSim, VisionK.kCamera1SimProps);
     private final Vision camera2 = new Vision(VisionK.kCamera2CamName, VisionK.kCamera2CamSimVisualName, VisionK.kCamera2CamRoboToCam, visionSim, VisionK.kCamera2SimProps);
+    private final Detection detection = new Detection();
 
     // this should be updated with all of our cameras
     private final Vision[] cameras = {camera1, camera2};
@@ -187,20 +194,52 @@ public class Robot extends TimedRobot {
     }
 
     @Override
-    public void disabledInit() {}
+    public void disabledInit() {
+        AutonChooser.initialize();
+    }
 
     @Override
-    public void disabledPeriodic() {}
+    public void disabledPeriodic() {
+        if (!autonMade) {
+            if (AutonChooser.m_chooser.getSelected().equals("oneNeutralPickup")) {
+                m_autonomousCommand = waltAutonFactory.oneNeutralPickup();
+                AutonChooser.pub_autonName.set("One Neutral Pickup");
+                autonMade = true;
+                AutonChooser.pub_autonMade.set(true);
+            }   
+
+            if (AutonChooser.m_chooser.getSelected().equals("twoNeutralPickup")) {
+                m_autonomousCommand = waltAutonFactory.twoNeutralPickup();
+                AutonChooser.pub_autonName.set("Two Neutral Pickup");
+                autonMade = true;
+                AutonChooser.pub_autonMade.set(true);
+            }
+
+            if (AutonChooser.m_chooser.getSelected().equals("threeNeutralPickup")) {
+                m_autonomousCommand = waltAutonFactory.threeNeutralPickup();
+                AutonChooser.pub_autonName.set("Three Neutral Pickup");
+                autonMade = true;
+                AutonChooser.pub_autonMade.set(true);
+            }
+        }
+
+        if (AutonChooser.sub_refreshChoice.getAsBoolean()) {
+            AutonChooser.pub_refreshChoice.set(false);
+            AutonChooser.pub_autonName.set("No Auton Made");
+
+            autonMade = false;
+            AutonChooser.pub_autonMade.set(false);
+        }
+    }
 
     @Override
     public void disabledExit() {}
 
     @Override
     public void autonomousInit() {
-        m_autonomousCommand = getAutonomousCommand();
-
         if (m_autonomousCommand != null) {
-            CommandScheduler.getInstance().schedule(m_autonomousCommand);
+            m_autonomousCommand.schedule();
+            //CommandScheduler.getInstance().schedule(getAutonomousCommand());
         }
     }
 
