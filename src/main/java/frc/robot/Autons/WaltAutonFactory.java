@@ -1,4 +1,4 @@
-package frc.robot.Autons;
+package frc.robot.autons;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
