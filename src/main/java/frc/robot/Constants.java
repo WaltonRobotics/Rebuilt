@@ -229,13 +229,22 @@ public class Constants {
 
     public static final boolean tuningMode = true;
 
+    /**
+     * Represents the current mode of robot operation.
+     * <p>
+     * <b>REAL</b> The robot is running in real world.
+     * <p>
+     * <b>SIM</b> The robot is running in simulaiton.
+     * <p>
+     * <b>REPLAY</b> The robot is replaying a sim file.
+     */
     public enum RobotMode {
         REAL,
         SIM,
         REPLAY
     }
 
-    public static boolean disableHAL = false;
+    public static boolean disableHAL = true;
 
     public static void disableHAL() {
         disableHAL = true;

@@ -177,7 +177,14 @@ public class Robot extends LoggedRobot {
         driver.povLeft().onTrue(m_indexer.startExhaust());
         driver.povRight().onTrue(m_indexer.stopExhaust());
     }
-
+    /**
+     * Initializes the AdvantageKit Logger.
+     * <p>
+     * In replay mode, make sure to have an original akit log file open in AdvantageScope and sim GUI and Driver Station connection disabled.
+     * <p>
+     * For replay watch, run the command ".\gradlew.bat replayWatch" in command line with an original akit log file open in AdvantageScope.
+     * @param mode The robot mode to initialize Logger in.
+     */
     private void initLogger(RobotMode mode) {
         Logger.recordMetadata("Rebuilt", "RobotData"); // Set a metadata value
 
