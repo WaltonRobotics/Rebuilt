@@ -167,7 +167,7 @@ public class Robot extends TimedRobot {
     }
 
     public Command getAutonomousCommand() {
-        return waltAutonFactory.twoNeutralPickup();
+        return waltAutonFactory.threeNeutralPickup();
     }
 
     @Override

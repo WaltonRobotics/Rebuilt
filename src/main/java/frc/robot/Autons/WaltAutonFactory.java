@@ -1,15 +1,12 @@
 package frc.robot.Autons;
 
-import static edu.wpi.first.units.Units.Meter;
-
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants.AutonK;
 import frc.robot.subsystems.Swerve;
 import frc.util.AllianceFlipUtil;
 
@@ -18,36 +15,51 @@ public class WaltAutonFactory {
     private final Swerve m_drivetrain;
 
     //desired pose to go to after fuel pickup
-    private Pose2d postPickupNeutral = new Pose2d(Distance.ofRelativeUnits(6.924767017364502, Meter), 
-        Distance.ofRelativeUnits(2.251265048980713, Meter), new Rotation2d(Math.PI));
+    private Pose2d postPickupNeutral = (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get().equals(Alliance.Red)) 
+                                            ? AutonK.neutralPose 
+                                                : AllianceFlipUtil.flip(AutonK.neutralPose);
     //desired pose to go to after depot pickup
-    private Pose2d postPickupDepot = new Pose2d(Distance.ofRelativeUnits(1.1576627492904663, Meter), 
-        Distance.ofRelativeUnits(5.958622932434082, Meter), new Rotation2d(0));
-    
+    private Pose2d postPickupDepot = (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get().equals(Alliance.Red)) 
+                                            ? AutonK.depotPose 
+                                                : AllianceFlipUtil.flip(AutonK.depotPose);
 
     public WaltAutonFactory(AutoFactory autoFactory, Swerve drivetrain) {
         m_autoFactory = autoFactory;
         m_drivetrain = drivetrain;
+    }
+
+    public Command runTrajCmd(String traj) {
+        return Commands.sequence(
+            m_autoFactory.resetOdometry(traj),
+            m_autoFactory.trajectoryCmd(traj)
+        );
+    }
+
+    public Command pickupCmd(boolean isNeutral) {
+        Pose2d postPickupPose = new Pose2d();
+
+        if (isNeutral) {
+            postPickupPose = postPickupNeutral;
+        } else {
+            postPickupPose = postPickupDepot;
+        }
+
+        return Commands.sequence(
+            m_drivetrain.swerveToObject().withTimeout(1),
+            m_drivetrain.toPose(postPickupPose).withTimeout(1)
+        );
     }
     
     /**
      * pickup and shoot one time
      */
     public Command oneNeutralPickup() {
-        var allianceOpt = DriverStation.getAlliance();
-        if (allianceOpt.isPresent() && allianceOpt.get().equals(Alliance.Red)) {
-            postPickupNeutral = AllianceFlipUtil.flip(postPickupNeutral);
-        }
-
         return Commands.sequence(
-            m_autoFactory.resetOdometry("ToNeutral"),
-            m_autoFactory.trajectoryCmd("ToNeutral"),
+            runTrajCmd("ToNeutral"),
 
-            m_drivetrain.swerveToObject().withTimeout(0.5),
-            m_drivetrain.toPose(postPickupNeutral).withTimeout(0.5),
+            pickupCmd(true),
 
-            m_autoFactory.resetOdometry("NeutralToShoot"),
-            m_autoFactory.trajectoryCmd("NeutralToShoot")
+            runTrajCmd("NeutralToShoot")
         );
     }
 
@@ -58,11 +70,9 @@ public class WaltAutonFactory {
         return Commands.sequence(
             oneNeutralPickup(),
 
-            m_autoFactory.resetOdometry("ShootToNeutral"),
-            m_autoFactory.trajectoryCmd("ShootToNeutral"),
+            runTrajCmd("ShootToNeutral"),
 
-            m_drivetrain.swerveToObject().withTimeout(0.5),
-            m_drivetrain.toPose(postPickupNeutral).withTimeout(.5)
+            pickupCmd(true)
         );
     }
 
@@ -73,14 +83,10 @@ public class WaltAutonFactory {
         return Commands.sequence(
             twoNeutralPickup(),
             
-            m_autoFactory.resetOdometry("NeutralToShoot"),
-            m_autoFactory.trajectoryCmd("NeutralToShoot"),
+            runTrajCmd("NeutralToShoot"),
+            runTrajCmd("ShootToNeutral"),
 
-            m_autoFactory.resetOdometry("ShootToNeutral"),
-            m_autoFactory.trajectoryCmd("ShootToNeutral"),
-
-            m_drivetrain.swerveToObject().withTimeout(.5),
-            m_drivetrain.toPose(postPickupNeutral).withTimeout(.5)
+            pickupCmd(true)
         );
     }
 
@@ -91,14 +97,10 @@ public class WaltAutonFactory {
         return Commands.sequence(
             threeNeutralPickup(),
 
-            m_autoFactory.resetOdometry("NeutralToShoot"),
-            m_autoFactory.trajectoryCmd("NeutralToShoot"),
+            runTrajCmd("NeutralToShoot"),
+            runTrajCmd("ShootToNeutral"),
 
-            m_autoFactory.resetOdometry("ShootToNeutral"),
-            m_autoFactory.trajectoryCmd("ShootToNeutral"),
-
-            m_drivetrain.swerveToObject().withTimeout(.5),
-            m_drivetrain.toPose(postPickupNeutral).withTimeout(.5)
+            pickupCmd(true)
         );
     }
 
@@ -106,21 +108,12 @@ public class WaltAutonFactory {
      * goes to depot once and shoots
      */
     public Command oneDepotPickup() {
-        var allianceOpt = DriverStation.getAlliance();
-        if (allianceOpt.isPresent() && allianceOpt.get().equals(Alliance.Red)) {
-            postPickupDepot = AllianceFlipUtil.flip(postPickupDepot);
-        }
-
         return Commands.sequence(
-            m_autoFactory.resetOdometry("ToDepot"),
-            m_autoFactory.trajectoryCmd("ToDepot"),
+            runTrajCmd("ToDepot"),
             
-            //would we want this for depot?
-            m_drivetrain.swerveToObject().withTimeout(3.5),
-            m_drivetrain.toPose(postPickupDepot).withTimeout(3.5),
+            pickupCmd(false),
 
-            m_autoFactory.resetOdometry("DepotToShoot"),
-            m_autoFactory.trajectoryCmd("DepotToShoot")
+            runTrajCmd("DepotToShoot")
         );
     }
 
@@ -129,10 +122,8 @@ public class WaltAutonFactory {
      */
     public Command oneOutpostPickup() {
         return Commands.sequence(
-            m_autoFactory.resetOdometry("ToOutpost"),
-            m_autoFactory.trajectoryCmd("ToOutpost"),
-            m_autoFactory.resetOdometry("OutpostToNeutral"),
-            m_autoFactory.trajectoryCmd("OutpostToNeutral")
+            runTrajCmd("ToOutpost"),
+            runTrajCmd("OutpostToNeutral")
         );
     }
 }
