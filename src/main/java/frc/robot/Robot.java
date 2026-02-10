@@ -24,16 +24,20 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+
 import frc.robot.Constants.VisionK;
-import frc.robot.subsystems.Shooter.ShooterVelocity;
+import static frc.robot.Constants.RobotK.*;
+import frc.robot.subsystems.Shooter.FlywheelVelocity;
 import frc.robot.subsystems.Shooter.HoodPosition;
 import frc.robot.subsystems.Shooter.TurretPosition;
+import frc.robot.subsystems.shooter.FuelSim;
 import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.shooter.TurretVisualizer;
 import frc.robot.generated.TunerConstants;
@@ -67,10 +71,9 @@ public class Robot extends TimedRobot {
 
     private final CommandXboxController driver = new CommandXboxController(0);
 
-    public final Swerve drivetrain = TunerConstants.createDrivetrain();
+    public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
     private Command m_autonomousCommand;
-    private final AutoFactory autoFactory = drivetrain.createAutoFactory();
-    private final ShotCalculator shotCalculator = new ShotCalculator();
+    private final AutoFactory autoFactory = m_drivetrain.createAutoFactory();
     private final TurretVisualizer m_turretVisualizer = new TurretVisualizer(
         () -> new Pose3d(RobotState.getInstance().getEstimatedPose()),
         () -> RobotState.getInstance().getRobotVelocity());
@@ -83,7 +86,9 @@ public class Robot extends TimedRobot {
     // this should be updated with all of our cameras
     private final Vision[] cameras = {camera1, camera2};
 
-    private final Shooter shooter = new Shooter();
+    private final Shooter m_shooter;
+
+    private final ShotCalculator shotCalculator;
 
     /* log and replay timestamp and joystick data */
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -91,14 +96,19 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
 
     public Robot() {
+        m_shooter = new Shooter(m_drivetrain);
+        shotCalculator = new ShotCalculator(m_drivetrain);
+
+        m_shooter.setDefaultCommand(m_shooter.shooterDefaultCommands());
         configureBindings();
+        configureFuelSim();
     }
 
     private Command driveCommand() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         // Drivetrain will execute this command periodically
-        return drivetrain.applyRequest(() -> {
+        return m_drivetrain.applyRequest(() -> {
             var angularRate = driver.leftTrigger().getAsBoolean() ? 
             kMaxHighAngularRate : kMaxAngularRate;
         
@@ -118,13 +128,50 @@ public class Robot extends TimedRobot {
         );
     }
 
+    //(nonsotm (just for simulating entire robot)) BLARGHHHHHH get intake dude (alex?) to give me his code (idk if he finished it yet)
+    private void configureFuelSim() {
+        FuelSim instance = FuelSim.getInstance();
+        instance.spawnStartingFuel();
+        
+
+        // instance.registerRobot(
+        //         kRobotFullWidth.in(Meters),
+        //         kRobotFullLength.in(Meters),
+        //         kBumperHeight.in(Meters),
+        //         m_robotState::getEstimatedPose,
+        //         m_robotState::getFieldVelocity);
+        // instance.registerIntake(
+        //         -kRobotFullLength.div(2).in(Meters),
+        //         kRobotFullLength.div(2).in(Meters),
+        //         -kRobotFullWidth.div(2).plus(Inches.of(7)).in(Meters),
+        //         -kRobotFullWidth.div(2).in(Meters),
+        //         () -> intake.isRightDeployed() && m_shooter.simAbleToIntake(),
+        //         m_shooter::simIntake);
+        // instance.registerIntake(
+        //         -kRobotFullLength.div(2).in(Meters),
+        //         kRobotFullLength.div(2).in(Meters),
+        //         kRobotFullWidth.div(2).in(Meters),
+        //         kRobotFullWidth.div(2).plus(Inches.of(7)).in(Meters),
+        //         () -> intake.isLeftDeployed() && m_shooter.simAbleToIntake(),
+        //         m_shooter::simIntake);
+
+        instance.start();
+        instance.logFuels();
+        SmartDashboard.putData(Commands.runOnce(() -> {
+                    FuelSim.getInstance().clearFuel();
+                    FuelSim.getInstance().spawnStartingFuel();
+                })
+                .withName("Reset Fuel")
+                .ignoringDisable(true));
+    }
+
     private void configureBindings() {
         /* SWERVE BINDS */
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
-        drivetrain.setDefaultCommand(
+        m_drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() ->
+            m_drivetrain.applyRequest(() ->
                 drive.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
                     .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
                     .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
@@ -135,52 +182,56 @@ public class Robot extends TimedRobot {
         // neutral mode is applied to the drive motors while disabled.
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
-            drivetrain.applyRequest(() -> idle).ignoringDisable(true)
+            m_drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        driver.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        driver.b().whileTrue(drivetrain.applyRequest(() ->
+        driver.a().whileTrue(m_drivetrain.applyRequest(() -> brake));
+        driver.b().whileTrue(m_drivetrain.applyRequest(() ->
             point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))
         ));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        driver.back().and(driver.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        driver.back().and(driver.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        driver.start().and(driver.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        driver.start().and(driver.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        driver.back().and(driver.y()).whileTrue(m_drivetrain.sysIdDynamic(Direction.kForward));
+        driver.back().and(driver.x()).whileTrue(m_drivetrain.sysIdDynamic(Direction.kReverse));
+        driver.start().and(driver.y()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kForward));
+        driver.start().and(driver.x()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset the field-centric heading on left bumper press.
-        driver.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        driver.leftBumper().onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
 
-        drivetrain.registerTelemetry(logger::telemeterize);
+        m_drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
-        driver.povUp().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.ZERO));
-        driver.povRight().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.SCORE));
-        driver.povDown().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.MAX));
-        driver.povLeft().onTrue(shooter.setShooterVelocityCmd(ShooterVelocity.PASS));
+        driver.povUp().onTrue(m_shooter.setFlywheelVelocityCmd(FlywheelVelocity.ZERO));
+        driver.povRight().onTrue(m_shooter.setFlywheelVelocityCmd(FlywheelVelocity.SCORE));
+        driver.povDown().onTrue(m_shooter.setFlywheelVelocityCmd(FlywheelVelocity.MAX));
+        driver.povLeft().onTrue(m_shooter.setFlywheelVelocityCmd(FlywheelVelocity.PASS));
 
-        driver.a().onTrue(shooter.setHoodPositionCmd(HoodPosition.MIN));
-        driver.b().onTrue(shooter.setHoodPositionCmd(HoodPosition.SCORE));
-        driver.x().onTrue(shooter.setHoodPositionCmd(HoodPosition.PASS));
-        driver.y().onTrue(shooter.setHoodPositionCmd(HoodPosition.MAX));
+        driver.a().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.MIN));
+        driver.b().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.SCORE));
+        driver.x().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.PASS));
+        driver.y().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.MAX));
 
-        driver.leftBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.SCORE));
+        // driver.leftBumper().onTrue(m_shooter.setTurretPositionCmd(TurretPosition.SCORE));
         // driver.rightBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.PASS));
-        driver.leftTrigger().onTrue(shooter.setTurretPositionCmd(TurretPosition.MIN));
-        driver.rightTrigger().onTrue(shooter.setTurretPositionCmd(TurretPosition.MAX));
+        // driver.leftTrigger().onTrue(m_shooter.setTurretPositionCmd(TurretPosition.MIN));
+        driver.leftTrigger().onTrue(m_shooter.setTurretPositionCmd(TurretPosition.MAX));
+
+        driver.rightTrigger().onTrue(m_shooter.zeroShooterCommand());
 
         driver
             .rightBumper()
             .negate()
-            .whileTrue(shooter.runTrackTargetActiveShootingCommand())
+            .whileTrue(m_shooter.runTurretTrackTargetActiveShootingCommand())
             .and(() -> shotCalculator.getParameters().isValid())
-            .and(() -> shooter.atGoal());
-            // .whileFalse(m_turretVisualizer.repeatedlyLaunchFuel(
-            // () -> shotCalculator.getFuelPathVelocity(),
-            // () -> Degrees.of(shotCalculator.getParameters().hoodAngle()),
-            // shooter));    
+            .and(() -> m_shooter.atGoal())
+            .whileTrue(m_shooter.runHoodTrackTargetCommand())
+            .whileTrue(m_shooter.setFlywheelVelocityCmd(shotCalculator.getParameters().flywheelSpeed()))
+            .whileFalse(m_turretVisualizer.repeatedlyLaunchFuel(
+            () -> shotCalculator.getFuelPathVelocity(),
+            () -> Degrees.of(shotCalculator.getParameters().hoodAngle()),
+            m_shooter));    
         }
 
     public Command getAutonomousCommand() {
@@ -203,12 +254,11 @@ public class Robot extends TimedRobot {
                 EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
                 Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
                 var ctreTime = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
-                drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());
+                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());
             }
         }
-
         // periodics
-        shooter.periodic();
+        m_shooter.periodic();
     }
 
     @Override
@@ -237,6 +287,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
+        m_shooter.zeroShooterCommand();
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().cancel(m_autonomousCommand);
         }
@@ -261,11 +312,12 @@ public class Robot extends TimedRobot {
 
     @Override
     public void simulationPeriodic() {
-        SwerveDriveState robotState = drivetrain.getState();
+        SwerveDriveState robotState = m_drivetrain.getState();
         Pose2d robotPose = robotState.Pose;
+        RobotState.getInstance().resetPose(robotPose);
         visionSim.simulationPeriodic(robotPose);
-        drivetrain.simulationPeriodic();
-        shooter.simulationPeriodic();
+        m_drivetrain.simulationPeriodic();
+        m_shooter.simulationPeriodic();
     }
 
     @Override

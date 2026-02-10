@@ -14,7 +14,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.FuelSim;
+import frc.robot.subsystems.shooter.FuelSim;
 import frc.robot.subsystems.Shooter;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.Pose3dLogger;
@@ -24,6 +24,7 @@ public class TurretVisualizer {
     private Translation3d[] trajectory = new Translation3d[50];
     private Supplier<Pose3d> poseSupplier;
     private Supplier<ChassisSpeeds> fieldSpeedSupplier;
+    private final int CAPACITY = 30;
 
     private final Translation3dArrayLogger log_trajectory = WaltLogger.logTranslation3dArray(kLogTab, "trajectory");
     private final Pose3dLogger log_turretPose = WaltLogger.logPose3d(kLogTab, "turretPose");
@@ -49,6 +50,16 @@ public class TurretVisualizer {
         yVel += fieldSpeeds.vyMetersPerSecond;
 
         return new Translation3d(xVel, yVel, verticalVel);
+    }
+
+    private int fuelStored = 8;
+
+    public boolean canIntake() {
+        return fuelStored < CAPACITY;
+    }
+
+    public void intakeFuel() {
+        fuelStored++;
     }
 
     public void launchFuel(LinearVelocity vel, Angle angle) {

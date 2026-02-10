@@ -20,6 +20,9 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static frc.robot.Constants.ShooterK.*;
 import frc.robot.FieldConstants;
 import frc.robot.RobotState;
+import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Swerve;
+import frc.robot.vision.VisionSim;
 import frc.util.AllianceFlipUtil;
 import frc.util.GeomUtil;
 import frc.util.WaltLogger;
@@ -38,7 +41,6 @@ import static frc.util.GeomUtil.*;
 //     private double m_hoodAngle = Double.NaN; //make sure that we dont set angle to zero :skull:
 //     private double m_turretVelocity;
 //     private double m_hoodVelocity;
-//     private LinearVelocity m_fuelPathVelocity = MetersPerSecond.of(9.1); //TODO: pester build again to ask what the max velocity our ball can shoot and the min velocity to guesstimate this val?
 
 
 //     //TODO: Change the 0.02 to whatever our loop time will be
@@ -228,12 +230,13 @@ import static frc.util.GeomUtil.*;
 
 //MA's exact code
 //TODO: Make sure to go back and look over 5000s code as a sanity check to makesure that im doing everything correctly
-// also add configureFuelSim(); into robot constructor 💀
 public class ShotCalculator {
     private static ShotCalculator instance;
 
     private final LinearFilter turretAngleFilter = LinearFilter.movingAverage((int) (0.1 / 0.02));
     private final LinearFilter hoodAngleFilter = LinearFilter.movingAverage((int) (0.1 / 0.02));
+
+    private LinearVelocity m_fuelPathVelocity = MetersPerSecond.of(9.1); //TODO: pester build again to ask what the max velocity our ball can shoot and the min velocity to guesstimate this val?
 
     private Rotation2d lastTurretAngle;
     private double lastHoodAngle;
@@ -241,14 +244,14 @@ public class ShotCalculator {
     private double hoodAngle = Double.NaN;
     private double turretVelocity;
     private double hoodVelocity;
+    private final Swerve m_drivetrain;
 
+    private final Pose2dLogger log_estimatedPose = WaltLogger.logPose2d(kLogTab, "estimatedPose");
     private final Pose2dLogger log_lookaheadPose = WaltLogger.logPose2d(kLogTab, "lookaheadPose");
     private final DoubleLogger log_turretToTargetDistance = WaltLogger.logDouble(kLogTab, "turretToTargetDistance");
 
-    public static ShotCalculator getInstance() {
-        if (instance == null)
-            instance = new ShotCalculator();
-        return instance;
+    public ShotCalculator(Swerve drivetrain) {
+        m_drivetrain = drivetrain;
     }
 
     public record ShootingParameters(
@@ -311,7 +314,7 @@ public class ShotCalculator {
         }
 
         // Calculate estimated pose while accounting for phase delay
-        Pose2d estimatedPose = RobotState.getInstance().getEstimatedPose();
+        Pose2d estimatedPose = m_drivetrain.getState().Pose;
         ChassisSpeeds robotRelativeVelocity = RobotState.getInstance().getRobotVelocity();
         estimatedPose = estimatedPose.exp(
                 new Twist2d(
@@ -371,9 +374,7 @@ public class ShotCalculator {
                 hoodVelocity,
                 shotFlywheelSpeedMap.get(lookaheadTurretToTargetDistance));
 
-        // Log calculated values
-        // Logger.recordOutput("ShotCalculator/LookaheadPose", lookaheadPose);
-        // Logger.recordOutput("ShotCalculator/TurretToTargetDistance", lookaheadTurretToTargetDistance);
+        log_estimatedPose.accept(estimatedPose);
         log_lookaheadPose.accept(lookaheadPose);
         log_turretToTargetDistance.accept(turretToTargetDistance);
 
@@ -382,5 +383,8 @@ public class ShotCalculator {
 
     public void clearShootingParameters() {
         latestParameters = null;
+    }
+    public LinearVelocity getFuelPathVelocity () {
+        return m_fuelPathVelocity;
     }
 }

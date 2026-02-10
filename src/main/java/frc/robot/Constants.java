@@ -1,5 +1,7 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Feet;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -25,6 +27,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.measure.Distance;
 
 public class Constants {
@@ -189,5 +192,11 @@ public class Constants {
 
     public static class RobotK {
         public static final String kLogTab = "Superstructure";
+        //these values arent even dummy theyre just stupid
+        //TODO: ask hrehaan or build for dimensions
+        public static final Distance kRobotFullWidth = Feet.of(6.9);
+        public static final Distance kRobotFullLength = Feet.of(6.9);
+        public static final Distance kBumperHeight = Feet.of(6.9);
+
     }
 }
