@@ -15,7 +15,7 @@ import frc.robot.vision.VisionSim;
 
 
 public class Detection {
-    private final PhotonCamera camera = new PhotonCamera(VisionK.kCamera1CamName); //probably will be intake camera
+    private final PhotonCamera camera = new PhotonCamera(VisionK.kCameras[0].getCameraName()); //probably will be intake camera
     private final VisionSim visionSim = new VisionSim();
 
     private List<PhotonTrackedTarget> targetList = new LinkedList<>();
