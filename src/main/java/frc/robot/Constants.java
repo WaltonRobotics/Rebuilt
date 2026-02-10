@@ -227,9 +227,17 @@ public class Constants {
             .withFeedback(kExhaustFeedbackConfigs);
     }
 
+    public static final boolean tuningMode = true;
+
     public enum RobotMode {
         REAL,
         SIM,
         REPLAY
+    }
+
+    public static boolean disableHAL = false;
+
+    public static void disableHAL() {
+        disableHAL = true;
     }
 }

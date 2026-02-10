@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.WaltLogger.DoubleLogger;
 
 import frc.robot.Constants.IntakeK;
+import frc.util.LoggedTunableNumber;
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
