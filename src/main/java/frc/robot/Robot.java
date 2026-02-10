@@ -157,7 +157,7 @@ public class Robot extends TimedRobot {
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
-        
+
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
         m_driver.x().whileTrue(m_drivetrain.swerveToObject());
     }
@@ -179,8 +179,8 @@ public class Robot extends TimedRobot {
         // m_driver.povRight().onTrue(m_indexer.stopExhaust());
 
         // Shooter
-        m_driver.povUp().onTrue(m_shooter.setFlywheelVelocityCmd(RotationsPerSecond.of(0)));
-        m_driver.povDown().onTrue(m_shooter.setFlywheelVelocityCmd(ShooterK.kFlywheelMaxRPS));
+        m_driver.povDown().onTrue(m_shooter.setFlywheelVelocityCmd(RotationsPerSecond.of(0)));
+        m_driver.povUp().onTrue(m_shooter.setFlywheelVelocityCmd(ShooterK.kFlywheelMaxRPS));
 
         m_driver.a().onTrue(m_shooter.setHoodPositionCmd(ShooterK.kHoodMinDegs));
         m_driver.y().onTrue(m_shooter.setHoodPositionCmd(ShooterK.kHoodMaxDegs));
