@@ -10,7 +10,6 @@ import static frc.robot.Constants.IndexerK.kLogTab;
 import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
 import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.Utils;
@@ -24,7 +23,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -34,7 +32,6 @@ import frc.robot.Constants.VisionK;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Indexer;
-import frc.robot.subsystems.Superstructure;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
 import frc.util.WaltLogger;
@@ -79,6 +76,7 @@ public class Robot extends TimedRobot {
     private final VisionSim visionSim = new VisionSim();
     private final Vision camera1 = new Vision(VisionK.kCamera1CamName, VisionK.kCamera1CamSimVisualName, VisionK.kCamera1CamRoboToCam, visionSim, VisionK.kCamera1SimProps);
     private final Vision camera2 = new Vision(VisionK.kCamera2CamName, VisionK.kCamera2CamSimVisualName, VisionK.kCamera2CamRoboToCam, visionSim, VisionK.kCamera2SimProps);
+
     private final Detection detection = new Detection();
 
     // this should be updated with all of our cameras
@@ -202,6 +200,8 @@ public class Robot extends TimedRobot {
     public void disabledPeriodic() {
         if (!autonMade) {
             if (AutonChooser.m_chooser.getSelected().equals("oneNeutralPickup")) {
+                detection.addFuel(detection.targetToPose(drivetrain.getState().Pose, detection.getClosestObject()));
+                
                 m_autonomousCommand = waltAutonFactory.oneNeutralPickup();
                 AutonChooser.pub_autonName.set("One Neutral Pickup");
                 autonMade = true;
@@ -209,6 +209,8 @@ public class Robot extends TimedRobot {
             }   
 
             if (AutonChooser.m_chooser.getSelected().equals("twoNeutralPickup")) {
+                detection.addFuel(detection.targetToPose(drivetrain.getState().Pose, detection.getClosestObject()));
+
                 m_autonomousCommand = waltAutonFactory.twoNeutralPickup();
                 AutonChooser.pub_autonName.set("Two Neutral Pickup");
                 autonMade = true;
@@ -216,6 +218,8 @@ public class Robot extends TimedRobot {
             }
 
             if (AutonChooser.m_chooser.getSelected().equals("threeNeutralPickup")) {
+                detection.addFuel(detection.targetToPose(drivetrain.getState().Pose, detection.getClosestObject()));
+
                 m_autonomousCommand = waltAutonFactory.threeNeutralPickup();
                 AutonChooser.pub_autonName.set("Three Neutral Pickup");
                 autonMade = true;
