@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.RobotMode;
 import frc.robot.Constants.VisionK;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Intake;
@@ -93,31 +94,7 @@ public class Robot extends LoggedRobot {
         .withJoystickReplay();
 
     public Robot() {
-        Logger.recordMetadata("Rebuilt", "RobotData"); // Set a metadata value
-
-        switch (Constants.currentMode) {
-            case REAL: {
-                Logger.addDataReceiver(new WPILOGWriter());
-                Logger.addDataReceiver(new NT4Publisher());
-                break;
-            }
-
-            case SIM: {
-                Logger.addDataReceiver(new WPILOGWriter());
-                Logger.addDataReceiver(new NT4Publisher());
-                break;
-            }
-
-            case REPLAY: {
-                setUseTiming(false);
-                String logPath = LogFileUtil.findReplayLog();
-                Logger.setReplaySource(new WPILOGReader(logPath));
-                Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
-                break;
-            }
-        }
-        Logger.start();
-        
+        initLogger(RobotMode.REPLAY);
         configureBindings();
     }
 
@@ -198,6 +175,33 @@ public class Robot extends LoggedRobot {
         driver.povDown().onTrue(m_indexer.stopSpinner());
         driver.povLeft().onTrue(m_indexer.startExhaust());
         driver.povRight().onTrue(m_indexer.stopExhaust());
+    }
+
+    private void initLogger(RobotMode mode) {
+        Logger.recordMetadata("Rebuilt", "RobotData"); // Set a metadata value
+
+        switch (mode) {
+            case REAL: {
+                Logger.addDataReceiver(new WPILOGWriter());
+                Logger.addDataReceiver(new NT4Publisher());
+                break;
+            }
+
+            case SIM: {
+                Logger.addDataReceiver(new WPILOGWriter());
+                Logger.addDataReceiver(new NT4Publisher());
+                break;
+            }
+
+            case REPLAY: {
+                setUseTiming(false);
+                String logPath = LogFileUtil.findReplayLog();
+                Logger.setReplaySource(new WPILOGReader(logPath));
+                Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+                break;
+            }
+        }
+        Logger.start();
     }
 
     public Command getAutonomousCommand() {

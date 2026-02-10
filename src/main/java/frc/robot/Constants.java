@@ -227,10 +227,7 @@ public class Constants {
             .withFeedback(kExhaustFeedbackConfigs);
     }
 
-    public static final robotMode kSimMode = robotMode.REPLAY;
-    public static final robotMode currentMode = RobotBase.isReal() ? robotMode.REAL : kSimMode;
-
-    public enum robotMode {
+    public enum RobotMode {
         REAL,
         SIM,
         REPLAY
