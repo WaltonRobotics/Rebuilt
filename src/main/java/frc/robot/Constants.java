@@ -49,7 +49,7 @@ public class Constants {
         public static final String kLogTab = "Shooter";
 
         /* MOTOR CONSTANTS */
-        public static final double kFlywheelMoI = 0.000349 * 2;  //J for 4 3" 0.53lb flywheels
+        public static final double kFlywheelMoI = 0.000349 * 2.5;  //J for 5 3" 0.53lb flywheels
         public static final double kHoodMoI = 0.000249;
         public static final double kTurretMoI = 0.104506595;
 
