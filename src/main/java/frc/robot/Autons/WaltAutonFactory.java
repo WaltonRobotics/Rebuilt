@@ -14,14 +14,12 @@ public class WaltAutonFactory {
     private final AutoFactory m_autoFactory;
     private final Swerve m_drivetrain;
 
+    private final boolean isRed = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get().equals(Alliance.Red);
+
     //desired pose to go to after fuel pickup
-    private Pose2d postPickupNeutral = (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get().equals(Alliance.Red)) 
-                                            ? AutonK.neutralPose 
-                                                : AllianceFlipUtil.flip(AutonK.neutralPose);
+    private Pose2d postPickupNeutral = isRed ? AutonK.neutralPose : AllianceFlipUtil.flip(AutonK.neutralPose);
     //desired pose to go to after depot pickup
-    private Pose2d postPickupDepot = (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get().equals(Alliance.Red)) 
-                                            ? AutonK.depotPose 
-                                                : AllianceFlipUtil.flip(AutonK.depotPose);
+    private Pose2d postPickupDepot = isRed ? AutonK.depotPose : AllianceFlipUtil.flip(AutonK.depotPose);
 
     public WaltAutonFactory(AutoFactory autoFactory, Swerve drivetrain) {
         m_autoFactory = autoFactory;
@@ -36,13 +34,7 @@ public class WaltAutonFactory {
     }
 
     public Command pickupCmd(boolean isNeutral) {
-        Pose2d postPickupPose = new Pose2d();
-
-        if (isNeutral) {
-            postPickupPose = postPickupNeutral;
-        } else {
-            postPickupPose = postPickupDepot;
-        }
+        Pose2d postPickupPose = isNeutral ? postPickupNeutral : postPickupDepot;
 
         return Commands.sequence(
             m_drivetrain.swerveToObject().withTimeout(1),
