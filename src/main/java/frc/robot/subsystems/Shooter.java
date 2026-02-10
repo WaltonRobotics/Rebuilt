@@ -2,19 +2,16 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.util.datalog.BooleanLogEntry;
 
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
 import com.reduxrobotics.sensors.canandmag.Canandmag;
-import com.reduxrobotics.sensors.canandmag.CanandmagSettings;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -24,16 +21,13 @@ import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static frc.robot.Constants.ShooterK.*;
 
 import frc.robot.Constants;
-import frc.robot.Constants.ShooterK;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -84,7 +78,7 @@ public class Shooter extends SubsystemBase {
 
     // loggers
     private final DoubleLogger log_flywheelVelocityRPS = WaltLogger.logDouble(kLogTab, "flywheelVelocityRPS");
-    private final DoubleLogger log_hoodPositionDegs = WaltLogger.logDouble(kLogTab, "hoodPositionDegs");    //logs the encoder values
+    private final DoubleLogger log_hoodPositionRots = WaltLogger.logDouble(kLogTab, "hoodPositionRots");    //logs the encoder values
     private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble(kLogTab, "turretPositionRots");
 
     private final BooleanLogger log_exitBeamBreak = WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
@@ -98,6 +92,7 @@ public class Shooter extends SubsystemBase {
         m_flywheelLeader.getConfigurator().apply(kFlywheelLeaderTalonFXConfiguration);
         m_flywheelFollower.getConfigurator().apply(kFlywheelFollowerTalonFXConfiguration);
         m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
+
         m_hoodEncoder.setSettings(kHoodEncoderSettings);    //if needed, we can add a position offset
 
         m_flywheelFollower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed)); //TODO: check if MotorAlignmentValue is Opposed or Aligned
@@ -136,7 +131,7 @@ public class Shooter extends SubsystemBase {
     @Override
     public void periodic() {
         log_flywheelVelocityRPS.accept(m_flywheelLeader.getVelocity().getValueAsDouble());
-        log_hoodPositionDegs.accept(m_hoodEncoder.getPosition());
+        log_hoodPositionRots.accept(m_hoodEncoder.getPosition());
         log_turretPositionRots.accept(m_turret.getPosition().getValueAsDouble());
 
         log_exitBeamBreak.accept(trg_exitBeamBreak);
