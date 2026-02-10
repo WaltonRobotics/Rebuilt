@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import static frc.robot.Constants.ShooterK.*;
 
 import frc.robot.Constants;
+import frc.util.MotorSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -102,13 +103,8 @@ public class Shooter extends SubsystemBase {
 
     //TODO: update orientation values (if needed)
     private void initSim() {
-        var leaderFXSim = m_flywheelLeader.getSimState();
-        leaderFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
-        leaderFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX60);
-
-        var turretFXSim = m_turret.getSimState();
-        turretFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
-        turretFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
+        MotorSim.initSimFX(m_flywheelLeader, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
+        MotorSim.initSimFX(m_turret, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
     }
 
     /* COMMANDS */
@@ -142,24 +138,8 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        // Shooter
-        var leaderFXSim = m_flywheelLeader.getSimState();
-
-        m_flywheelSim.setInputVoltage(leaderFXSim.getMotorVoltage());
-        m_flywheelSim.update(Constants.kSimPeriodicUpdateInterval);
-
-        leaderFXSim.setRotorVelocity(m_flywheelSim.getAngularVelocity().times(kFlywheelGearing));
-        leaderFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-
-        // Turret
-        var turretFXSim = m_turret.getSimState();
-
-        m_turretSim.setInputVoltage(turretFXSim.getMotorVoltage());
-        m_turretSim.update(Constants.kSimPeriodicUpdateInterval);
-
-        turretFXSim.setRawRotorPosition(m_turretSim.getAngularPositionRotations() * kTurretGearing);
-        turretFXSim.setRotorVelocity(m_turretSim.getAngularVelocity().times(kTurretGearing));
-        turretFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        MotorSim.updateSimFX(m_flywheelLeader, m_flywheelSim);
+        MotorSim.updateSimFX(m_turret, m_turretSim);
     }
 
 }
