@@ -23,10 +23,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Autons.WaltAutonFactory;
 import frc.robot.Constants.VisionK;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Intake;
@@ -69,7 +69,9 @@ public class Robot extends TimedRobot {
 
     public final Swerve drivetrain = TunerConstants.createDrivetrain();
     private Command m_autonomousCommand;
+
     private final AutoFactory autoFactory = drivetrain.createAutoFactory();
+    private final WaltAutonFactory waltAutonFactory = new WaltAutonFactory(autoFactory, drivetrain);
 
     private final VisionSim visionSim = new VisionSim();
     private final Vision camera1 = new Vision(VisionK.kCamera1CamName, VisionK.kCamera1CamSimVisualName, VisionK.kCamera1CamRoboToCam, visionSim, VisionK.kCamera1SimProps);
@@ -171,12 +173,7 @@ public class Robot extends TimedRobot {
     }
 
     public Command getAutonomousCommand() {
-        // Simple Auton (hardcoded)
-        final var idle = new SwerveRequest.Idle();
-        return Commands.sequence(
-            autoFactory.resetOdometry("testAlexandra"),
-            autoFactory.trajectoryCmd("testAlexandra")
-        );
+        return waltAutonFactory.threeNeutralPickup();
     }
 
     @Override
