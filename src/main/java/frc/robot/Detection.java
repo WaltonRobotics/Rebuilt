@@ -72,7 +72,6 @@ public class Detection {
         
         Pose2d fuelPose = robotPose.transformBy(fuelTransform);
 
-        //addFuel(fuelPose);
         return fuelPose;
     }
 
