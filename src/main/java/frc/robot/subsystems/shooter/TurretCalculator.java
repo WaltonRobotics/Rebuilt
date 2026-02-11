@@ -29,12 +29,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.units.measure.Time;
 
 public class TurretCalculator {
-    static public Distance getDistanceToTarget(Pose2d robot, Translation3d target) {
+    public static Distance getDistanceToTarget(Pose2d robot, Translation3d target) {
         return Meters.of(robot.getTranslation().getDistance(target.toTranslation2d()));
     }
 
     // https://www.desmos.com/geometry/l4edywkmha
-    static public Angle calculateAngleFromVelocity(Pose2d robot, LinearVelocity velocity, Translation3d target) {
+    public static Angle calculateAngleFromVelocity(Pose2d robot, LinearVelocity velocity, Translation3d target) {
         double gravity = MetersPerSecondPerSecond.of(9.81).in(InchesPerSecondPerSecond);
         double vel = velocity.in(InchesPerSecond);
         double x_dist = getDistanceToTarget(robot, target).in(Inches);
@@ -49,23 +49,23 @@ public class TurretCalculator {
 
 
     //calculate how long it will take for a projectile to travel a certain amount of distance given its initial velocity and angle
-    static public Time calculateTimeOfFlight(LinearVelocity exitVelocity, Angle hoodAngle, Distance distance) {
+    public static Time calculateTimeOfFlight(LinearVelocity exitVelocity, Angle hoodAngle, Distance distance) {
         double vel = exitVelocity.in(MetersPerSecond);
         double angle = hoodAngle.in(Radians);
         double dist = distance.in(Meters);
         return Seconds.of(dist / (vel * Math.cos(angle)));
     }
     
-    static public AngularVelocity linearToAngularVelocity(LinearVelocity vel, Distance radius) {
+    public static AngularVelocity linearToAngularVelocity(LinearVelocity vel, Distance radius) {
         return RadiansPerSecond.of(vel.in(MetersPerSecond) / radius.in(Meters));
     }
 
-    static public LinearVelocity angularToLinearVelocity(AngularVelocity vel, Distance radius) {
+    public static LinearVelocity angularToLinearVelocity(AngularVelocity vel, Distance radius) {
         return MetersPerSecond.of(vel.in(RadiansPerSecond) / radius.in(Meters));
     }
 
     //angle of turret relative to robot to hit a target
-    static public Angle calculateAzimuthAngle(Pose2d robot, Translation3d target) {
+    public static Angle calculateAzimuthAngle(Pose2d robot, Translation3d target) {
         Translation2d turretTranslation = new Pose3d(robot)
             .transformBy(kRobotToTurret)
             .toPose2d()
@@ -78,7 +78,7 @@ public class TurretCalculator {
     }
 
     // Move a target a set time in the future along a velocity defined by fieldSpeeds
-    static public Translation3d predictTargetPos(Translation3d target, ChassisSpeeds fieldSpeeds, Time timeOfFlight) {
+    public static Translation3d predictTargetPos(Translation3d target, ChassisSpeeds fieldSpeeds, Time timeOfFlight) {
         double predictedX = target.getX() - fieldSpeeds.vxMetersPerSecond * timeOfFlight.in(Seconds);
         double predictedY = target.getY() - fieldSpeeds.vyMetersPerSecond * timeOfFlight.in(Seconds);
 
