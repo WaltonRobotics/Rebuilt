@@ -62,8 +62,8 @@ public class Constants {
         public static final Angle kHoodMaxDegs = Degrees.of(40);
 
         public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.75); //0.75 rots in each direction from home
-        public static final Angle kTurretMinRots = Rotations.of(0 - kTurretMaxRotsFromHome.magnitude());
-        public static final Angle kTurretMaxRots = Rotations.of(0 + kTurretMaxRotsFromHome.magnitude());
+        public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.magnitude());
+        public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.magnitude());
 
         public static final AngularVelocity kFlywheelMaxRPS = RotationsPerSecond.of(5785/60 * (0.9));   //Kraken X60Foc Max (RPM: 5785)
 
