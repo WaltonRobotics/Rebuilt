@@ -2,8 +2,6 @@ package frc.robot.autons;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.AutonK;
@@ -14,16 +12,19 @@ public class WaltAutonFactory {
     private final AutoFactory m_autoFactory;
     private final Swerve m_drivetrain;
 
-    private final boolean isRed = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get().equals(Alliance.Red);
-
     //desired pose to go to after fuel pickup
-    private Pose2d postPickupNeutral = isRed ? AutonK.neutralPose : AllianceFlipUtil.flip(AutonK.neutralPose);
+    private Pose2d postPickupNeutral;
     //desired pose to go to after depot pickup
-    private Pose2d postPickupDepot = isRed ? AutonK.depotPose : AllianceFlipUtil.flip(AutonK.depotPose);
+    private Pose2d postPickupDepot;
 
     public WaltAutonFactory(AutoFactory autoFactory, Swerve drivetrain) {
         m_autoFactory = autoFactory;
-        m_drivetrain = drivetrain;
+        m_drivetrain = drivetrain;  
+    }
+
+    public void setAlliance(boolean isRed) {
+        postPickupNeutral = isRed ? AllianceFlipUtil.flip(AutonK.neutralPose) : AutonK.neutralPose;
+        postPickupDepot = isRed ? AllianceFlipUtil.flip(AutonK.depotPose) : AutonK.depotPose;
     }
 
     public Command runTrajCmd(String traj) {
