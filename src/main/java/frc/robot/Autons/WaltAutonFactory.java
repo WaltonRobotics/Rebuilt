@@ -1,9 +1,13 @@
 package frc.robot.Autons;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.AutonK;
 import frc.robot.subsystems.Swerve;
 import frc.util.AllianceFlipUtil;
@@ -16,6 +20,8 @@ public class WaltAutonFactory {
     private Pose2d postPickupNeutral;
     //desired pose to go to after depot pickup
     private Pose2d postPickupDepot;
+
+    private ArrayList<Command> autonSequence;
 
     public WaltAutonFactory(AutoFactory autoFactory, Swerve drivetrain) {
         m_autoFactory = autoFactory;
@@ -42,59 +48,62 @@ public class WaltAutonFactory {
             m_drivetrain.toPose(postPickupPose).withTimeout(1)
         );
     }
-    
+
+    public Command createAutonSequence(int pickupTimes) {
+        if (pickupTimes == 1) {
+            return Commands.sequence(
+                runTrajCmd("ToNeutral"),
+                pickupCmd(true),
+                runTrajCmd("NeutralToShoot")
+            );
+        }
+
+        ArrayList<Command> commandSequence = new ArrayList<Command>();
+
+        commandSequence.add(createAutonSequence(pickupTimes - 1));
+
+        if (pickupTimes == 2) {
+            commandSequence.add(Commands.sequence(
+                runTrajCmd("ShootToNeutral"),         
+                pickupCmd(true)
+            ));
+        } else {
+            commandSequence.add(Commands.sequence(
+                runTrajCmd("NeutralToShoot"),
+                runTrajCmd("ShootToNeutral"),
+                pickupCmd(true)
+            ));
+        }
+
+        return Commands.sequence(commandSequence.toArray(new Command[commandSequence.size()]));
+    }
+
     /**
      * pickup and shoot one time
      */
     public Command oneNeutralPickup() {
-        return Commands.sequence(
-            runTrajCmd("ToNeutral"),
-
-            pickupCmd(true),
-
-            runTrajCmd("NeutralToShoot")
-        );
+        return createAutonSequence(1);
     }
 
     /**
      * pick up two times and shoot once
      */
     public Command twoNeutralPickup() {
-        return Commands.sequence(
-            oneNeutralPickup(),
-
-            runTrajCmd("ShootToNeutral"),
-
-            pickupCmd(true)
-        );
+        return createAutonSequence(1);
     }
 
     /**
      * pick up three times and shoot twice
      */
     public Command threeNeutralPickup() {
-        return Commands.sequence(
-            twoNeutralPickup(),
-            
-            runTrajCmd("NeutralToShoot"),
-            runTrajCmd("ShootToNeutral"),
-
-            pickupCmd(true)
-        );
+        return createAutonSequence(3);
     }
 
     /**
      * pick up four times and shoot thrice
      */
     public Command fourNeutralPickup() {
-        return Commands.sequence(
-            threeNeutralPickup(),
-
-            runTrajCmd("NeutralToShoot"),
-            runTrajCmd("ShootToNeutral"),
-
-            pickupCmd(true)
-        );
+        return createAutonSequence(4);
     }
 
     /**
