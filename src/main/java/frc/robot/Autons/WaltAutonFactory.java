@@ -58,6 +58,10 @@ public class WaltAutonFactory {
             );
         }
 
+        if (pickupTimes <= 0) {
+            return Commands.none();
+        }
+
         ArrayList<Command> commandSequence = new ArrayList<Command>();
 
         commandSequence.add(createAutonSequence(pickupTimes - 1));
