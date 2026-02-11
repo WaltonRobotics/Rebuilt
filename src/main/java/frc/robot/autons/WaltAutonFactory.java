@@ -1,4 +1,4 @@
-package frc.robot.Autons;
+package frc.robot.autons;
 
 import java.util.ArrayList;
 import java.util.Arrays;
