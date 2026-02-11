@@ -24,7 +24,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -59,7 +58,6 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
     private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
 
-    private final Timer lastGotTagMsmtTimer = new Timer();
     private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger("Robot", "VisionSeenLastSec");
 
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -215,14 +213,16 @@ public class Robot extends TimedRobot {
         m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run(); 
 
+        double visionSeenLastSec = 10.0; // initialize to a large number so that the log starts as false until we see a measurement
+
         for (Vision camera : m_cameras) {
             Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
             if (estimatedPoseOptional.isPresent()) {
                 EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
                 Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
                 var ctreTime = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
-                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());
-                lastGotTagMsmtTimer.restart();
+                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());                
+                visionSeenLastSec = ctreTime;
             }
         }
 
@@ -233,9 +233,8 @@ public class Robot extends TimedRobot {
         log_povDown.accept(m_driver.povDown());
         log_povLeft.accept(m_driver.povLeft());
         log_povRight.accept(m_driver.povRight());
-      
-        boolean visionSeenPastSec = !lastGotTagMsmtTimer.hasElapsed(1);
-        log_visionSeenPastSecond.accept(visionSeenPastSec);
+
+        log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - visionSeenLastSec) < 1.0);
     }
 
     @Override

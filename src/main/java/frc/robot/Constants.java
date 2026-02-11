@@ -177,28 +177,36 @@ public class Constants {
 
         //Initialize cameras
         static {
-            kCameras[0] = new Camera(new SimCameraProperties(), 
+            kCameras[0] = new Camera(
+                new SimCameraProperties(), 
                 "frontLeftCamera", 
                 kSimCameraSimVisualNames, 
-                Camera.transformToRobo(0, 0, 0, 0, 0, 0));
+                Camera.transformToRobo(0, 0, 0, 0, 0, 0)
+                );
             kCameras[0].setProps("ThriftyCam", 0, 0, 0, 0);
             
-            kCameras[1] = new Camera(new SimCameraProperties(), 
+            kCameras[1] = new Camera(
+                new SimCameraProperties(), 
                 "frontRightCamera", 
                 kSimCameraSimVisualNames, 
-                Camera.transformToRobo(0, 0, 0, 0, 0, 0));
+                Camera.transformToRobo(0, 0, 0, 0, 0, 0)
+                );
             kCameras[1].setProps("ThriftyCam", 0, 0, 0, 0);
 
-            kCameras[2] = new Camera(new SimCameraProperties(), 
+            kCameras[2] = new Camera(
+                new SimCameraProperties(), 
                 "backLeftCamera", 
                 kSimCameraSimVisualNames, 
-                Camera.transformToRobo(0, 0, 0, 0, 0, 0));
+                Camera.transformToRobo(0, 0, 0, 0, 0, 0)
+                );
             kCameras[2].setProps("ThriftyCam", 0, 0, 0, 0);
 
-            kCameras[3] = new Camera(new SimCameraProperties(), 
+            kCameras[3] = new Camera(
+                new SimCameraProperties(), 
                 "backRightCamera", 
                 kSimCameraSimVisualNames, 
-                Camera.transformToRobo(0, 0, 0, 0, 0, 0));
+                Camera.transformToRobo(0, 0, 0, 0, 0, 0)
+                );
             kCameras[3].setProps("ThriftyCam", 0, 0, 0, 0);
         }
     }

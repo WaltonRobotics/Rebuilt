@@ -108,6 +108,7 @@ public class Camera {
                 setCameraSpecs(1600, 1304, 55, 60);
                 break;
             default:
+                break;
         }
     }
 
