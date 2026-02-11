@@ -26,6 +26,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.FieldConstants;
 import edu.wpi.first.units.measure.Time;
 
 public class TurretCalculator {
@@ -85,9 +86,32 @@ public class TurretCalculator {
         return new Translation3d(predictedX, predictedY, target.getZ());
     }
 
+    public static ShotData calculateShotFromFunnelClearance(Pose2d robot, Translation3d actualTarget, Translation3d predictedTarget) {
+        double x_dist = getDistanceToTarget(robot, predictedTarget).in(Inches);
+        double y_dist = predictedTarget
+            .getMeasureZ()
+            .minus(kRobotToTurret.getMeasureZ())
+            .in(Inches);
+        double g = 386;
+        // double r = 
 
+    }
 
+    public record ShotData(double exitVelocity, double hoodAngle, Translation3d target) {
+        public ShotData(LinearVelocity exitVelocity, Angle hoodAngle, Translation3d target) {
+            this(exitVelocity.in(MetersPerSecond), hoodAngle.in(Radians), target);
+        }
 
+        public LinearVelocity getExitVelocity() {
+            return MetersPerSecond.of(this.exitVelocity);
+        }
 
-    
+        public Angle getHoodAngle() {
+            return Radians.of(this.hoodAngle);
+        }
+
+        public Translation3d getTarget() {
+            return this.target;
+        }
+    }
 }
