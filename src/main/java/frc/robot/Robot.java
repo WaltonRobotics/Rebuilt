@@ -195,12 +195,12 @@ public class Robot extends TimedRobot {
     }
 
     public Command getAutonomousCommand() {
-        waltAutonFactory.setAlliance( 
+        m_waltAutonFactory.setAlliance( 
             DriverStation.getAlliance().isPresent() && 
             DriverStation.getAlliance().get().equals(Alliance.Red)
         );
 
-        return waltAutonFactory.threeNeutralPickup();
+        return m_waltAutonFactory.threeNeutralPickup();
     }
 
     @Override
