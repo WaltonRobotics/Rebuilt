@@ -180,10 +180,7 @@ public class Robot extends TimedRobot {
             DriverStation.getAlliance().get().equals(Alliance.Red)
         );
 
-        // return waltAutonFactory.oneNeutralPickup();
-        // return waltAutonFactory.twoNeutralPickup();
         return waltAutonFactory.threeNeutralPickup();
-        // return waltAutonFactory.fourNeutralPickup();
     }
 
     @Override
