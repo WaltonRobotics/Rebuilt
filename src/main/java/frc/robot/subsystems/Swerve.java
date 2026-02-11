@@ -35,7 +35,6 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Detection;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
-import frc.robot.vision.VisionSim;
 
 /**
  * CommandSwerveDrivetrain: Class that extends the Phoenix 6 SwerveDrivetrain class 
@@ -69,7 +68,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         .withSteerRequestType(SteerRequestType.Position);
 
     private final Detection detection = new Detection();
-    private final VisionSim visionSim = new VisionSim();
 
     private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
@@ -380,16 +378,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     /**
-     * robot goes to detected target
-     * 
-     * if in simulation, create a pose3d for a fake target
+     * robot goes to specified pose
+     * @param destination
+     * @return
      */
-    public Command swerveToObject() {
-        
-        PhotonTrackedTarget target = detection.getClosestObject();
-        Pose2d destination = detection.targetToPose(getState().Pose, target);
-        detection.addFuel(destination);
-        
+    public Command toPose(Pose2d destination) {
         return Commands.run(
             () -> {
                 Pose2d curPose = getState().Pose;
@@ -401,6 +394,18 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
             }
         );
+    }
+
+    /**
+     * robot goes to detected target
+     */
+    public Command swerveToObject() {
+        
+        PhotonTrackedTarget target = detection.getClosestObject();
+        Pose2d destination = detection.targetToPose(getState().Pose, target);
+        detection.addFuel(destination);
+        
+        return toPose(destination);
     }
 
     public static Pose2d faceFuelPose(Pose2d robotPose, Pose2d fuelLocation) {
