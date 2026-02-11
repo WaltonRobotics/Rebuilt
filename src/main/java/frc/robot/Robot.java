@@ -100,6 +100,8 @@ public class Robot extends TimedRobot {
         shotCalculator = new ShotCalculator(m_drivetrain);
 
         m_shooter.setDefaultCommand(m_shooter.shooterDefaultCommands());
+        m_shooter.zeroHoodCommand();
+        m_shooter.zeroTurretCommmand();
         configureBindings();
         configureFuelSim();
     }
@@ -208,10 +210,10 @@ public class Robot extends TimedRobot {
         driver.povDown().onTrue(m_shooter.setFlywheelVelocityCmd(FlywheelVelocity.MAX));
         driver.povLeft().onTrue(m_shooter.setFlywheelVelocityCmd(FlywheelVelocity.PASS));
 
-        driver.a().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.MIN));
-        driver.b().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.SCORE));
-        driver.x().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.PASS));
-        driver.y().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.MAX));
+        // driver.a().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.MIN));
+        // driver.b().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.SCORE));
+        // driver.x().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.PASS));
+        // driver.y().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.MAX));
 
         // driver.leftBumper().onTrue(m_shooter.setTurretPositionCmd(TurretPosition.SCORE));
         // driver.rightBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.PASS));
@@ -221,17 +223,17 @@ public class Robot extends TimedRobot {
         driver.rightTrigger().onTrue(m_shooter.zeroShooterCommand());
 
         driver
-            .rightBumper()
+            .a()
+            .whileTrue(m_turretVisualizer.repeatedlyLaunchFuel(
+            () -> shotCalculator.getFuelPathVelocity(),
+            () -> Degrees.of(shotCalculator.getParameters().hoodAngle()),
+            m_shooter)) 
             .negate()
             .whileTrue(m_shooter.runTurretTrackTargetActiveShootingCommand())
             .and(() -> shotCalculator.getParameters().isValid())
             .and(() -> m_shooter.atGoal())
             .whileTrue(m_shooter.runHoodTrackTargetCommand())
-            .whileTrue(m_shooter.setFlywheelVelocityCmd(shotCalculator.getParameters().flywheelSpeed()))
-            .whileFalse(m_turretVisualizer.repeatedlyLaunchFuel(
-            () -> shotCalculator.getFuelPathVelocity(),
-            () -> Degrees.of(shotCalculator.getParameters().hoodAngle()),
-            m_shooter));    
+            .whileTrue(m_shooter.setFlywheelVelocityCmd(shotCalculator.getParameters().flywheelSpeed()));   
         }
 
     public Command getAutonomousCommand() {

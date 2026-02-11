@@ -224,8 +224,8 @@ public class Shooter extends SubsystemBase {
 
     public boolean atGoal() {
         m_hoodAtGoal = 
-            // DriverStation.isEnabled()
-                // &&
+            DriverStation.isEnabled()
+                &&
                  m_hoodZeroed 
                     && Math.abs(getHoodAngle() - m_hoodGoalAngle)
                         <= 1.0; //degrees
