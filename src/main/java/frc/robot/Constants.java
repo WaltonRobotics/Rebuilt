@@ -25,13 +25,10 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
-import org.photonvision.simulation.SimCameraProperties;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
@@ -39,34 +36,33 @@ public class Constants {
 
     public static class VisionK {
         public static final Camera[] kCameras = new Camera[4];
-        private static final String[] kCameraNames = {
-            "frontLeftCamera",
-            "frontRightCamera",
-            "backLeftCamera",
-            "backRightCamera"
-        };
         private static final String kSimCameraSimVisualNames = "VisionEstimation"; //suffixed to each camera name
-        //TODO: Make these transforms accurate - they are currently just placeholders
-        private static final Transform3d[] kSimCameraRoboToCam = {
-            Camera.transformToRobo(0, 0, 0, 0, 0, 0),
-            Camera.transformToRobo(0, 0, 0, 0, 0, 0),
-            Camera.transformToRobo(0, 0, 0, 0, 0, 0),
-            Camera.transformToRobo(0, 0, 0, 0, 0, 0)
-        };
-        //TODO: Make these values accurate - they are currently just placeholders
-        private static final double[] kSimCamAvgError = {0, 0, 0, 0};
-        private static final double[] kSimCamErrorStdDev = {0, 0, 0, 0};
-        private static final int[] kSimCamAvgLatencyMs = {0, 0, 0, 0};
-        private static final int[] kSimCamLatencyStdDevMs = {0, 0, 0, 0};
 
         //Initialize cameras
         static {
-            for(int i = 0; i < kCameras.length; i++) {
-                kCameras[i] = new Camera(new SimCameraProperties(), kCameraNames[i], kSimCameraSimVisualNames, kSimCameraRoboToCam[i]);
-                kCameras[i].setCameraSpecs("ThriftyCam");
-                kCameras[i].setCalibError(kSimCamAvgError[i], kSimCamErrorStdDev[i]);
-                kCameras[i].setLatency(kSimCamAvgLatencyMs[i], kSimCamLatencyStdDevMs[i]);
-            }
+            kCameras[0] = new Camera(new SimCameraProperties(), 
+                "frontLeftCamera", 
+                kSimCameraSimVisualNames, 
+                Camera.transformToRobo(0, 0, 0, 0, 0, 0));
+            kCameras[0].setProps("ThriftyCam", 0, 0, 0, 0);
+            
+            kCameras[1] = new Camera(new SimCameraProperties(), 
+                "frontRightCamera", 
+                kSimCameraSimVisualNames, 
+                Camera.transformToRobo(0, 0, 0, 0, 0, 0));
+            kCameras[1].setProps("ThriftyCam", 0, 0, 0, 0);
+
+            kCameras[2] = new Camera(new SimCameraProperties(), 
+                "backLeftCamera", 
+                kSimCameraSimVisualNames, 
+                Camera.transformToRobo(0, 0, 0, 0, 0, 0));
+            kCameras[2].setProps("ThriftyCam", 0, 0, 0, 0);
+
+            kCameras[3] = new Camera(new SimCameraProperties(), 
+                "backRightCamera", 
+                kSimCameraSimVisualNames, 
+                Camera.transformToRobo(0, 0, 0, 0, 0, 0));
+            kCameras[3].setProps("ThriftyCam", 0, 0, 0, 0);
         }
     }
 

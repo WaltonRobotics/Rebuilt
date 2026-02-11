@@ -55,8 +55,14 @@ public class Camera {
      * @param avgLatencyMs Average latency (milliseconds)
      * @param latencyStdDevMs Standard deviation of latency (milliseconds)
      */
-    public void setProps(int resX, int resY, double fovDiag, int fps, double avgErrorPx, double errorStdDevPx, int avgLatencyMs, int latencyStdDevMs) {
+    public void setProps(int resX, int resY, double fovDiag, int fps, double avgErrorPx, double errorStdDevPx, double avgLatencyMs, double latencyStdDevMs) {
         setCameraSpecs(resX, resY, fovDiag, fps);
+        setCalibError(avgErrorPx, errorStdDevPx);
+        setLatency(avgLatencyMs, latencyStdDevMs);
+    }
+
+    public void setProps(String cameraType, double avgErrorPx, double errorStdDevPx, double avgLatencyMs, double latencyStdDevMs) {
+        setCameraSpecs(cameraType);
         setCalibError(avgErrorPx, errorStdDevPx);
         setLatency(avgLatencyMs, latencyStdDevMs);
     }
@@ -86,13 +92,14 @@ public class Camera {
      * @param avgLatencyMs Average latency (milliseconds)
      * @param latencyStdDevMs Standard deviation of latency (milliseconds)
      */
-    public void setLatency(int avgLatencyMs, int latencyStdDevMs) {
+    public void setLatency(double avgLatencyMs, double latencyStdDevMs) {
         m_simCameraProperties.setAvgLatencyMs(avgLatencyMs);
         m_simCameraProperties.setLatencyStdDevMs(latencyStdDevMs);
     }
 
     /**
      * Sets the camera's simulated properties based on a predefined camera type.
+     * does nothing if the camera type is not recognized
      * @param cameraType ex: "ThriftyCam"
      */
     public void setCameraSpecs(String cameraType) {
@@ -101,7 +108,6 @@ public class Camera {
                 setCameraSpecs(1600, 1304, 55, 60);
                 break;
             default:
-                throw new IllegalArgumentException("Unknown camera type: " + cameraType);
         }
     }
 
