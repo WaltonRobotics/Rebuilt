@@ -85,11 +85,12 @@ public class Robot extends TimedRobot {
     private final VisionSim m_visionSim = new VisionSim();
 
     // this should be updated with all of our cameras
-    private final Vision[] cameras = {
-        new Vision(VisionK.kCameras[0], visionSim),
-        new Vision(VisionK.kCameras[1], visionSim),
-        new Vision(VisionK.kCameras[2], visionSim),
-        new Vision(VisionK.kCameras[3], visionSim),
+    private final Vision[] m_cameras = {
+        new Vision(VisionK.kCameras[0], m_visionSim),
+        new Vision(VisionK.kCameras[1], m_visionSim),
+        new Vision(VisionK.kCameras[2], m_visionSim),
+        new Vision(VisionK.kCameras[3], m_visionSim),
+    };
 
     private final Shooter m_shooter = new Shooter();
     private final Intake m_intake = new Intake();
