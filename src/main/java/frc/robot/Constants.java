@@ -102,9 +102,10 @@ public class Constants {
         
         // TODO: mimics the leader, so it doesn't need its own configs - right?
         public static final TalonFXConfiguration kFlywheelFollowerTalonFXConfiguration = new TalonFXConfiguration()
-            .withMotorOutput(new MotorOutputConfigs()
-                .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
-                .withNeutralMode(NeutralModeValue.Brake));
+            .withMotorOutput(
+                new MotorOutputConfigs()
+                    .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
+                    .withNeutralMode(NeutralModeValue.Brake));
 
         // TODO: I assume we would want the Hood and Turret to move at a constant high velocity
         //       so we should probably configure that here?
