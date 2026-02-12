@@ -182,7 +182,7 @@ public class Constants {
                 "frontLeftCamera", 
                 kSimCameraSimVisualNames, 
                 Camera.transformToRobo(0, 0, 0, 0, 0, 0)
-                );
+            );
             kCameras[0].setProps("ThriftyCam", 0, 0, 0, 0);
             
             kCameras[1] = new Camera(
@@ -190,7 +190,7 @@ public class Constants {
                 "frontRightCamera", 
                 kSimCameraSimVisualNames, 
                 Camera.transformToRobo(0, 0, 0, 0, 0, 0)
-                );
+            );
             kCameras[1].setProps("ThriftyCam", 0, 0, 0, 0);
 
             kCameras[2] = new Camera(
@@ -198,7 +198,7 @@ public class Constants {
                 "backLeftCamera", 
                 kSimCameraSimVisualNames, 
                 Camera.transformToRobo(0, 0, 0, 0, 0, 0)
-                );
+            );
             kCameras[2].setProps("ThriftyCam", 0, 0, 0, 0);
 
             kCameras[3] = new Camera(
@@ -206,7 +206,7 @@ public class Constants {
                 "backRightCamera", 
                 kSimCameraSimVisualNames, 
                 Camera.transformToRobo(0, 0, 0, 0, 0, 0)
-                );
+            );
             kCameras[3].setProps("ThriftyCam", 0, 0, 0, 0);
         }
     }
