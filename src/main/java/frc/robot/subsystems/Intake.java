@@ -101,10 +101,10 @@ public class Intake extends SubsystemBase {
         log_targetRollersRPS.accept(m_VVReq.Velocity);
         log_rollersRPS.accept(m_rollers.getVelocity().getValueAsDouble());
         log_deployRots.accept(m_deploy.getPosition().getValueAsDouble());
-        Logger.recordOutput("Intake/Deploy/targetPosRots", m_MMVReq.Position);
-        Logger.recordOutput("Intake/Deploy/actualPosRots", m_deploy.getPosition().getValueAsDouble());
-        Logger.recordOutput("Intake/Rollers/targetRPS", m_VVReq.Velocity);
-        Logger.recordOutput("Intake/Rollers/actualRPS", m_rollers.getVelocity().getValueAsDouble());
+        Logger.recordOutput("CustomLogs/Intake/Deploy/targetPosRots", m_MMVReq.Position);
+        Logger.recordOutput("CustomLogs/Intake/Deploy/actualPosRots", m_deploy.getPosition().getValueAsDouble());
+        Logger.recordOutput("CustomLogs/Intake/Rollers/targetRPS", m_VVReq.Velocity);
+        Logger.recordOutput("CustomLogs/Intake/Rollers/actualRPS", m_rollers.getVelocity().getValueAsDouble());
     }
 
     @Override

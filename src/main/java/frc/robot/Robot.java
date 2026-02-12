@@ -95,7 +95,7 @@ public class Robot extends LoggedRobot {
         .withJoystickReplay();
 
     public Robot() {
-        initLogger(RobotMode.REPLAY);
+        initLogger(RobotMode.SIM);
         configureBindings();
     }
 
@@ -235,6 +235,10 @@ public class Robot extends LoggedRobot {
                 drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());
             }
         }
+
+        Logger.recordOutput("CustomLogs/Swerve/Pose", drivetrain.getState().Pose);
+        Logger.recordOutput("CustomLogs/Swerve/Translation", drivetrain.getState().Pose.getTranslation());
+        Logger.recordOutput("CustomLogs/Swerve/Rotation", drivetrain.getState().Pose.getRotation());
 
         // Periodics
         m_indexer.periodic();
