@@ -12,6 +12,8 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static frc.robot.Constants.ShooterK.kRobotToTurret;
 
+import java.lang.reflect.Field;
+
 import org.opencv.core.Mat;
 
 import edu.wpi.first.math.MathUtil;
@@ -27,6 +29,8 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.FieldConstants;
+
+import static frc.robot.FieldConstants.Hub.*;
 import edu.wpi.first.units.measure.Time;
 
 public class TurretCalculator {
@@ -86,6 +90,8 @@ public class TurretCalculator {
         return new Translation3d(predictedX, predictedY, target.getZ());
     }
 
+    // https://www.desmos.com/calculator/ezjqolho6g 
+    // i lowkirkeniunely dont know what the difference between this desmos calc and the other
     public static ShotData calculateShotFromFunnelClearance(Pose2d robot, Translation3d actualTarget, Translation3d predictedTarget) {
         double x_dist = getDistanceToTarget(robot, predictedTarget).in(Inches);
         double y_dist = predictedTarget
@@ -93,9 +99,11 @@ public class TurretCalculator {
             .minus(kRobotToTurret.getMeasureZ())
             .in(Inches);
         double g = 386;
-        // double r = 
+        double r = FieldConstants.Hub.funnelRadius.in(Inches) * x_dist / getDistanceToTarget(robot, actualTarget).in(Inches);
+        // double h = 
 
     }
+
 
     public record ShotData(double exitVelocity, double hoodAngle, Translation3d target) {
         public ShotData(LinearVelocity exitVelocity, Angle hoodAngle, Translation3d target) {

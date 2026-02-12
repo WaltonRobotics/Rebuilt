@@ -13,6 +13,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
+
+import static edu.wpi.first.units.Units.Inches;
+
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -76,6 +80,8 @@ public class FieldConstants {
 
   /** Hub related constants */
   public static class Hub {
+
+    public static final Distance funnelRadius = Inches.of(24); //see 5000's code
 
     // Dimensions
     public static final double width = Units.inchesToMeters(47.0);
