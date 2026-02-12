@@ -12,35 +12,35 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class AutonChooser {
-    static public SendableChooser<String> m_chooser = new SendableChooser<>();
+    public static SendableChooser<String> m_chooser = new SendableChooser<>();
 
-    static public final String oneRightNeutralPickup = "oneNeutralPickup";
-    static public final String twoRightNeutralPickup = "twoNeutralPickup";
-    static public final String threeRightNeutralPickup = "threeNeutralPickup";
-    static public final String noneSelected = "noAutonSelected";
+    public static final String oneRightNeutralPickup = "oneNeutralPickup";
+    public static final String twoRightNeutralPickup = "twoNeutralPickup";
+    public static final String threeRightNeutralPickup = "threeNeutralPickup";
+    public static final String noneSelected = "noAutonSelected";
 
-    static public NetworkTableInstance nte_inst = NetworkTableInstance.getDefault();
-    static public NetworkTable nte_autonChooser = nte_inst.getTable("AutonChooser");
+    public static NetworkTableInstance nte_inst = NetworkTableInstance.getDefault();
+    public static NetworkTable nte_autonChooser = nte_inst.getTable("AutonChooser");
 
     //TOPICS
-    static public BooleanTopic BT_refreshChoice = nte_inst.getBooleanTopic("/AutonChooser/refreshChoice");
-    static public StringTopic ST_autonName = nte_inst.getStringTopic("/AutonChooser/autonName");
+    public static BooleanTopic BT_refreshChoice = nte_inst.getBooleanTopic("/AutonChooser/refreshChoice");
+    public static StringTopic ST_autonName = nte_inst.getStringTopic("/AutonChooser/autonName");
 
-    static public BooleanTopic BT_autonMade = nte_inst.getBooleanTopic("/AutonChooser/autonMade");
+    public static BooleanTopic BT_autonMade = nte_inst.getBooleanTopic("/AutonChooser/autonMade");
 
     //PUBLISHERS
-    static public BooleanPublisher pub_refreshChoice;
-    static public StringPublisher pub_autonName;
+    public static BooleanPublisher pub_refreshChoice;
+    public static StringPublisher pub_autonName;
 
-    static public BooleanPublisher pub_autonMade;
+    public static BooleanPublisher pub_autonMade;
 
     //SUBSCRIBERS
-    static public BooleanSubscriber sub_refreshChoice;
-    static public StringSubscriber sub_autonName;
+    public static BooleanSubscriber sub_refreshChoice;
+    public static StringSubscriber sub_autonName;
 
-    static public BooleanSubscriber sub_autonMade;
+    public static BooleanSubscriber sub_autonMade;
 
-    static public void initialize() {
+    public static void initialize() {
         pub_refreshChoice = BT_refreshChoice.publish();
         pub_autonName = ST_autonName.publish();
 

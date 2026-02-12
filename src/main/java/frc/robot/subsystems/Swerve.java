@@ -413,7 +413,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         );
     }
 
-    static public Pose2d faceFuelPose(Pose2d robotPose, Pose2d fuelLocation) {
+    public static Pose2d faceFuelPose(Pose2d robotPose, Pose2d fuelLocation) {
         double dx = fuelLocation.getX() - robotPose.getX();
         double dy = fuelLocation.getY() - robotPose.getY();
 
