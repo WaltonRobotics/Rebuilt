@@ -58,7 +58,7 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
     private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
 
-    private double m_visionSeenLastSec = 10.0;
+    private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
     private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger("Robot", "VisionSeenLastSec");
 
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -232,7 +232,6 @@ public class Robot extends TimedRobot {
         log_povDown.accept(m_driver.povDown());
         log_povLeft.accept(m_driver.povLeft());
         log_povRight.accept(m_driver.povRight());
-
         log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
     }
 
