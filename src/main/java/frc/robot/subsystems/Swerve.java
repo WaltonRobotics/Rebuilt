@@ -402,7 +402,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     public Command swerveToObject() {   
         PhotonTrackedTarget target = detection.getClosestObject();
         Pose2d destination = detection.targetToPose(getState().Pose, target);
-        //detection.addFuel(destination);
+        detection.addFuel(destination);
         
         return Commands.parallel(
             toPose(destination),
