@@ -77,12 +77,11 @@ public class Robot extends TimedRobot {
     private final WaltAutonFactory waltAutonFactory = new WaltAutonFactory(autoFactory, drivetrain);
 
     private boolean autonMade = false;
+    private Command desiredAuton;
 
     private final VisionSim visionSim = new VisionSim();
     private final Vision camera1 = new Vision(VisionK.kCamera1CamName, VisionK.kCamera1CamSimVisualName, VisionK.kCamera1CamRoboToCam, visionSim, VisionK.kCamera1SimProps);
     private final Vision camera2 = new Vision(VisionK.kCamera2CamName, VisionK.kCamera2CamSimVisualName, VisionK.kCamera2CamRoboToCam, visionSim, VisionK.kCamera2SimProps);
-
-    private final Detection detection = new Detection();
 
     // this should be updated with all of our cameras
     private final Vision[] cameras = {camera1, camera2};
@@ -179,13 +178,8 @@ public class Robot extends TimedRobot {
         driver.povRight().onTrue(m_indexer.stopExhaust());
     }
 
-    public Command getAutonomousCommand() {
-        waltAutonFactory.setAlliance( 
-            DriverStation.getAlliance().isPresent() && 
-            DriverStation.getAlliance().get().equals(Alliance.Red)
-        );
-
-        return waltAutonFactory.threeNeutralPickup();
+    public Command getAutonomousCommand(Command auton) {
+        return auton;
     }
 
     @Override
@@ -213,34 +207,38 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledInit() {
+         waltAutonFactory.setAlliance( 
+            DriverStation.getAlliance().isPresent() && 
+            DriverStation.getAlliance().get().equals(Alliance.Red)
+        );
+
         AutonChooser.initialize();
     }
 
     @Override
     public void disabledPeriodic() {
+        waltAutonFactory.setAlliance( 
+            DriverStation.getAlliance().isPresent() && 
+            DriverStation.getAlliance().get().equals(Alliance.Red)
+        );
+
         if (!autonMade) {
             if (AutonChooser.m_chooser.getSelected().equals("oneNeutralPickup")) {
-                detection.addFuel(detection.targetToPose(drivetrain.getState().Pose, detection.getClosestObject()));
-                
-                m_autonomousCommand = waltAutonFactory.oneNeutralPickup();
+                desiredAuton = waltAutonFactory.oneNeutralPickup();
                 AutonChooser.pub_autonName.set("One Neutral Pickup");
                 autonMade = true;
                 AutonChooser.pub_autonMade.set(true);
             }   
 
             if (AutonChooser.m_chooser.getSelected().equals("twoNeutralPickup")) {
-                detection.addFuel(detection.targetToPose(drivetrain.getState().Pose, detection.getClosestObject()));
-
-                m_autonomousCommand = waltAutonFactory.twoNeutralPickup();
+                desiredAuton = waltAutonFactory.twoNeutralPickup();
                 AutonChooser.pub_autonName.set("Two Neutral Pickup");
                 autonMade = true;
                 AutonChooser.pub_autonMade.set(true);
             }
 
             if (AutonChooser.m_chooser.getSelected().equals("threeNeutralPickup")) {
-                detection.addFuel(detection.targetToPose(drivetrain.getState().Pose, detection.getClosestObject()));
-
-                m_autonomousCommand = waltAutonFactory.threeNeutralPickup();
+                desiredAuton = waltAutonFactory.threeNeutralPickup();
                 AutonChooser.pub_autonName.set("Three Neutral Pickup");
                 autonMade = true;
                 AutonChooser.pub_autonMade.set(true);
@@ -261,9 +259,10 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
+        m_autonomousCommand = getAutonomousCommand(desiredAuton);
+
         if (m_autonomousCommand != null) {
             m_autonomousCommand.schedule();
-            //CommandScheduler.getInstance().schedule(getAutonomousCommand());
         }
     }
 
