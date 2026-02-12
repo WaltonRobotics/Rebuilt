@@ -382,6 +382,7 @@ public class Constants {
 
     public static void disableHAL() {
         disableHAL = true;
+    }
     
     public static class AutonK {
         public static final Pose2d neutralPose = new Pose2d(Distance.ofRelativeUnits(6.924767017364502, Meter), 

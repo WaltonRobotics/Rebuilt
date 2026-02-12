@@ -262,9 +262,9 @@ public class Robot extends LoggedRobot {
             }
         }
 
-        Logger.recordOutput("CustomLogs/Swerve/Pose", drivetrain.getState().Pose);
-        Logger.recordOutput("CustomLogs/Swerve/Translation", drivetrain.getState().Pose.getTranslation());
-        Logger.recordOutput("CustomLogs/Swerve/Rotation", drivetrain.getState().Pose.getRotation());
+        Logger.recordOutput("CustomLogs/Swerve/Pose", m_drivetrain.getState().Pose);
+        Logger.recordOutput("CustomLogs/Swerve/Translation", m_drivetrain.getState().Pose.getTranslation());
+        Logger.recordOutput("CustomLogs/Swerve/Rotation", m_drivetrain.getState().Pose.getRotation());
 
         // Periodics
         m_shooter.periodic();
