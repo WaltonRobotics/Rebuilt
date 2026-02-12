@@ -82,6 +82,7 @@ public class FieldConstants {
   public static class Hub {
 
     public static final Distance funnelRadius = Inches.of(24); //see 5000's code
+    public static final Distance funnelHeight = Inches.of(72 - 56.4);
 
     // Dimensions
     public static final double width = Units.inchesToMeters(47.0);

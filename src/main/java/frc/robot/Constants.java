@@ -1,6 +1,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Feet;
+import static edu.wpi.first.units.Units.Inches;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,6 +40,7 @@ public class Constants {
         //cant really think of any other name but is where the turret is relative to the robot
         public static final Transform3d kRobotToTurret = new Transform3d(0, 0, 0, Rotation3d.kZero); //DUMMY VALS
         public static final Pose3d kTurretPosition = new Pose3d(RobotState.getInstance().getEstimatedPose());
+        public static final Distance kDistanceAboveFunnel = Inches.of(20); //distance above the hub funnel
 
         public static final double kTurretMinAngle = Units.degreesToRadians(-270.0);
         public static final double kTurretMaxAngle = Units.degreesToRadians(270.0);
