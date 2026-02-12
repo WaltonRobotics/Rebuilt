@@ -13,8 +13,11 @@ import com.ctre.phoenix6.sim.TalonFXSimState;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
@@ -39,11 +42,16 @@ import static edu.wpi.first.units.Units.Radians;
 import static frc.robot.Constants.ShooterK.*;
 
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import frc.robot.Constants;
+import frc.robot.FieldConstants;
 import frc.robot.RobotState;
 import frc.robot.subsystems.shooter.ShotCalculator;
+import frc.robot.subsystems.shooter.TurretCalculator;
 import frc.robot.subsystems.shooter.TurretVisualizer;
+import frc.robot.subsystems.shooter.TurretCalculator.ShotData;
+import frc.util.AllianceFlipUtil;
 import frc.util.EqualsUtil;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
@@ -74,6 +82,11 @@ public class Shooter extends SubsystemBase {
     private State m_setpoint = new State();
 
     private Debouncer m_atGoalDebouncer = new Debouncer(m_atGoalDebounce, DebounceType.kFalling);
+
+    private final Supplier<Pose2d> m_poseSupplier;
+    private final Supplier<ChassisSpeeds> m_fieldSpeedsSupplier;
+
+    Translation3d currentTarget = AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint);
 
     private final TurretVisualizer m_turretVisualizer = new TurretVisualizer(
             () -> new Pose3d(RobotState.getInstance().getEstimatedPose()),
@@ -147,13 +160,16 @@ public class Shooter extends SubsystemBase {
     private final BooleanLogger log_spunUp = WaltLogger.logBoolean(kLogTab, "spunUp");
 
     /* CONSTRUCTOR */
-    public Shooter(Swerve drivetrain) {
+    public Shooter(Swerve drivetrain, Supplier<Pose2d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
         m_leader.getConfigurator().apply(kLeaderTalonFXConfiguration);
         m_follower.getConfigurator().apply(kFollowerTalonFXConfiguration);  //TODO: should the follower use the leader's configs?
         m_hood.getConfigurator().apply(kHoodTalonFXConfiguration);
         m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
 
         m_follower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed)); //TODO: check if MotorAlignmentValue is Opposed or Aligned
+
+        m_poseSupplier = poseSupplier;
+        m_fieldSpeedsSupplier = fieldSpeedsSupplier;
 
         shotCalulator = new ShotCalculator(drivetrain);
 
@@ -326,6 +342,13 @@ public class Shooter extends SubsystemBase {
                 setFieldRelativeTarget(params.turretAngle(), params.turretVelocity());
                 setShootState(ShootingState.ACTIVE_SHOOTING);
             });
+    }
+
+    private void calculateShot() {
+        Pose2d robot = m_poseSupplier.get();
+        ChassisSpeeds fieldSpeeds = m_fieldSpeedsSupplier.get();
+
+        ShotData calculatedShot = TurretCalculator.iterativeMovingShotFromFunnelClearance(robot, fieldSpeeds, null , kExitBeamBreakChannel)
     }
 
     public Command shooterDefaultCommands() {
