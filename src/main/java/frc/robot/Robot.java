@@ -172,10 +172,10 @@ public class Robot extends LoggedRobot {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
-        driver.povUp().onTrue(m_indexer.startSpinner());
-        driver.povDown().onTrue(m_indexer.stopSpinner());
-        driver.povLeft().onTrue(m_indexer.startExhaust());
-        driver.povRight().onTrue(m_indexer.stopExhaust());
+        driver.leftBumper().onTrue(m_indexer.startSpinner());
+        driver.leftTrigger().onTrue(m_indexer.stopSpinner());
+        driver.rightBumper().onTrue(m_indexer.startExhaust());
+        driver.rightTrigger().onTrue(m_indexer.stopExhaust());
     }
     /**
      * Initializes the AdvantageKit Logger.

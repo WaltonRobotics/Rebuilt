@@ -17,6 +17,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IndexerK.*;
 
+import org.littletonrobotics.junction.Logger;
+
 import frc.robot.Constants;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -114,6 +116,8 @@ public class Indexer extends SubsystemBase {
     public void periodic() {
         log_spinnerRPS.accept(m_spinner.getVelocity().getValueAsDouble());
         log_exhaustRPS.accept(m_exhaust.getVelocity().getValueAsDouble());
+        Logger.recordOutput("CustomLogs/Indexer/Spinner/spinnerRPS", m_spinner.getVelocity().getValueAsDouble());
+        Logger.recordOutput("CustomLogs/Indexer/Exhaust/exhaustRPS", m_exhaust.getVelocity().getValueAsDouble());
     }
 
     private void updateSimValues(
