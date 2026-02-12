@@ -1,13 +1,11 @@
 package frc.robot.autons;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.AutonK;
 import frc.robot.subsystems.Swerve;
 import frc.util.AllianceFlipUtil;
@@ -20,8 +18,6 @@ public class WaltAutonFactory {
     private Pose2d postPickupNeutral;
     //desired pose to go to after depot pickup
     private Pose2d postPickupDepot;
-
-    private ArrayList<Command> autonSequence;
 
     public WaltAutonFactory(AutoFactory autoFactory, Swerve drivetrain) {
         m_autoFactory = autoFactory;
