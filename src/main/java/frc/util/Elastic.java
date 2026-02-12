@@ -43,7 +43,7 @@ public final class Elastic {
    *
    * @param notification the {@link Notification} object containing notification details
    */
-  public static void sendNotification(Notification notification) {
+  static public void sendNotification(Notification notification) {
     try {
       notificationPublisher.set(objectMapper.writeValueAsString(notification));
     } catch (JsonProcessingException e) {
@@ -60,7 +60,7 @@ public final class Elastic {
    *
    * @param tabName the name of the tab to select
    */
-  public static void selectTab(String tabName) {
+  static public void selectTab(String tabName) {
     selectedTabPublisher.set(tabName);
   }
 
@@ -70,7 +70,7 @@ public final class Elastic {
    *
    * @param tabIndex the index of the tab to select.
    */
-  public static void selectTab(int tabIndex) {
+  static public void selectTab(int tabIndex) {
     selectTab(Integer.toString(tabIndex));
   }
 
@@ -79,7 +79,7 @@ public final class Elastic {
    * properties such as level, title, description, display time, and dimensions to control how the
    * notification is displayed on the dashboard.
    */
-  public static class Notification {
+  static public class Notification {
     @JsonProperty("level")
     private NotificationLevel level;
 

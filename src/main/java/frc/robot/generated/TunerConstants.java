@@ -70,11 +70,11 @@ public class TunerConstants {
 
     // CAN bus that the devices are located on;
     // All swerve devices must share the same CAN bus
-    public static final CANBus kCANBus = new CANBus("fd", "./logs/example.hoot");
+    static public final CANBus kCANBus = new CANBus("fd", "./logs/example.hoot");
 
     // Theoretical free speed (m/s) at 12 V applied output;
     // This needs to be tuned to your individual robot
-    public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.84);
+    static public final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.84);
 
     // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
     // This may need to be tuned to your individual robot
@@ -96,7 +96,7 @@ public class TunerConstants {
     private static final Voltage kSteerFrictionVoltage = Volts.of(0.2);
     private static final Voltage kDriveFrictionVoltage = Volts.of(0.2);
 
-    public static final SwerveDrivetrainConstants DrivetrainConstants = new SwerveDrivetrainConstants()
+    static public final SwerveDrivetrainConstants DrivetrainConstants = new SwerveDrivetrainConstants()
             .withCANBusName(kCANBus.getName())
             .withPigeon2Id(kPigeonId)
             .withPigeon2Configs(pigeonConfigs);
@@ -170,22 +170,22 @@ public class TunerConstants {
     private static final Distance kBackRightYPos = Inches.of(-11.375);
 
 
-    public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontLeft =
+    static public final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontLeft =
         ConstantCreator.createModuleConstants(
             kFrontLeftSteerMotorId, kFrontLeftDriveMotorId, kFrontLeftEncoderId, kFrontLeftEncoderOffset,
             kFrontLeftXPos, kFrontLeftYPos, kInvertLeftSide, kFrontLeftSteerMotorInverted, kFrontLeftEncoderInverted
         );
-    public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontRight =
+    static public final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontRight =
         ConstantCreator.createModuleConstants(
             kFrontRightSteerMotorId, kFrontRightDriveMotorId, kFrontRightEncoderId, kFrontRightEncoderOffset,
             kFrontRightXPos, kFrontRightYPos, kInvertRightSide, kFrontRightSteerMotorInverted, kFrontRightEncoderInverted
         );
-    public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> BackLeft =
+    static public final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> BackLeft =
         ConstantCreator.createModuleConstants(
             kBackLeftSteerMotorId, kBackLeftDriveMotorId, kBackLeftEncoderId, kBackLeftEncoderOffset,
             kBackLeftXPos, kBackLeftYPos, kInvertLeftSide, kBackLeftSteerMotorInverted, kBackLeftEncoderInverted
         );
-    public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> BackRight =
+    static public final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> BackRight =
         ConstantCreator.createModuleConstants(
             kBackRightSteerMotorId, kBackRightDriveMotorId, kBackRightEncoderId, kBackRightEncoderOffset,
             kBackRightXPos, kBackRightYPos, kInvertRightSide, kBackRightSteerMotorInverted, kBackRightEncoderInverted
@@ -195,7 +195,7 @@ public class TunerConstants {
      * Creates a CommandSwerveDrivetrain instance.
      * This should only be called once in your robot program,.
      */
-    public static Swerve createDrivetrain() {
+    static public Swerve createDrivetrain() {
         return new Swerve(
             DrivetrainConstants, FrontLeft, FrontRight, BackLeft, BackRight
         );
@@ -205,7 +205,7 @@ public class TunerConstants {
     /**
      * Swerve Drive class utilizing CTR Electronics' Phoenix 6 API with the selected device types.
      */
-    public static class TunerSwerveDrivetrain extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> {
+    static public class TunerSwerveDrivetrain extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> {
         /**
          * Constructs a CTRE SwerveDrivetrain using the specified constants.
          * <p>

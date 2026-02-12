@@ -38,11 +38,11 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import org.photonvision.simulation.SimCameraProperties;
 
 public class Constants {
-    public static final boolean kDebugLoggingEnabled = true;
-    public static final double kSimPeriodicUpdateInterval = 0.020;
+    static public final boolean kDebugLoggingEnabled = true;
+    static public final double kSimPeriodicUpdateInterval = 0.020;
 
-    public static class VisionK {
-        public static final SimCameraProperties kCamera1SimProps = new SimCameraProperties();
+    static public class VisionK {
+        static public final SimCameraProperties kCamera1SimProps = new SimCameraProperties();
         static {
             //TODO: [INSERT CAMERA TYPE]
             kCamera1SimProps.setCalibration(1920, 1080, Rotation2d.fromDegrees(128.2));
@@ -52,7 +52,7 @@ public class Constants {
             kCamera1SimProps.setLatencyStdDevMs(15);
         }
 
-        public static final SimCameraProperties kCamera2SimProps = new SimCameraProperties();
+        static public final SimCameraProperties kCamera2SimProps = new SimCameraProperties();
         static {
             //TODO: [INSERT CAMERA TYPE]
             kCamera2SimProps.setCalibration(1280, 720, Rotation2d.fromDegrees(100));
@@ -62,27 +62,27 @@ public class Constants {
             kCamera2SimProps.setLatencyStdDevMs(15);
         }
 
-        public static final String kCamera1CamName = "camera1";
-        public static final Transform3d kCamera1CamRoboToCam = new Transform3d(
+        static public final String kCamera1CamName = "camera1";
+        static public final Transform3d kCamera1CamRoboToCam = new Transform3d(
             //TODO: Update these numbers
             Units.inchesToMeters(8.238), Units.inchesToMeters(4.81), Units.inchesToMeters(32),
             new Rotation3d(Units.degreesToRadians(180), Units.degreesToRadians(40), Units.degreesToRadians(-10)));
-        public static final String kCamera1CamSimVisualName = "camera1VisionEstimation";
+        static public final String kCamera1CamSimVisualName = "camera1VisionEstimation";
 
-        public static final String kCamera2CamName = "camera2";
-        public static final Transform3d kCamera2CamRoboToCam = new Transform3d(
+        static public final String kCamera2CamName = "camera2";
+        static public final Transform3d kCamera2CamRoboToCam = new Transform3d(
             //TODO: Update these numbers
             Units.inchesToMeters(9.964), Units.inchesToMeters(-10.499), Units.inchesToMeters(8.442),
             new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(-9.962), Units.degreesToRadians(5)));
-        public static final String kCamera2CamSimVisualName = "camera2VisionEstimation";
+        static public final String kCamera2CamSimVisualName = "camera2VisionEstimation";
     }
 
-    public static class FieldK {
+    static public class FieldK {
         // take with a grain of salt - pulled from field dimensions (welded)
-        public static final double kFieldLengthMeters = Units.inchesToMeters(651.22); 
-        public static final double kFieldWidthMeters = Units.inchesToMeters(317.69);
+        static public final double kFieldLengthMeters = Units.inchesToMeters(651.22); 
+        static public final double kFieldWidthMeters = Units.inchesToMeters(317.69);
 
-        public static final AprilTagFieldLayout kTagLayout;
+        static public final AprilTagFieldLayout kTagLayout;
 
         //Ignore trench April Tags
         static {
@@ -94,23 +94,23 @@ public class Constants {
         }
     }
 
-    public static class RobotK {
-        public static final String kLogTab = "Superstructure";
+    static public class RobotK {
+        static public final String kLogTab = "Superstructure";
     }
 
-    public static class IntakeK {
-        public static final String kLogTab = "Intake";
+    static public class IntakeK {
+        static public final String kLogTab = "Intake";
 
         /* MOTOR CONSTANTS */
-        public static final double kDeployMOI = 0.0209;
-        public static final double kDeployGearing = 5/1;
+        static public final double kDeployMOI = 0.0209;
+        static public final double kDeployGearing = 5/1;
 
-        public static final double kRollersMOI = 0.00005;
-        public static final double kRollersGearing = 1.0/2;
+        static public final double kRollersMOI = 0.00005;
+        static public final double kRollersGearing = 1.0/2;
 
         /* IDS */
-        public static final int kDeployCANID = 41; //TODO: change to correct
-        public static final int kRollersCANID = 42; //TODO: change to correct
+        static public final int kDeployCANID = 41; //TODO: change to correct
+        static public final int kRollersCANID = 42; //TODO: change to correct
 
         /* CONFIGS */
         //Deploy Motor
@@ -125,15 +125,15 @@ public class Constants {
             .withKP(0.8)
             .withKI(0)
             .withKD(0);
-        public static final MotorOutputConfigs kDeployMotorOutputConfigs = new MotorOutputConfigs()
+        static public final MotorOutputConfigs kDeployMotorOutputConfigs = new MotorOutputConfigs()
             .withNeutralMode(NeutralModeValue.Brake);
         private static final MotionMagicConfigs kDeployMotionMagicConfigs = new MotionMagicConfigs()
             .withMotionMagicCruiseVelocity(20)
             .withMotionMagicAcceleration(100)
             .withMotionMagicJerk(0);
-        public static final FeedbackConfigs kDeployFeedbackConfigs = new FeedbackConfigs()
+        static public final FeedbackConfigs kDeployFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(1 / kDeployGearing);
-        public static final TalonFXConfiguration kDeployConfiguration = new TalonFXConfiguration()
+        static public final TalonFXConfiguration kDeployConfiguration = new TalonFXConfiguration()
             .withCurrentLimits(kDeployCurrentLimitConfigs)
             .withSlot0(kDeploySlot0Configs)
             .withMotorOutput(kDeployMotorOutputConfigs)
@@ -152,31 +152,31 @@ public class Constants {
             .withKP(0)
             .withKI(0)
             .withKD(0);
-        public static final MotorOutputConfigs kRollersMotorOutputConfigs = new MotorOutputConfigs()
+        static public final MotorOutputConfigs kRollersMotorOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.Clockwise_Positive) // TODO: CW or CCW?
             .withNeutralMode(NeutralModeValue.Brake);
-        public static final FeedbackConfigs kRollersFeedbackConfigs = new FeedbackConfigs()
+        static public final FeedbackConfigs kRollersFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(1 / kRollersGearing);
-        public static final TalonFXConfiguration kRollersConfiguration = new TalonFXConfiguration()
+        static public final TalonFXConfiguration kRollersConfiguration = new TalonFXConfiguration()
             .withCurrentLimits(kRollersCurrentLimitConfigs)
             .withSlot0(kRollersSlot0Configs)
             .withMotorOutput(kRollersMotorOutputConfigs)
             .withFeedback(kRollersFeedbackConfigs);
     }
 
-    public static class IndexerK {
-        public static String kLogTab = "Indexer";
+    static public class IndexerK {
+        static public String kLogTab = "Indexer";
         
         /* IDS */
         //TODO: Make ids accurate
-        public static final int kSpinnerCANID = 49;
-        public static final int kExhaustCANID = 50;
+        static public final int kSpinnerCANID = 49;
+        static public final int kExhaustCANID = 50;
 
-        public static final double kSpinnerGearing = 3;
-        public static final double kExhaustGearing = 1/1.2;
+        static public final double kSpinnerGearing = 3;
+        static public final double kExhaustGearing = 1/1.2;
 
-        public static final double kSpinnerMOI = 0.00166190059;
-        public static final double kExhaustMOI = 0.000215968064;
+        static public final double kSpinnerMOI = 0.00166190059;
+        static public final double kExhaustMOI = 0.000215968064;
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
@@ -197,7 +197,7 @@ public class Constants {
             .withNeutralMode(NeutralModeValue.Brake);
         private static final FeedbackConfigs kSpinnerFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kSpinnerGearing);
-        public static final TalonFXConfiguration kSpinnerTalonFXConfiguration = new TalonFXConfiguration()
+        static public final TalonFXConfiguration kSpinnerTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kSpinnerSlot0Configs)
             .withCurrentLimits(kSpinnerCurrentLimitConfigs)
             .withMotorOutput(kSpinnerMotorOutputConfigs)
@@ -220,17 +220,17 @@ public class Constants {
             .withNeutralMode(NeutralModeValue.Brake);
         private static final FeedbackConfigs kExhaustFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kExhaustGearing);
-        public static final TalonFXConfiguration kExhaustTalonFXConfiguration = new TalonFXConfiguration()
+        static public final TalonFXConfiguration kExhaustTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kExhaustSlot0Configs)
             .withCurrentLimits(kExhaustCurrentLimitConfigs)
             .withMotorOutput(kExhaustMotorOutputConfigs)
             .withFeedback(kExhaustFeedbackConfigs);
     }
 
-    public static class AutonK {
-        public static final Pose2d neutralPose = new Pose2d(Distance.ofRelativeUnits(6.924767017364502, Meter), 
+    static public class AutonK {
+        static public final Pose2d neutralPose = new Pose2d(Distance.ofRelativeUnits(6.924767017364502, Meter), 
             Distance.ofRelativeUnits(2.251265048980713, Meter), new Rotation2d(Math.PI));
-        public static final Pose2d depotPose = new Pose2d(Distance.ofRelativeUnits(1.1576627492904663, Meter), 
+        static public final Pose2d depotPose = new Pose2d(Distance.ofRelativeUnits(1.1576627492904663, Meter), 
             Distance.ofRelativeUnits(5.958622932434082, Meter), new Rotation2d(0));
     }
 }

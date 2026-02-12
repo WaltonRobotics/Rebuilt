@@ -26,25 +26,25 @@ public class WaltLogger {
         return Constants.kDebugLoggingEnabled;
     }
 
-    public static BooleanEntry booleanItem(String table, String name, PubSubOption... options) {
+    static public BooleanEntry booleanItem(String table, String name, PubSubOption... options) {
 
         var topic = new BooleanTopic(NetworkTableInstance.getDefault().getTopic("Robot/" + table + "/" + name));
 
         return topic.getEntry(false, options);
     }
 
-    public static StringEntry stringItem(String table, String name, String defaultVal, PubSubOption... options) {
+    static public StringEntry stringItem(String table, String name, String defaultVal, PubSubOption... options) {
 
         var topic = new StringTopic(NetworkTableInstance.getDefault().getTopic("Robot/" + table + "/" + name));
 
         return topic.getEntry(defaultVal, options);
     }
 
-    public static IntLogger logInt(String table, String name, PubSubOption... options) {
+    static public IntLogger logInt(String table, String name, PubSubOption... options) {
         return new IntLogger(table, name, options);
     }
 
-    public static final class Pose2dLogger implements Consumer<Pose2d> {
+    static public final class Pose2dLogger implements Consumer<Pose2d> {
         public final StructPublisher<Pose2d> ntPub;
         public final StructLogEntry<Pose2d> logEntry;
 
@@ -64,11 +64,11 @@ public class WaltLogger {
         }
     }
 
-    public static Pose2dLogger logPose2d(String table, String name, PubSubOption... options) {
+    static public Pose2dLogger logPose2d(String table, String name, PubSubOption... options) {
         return new Pose2dLogger(table, name, options);
     }
 
-    public static final class Pose3dLogger implements Consumer<Pose3d> {
+    static public final class Pose3dLogger implements Consumer<Pose3d> {
         public final StructPublisher<Pose3d> ntPub;
         public final StructLogEntry<Pose3d> logEntry;
 
@@ -92,11 +92,11 @@ public class WaltLogger {
         }
     }
 
-    public static Pose3dLogger logPose3d(String name, String table, PubSubOption... options) {
+    static public Pose3dLogger logPose3d(String name, String table, PubSubOption... options) {
         return new Pose3dLogger(name, table, options);
     }
 
-    public static final class Transform3dLogger implements Consumer<Transform3d> {
+    static public final class Transform3dLogger implements Consumer<Transform3d> {
         public final StructPublisher<Transform3d> ntPub;
         public final StructLogEntry<Transform3d> logEntry;
 
@@ -116,11 +116,11 @@ public class WaltLogger {
         }
     }
 
-    public static Transform3dLogger logTransform3d(String table, String name, PubSubOption... options) {
+    static public Transform3dLogger logTransform3d(String table, String name, PubSubOption... options) {
         return new Transform3dLogger(table, name, options);
     }
 
-    public static final class Translation3dLogger implements Consumer<Translation3d> {
+    static public final class Translation3dLogger implements Consumer<Translation3d> {
         public final StructPublisher<Translation3d> ntPub;
         public final StructLogEntry<Translation3d> logEntry;
 
@@ -140,11 +140,11 @@ public class WaltLogger {
         }
     }
 
-    public static Translation3dLogger logTranslation3d(String table, String name, PubSubOption... options) {
+    static public Translation3dLogger logTranslation3d(String table, String name, PubSubOption... options) {
         return new Translation3dLogger(table, name, options);
     }
 
-    public static final class Translation2dLogger implements Consumer<Translation2d> {
+    static public final class Translation2dLogger implements Consumer<Translation2d> {
         public final StructPublisher<Translation2d> ntPub;
         public final StructLogEntry<Translation2d> logEntry;
 
@@ -164,11 +164,11 @@ public class WaltLogger {
         }
     }
 
-    public static Translation2dLogger logTranslation2d(String table, String name, PubSubOption... options) {
+    static public Translation2dLogger logTranslation2d(String table, String name, PubSubOption... options) {
         return new Translation2dLogger(table, name, options);
     }
 
-    public static final class IntLogger implements Consumer<Integer> {
+    static public final class IntLogger implements Consumer<Integer> {
         public final IntegerPublisher ntPub;
         public final IntegerLogEntry logEntry;
 
@@ -187,7 +187,7 @@ public class WaltLogger {
         }
     }
 
-    public static final class DoubleLogger implements Consumer<Double> {
+    static public final class DoubleLogger implements Consumer<Double> {
         public final DoublePublisher ntPub;
         public final DoubleLogEntry logEntry;
 
@@ -206,11 +206,11 @@ public class WaltLogger {
         }
     }
 
-    public static DoubleLogger logDouble(String table, String name, PubSubOption... options) {
+    static public DoubleLogger logDouble(String table, String name, PubSubOption... options) {
         return new DoubleLogger(table, name, options);
     }
 
-    public static final class BooleanLogger implements Consumer<Boolean> {
+    static public final class BooleanLogger implements Consumer<Boolean> {
         public final BooleanPublisher ntPub;
         public final BooleanLogEntry logEntry;
 
@@ -233,11 +233,11 @@ public class WaltLogger {
         }
     }
 
-    public static BooleanLogger logBoolean(String table, String name, PubSubOption... options) {
+    static public BooleanLogger logBoolean(String table, String name, PubSubOption... options) {
         return new BooleanLogger(table, name, options);
     }
 
-    public static final class DoubleArrayLogger implements Consumer<double[]> {
+    static public final class DoubleArrayLogger implements Consumer<double[]> {
         public final DoubleArrayPublisher ntPub;
         public final DoubleArrayLogEntry logEntry;
 
@@ -256,11 +256,11 @@ public class WaltLogger {
         }
     }
 
-    public static DoubleArrayLogger logDoubleArray(String table, String name) {
+    static public DoubleArrayLogger logDoubleArray(String table, String name) {
         return new DoubleArrayLogger(table, name);
     }
 
-    public static final class StringLogger implements Consumer<String> {
+    static public final class StringLogger implements Consumer<String> {
         public final StringPublisher ntPub;
         public final StringLogEntry logEntry;
 
@@ -279,7 +279,7 @@ public class WaltLogger {
         }
     }
 
-    public static StringLogger logString(String table, String name, PubSubOption... options) {
+    static public StringLogger logString(String table, String name, PubSubOption... options) {
         return new StringLogger(table, name, options);
     }
 }
