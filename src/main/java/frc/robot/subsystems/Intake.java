@@ -26,6 +26,7 @@ import frc.util.WaltLogger.DoubleLogger;
 
 import frc.robot.Constants.IntakeK;
 import frc.util.LoggedTunableNumber;
+import frc.util.MotorSim;
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
@@ -68,14 +69,8 @@ public class Intake extends SubsystemBase {
     }
 
     private void initSim() {
-        initSim(m_deploy, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
-        initSim(m_rollers, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
-    }
-
-    private void initSim(TalonFX motor, ChassisReference chassisReference, MotorType motorType) {
-        var simState = motor.getSimState();
-        simState.Orientation = chassisReference;
-        simState.setMotorType(motorType);
+        MotorSim.initSimFX(m_deploy, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
+        MotorSim.initSimFX(m_rollers, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
     }
 
     /* COMMANDS */
@@ -109,19 +104,8 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        simulateMotor(m_deploy, m_deploySim);
-        simulateMotor(m_rollers, m_rollersSim);
-    }
-
-    private void simulateMotor(TalonFX motor, DCMotorSim motorSim) {
-        var simState = motor.getSimState();
-
-        motorSim.setInputVoltage(simState.getMotorVoltage());
-        motorSim.update(0.02);
-        
-        simState.setRawRotorPosition(motorSim.getAngularPositionRotations() * motorSim.getGearing());
-        simState.setRotorVelocity(motorSim.getAngularVelocity().times(motorSim.getGearing()));
-        simState.setSupplyVoltage(RobotController.getBatteryVoltage());
+        MotorSim.updateSimFX(m_deploy, m_deploySim);
+        MotorSim.updateSimFX(m_rollers, m_rollersSim);
     }
 
     public enum DeployPosition{
