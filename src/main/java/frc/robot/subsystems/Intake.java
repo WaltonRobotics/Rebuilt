@@ -10,6 +10,8 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import java.util.function.DoubleSupplier;
+
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 
@@ -30,7 +32,7 @@ import frc.robot.Constants.IntakeK;
 import frc.util.MotorSim;
 import frc.util.WaltLogger;
 
-public class Intake extends SubsystemBase {
+public class Intake extends SubsystemBase implements AutoCloseable{
     private final TalonFX m_deploy = new TalonFX(IntakeK.kDeployCANID);
     private final TalonFX m_rollers = new TalonFX(IntakeK.kRollersCANID);
 
@@ -83,6 +85,10 @@ public class Intake extends SubsystemBase {
         return runOnce(() -> m_deploy.setControl(m_MMVReq.withPosition(rots)));
     }
 
+    public DoubleSupplier getSimDeployPos() {
+        return () -> m_deploy.getPosition().getValueAsDouble();
+    }
+
     public Command setRollersSpeed(RollersVelocity RPS) {
         return setRollersSpeed(RPS.RPS);
     }
@@ -91,18 +97,28 @@ public class Intake extends SubsystemBase {
         return runOnce(() -> m_rollers.setControl(m_VVReq.withVelocity(RPS)));
     }
 
+    public DoubleSupplier getSimRollersSpeed() {
+        return () -> m_rollers.getVelocity().getValueAsDouble();
+    }
+
     @Override
     public void periodic() {
         log_targetDeployRots.accept(m_MMVReq.Position);
         log_targetRollersRPS.accept(m_VVReq.Velocity);
-        log_rollersRPS.accept(m_rollers.getVelocity().getValueAsDouble());
-        log_deployRots.accept(m_deploy.getPosition().getValueAsDouble());
+        log_rollersRPS.accept(getSimRollersSpeed().getAsDouble());
+        log_deployRots.accept(getSimDeployPos().getAsDouble());
     }
 
     @Override
     public void simulationPeriodic() {
         MotorSim.updateSimFX(m_deploy, m_deploySim);
         MotorSim.updateSimFX(m_rollers, m_rollersSim);
+    }
+
+    @Override
+    public void close() {
+        m_deploy.close();
+        m_rollers.close();
     }
 
     public enum DeployPosition{
