@@ -55,7 +55,7 @@ public class WaltAutonFactory {
             runTrajCmd("NeutralToShoot")
         );
     }
-
+    
     /**
      * pick up two times and shoot once
      */

@@ -18,6 +18,7 @@ public class AutonChooser {
     public static final String twoRightNeutralPickup = "twoNeutralPickup";
     public static final String threeRightNeutralPickup = "threeNeutralPickup";
     public static final String noneSelected = "noAutonSelected";
+    public static final String testAuton = "testAuton";
 
     public static NetworkTableInstance nte_inst = NetworkTableInstance.getDefault();
     public static NetworkTable nte_autonChooser = nte_inst.getTable("AutonChooser");
@@ -60,6 +61,7 @@ public class AutonChooser {
         m_chooser.addOption("One Right Neutral Pickup", oneRightNeutralPickup);
         m_chooser.addOption("Two Right Neutral Pickup", twoRightNeutralPickup);
         m_chooser.addOption("Three Right Neutral Pickup ", threeRightNeutralPickup);
+        m_chooser.addOption("Test Auton", testAuton);
 
         SmartDashboard.putData(m_chooser);
     }
