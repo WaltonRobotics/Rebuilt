@@ -20,7 +20,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -35,8 +34,6 @@ import frc.robot.autons.WaltAutonFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.Intake.DeployPosition;
-import frc.robot.subsystems.Intake.RollersVelocity;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.Vision;
@@ -57,6 +54,9 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_povRight = WaltLogger.logBoolean(kLogTab, "Pov Right");
     private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
     private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
+
+    private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
+    private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger("Robot", "VisionSeenLastSec");
 
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
@@ -79,11 +79,14 @@ public class Robot extends TimedRobot {
     private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
 
     private final VisionSim m_visionSim = new VisionSim();
-    private final Vision m_camera1 = new Vision(VisionK.kCamera1CamName, VisionK.kCamera1CamSimVisualName, VisionK.kCamera1CamRoboToCam, m_visionSim, VisionK.kCamera1SimProps);
-    private final Vision m_camera2 = new Vision(VisionK.kCamera2CamName, VisionK.kCamera2CamSimVisualName, VisionK.kCamera2CamRoboToCam, m_visionSim, VisionK.kCamera2SimProps);
 
     // this should be updated with all of our cameras
-    private final Vision[] m_cameras = {m_camera1, m_camera2};
+    private final Vision[] m_cameras = {
+        new Vision(VisionK.kCameras[0], m_visionSim),
+        new Vision(VisionK.kCameras[1], m_visionSim),
+        new Vision(VisionK.kCameras[2], m_visionSim),
+        new Vision(VisionK.kCameras[3], m_visionSim),
+    };
 
     private final Shooter m_shooter = new Shooter();
     private final Intake m_intake = new Intake();
@@ -214,7 +217,8 @@ public class Robot extends TimedRobot {
                 EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
                 Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
                 var ctreTime = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
-                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());
+                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());                
+                m_visionSeenLastSec = ctreTime;
             }
         }
 
@@ -225,6 +229,7 @@ public class Robot extends TimedRobot {
         log_povDown.accept(m_driver.povDown());
         log_povLeft.accept(m_driver.povLeft());
         log_povRight.accept(m_driver.povRight());
+        log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
     }
 
     @Override
