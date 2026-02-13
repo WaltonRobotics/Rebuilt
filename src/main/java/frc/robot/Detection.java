@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.photonvision.PhotonCamera;
-import org.photonvision.proto.Photon;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 

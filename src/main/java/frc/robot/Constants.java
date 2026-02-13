@@ -29,15 +29,10 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
-
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
@@ -181,7 +176,7 @@ public class Constants {
                 new SimCameraProperties(), 
                 "frontLeftCamera", 
                 kSimCameraSimVisualNames, 
-                Camera.transformToRobo(0, 0, 0, 0, 0, 0)
+                Camera.transformToRobo(0, 0, 0, 0, 0, 0) //TODO:
             );
             kCameras[0].setProps("ThriftyCam", 0, 0, 0, 0);
             
