@@ -3,6 +3,7 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static frc.robot.Constants.ShooterK.kLogTab;
+import static frc.robot.Constants.ShooterK.kRobotToTurret;
 
 import java.util.function.Supplier;
 
@@ -28,6 +29,7 @@ public class TurretVisualizer {
 
     private final Translation3dArrayLogger log_trajectory = WaltLogger.logTranslation3dArray(kLogTab, "trajectory");
     private final Pose3dLogger log_turretPose = WaltLogger.logPose3d(kLogTab, "turretPose");
+    private final Pose3dLogger log_hoodAngle = WaltLogger.logPose3d(kLogTab, "hoodAngle");
 
 
     public TurretVisualizer(Supplier<Pose3d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedSupplier) {
@@ -91,7 +93,12 @@ public class TurretVisualizer {
         log_trajectory.accept(trajectory);
     }
 
-    public void update3dPose(Angle azimuthAngle) {
+    public void update3dPose(Angle azimuthAngle, Angle hoodAngle) {
         log_turretPose.accept(new Pose3d(0,0,0, new Rotation3d(0,0,azimuthAngle.in(Radians))));
+        Pose3d hoodPose = new Pose3d(0.1, 0, 0, new Rotation3d(0, hoodAngle.in(Radians), 0));
+        hoodPose = hoodPose.rotateAround(new Translation3d(), new Rotation3d(0, 0, azimuthAngle.in(Radians)));
+        hoodPose = new Pose3d(
+            hoodPose.getTranslation().plus(kRobotToTurret.getTranslation()), hoodPose.getRotation());
+        log_hoodAngle.accept(hoodPose);
     }
 }

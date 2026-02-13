@@ -51,9 +51,10 @@ public class Constants {
 
         public static final Distance kFlywheelRadius = Inches.of(2);
 
-        public static final Translation3d PASSING_SPOT_LEFT = new Translation3d(
+        //TODO: work out where our passing spots should be..?
+        public static final Translation3d kPassingSpotLeft = new Translation3d(
                 Inches.of(90), FieldConstants.fieldWidthIn.div(2).plus(Inches.of(85)), Inches.zero());
-        public static final Translation3d PASSING_SPOT_CENTER = new Translation3d(
+        public static final Translation3d kPassingSpotCenter = new Translation3d(
                 Inches.of(90), FieldConstants.fieldWidthIn.div(2), Inches.zero());
 
         /* IDS */

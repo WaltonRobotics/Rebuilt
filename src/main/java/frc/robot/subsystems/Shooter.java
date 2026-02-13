@@ -16,6 +16,7 @@ import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
@@ -56,6 +57,7 @@ import frc.robot.RobotState;
 import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.shooter.TurretCalculator;
 import frc.robot.subsystems.shooter.TurretVisualizer;
+import frc.robot.subsystems.shooter.FuelSim.Hub;
 import frc.robot.subsystems.shooter.TurretCalculator.ShotData;
 import frc.util.AllianceFlipUtil;
 import frc.util.EqualsUtil;
@@ -70,20 +72,19 @@ public class Shooter extends SubsystemBase {
     private Rotation2d m_goalAngle = Rotation2d.kZero;
     private double m_turretGoalVelocity = 0.0;
     private double m_turretLastGoalAngle = 0.0;
-    private final double m_torqueCurrentControlTolerance = 20.0;
     private final double m_atGoalDebounce = 0.2;
     private double m_hoodLastGoalAngle = 0.0;
     private double m_hoodGoalAngle = 0.0;
-    private double m_hoodGoalVelocity = 0.0;
-    private double m_hoodOffset = 0.0;
-    private double m_positionRad = 0;
     
 
     private ShootingState m_shootState = ShootingState.ACTIVE_SHOOTING;
+    private TurretGoal m_goal = TurretGoal.OFF;
 
     private boolean m_flywheelAtGoal, m_turretAtGoal, m_hoodAtGoal = false;
     private boolean m_turretZeroed = false;
     private boolean m_hoodZeroed = false;
+    private Angle m_hoodPosition;
+    private Angle m_turretTurnPosition;
 
     private State m_setpoint = new State();
 
@@ -95,9 +96,7 @@ public class Shooter extends SubsystemBase {
     //need to implement the differing targets (if in neutral zone, shoot to X point (passing))
     Translation3d currentTarget = AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint);
 
-    private final TurretVisualizer m_turretVisualizer = new TurretVisualizer(
-            () -> new Pose3d(RobotState.getInstance().getEstimatedPose()),
-            () -> RobotState.getInstance().getRobotVelocity());
+    private final TurretVisualizer m_turretVisualizer;
 
     // motors + control requests
     private final TalonFX m_leader = new TalonFX(kLeaderCANID); //X60
@@ -175,12 +174,39 @@ public class Shooter extends SubsystemBase {
 
         m_follower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed)); //TODO: check if MotorAlignmentValue is Opposed or Aligned
 
+        m_hoodPosition =  m_hood.getPosition().getValue();
+        m_turretTurnPosition = m_turret.getPosition().getValue();
+
         m_poseSupplier = poseSupplier;
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
 
         shotCalulator = new ShotCalculator(drivetrain);
 
         initSim();
+
+
+        m_turretVisualizer = new TurretVisualizer(
+                () -> new Pose3d(m_poseSupplier
+                        .get()
+                        .rotateAround(poseSupplier.get().getTranslation(), new Rotation2d(m_turretTurnPosition)))
+                        .transformBy(kRobotToTurret),
+                fieldSpeedsSupplier);
+        
+    }
+
+    public Command setGoal(TurretGoal goal) {
+        return runOnce(() -> {
+            m_goal = goal;
+            switch (goal) {
+                case SCORING:
+                    setTarget(FieldConstants.Hub.innerCenterPoint);
+                    break;
+                case PASSING:
+                    setTarget(getPassingTarget(m_poseSupplier.get()));
+                    break;
+                case OFF:
+                    zeroShooterCommand();
+            }   }); 
     }
 
     //sim stuff
@@ -221,7 +247,6 @@ public class Shooter extends SubsystemBase {
     }
 
     public void zeroHood() {
-        m_hoodOffset = kHoodMinAngle - Units.degreesToRadians(getHoodAngle());
         setHoodPositionCmd(HoodPosition.HOME);
         m_hoodZeroed = true;
     }
@@ -236,10 +261,20 @@ public class Shooter extends SubsystemBase {
         zeroTurretCommmand());
     }
 
+    public void setTarget(Translation3d target) {
+        currentTarget = target;
+        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
+            Translation2d flipped = AllianceFlipUtil.apply(target.toTranslation2d());
+            currentTarget = new Translation3d(flipped.getX(), flipped.getY(), target.getZ());
+        }
+    }
+
     private Translation3d getPassingTarget(Pose2d pose) {
         Distance fieldWidth = Inches.of(FieldConstants.fieldWidth);
         boolean isBlue = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue;
         boolean onBlueLeftSide = m_poseSupplier.get().getMeasureY().gt(fieldWidth);
+
+        return isBlue == onBlueLeftSide ? kPassingSpotLeft : kPassingSpotCenter;
     }
 
     private void setFieldRelativeTarget(Rotation2d angle, double velocity) {
@@ -362,8 +397,7 @@ public class Shooter extends SubsystemBase {
             });
     }
 
-    private void calculateShot() {
-        Pose2d robot = m_poseSupplier.get();
+    private void calculateShot(Pose2d robot) {
         ChassisSpeeds fieldSpeeds = m_fieldSpeedsSupplier.get();
 
         ShotData calculatedShot = TurretCalculator.iterativeMovingShotFromFunnelClearance(robot, fieldSpeeds, currentTarget , kExitBeamBreakChannel);
@@ -388,6 +422,14 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         //TODO: add constant turret homing
         Pose2d pose = m_poseSupplier.get();
+
+        if (m_goal == TurretGoal.SCORING || m_goal == TurretGoal.PASSING) {
+            calculateShot(pose);
+        }
+
+        if (m_goal == TurretGoal.PASSING) {
+            setTarget(getPassingTarget(pose));
+        }
         
         log_flywheelVelocityRPS.accept(m_leader.getVelocity().getValueAsDouble());
         log_hoodPositionRots.accept(m_hood.getPosition().getValueAsDouble());
@@ -395,6 +437,11 @@ public class Shooter extends SubsystemBase {
 
         log_exitBeamBreak.accept(trg_exitBeamBreak);
         log_spunUp.accept(m_spunUp);
+
+        m_hoodPosition = m_hood.getPosition().getValue();
+        m_turretTurnPosition = m_turret.getPosition().getValue();
+
+        m_turretVisualizer.update3dPose(m_turretTurnPosition, m_hoodPosition);
     }
 
     @Override
@@ -470,6 +517,12 @@ public class Shooter extends SubsystemBase {
     public enum ShootingState {
         ACTIVE_SHOOTING,
         TRACKING;
+    }
+
+    public enum TurretGoal {
+        SCORING,
+        PASSING,
+        OFF
     }
 
 }
