@@ -21,11 +21,14 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
@@ -37,10 +40,13 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Radian;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static frc.robot.Constants.ShooterK.*;
 
+import java.lang.reflect.Field;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -86,6 +92,7 @@ public class Shooter extends SubsystemBase {
     private final Supplier<Pose2d> m_poseSupplier;
     private final Supplier<ChassisSpeeds> m_fieldSpeedsSupplier;
 
+    //need to implement the differing targets (if in neutral zone, shoot to X point (passing))
     Translation3d currentTarget = AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint);
 
     private final TurretVisualizer m_turretVisualizer = new TurretVisualizer(
@@ -229,6 +236,12 @@ public class Shooter extends SubsystemBase {
         zeroTurretCommmand());
     }
 
+    private Translation3d getPassingTarget(Pose2d pose) {
+        Distance fieldWidth = Inches.of(FieldConstants.fieldWidth);
+        boolean isBlue = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue;
+        boolean onBlueLeftSide = m_poseSupplier.get().getMeasureY().gt(fieldWidth);
+    }
+
     private void setFieldRelativeTarget(Rotation2d angle, double velocity) {
         m_goalAngle = angle;
         m_turretGoalVelocity = velocity;
@@ -267,10 +280,11 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command setFlywheelVelocityCmd(double RPS) {
-        boolean inTolerance = RPS <= m_torqueCurrentControlTolerance;
-        m_flywheelAtGoal = m_atGoalDebouncer.calculate(inTolerance);
-
         return runOnce(() -> m_leader.setControl(m_velocityRequest.withVelocity(RPS)));
+    }
+
+    public Command setFlywheelVelocityCmd(AngularVelocity velocity) {
+        return runOnce(() -> m_leader.setControl(m_velocityRequest.withVelocity(velocity)));
     }
 
     private void stopFlywheel() {
@@ -303,6 +317,10 @@ public class Shooter extends SubsystemBase {
 
     public Command setTurretPositionCmd(double rots) {
         return runOnce(() -> m_turret.setControl(m_MMVRequest.withPosition(rots)));
+    }
+
+    public Command setTurretPositionCmd(Angle azimuthAngle) {
+        return runOnce(() -> m_turret.setControl(m_MMVRequest.withPosition(azimuthAngle)));
     }
 
     public double getTurretPosition() {
@@ -348,7 +366,12 @@ public class Shooter extends SubsystemBase {
         Pose2d robot = m_poseSupplier.get();
         ChassisSpeeds fieldSpeeds = m_fieldSpeedsSupplier.get();
 
-        ShotData calculatedShot = TurretCalculator.iterativeMovingShotFromFunnelClearance(robot, fieldSpeeds, null , kExitBeamBreakChannel)
+        ShotData calculatedShot = TurretCalculator.iterativeMovingShotFromFunnelClearance(robot, fieldSpeeds, currentTarget , kExitBeamBreakChannel);
+
+        Angle azimuthAngle = TurretCalculator.calculateAzimuthAngle(robot, calculatedShot.target());
+        setTurretPositionCmd((azimuthAngle));
+        setHoodPositionCmd(calculatedShot.hoodAngle());
+        setFlywheelVelocityCmd(TurretCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));
     }
 
     public Command shooterDefaultCommands() {
@@ -363,51 +386,8 @@ public class Shooter extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        if (DriverStation.isDisabled() || !m_turretZeroed) {
-            m_setpoint = new State(m_turretSim.getAngularPositionRad(), 0.0);
-            m_turretLastGoalAngle = getTurretPosition();
-            m_turretAtGoal = false;
-        } else if (DriverStation.isEnabled() && m_turretZeroed) {
-            Rotation2d robotAngle = RobotState.getInstance().getRotation();
-            Rotation2d robotRelativeGoalAngle = m_goalAngle.minus(robotAngle);
-            boolean hasBestAngle = false;
-            double bestAngle = 0;
-            double minLegalAngle = switch (m_shootState) {
-                case ACTIVE_SHOOTING -> kTurretMinAngle;
-                case TRACKING -> kTurretMaxAngle;
-            };
-            double maxLegalAngle = switch (m_shootState) {
-                case ACTIVE_SHOOTING -> kTurretMaxAngle;
-                case TRACKING -> kTurretMinAngle;
-            };
-            double robotAngularVelocity = RobotState.getInstance().getFieldVelocity().omegaRadiansPerSecond;
-            double robotRelativeGoalVelocity = m_turretGoalVelocity - robotAngularVelocity;
-
-            for (int i = -2; i < 3; i++) {
-                double potentialSetpoint = robotRelativeGoalAngle.getRadians() + Math.PI * 2.0 * i;
-
-                if (potentialSetpoint < minLegalAngle || potentialSetpoint > maxLegalAngle) {
-                    continue;
-                } else {
-                    if (!hasBestAngle) {
-                        bestAngle = potentialSetpoint;
-                        hasBestAngle = true;
-                    }
-                    if (Math.abs(m_turretLastGoalAngle - potentialSetpoint) < Math.abs(m_turretLastGoalAngle - bestAngle)) {
-                        bestAngle = potentialSetpoint;
-                    }
-                }
-            }
-            
-            m_turretAtGoal =
-                EqualsUtil.epsilonEquals(bestAngle, m_setpoint.position)
-                    && EqualsUtil.epsilonEquals(robotRelativeGoalVelocity, m_setpoint.velocity);
-        }
-
-        if (DriverStation.isEnabled() && m_hoodZeroed) {
-            m_positionRad = MathUtil.clamp(m_hoodGoalAngle, kHoodMinAngle, kHoodMaxAngle);
-            m_hoodGoalVelocity = m_hoodGoalVelocity;
-        }
+        //TODO: add constant turret homing
+        Pose2d pose = m_poseSupplier.get();
         
         log_flywheelVelocityRPS.accept(m_leader.getVelocity().getValueAsDouble());
         log_hoodPositionRots.accept(m_hood.getPosition().getValueAsDouble());

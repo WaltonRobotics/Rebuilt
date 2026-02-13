@@ -27,6 +27,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.measure.Distance;
@@ -47,6 +48,13 @@ public class Constants {
 
         public static final double kHoodMinAngle = Units.degreesToRadians(19);
         public static final double kHoodMaxAngle = Units.degreesToRadians(51);
+
+        public static final Distance kFlywheelRadius = Inches.of(2);
+
+        public static final Translation3d PASSING_SPOT_LEFT = new Translation3d(
+                Inches.of(90), FieldConstants.fieldWidthIn.div(2).plus(Inches.of(85)), Inches.zero());
+        public static final Translation3d PASSING_SPOT_CENTER = new Translation3d(
+                Inches.of(90), FieldConstants.fieldWidthIn.div(2), Inches.zero());
 
         /* IDS */
         public static final int kLeaderCANID = 21; //TODO: Update CANID number

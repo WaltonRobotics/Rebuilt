@@ -37,6 +37,9 @@ public class FieldConstants {
   public static final double fieldLength = AprilTagLayoutType.OFFICIAL.getLayout().getFieldLength();
   public static final double fieldWidth = AprilTagLayoutType.OFFICIAL.getLayout().getFieldWidth();
 
+  public static final Distance fieldLengthIn = Inches.of(fieldLength);
+  public static final Distance fieldWidthIn = Inches.of(fieldWidth);
+
   /**
    * Officially defined and relevant vertical lines found on the field (defined by X-axis offset)
    */
