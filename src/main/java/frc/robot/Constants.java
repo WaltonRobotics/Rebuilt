@@ -30,11 +30,13 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 
 public class Constants {
+
     public static final boolean kDebugLoggingEnabled = true;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
@@ -356,6 +358,29 @@ public class Constants {
             .withFeedback(kExhaustFeedbackConfigs);
     }
 
+    public static final boolean tuningMode = true;
+
+    /**
+     * Represents the current mode of robot operation.
+     * <p>
+     * <b>REAL</b> The robot is running in real world.
+     * <p>
+     * <b>SIM</b> The robot is running in simulaiton.
+     * <p>
+     * <b>REPLAY</b> The robot is replaying a sim file.
+     */
+    public enum RobotMode {
+        REAL,
+        SIM,
+        REPLAY
+    }
+
+    public static boolean disableHAL = true;
+
+    public static void disableHAL() {
+        disableHAL = true;
+    }
+    
     public static class AutonK {
         public static final Pose2d neutralPose = new Pose2d(Distance.ofRelativeUnits(6.924767017364502, Meter), 
             Distance.ofRelativeUnits(2.251265048980713, Meter), new Rotation2d(Math.PI));

@@ -5,28 +5,27 @@ import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import com.ctre.phoenix6.sim.ChassisReference;
 
-import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+
+import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.WaltLogger.DoubleLogger;
 
 import frc.robot.Constants.IntakeK;
+import frc.util.LoggedTunableNumber;
 import frc.util.MotorSim;
 import frc.util.WaltLogger;
 
@@ -97,6 +96,10 @@ public class Intake extends SubsystemBase {
         log_targetRollersRPS.accept(m_VVReq.Velocity);
         log_rollersRPS.accept(m_rollers.getVelocity().getValueAsDouble());
         log_deployRots.accept(m_deploy.getPosition().getValueAsDouble());
+        Logger.recordOutput("CustomLogs/Intake/Deploy/targetPosRots", m_MMVReq.Position);
+        Logger.recordOutput("CustomLogs/Intake/Deploy/actualPosRots", m_deploy.getPosition().getValueAsDouble());
+        Logger.recordOutput("CustomLogs/Intake/Rollers/targetRPS", m_VVReq.Velocity);
+        Logger.recordOutput("CustomLogs/Intake/Rollers/actualRPS", m_rollers.getVelocity().getValueAsDouble());
     }
 
     @Override

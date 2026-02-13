@@ -9,6 +9,12 @@ import static frc.robot.Constants.IndexerK.kLogTab;
 
 import java.util.Optional;
 
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import org.photonvision.EstimatedRobotPose;
 
 import com.ctre.phoenix6.HootAutoReplay;
@@ -28,6 +34,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.RobotMode;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.VisionK;
 import frc.robot.autons.WaltAutonFactory;
@@ -38,11 +45,12 @@ import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
+import frc.util.LoggedTunableNumber;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
     private final double kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private final double kMaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
     private final double kMaxHighAngularRate = RotationsPerSecond.of(1.5).in(RadiansPerSecond);
@@ -98,6 +106,7 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
 
     public Robot() {
+        initLogger(RobotMode.SIM);
         // configureBindings();
         configureTestBindings();    //this should be commented out during competition matches
     }
@@ -169,6 +178,41 @@ public class Robot extends TimedRobot {
         m_driver.x().whileTrue(m_drivetrain.swerveToObject());
     }
 
+    /**
+     * Initializes the AdvantageKit Logger.
+     * <p>
+     * In replay mode, make sure to have an original akit log file open in AdvantageScope and sim GUI and Driver Station connection disabled.
+     * <p>
+     * For replay watch, run the command ".\gradlew.bat replayWatch" in command line with an original akit log file open in AdvantageScope.
+     * @param mode The robot mode to initialize Logger in.
+     */
+    private void initLogger(RobotMode mode) {
+        Logger.recordMetadata("Rebuilt", "RobotData"); // Set a metadata value
+
+        switch (mode) {
+            case REAL: {
+                Logger.addDataReceiver(new WPILOGWriter());
+                Logger.addDataReceiver(new NT4Publisher());
+                break;
+            }
+
+            case SIM: {
+                Logger.addDataReceiver(new WPILOGWriter());
+                Logger.addDataReceiver(new NT4Publisher());
+                break;
+            }
+
+            case REPLAY: {
+                setUseTiming(false);
+                String logPath = LogFileUtil.findReplayLog();
+                Logger.setReplaySource(new WPILOGReader(logPath));
+                Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+                break;
+            }
+        }
+        Logger.start();
+    }
+  
     private void configureTestBindings() {
         // Intake
         // m_driver.a().onTrue(m_intake.setDeployPos(DeployPosition.RETRACTED));
@@ -180,10 +224,10 @@ public class Robot extends TimedRobot {
         // m_driver.povUp().onTrue(m_intake.setRollersSpeed(RollersVelocity.MAX));
 
         // Indexer
-        // m_driver.povUp().onTrue(m_indexer.startSpinner());
-        // m_driver.povDown().onTrue(m_indexer.stopSpinner());
-        // m_driver.povLeft().onTrue(m_indexer.startExhaust());
-        // m_driver.povRight().onTrue(m_indexer.stopExhaust());
+        // driver.leftBumper().onTrue(m_indexer.startSpinner());
+        // driver.leftTrigger().onTrue(m_indexer.stopSpinner());
+        // driver.rightBumper().onTrue(m_indexer.startExhaust());
+        // driver.rightTrigger().onTrue(m_indexer.stopExhaust());
 
         // Shooter
         m_driver.povDown().onTrue(m_shooter.setFlywheelVelocityCmd(RotationsPerSecond.of(0)));
@@ -222,7 +266,11 @@ public class Robot extends TimedRobot {
             }
         }
 
-        // periodics
+        Logger.recordOutput("CustomLogs/Swerve/Pose", m_drivetrain.getState().Pose);
+        Logger.recordOutput("CustomLogs/Swerve/Translation", m_drivetrain.getState().Pose.getTranslation());
+        Logger.recordOutput("CustomLogs/Swerve/Rotation", m_drivetrain.getState().Pose.getRotation());
+
+        // Periodics
         m_shooter.periodic();
         m_indexer.periodic();
         log_povUp.accept(m_driver.povUp());

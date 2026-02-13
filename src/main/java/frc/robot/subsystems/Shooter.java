@@ -27,6 +27,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static frc.robot.Constants.ShooterK.*;
 
+import org.littletonrobotics.junction.Logger;
+
 import frc.robot.Constants;
 import frc.util.MotorSim;
 import frc.util.WaltLogger;
@@ -130,10 +132,19 @@ public class Shooter extends SubsystemBase {
         log_hoodPositionRots.accept(m_hoodEncoder.getPosition());
         log_turretPositionRots.accept(m_turret.getPosition().getValueAsDouble());
 
+        Logger.recordOutput("CustomLogs/Shooter/Shooter/flywheelRPS", m_flywheelLeader.getVelocity().getValueAsDouble());
+        Logger.recordOutput("CustomLogs/Shooter/Hood/hoodRots", m_hoodEncoder.getPosition());
+        Logger.recordOutput("CustomLogs/Shooter/Turret/turretRots", m_turret.getPosition().getValueAsDouble());
+
         log_exitBeamBreak.accept(trg_exitBeamBreak);
         log_spunUp.accept(m_spunUp);
         log_hoodEncoderMagnetInRange.accept(m_hoodEncoder.magnetInRange());
         log_hoodEncoderPresent.accept(m_hoodEncoder.isConnected());
+
+        Logger.recordOutput("CustomLogs/Shooter/Shooter/beamBreak", trg_exitBeamBreak);
+        Logger.recordOutput("CustomLogs/Shooter/Shooter/spunUp", m_spunUp);
+        Logger.recordOutput("CustomLogs/Shooter/Hood/magnetInRange", m_hoodEncoder.magnetInRange());
+        Logger.recordOutput("CustomLogs/Shooter/Hood/encoderIsConnected", m_hoodEncoder.isConnected());
     }
 
     @Override
