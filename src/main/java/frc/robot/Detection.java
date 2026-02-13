@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.photonvision.PhotonCamera;
+import org.photonvision.proto.Photon;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -15,7 +16,12 @@ import frc.robot.vision.VisionSim;
 
 
 public class Detection {
-    private final PhotonCamera camera = new PhotonCamera(VisionK.kCameras[0].getCameraName()); //probably will be intake camera
+    private final PhotonCamera[] cameras = {
+        new PhotonCamera(VisionK.kCameras[0].getCameraName()),
+        new PhotonCamera(VisionK.kCameras[1].getCameraName()),
+        new PhotonCamera(VisionK.kCameras[2].getCameraName()),
+        new PhotonCamera(VisionK.kCameras[3].getCameraName())
+    };
     private final VisionSim visionSim = new VisionSim();
 
     private List<PhotonTrackedTarget> targetList = new LinkedList<>();
@@ -24,7 +30,10 @@ public class Detection {
      * loops through the pipeline results and adds target data results to a list of targetData
      */
     private void processCameraData() {
-        List<PhotonPipelineResult> results = camera.getAllUnreadResults();
+        List<PhotonPipelineResult> results = new LinkedList<>();
+        for(PhotonCamera camera : cameras) {
+            results.addAll(camera.getAllUnreadResults());
+        }
 
         for (PhotonPipelineResult result : results) {
             Optional<PhotonTrackedTarget> bestTarget = Optional.of(result.getBestTarget());
