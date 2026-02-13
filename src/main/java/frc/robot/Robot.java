@@ -244,7 +244,6 @@ public class Robot extends TimedRobot {
                 AutonChooser.pub_autonMade.set(true);
             }
         }
-
         if (AutonChooser.sub_refreshChoice.getAsBoolean()) {
             AutonChooser.pub_refreshChoice.set(false);
             AutonChooser.pub_autonName.set("No Auton Made");
