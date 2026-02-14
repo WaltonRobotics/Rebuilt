@@ -71,37 +71,31 @@ public class Superstructure {
 
     public Command deactivateOuttake() {
         return Commands.sequence(
-            m_indexer.startSpinner(),
-            m_indexer.startExhaust(),
+            m_indexer.stopSpinner(),
+            m_indexer.stopExhaust(),
             m_shooter.setFlywheelVelocityCmd(kFlywheelZeroRPS)
         );
     }
 
-    public Command outtake(AngularVelocity rps) {
-        return Commands.runEnd(
-            () -> activateOuttake(rps),
-            () -> deactivateOuttake()
-        );
-    }
-
     public Command normalOuttake() {
-        return outtake(kFlywheelMaxRPS);
+        return activateOuttake(kFlywheelMaxRPS);
     }
 
     public Command emergencyOuttake() {
-        return outtake(kFlywheelLowRPS);
+        return activateOuttake(kFlywheelLowRPS);
     }
 
-    public Command passingMode() {
-        return Commands.runEnd(
-            () -> Commands.sequence(
-                activateIntake(),
-                activateOuttake(kFlywheelMaxRPS)
-            ),
-            () -> Commands.sequence(
-                prepIntake(),
-                deactivateOuttake()
-            )
+    public Command startPassing() {
+        return Commands.sequence(
+            activateIntake(),
+            activateOuttake(kFlywheelMaxRPS)
+        );
+    }
+
+    public Command stopPassing() {
+        return Commands.sequence(
+            prepIntake(),
+            deactivateOuttake()
         );
     }
 
