@@ -33,6 +33,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
+import frc.util.AllianceFlipUtil;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
@@ -164,6 +165,13 @@ public class Constants {
 
         public static final CanandmagSettings kHoodEncoderSettings = new CanandmagSettings()
             .setInvertDirection(false);
+
+        //Left, Center, Right - Driver POV
+        public static final Pose2d kShooterOverridePose [] = {
+            AllianceFlipUtil.apply(new Pose2d(FieldK.kFieldLengthMeters / 6, FieldK.kFieldWidthMeters * 2 / 3, new Rotation2d(0))),
+            AllianceFlipUtil.apply(new Pose2d(FieldK.kFieldLengthMeters / 6, FieldK.kFieldWidthMeters / 2, new Rotation2d(0))),
+            AllianceFlipUtil.apply(new Pose2d(FieldK.kFieldLengthMeters / 6, FieldK.kFieldWidthMeters / 3, new Rotation2d(0))),
+        };
     }
 
     public static class VisionK {
