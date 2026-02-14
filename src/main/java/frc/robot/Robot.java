@@ -74,6 +74,7 @@ public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
 
     private boolean autonMade = false;
+    private String autonChosen = "noAutonSelected";
     private Command desiredAuton;
 
     private final VisionSim visionSim = new VisionSim();
@@ -224,33 +225,30 @@ public class Robot extends TimedRobot {
             DriverStation.getAlliance().get().equals(Alliance.Red)
         );
 
-        if (!autonMade) {
-            if (AutonChooser.m_chooser.getSelected().equals("oneNeutralPickup")) {
-                desiredAuton = waltAutonFactory.oneNeutralPickup();
-                AutonChooser.pub_autonName.set("One Neutral Pickup");
-                autonMade = true;
-                AutonChooser.pub_autonMade.set(true);
-            }   
+        if (AutonChooser.m_chooser.getSelected().equals("oneNeutralPickup")) {
+            desiredAuton = waltAutonFactory.oneNeutralPickup();
+            AutonChooser.pub_autonName.set("One Neutral Pickup");
+            autonChosen = "oneNeutralPickup";
+            AutonChooser.pub_autonMade.set(true);
+        }   
 
-            if (AutonChooser.m_chooser.getSelected().equals("twoNeutralPickup")) {
-                desiredAuton = waltAutonFactory.twoNeutralPickup();
-                AutonChooser.pub_autonName.set("Two Neutral Pickup");
-                autonMade = true;
-                AutonChooser.pub_autonMade.set(true);
-            }
-
-            if (AutonChooser.m_chooser.getSelected().equals("threeNeutralPickup")) {
-                desiredAuton = waltAutonFactory.threeNeutralPickup();
-                AutonChooser.pub_autonName.set("Three Neutral Pickup");
-                autonMade = true;
-                AutonChooser.pub_autonMade.set(true);
-            }
+        if (AutonChooser.m_chooser.getSelected().equals("twoNeutralPickup")) {
+            desiredAuton = waltAutonFactory.twoNeutralPickup();
+            AutonChooser.pub_autonName.set("Two Neutral Pickup");
+            autonChosen = "twoNeutralPickup";
+            AutonChooser.pub_autonMade.set(true);
         }
-        if (AutonChooser.sub_refreshChoice.getAsBoolean()) {
-            AutonChooser.pub_refreshChoice.set(false);
+
+        if (AutonChooser.m_chooser.getSelected().equals("threeNeutralPickup")) {
+            desiredAuton = waltAutonFactory.threeNeutralPickup();
+            AutonChooser.pub_autonName.set("Three Neutral Pickup");
+            autonChosen = "threeNeutralPickup";
+            AutonChooser.pub_autonMade.set(true);
+        }
+
+        if (!AutonChooser.m_chooser.getSelected().equals(autonChosen)) {
             AutonChooser.pub_autonName.set("No Auton Made");
 
-            autonMade = false;
             AutonChooser.pub_autonMade.set(false);
         }
     }
