@@ -24,9 +24,9 @@ public class Superstructure {
     public final EventLoop stateEventLoop = new EventLoop();
     private State m_state = State.IDLE;
     
-    private static final Intake m_intake = new Intake();
-    private static final Indexer m_indexer = new Indexer();
-    private static final Shooter m_shooter = new Shooter();
+    private final Intake m_intake;
+    private final Indexer m_indexer;
+    private final Shooter m_shooter;
     
     /* state transitions */
     /* requests */
@@ -56,7 +56,7 @@ public class Superstructure {
 
     /* button bind sequences */
 
-    public static Command prepIntake() {
+    public Command prepIntake() {
         return Commands.parallel(
             m_indexer.stopSpinner(),
             m_intake.setDeployPos(DeployPosition.SAFE),
@@ -64,7 +64,7 @@ public class Superstructure {
         );
     }
 
-    public static Command activateIntake() {
+    public Command activateIntake() {
         return Commands.parallel(
             m_indexer.startSpinner(),
             m_intake.setDeployPos(DeployPosition.DEPLOYED),
@@ -72,7 +72,7 @@ public class Superstructure {
         );
     }
 
-    public static Command retractIntake() {
+    public Command retractIntake() {
         return Commands.parallel(
             m_indexer.stopSpinner(),
             m_intake.setDeployPos(DeployPosition.RETRACTED),
@@ -80,38 +80,38 @@ public class Superstructure {
         );
     }
 
-    public static Command activateOuttake(AngularVelocity rps) {
+    public Command activateOuttake(AngularVelocity rps) {
         return Commands.parallel(
-                m_indexer.startSpinner(),
-                m_indexer.startExhaust(),
-                m_shooter.setFlywheelVelocityCmd(rps)
+            m_indexer.startSpinner(),
+            m_indexer.startExhaust(),
+            m_shooter.setFlywheelVelocityCmd(rps)
         );
     }
 
-    public static Command deactivateOuttake() {
+    public Command deactivateOuttake() {
         return Commands.parallel(
-                m_indexer.startSpinner(),
-                m_indexer.startExhaust(),
-                m_shooter.setFlywheelVelocityCmd(kFlywheelZeroRPS)
+            m_indexer.startSpinner(),
+            m_indexer.startExhaust(),
+            m_shooter.setFlywheelVelocityCmd(kFlywheelZeroRPS)
         );
     }
 
-    public static Command outtake(AngularVelocity rps) {
+    public Command outtake(AngularVelocity rps) {
         return Commands.runEnd(
             () -> activateOuttake(rps),
             () -> deactivateOuttake()
         );
     }
 
-    public static Command normalOuttake() {
+    public Command normalOuttake() {
         return outtake(kFlywheelMaxRPS);
     }
 
-    public static Command emergencyOuttake() {
+    public Command emergencyOuttake() {
         return outtake(kFlywheelLowRPS);
     }
 
-    public static Command passingMode() {
+    public Command passingMode() {
         return Commands.runEnd(
             () -> Commands.parallel(
                 activateIntake(),
@@ -124,7 +124,7 @@ public class Superstructure {
         );
     }
 
-    public static Command prepExhaust() {
+    public Command prepExhaust() {
         return Commands.sequence(
             m_indexer.startSpinner(),
             m_indexer.startExhaust(),
@@ -134,8 +134,10 @@ public class Superstructure {
         );
     }
 
-    public Superstructure() {
-
+    public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
+        m_intake = intake;
+        m_indexer = indexer;
+        m_shooter = shooter;
     }
 
 
