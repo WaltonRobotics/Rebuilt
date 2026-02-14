@@ -24,9 +24,9 @@ public class Superstructure {
     public final EventLoop stateEventLoop = new EventLoop();
     private State m_state = State.IDLE;
     
-    private final Intake m_intake = new Intake();
-    private final Indexer m_indexer = new Indexer();
-    private final Shooter m_shooter = new Shooter();
+    private static final Intake m_intake = new Intake();
+    private static final Indexer m_indexer = new Indexer();
+    private static final Shooter m_shooter = new Shooter();
     
     /* state transitions */
     /* requests */
@@ -56,7 +56,7 @@ public class Superstructure {
 
     /* button bind sequences */
 
-    public Command prepIntake() {
+    public static Command prepIntake() {
         return Commands.parallel(
             m_indexer.stopSpinner(),
             m_intake.setDeployPos(DeployPosition.SAFE),
@@ -64,7 +64,7 @@ public class Superstructure {
         );
     }
 
-    public Command activateIntake() {
+    public static Command activateIntake() {
         return Commands.parallel(
             m_indexer.startSpinner(),
             m_intake.setDeployPos(DeployPosition.DEPLOYED),
@@ -72,7 +72,7 @@ public class Superstructure {
         );
     }
 
-    public Command retractIntake() {
+    public static Command retractIntake() {
         return Commands.parallel(
             m_indexer.stopSpinner(),
             m_intake.setDeployPos(DeployPosition.RETRACTED),
@@ -80,7 +80,7 @@ public class Superstructure {
         );
     }
 
-    public Command activateOuttake(AngularVelocity rps) {
+    public static Command activateOuttake(AngularVelocity rps) {
         return Commands.parallel(
                 m_indexer.startSpinner(),
                 m_indexer.startExhaust(),
@@ -88,7 +88,7 @@ public class Superstructure {
         );
     }
 
-    public Command deactivateOuttake() {
+    public static Command deactivateOuttake() {
         return Commands.parallel(
                 m_indexer.startSpinner(),
                 m_indexer.startExhaust(),
@@ -96,22 +96,22 @@ public class Superstructure {
         );
     }
 
-    public Command outtake(AngularVelocity rps) {
+    public static Command outtake(AngularVelocity rps) {
         return Commands.runEnd(
             () -> activateOuttake(rps),
             () -> deactivateOuttake()
         );
     }
 
-    public Command normalOuttake() {
+    public static Command normalOuttake() {
         return outtake(kFlywheelMaxRPS);
     }
 
-    public Command emergencyOuttake() {
+    public static Command emergencyOuttake() {
         return outtake(kFlywheelLowRPS);
     }
 
-    public Command passingMode() {
+    public static Command passingMode() {
         return Commands.runEnd(
             () -> Commands.parallel(
                 activateIntake(),
@@ -124,7 +124,7 @@ public class Superstructure {
         );
     }
 
-    public Command prepExhaust() {
+    public static Command prepExhaust() {
         return Commands.sequence(
             m_indexer.startSpinner(),
             m_indexer.startExhaust(),
