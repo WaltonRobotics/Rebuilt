@@ -59,6 +59,8 @@ public class Constants {
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.magnitude());
 
         public static final AngularVelocity kFlywheelMaxRPS = RotationsPerSecond.of(5785/60 * (0.9));   //Kraken X60Foc Max (RPM: 5785)
+        public static final AngularVelocity kFlywheelLowRPS = RotationsPerSecond.of(1500/60 * (0.9));
+        public static final AngularVelocity kFlywheelZeroRPS = RotationsPerSecond.of(0/60 * (0.9));
 
         /* IDS */
         public static final int kLeaderCANID = 21; //TODO: Update CANID number
