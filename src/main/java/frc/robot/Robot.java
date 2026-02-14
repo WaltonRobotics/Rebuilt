@@ -203,6 +203,12 @@ public class Robot extends TimedRobot {
         m_driver.a().onTrue(m_superstructure.activateIntake());
         m_driver.x().onTrue(m_superstructure.prepIntake());
         m_driver.y().onTrue(m_superstructure.retractIntake());
+
+        m_driver.rightTrigger().onTrue(m_superstructure.normalOuttake()).onFalse(m_superstructure.deactivateOuttake());
+        m_driver.leftTrigger().onTrue(m_superstructure.emergencyOuttake()).onFalse(m_superstructure.deactivateOuttake());
+
+        m_driver.rightBumper().onTrue(m_superstructure.startPassing());
+        m_driver.leftBumper().onTrue(m_superstructure.stopPassing());
     }
 
     public Command getAutonomousCommand() {
