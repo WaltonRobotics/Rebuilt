@@ -164,7 +164,7 @@ public class Constants {
 
         public static final CanandmagSettings kHoodEncoderSettings = new CanandmagSettings()
             .setInvertDirection(false);
-        
+  
         //Left, Center, Right - Driver POV
         public static final Pose2d kShooterOverridePose [] = {
             AllianceFlipUtil.apply(new Pose2d(FieldK.kFieldLengthMeters / 6, FieldK.kFieldWidthMeters * 2 / 3, new Rotation2d(0))),
