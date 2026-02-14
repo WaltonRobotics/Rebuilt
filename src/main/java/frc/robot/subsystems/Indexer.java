@@ -18,6 +18,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IndexerK.*;
 
 import frc.robot.Constants;
+import frc.util.MotorSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
@@ -66,22 +67,8 @@ public class Indexer extends SubsystemBase {
 
     //TODO: Change orientation if necessary
     private void initSim() {
-        initTalonFXSimState(
-            m_spinner.getSimState(),
-            ChassisReference.CounterClockwise_Positive,
-            MotorType.KrakenX60
-        );
-        
-        initTalonFXSimState(
-            m_exhaust.getSimState(),
-            ChassisReference.CounterClockwise_Positive,
-            MotorType.KrakenX60
-        );
-    }
-
-    private void initTalonFXSimState(TalonFXSimState motorSimState, ChassisReference orientation, MotorType motorType) {
-        motorSimState.Orientation = orientation;
-        motorSimState.setMotorType(motorType);
+        MotorSim.initSimFX(m_spinner, ChassisReference.CounterClockwise_Positive, MotorType.KrakenX60);
+        MotorSim.initSimFX(m_exhaust, ChassisReference.CounterClockwise_Positive, MotorType.KrakenX60);
     }
 
     /* COMMANDS */
@@ -116,26 +103,9 @@ public class Indexer extends SubsystemBase {
         log_exhaustRPS.accept(m_exhaust.getVelocity().getValueAsDouble());
     }
 
-    private void updateSimValues(
-        boolean isSpinner,
-        double simPeriodicUpdateInterval
-        ) {
-            DCMotorSim motorSim = isSpinner ? m_spinnerSim : m_exhaustSim;
-            TalonFXSimState motorSimState = isSpinner ? m_spinner.getSimState() : m_exhaust.getSimState();
-            
-            motorSim.setInputVoltage(motorSimState.getMotorVoltage());
-            motorSim.update(simPeriodicUpdateInterval);
-
-            motorSimState.setRotorVelocity(motorSim.getAngularVelocity().times(motorSim.getGearing()));
-            motorSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
-    }
-
     @Override
     public void simulationPeriodic() {
-        // Spinner  
-        updateSimValues(true, Constants.kSimPeriodicUpdateInterval);
-
-        // Exhaust
-        updateSimValues(false, Constants.kSimPeriodicUpdateInterval);
+        MotorSim.updateSimFX(m_exhaust, m_exhaustSim);
+        MotorSim.updateSimFX(m_spinner, m_spinnerSim);
     }
 }
