@@ -1,11 +1,17 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.event.EventLoop;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.subsystems.Intake.DeployPosition;
+import frc.robot.subsystems.Intake.RollersVelocity;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.IntLogger;
 import frc.util.WaltLogger.StringLogger;
 
+import static edu.wpi.first.units.Units.Rotation;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.RobotK.*;
 
 public class Superstructure {
@@ -14,11 +20,10 @@ public class Superstructure {
     public final EventLoop stateEventLoop = new EventLoop();
     private State m_state = State.IDLE;
     
+    private final Intake m_intake = new Intake();
+    private final Indexer m_indexer = new Indexer();
+    private final Shooter m_shooter = new Shooter();
     
-        
-
-        
-        
     /* state transitions */
     /* requests */
 
@@ -42,10 +47,31 @@ public class Superstructure {
 
 
     /* logs */
-
     private IntLogger log_stateIdx = WaltLogger.logInt(kLogTab, "state idx");
     private StringLogger log_stateName = WaltLogger.logString(kLogTab, "state name");
 
+    /* button bind sequences */
+
+    public Command prepIntake() {
+        return Commands.sequence(
+            m_intake.setDeployPos(DeployPosition.SAFE),
+            m_intake.setRollersSpeed(RollersVelocity.STOP)
+        );
+    }
+
+    public Command activateIntake() {
+        return Commands.sequence(
+            m_intake.setDeployPos(DeployPosition.DEPLOYED),
+            m_intake.setRollersSpeed(RollersVelocity.MAX)
+        );
+    }
+
+    public Command retractIntake() {
+        return Commands.sequence(
+            m_intake.setDeployPos(DeployPosition.RETRACTED),
+            m_intake.setRollersSpeed(RollersVelocity.STOP)
+        );
+    }
 
     public Superstructure() {
 
