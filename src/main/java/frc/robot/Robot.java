@@ -73,9 +73,6 @@ public class Robot extends TimedRobot {
     public final Swerve drivetrain = TunerConstants.createDrivetrain();
     private Command m_autonomousCommand;
 
-    private final AutoFactory autoFactory = drivetrain.createAutoFactory();
-    private final WaltAutonFactory waltAutonFactory = new WaltAutonFactory(autoFactory, drivetrain);
-
     private boolean autonMade = false;
     private Command desiredAuton;
 
@@ -83,8 +80,13 @@ public class Robot extends TimedRobot {
     private final Vision camera1 = new Vision(VisionK.kCamera1CamName, VisionK.kCamera1CamSimVisualName, VisionK.kCamera1CamRoboToCam, visionSim, VisionK.kCamera1SimProps);
     private final Vision camera2 = new Vision(VisionK.kCamera2CamName, VisionK.kCamera2CamSimVisualName, VisionK.kCamera2CamRoboToCam, visionSim, VisionK.kCamera2SimProps);
 
+    private final Detection detection = new Detection();
+
     // this should be updated with all of our cameras
     private final Vision[] cameras = {camera1, camera2};
+
+    private final AutoFactory autoFactory = drivetrain.createAutoFactory();
+    private final WaltAutonFactory waltAutonFactory = new WaltAutonFactory(autoFactory, drivetrain);
 
     private final Intake intake = new Intake();
   
