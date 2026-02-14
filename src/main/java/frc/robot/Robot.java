@@ -33,6 +33,7 @@ import frc.robot.Constants.VisionK;
 import frc.robot.autons.WaltAutonFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Indexer;
@@ -91,6 +92,8 @@ public class Robot extends TimedRobot {
     private final Shooter m_shooter = new Shooter();
     private final Intake m_intake = new Intake();
     private final Indexer m_indexer = new Indexer();
+
+    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
 
     /* log and replay timestamp and joystick data */
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -186,15 +189,20 @@ public class Robot extends TimedRobot {
         // m_driver.povRight().onTrue(m_indexer.stopExhaust());
 
         // Shooter
-        m_driver.povDown().onTrue(m_shooter.setFlywheelVelocityCmd(RotationsPerSecond.of(0)));
-        m_driver.povUp().onTrue(m_shooter.setFlywheelVelocityCmd(ShooterK.kFlywheelMaxRPS));
+        // m_driver.povDown().onTrue(m_shooter.setFlywheelVelocityCmd(RotationsPerSecond.of(0)));
+        // m_driver.povUp().onTrue(m_shooter.setFlywheelVelocityCmd(ShooterK.kFlywheelMaxRPS));
 
-        m_driver.a().onTrue(m_shooter.setHoodPositionCmd(ShooterK.kHoodMinDegs));
-        m_driver.y().onTrue(m_shooter.setHoodPositionCmd(ShooterK.kHoodMaxDegs));
+        // m_driver.a().onTrue(m_shooter.setHoodPositionCmd(ShooterK.kHoodMinDegs));
+        // m_driver.y().onTrue(m_shooter.setHoodPositionCmd(ShooterK.kHoodMaxDegs));
 
-        m_driver.leftTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMinRots));
-        m_driver.leftBumper().onTrue(m_shooter.setTurretPositionCmd(Rotations.of(0)));
-        m_driver.rightTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMaxRots));
+        // m_driver.leftTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMinRots));
+        // m_driver.leftBumper().onTrue(m_shooter.setTurretPositionCmd(Rotations.of(0)));
+        // m_driver.rightTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMaxRots));
+
+        // Tests
+        m_driver.a().onTrue(m_superstructure.activateIntake());
+        m_driver.x().onTrue(m_superstructure.prepIntake());
+        m_driver.y().onTrue(m_superstructure.retractIntake());
     }
 
     public Command getAutonomousCommand() {
