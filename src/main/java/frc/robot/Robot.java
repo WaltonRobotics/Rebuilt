@@ -6,6 +6,9 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.IndexerK.kLogTab;
+import static frc.robot.Constants.ShooterK.kFlywheelLowRPS;
+import static frc.robot.Constants.ShooterK.kFlywheelMaxRPS;
+import static frc.robot.Constants.ShooterK.kFlywheelZeroRPS;
 
 import java.util.Optional;
 
@@ -20,6 +23,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -36,6 +40,8 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
+import frc.robot.subsystems.Intake.DeployPosition;
+import frc.robot.subsystems.Intake.RollersVelocity;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
@@ -201,15 +207,34 @@ public class Robot extends TimedRobot {
         // m_driver.rightTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMaxRots));
 
         // Test sequences
-        m_manipulator.a().onTrue(m_superstructure.activateIntake());
-        m_manipulator.x().onTrue(m_superstructure.prepIntake());
-        m_manipulator.y().onTrue(m_superstructure.retractIntake());
+        m_manipulator.a().and(m_manipulator.b().negate()).onTrue(m_superstructure.activateIntake());
+        m_manipulator.x().and(m_manipulator.b().negate()).onTrue(m_superstructure.prepIntake());
+        m_manipulator.y().and(m_manipulator.b().negate()).onTrue(m_superstructure.retractIntake());
 
-        m_driver.rightTrigger().onTrue(m_superstructure.normalOuttake()).onFalse(m_superstructure.deactivateOuttake());
-        m_driver.leftTrigger().onTrue(m_superstructure.emergencyOuttake()).onFalse(m_superstructure.deactivateOuttake());
+        m_driver.rightTrigger().and(m_manipulator.b().negate()).onTrue(m_superstructure.normalOuttake()).onFalse(m_superstructure.deactivateOuttake());
+        m_driver.leftTrigger().and(m_manipulator.b().negate()).onTrue(m_superstructure.emergencyOuttake()).onFalse(m_superstructure.deactivateOuttake());
 
-        m_manipulator.rightBumper().onTrue(m_superstructure.startPassing());
-        m_manipulator.leftBumper().onTrue(m_superstructure.stopPassing());
+        m_manipulator.rightBumper().and(m_manipulator.b().negate()).onTrue(m_superstructure.startPassing());
+        m_manipulator.leftBumper().and(m_manipulator.b().negate()).onTrue(m_superstructure.stopPassing());
+
+        // Override commands
+        m_manipulator.b().and(m_manipulator.x()).onTrue(m_shooter.setFlywheelVelocityCmd(kFlywheelMaxRPS));
+        m_manipulator.b().and(m_manipulator.y()).onTrue(m_shooter.setFlywheelVelocityCmd(kFlywheelZeroRPS));
+
+        m_manipulator.b().and(m_manipulator.povRight()).onTrue(m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(180, Degree)));
+        m_manipulator.b().and(m_manipulator.povLeft()).onTrue(m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(0, Degree)));
+
+        m_manipulator.b().and(m_manipulator.povUp()).onTrue(m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(45, Degree)));
+        m_manipulator.b().and(m_manipulator.povUp()).onTrue(m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(0, Degree)));
+
+        m_manipulator.b().and(m_manipulator.rightBumper()).onTrue(m_indexer.startSpinner()).onFalse(m_indexer.stopSpinner());
+
+        m_manipulator.b().and(m_manipulator.leftBumper()).onTrue(m_indexer.startExhaust()).onFalse(m_indexer.stopExhaust());
+
+        m_manipulator.b().and(m_manipulator.a()).onTrue(m_intake.setRollersSpeed(RollersVelocity.MAX)).onFalse(m_intake.setRollersSpeed(RollersVelocity.STOP));
+
+        m_manipulator.b().and(m_manipulator.rightTrigger()).onTrue(m_intake.setDeployPos(DeployPosition.DEPLOYED)).onFalse(m_intake.setDeployPos(DeployPosition.SAFE));
+        m_manipulator.b().and(m_manipulator.leftTrigger()).onTrue(m_intake.setDeployPos(DeployPosition.RETRACTED));
     }
 
     public Command getAutonomousCommand() {
