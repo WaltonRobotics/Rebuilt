@@ -72,6 +72,7 @@ public class Robot extends TimedRobot {
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
     private final CommandXboxController m_driver = new CommandXboxController(0);
+    private final CommandXboxController m_manipulator = new CommandXboxController(1);
 
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
     private Command m_autonomousCommand;
@@ -199,16 +200,16 @@ public class Robot extends TimedRobot {
         // m_driver.leftBumper().onTrue(m_shooter.setTurretPositionCmd(Rotations.of(0)));
         // m_driver.rightTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMaxRots));
 
-        // Tests
-        m_driver.a().onTrue(m_superstructure.activateIntake());
-        m_driver.x().onTrue(m_superstructure.prepIntake());
-        m_driver.y().onTrue(m_superstructure.retractIntake());
+        // Test sequences
+        m_manipulator.a().onTrue(m_superstructure.activateIntake());
+        m_manipulator.x().onTrue(m_superstructure.prepIntake());
+        m_manipulator.y().onTrue(m_superstructure.retractIntake());
 
         m_driver.rightTrigger().onTrue(m_superstructure.normalOuttake()).onFalse(m_superstructure.deactivateOuttake());
         m_driver.leftTrigger().onTrue(m_superstructure.emergencyOuttake()).onFalse(m_superstructure.deactivateOuttake());
 
-        m_driver.rightBumper().onTrue(m_superstructure.startPassing());
-        m_driver.leftBumper().onTrue(m_superstructure.stopPassing());
+        m_manipulator.rightBumper().onTrue(m_superstructure.startPassing());
+        m_manipulator.leftBumper().onTrue(m_superstructure.stopPassing());
     }
 
     public Command getAutonomousCommand() {
