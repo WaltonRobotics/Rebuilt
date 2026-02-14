@@ -21,10 +21,6 @@ public class Superstructure {
     private final Indexer m_indexer;
     private final Shooter m_shooter;
 
-    /* logs */
-    private IntLogger log_stateIdx = WaltLogger.logInt(kLogTab, "state idx");
-    private StringLogger log_stateName = WaltLogger.logString(kLogTab, "state name");
-
     /* constructor */
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
         m_intake = intake;
