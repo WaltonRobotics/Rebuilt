@@ -400,9 +400,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      * robot goes to detected target
      */
     public Command swerveToObject() {   
-        //PhotonTrackedTarget target = detection.getClosestObject();
-        //Pose2d destination = detection.targetToPose(getState().Pose, target);
-        Pose2d destination = new Pose2d(5,5, Rotation2d.kZero);
+        PhotonTrackedTarget target = detection.getClosestObject();
+        Pose2d destination = detection.targetToPose(getState().Pose, target);
+        // Pose2d destination = new Pose2d(5,5, Rotation2d.kZero);
         detection.addFuel(destination);
         
         return Commands.parallel(
