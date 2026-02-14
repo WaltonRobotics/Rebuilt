@@ -1,4 +1,4 @@
-package frc.robot.Autons;
+package frc.robot.autons;
 
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
