@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -13,6 +14,9 @@ import frc.util.WaltLogger.StringLogger;
 import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.RobotK.*;
+import static frc.robot.Constants.ShooterK.kFlywheelLowRPS;
+import static frc.robot.Constants.ShooterK.kFlywheelMaxRPS;
+import static frc.robot.Constants.ShooterK.kFlywheelZeroRPS;
 
 public class Superstructure {
 
@@ -53,23 +57,80 @@ public class Superstructure {
     /* button bind sequences */
 
     public Command prepIntake() {
-        return Commands.sequence(
+        return Commands.parallel(
+            m_indexer.stopSpinner(),
             m_intake.setDeployPos(DeployPosition.SAFE),
             m_intake.setRollersSpeed(RollersVelocity.STOP)
         );
     }
 
     public Command activateIntake() {
-        return Commands.sequence(
+        return Commands.parallel(
+            m_indexer.startSpinner(),
             m_intake.setDeployPos(DeployPosition.DEPLOYED),
             m_intake.setRollersSpeed(RollersVelocity.MAX)
         );
     }
 
     public Command retractIntake() {
-        return Commands.sequence(
+        return Commands.parallel(
+            m_indexer.stopSpinner(),
             m_intake.setDeployPos(DeployPosition.RETRACTED),
             m_intake.setRollersSpeed(RollersVelocity.STOP)
+        );
+    }
+
+    public Command activateOuttake(AngularVelocity rps) {
+        return Commands.parallel(
+                m_indexer.startSpinner(),
+                m_indexer.startExhaust(),
+                m_shooter.setFlywheelVelocityCmd(rps)
+        );
+    }
+
+    public Command deactivateOuttake() {
+        return Commands.parallel(
+                m_indexer.startSpinner(),
+                m_indexer.startExhaust(),
+                m_shooter.setFlywheelVelocityCmd(kFlywheelZeroRPS)
+        );
+    }
+
+    public Command outtake(AngularVelocity rps) {
+        return Commands.runEnd(
+            () -> activateOuttake(rps),
+            () -> deactivateOuttake()
+        );
+    }
+
+    public Command normalOuttake() {
+        return outtake(kFlywheelMaxRPS);
+    }
+
+    public Command emergencyOuttake() {
+        return outtake(kFlywheelLowRPS);
+    }
+
+    public Command passingMode() {
+        return Commands.runEnd(
+            () -> Commands.parallel(
+                activateIntake(),
+                activateOuttake(kFlywheelMaxRPS)
+            ),
+            () -> Commands.parallel(
+                prepIntake(),
+                deactivateOuttake()
+            )
+        );
+    }
+
+    public Command prepExhaust() {
+        return Commands.sequence(
+            m_indexer.startSpinner(),
+            m_indexer.startExhaust(),
+            Commands.waitSeconds(0.3),
+            m_indexer.stopSpinner(),
+            m_indexer.stopExhaust()
         );
     }
 
