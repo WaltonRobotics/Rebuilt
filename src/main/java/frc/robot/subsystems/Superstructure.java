@@ -1,18 +1,14 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Intake.DeployPosition;
 import frc.robot.subsystems.Intake.RollersVelocity;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.IntLogger;
 import frc.util.WaltLogger.StringLogger;
 
-import static edu.wpi.first.units.Units.Rotation;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.RobotK.*;
 import static frc.robot.Constants.ShooterK.kFlywheelLowRPS;
 import static frc.robot.Constants.ShooterK.kFlywheelMaxRPS;

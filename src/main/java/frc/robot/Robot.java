@@ -6,7 +6,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.IndexerK.kLogTab;
-import static frc.robot.Constants.ShooterK.kFlywheelLowRPS;
 import static frc.robot.Constants.ShooterK.kFlywheelMaxRPS;
 import static frc.robot.Constants.ShooterK.kFlywheelZeroRPS;
 
@@ -33,7 +32,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.VisionK;
 import frc.robot.autons.WaltAutonFactory;
 import frc.robot.generated.TunerConstants;
