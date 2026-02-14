@@ -57,7 +57,7 @@ public class Superstructure {
     /* button bind sequences */
 
     public Command prepIntake() {
-        return Commands.parallel(
+        return Commands.sequence(
             m_indexer.stopSpinner(),
             m_intake.setDeployPos(DeployPosition.SAFE),
             m_intake.setRollersSpeed(RollersVelocity.STOP)
@@ -65,7 +65,7 @@ public class Superstructure {
     }
 
     public Command activateIntake() {
-        return Commands.parallel(
+        return Commands.sequence(
             m_indexer.startSpinner(),
             m_intake.setDeployPos(DeployPosition.DEPLOYED),
             m_intake.setRollersSpeed(RollersVelocity.MAX)
@@ -73,7 +73,7 @@ public class Superstructure {
     }
 
     public Command retractIntake() {
-        return Commands.parallel(
+        return Commands.sequence(
             m_indexer.stopSpinner(),
             m_intake.setDeployPos(DeployPosition.RETRACTED),
             m_intake.setRollersSpeed(RollersVelocity.STOP)
@@ -81,7 +81,7 @@ public class Superstructure {
     }
 
     public Command activateOuttake(AngularVelocity rps) {
-        return Commands.parallel(
+        return Commands.sequence(
             m_indexer.startSpinner(),
             m_indexer.startExhaust(),
             m_shooter.setFlywheelVelocityCmd(rps)
@@ -89,7 +89,7 @@ public class Superstructure {
     }
 
     public Command deactivateOuttake() {
-        return Commands.parallel(
+        return Commands.sequence(
             m_indexer.startSpinner(),
             m_indexer.startExhaust(),
             m_shooter.setFlywheelVelocityCmd(kFlywheelZeroRPS)
@@ -113,11 +113,11 @@ public class Superstructure {
 
     public Command passingMode() {
         return Commands.runEnd(
-            () -> Commands.parallel(
+            () -> Commands.sequence(
                 activateIntake(),
                 activateOuttake(kFlywheelMaxRPS)
             ),
-            () -> Commands.parallel(
+            () -> Commands.sequence(
                 prepIntake(),
                 deactivateOuttake()
             )
