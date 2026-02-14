@@ -28,9 +28,10 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.autons.AutonChooser;
+import frc.robot.autons.WaltAutonFactory;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.VisionK;
-import frc.robot.autons.WaltAutonFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Intake;
@@ -75,6 +76,8 @@ public class Robot extends TimedRobot {
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
     private Command m_autonomousCommand;
 
+    private String m_autonChosen = "noAutonSelected";
+    private Command m_desiredAuton;
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
     private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
 
@@ -87,7 +90,7 @@ public class Robot extends TimedRobot {
         new Vision(VisionK.kCameras[2], m_visionSim),
         new Vision(VisionK.kCameras[3], m_visionSim),
     };
-
+  
     private final Shooter m_shooter = new Shooter();
     private final Intake m_intake = new Intake();
     private final Indexer m_indexer = new Indexer();
@@ -197,13 +200,8 @@ public class Robot extends TimedRobot {
         m_driver.rightTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMaxRots));
     }
 
-    public Command getAutonomousCommand() {
-        m_waltAutonFactory.setAlliance( 
-            DriverStation.getAlliance().isPresent() && 
-            DriverStation.getAlliance().get().equals(Alliance.Red)
-        );
-
-        return m_waltAutonFactory.threeNeutralPickup();
+    public Command getAutonomousCommand(Command auton) {
+        return auton;
     }
 
     @Override
@@ -233,20 +231,59 @@ public class Robot extends TimedRobot {
     }
 
     @Override
-    public void disabledInit() {}
+    public void disabledInit() {
+         m_waltAutonFactory.setAlliance( 
+            DriverStation.getAlliance().isPresent() && 
+            DriverStation.getAlliance().get().equals(Alliance.Red)
+        );
+
+        AutonChooser.initialize();
+    }
 
     @Override
-    public void disabledPeriodic() {}
+    public void disabledPeriodic() {
+        m_waltAutonFactory.setAlliance( 
+            DriverStation.getAlliance().isPresent() && 
+            DriverStation.getAlliance().get().equals(Alliance.Red)
+        );
+
+        if (AutonChooser.m_chooser.getSelected().equals("oneNeutralPickup")) {
+            m_desiredAuton = m_waltAutonFactory.oneNeutralPickup();
+            AutonChooser.pub_autonName.set("One Neutral Pickup");
+            m_autonChosen = "oneNeutralPickup";
+            AutonChooser.pub_autonMade.set(true);
+        }   
+
+        if (AutonChooser.m_chooser.getSelected().equals("twoNeutralPickup")) {
+            m_desiredAuton = m_waltAutonFactory.twoNeutralPickup();
+            AutonChooser.pub_autonName.set("Two Neutral Pickup");
+            m_autonChosen = "twoNeutralPickup";
+            AutonChooser.pub_autonMade.set(true);
+        }
+
+        if (AutonChooser.m_chooser.getSelected().equals("threeNeutralPickup")) {
+            m_desiredAuton = m_waltAutonFactory.threeNeutralPickup();
+            AutonChooser.pub_autonName.set("Three Neutral Pickup");
+            m_autonChosen = "threeNeutralPickup";
+            AutonChooser.pub_autonMade.set(true);
+        }
+
+        if (!AutonChooser.m_chooser.getSelected().equals(m_autonChosen)) {
+            AutonChooser.pub_autonName.set("No Auton Made");
+
+            AutonChooser.pub_autonMade.set(false);
+        }
+    }
 
     @Override
     public void disabledExit() {}
 
     @Override
     public void autonomousInit() {
-        m_autonomousCommand = getAutonomousCommand();
+        m_autonomousCommand = getAutonomousCommand(m_desiredAuton);
 
         if (m_autonomousCommand != null) {
-            CommandScheduler.getInstance().schedule(m_autonomousCommand);
+            m_autonomousCommand.schedule();
         }
     }
 

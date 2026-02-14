@@ -1,0 +1,414 @@
+{
+  "version": 1.0,
+  "grid_size": 125,
+  "tabs": [
+    {
+      "name": "Teleoperated",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "KPX",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/Shuffleboard/Teleoperated/KPX",
+              "period": 0.06,
+              "show_submit_button": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Autonomous",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "first scoring chooser",
+            "x": 625.0,
+            "y": 375.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/first scoring chooser",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "number of cycles chooser",
+            "x": 500.0,
+            "y": 0.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/number of cycles chooser",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "starting position chooser",
+            "x": 750.0,
+            "y": 375.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/starting position chooser",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "human player station chooser",
+            "x": 1000.0,
+            "y": 375.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/human player station chooser",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "HP to Reef Chooser 1",
+            "x": 750.0,
+            "y": 250.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/HP to Reef Chooser 1",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "Reef to HP Chooser 1",
+            "x": 625.0,
+            "y": 250.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Reef to HP Chooser 1",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "Reef to HP Chooser 2",
+            "x": 625.0,
+            "y": 375.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Reef to HP Chooser 2",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "HP to Reef Chooser 2",
+            "x": 750.0,
+            "y": 375.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/HP to Reef Chooser 2",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "HP to Reef Chooser 3",
+            "x": 1125.0,
+            "y": 250.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/HP to Reef Chooser 3",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "Reef to HP Chooser 3",
+            "x": 1000.0,
+            "y": 250.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Reef to HP Chooser 3",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "HP to Reef Chooser 4",
+            "x": 1125.0,
+            "y": 375.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/HP to Reef Chooser 4",
+              "period": 0.06,
+              "sort_options": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AlgaeSubsys",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "wrist coast",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/Shuffleboard/AlgaeSubsys/wrist coast",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "EleSubsys",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "coral coast",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/Shuffleboard/EleSubsys/coral coast",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AutonChooser",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "clearAll",
+            "x": 875.0,
+            "y": 625.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Button",
+            "properties": {
+              "topic": "/AutonChooser/clearAll",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "left",
+            "x": 250.0,
+            "y": 500.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Button",
+            "properties": {
+              "topic": "/AutonChooser/left",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "makeAuton",
+            "x": 750.0,
+            "y": 625.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Button",
+            "properties": {
+              "topic": "/AutonChooser/makeAuton",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "midOne",
+            "x": 500.0,
+            "y": 500.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Button",
+            "properties": {
+              "topic": "/AutonChooser/midOne",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "right",
+            "x": 375.0,
+            "y": 500.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Button",
+            "properties": {
+              "topic": "/AutonChooser/right",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "autonName",
+            "x": 750.0,
+            "y": 500.0,
+            "width": 500.0,
+            "height": 125.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AutonChooser/autonName",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "VisionSeenLastSec",
+            "x": 1000.0,
+            "y": 625.0,
+            "width": 250.0,
+            "height": 125.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/Robot/Robot/VisionSeenLastSec",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "autonMade",
+            "x": 125.0,
+            "y": 125.0,
+            "width": 1250.0,
+            "height": 375.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AutonChooser/autonMade",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Tab 7",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "autonName",
+            "x": 375.0,
+            "y": 250.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AutonChooser/autonName",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "autonMade",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 625.0,
+            "height": 250.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AutonChooser/autonMade",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "SendableChooser[0]",
+            "x": 0.0,
+            "y": 250.0,
+            "width": 375.0,
+            "height": 250.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/SendableChooser[0]",
+              "period": 0.06,
+              "sort_options": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Tab 7",
+      "grid_layout": {
+        "layouts": [],
+        "containers": []
+      }
+    },
+    {
+      "name": "Tab 8",
+      "grid_layout": {
+        "layouts": [],
+        "containers": []
+      }
+    },
+    {
+      "name": "Tab 9",
+      "grid_layout": {
+        "layouts": [],
+        "containers": []
+      }
+    }
+  ]
+}
