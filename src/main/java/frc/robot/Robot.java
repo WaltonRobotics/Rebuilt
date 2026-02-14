@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.VisionK;
@@ -77,8 +78,8 @@ public class Robot extends TimedRobot {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
-    private final CommandXboxController m_driver = new CommandXboxController(0);
-    private final CommandXboxController m_manipulator = new CommandXboxController(1);
+    private final CommandXboxController driver = new CommandXboxController(0);
+    private final CommandXboxController manipulator = new CommandXboxController(1);
 
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
     private Command m_autonomousCommand;
@@ -102,6 +103,40 @@ public class Robot extends TimedRobot {
 
     private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
 
+    private Trigger trg_driverOverride = driver.b();
+    private Trigger trg_manipOverride = manipulator.b();
+    private Trigger trg_inOverride = trg_driverOverride.or(trg_manipOverride);
+
+    // Command sequence triggers
+    private Trigger trg_activateIntake = manipulator.a().and(trg_manipOverride.negate());
+    private Trigger trg_prepIntake = manipulator.x().and(trg_manipOverride.negate());
+    private Trigger trg_retractIntake = manipulator.y().and(trg_manipOverride.negate());
+
+    private Trigger trg_normalOuttake = driver.rightTrigger().and(trg_manipOverride.negate());
+    private Trigger trg_emergencyOuttake = driver.leftTrigger().and(trg_manipOverride.negate());
+
+    private Trigger trg_startPassing = manipulator.rightBumper().and(trg_manipOverride.negate());
+    private Trigger trg_stopPassing = manipulator.leftBumper().and(trg_manipOverride.negate());
+
+    // Override triggers
+    private Trigger trg_maxShooter = trg_manipOverride.and(manipulator.x());
+    private Trigger trg_stopShooter = trg_manipOverride.and(manipulator.y());
+
+    private Trigger trg_turret180 = trg_manipOverride.and(manipulator.povRight());
+    private Trigger trg_turret0 = trg_manipOverride.and(manipulator.povLeft());
+
+    private Trigger trg_hood30 = trg_manipOverride.and(manipulator.povUp());
+    private Trigger trg_hood0 = trg_manipOverride.and(manipulator.povDown());
+
+    private Trigger trg_startSpinner = trg_manipOverride.and(manipulator.rightBumper());
+
+    private Trigger trg_startExhaust = trg_manipOverride.and(manipulator.leftBumper());
+
+    private Trigger trg_maxRollers = trg_manipOverride.and(manipulator.a());
+
+    private Trigger trg_deployIntake = trg_manipOverride.and(manipulator.rightTrigger());
+    private Trigger trg_intakeUp = trg_manipOverride.and(manipulator.leftTrigger());
+
     /* log and replay timestamp and joystick data */
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
         .withTimestampReplay()
@@ -117,12 +152,12 @@ public class Robot extends TimedRobot {
         // and Y is defined as to the left according to WPILib convention.
         // Drivetrain will execute this command periodically
         return m_drivetrain.applyRequest(() -> {
-            var angularRate = m_driver.leftTrigger().getAsBoolean() ? 
+            var angularRate = driver.leftTrigger().getAsBoolean() ? 
             kMaxHighAngularRate : kMaxAngularRate;
         
-            var driverXVelo = -m_driver.getLeftY() * kMaxTranslationSpeed;
-            var driverYVelo = -m_driver.getLeftX() * kMaxTranslationSpeed;
-            var driverYawRate = -m_driver.getRightX() * angularRate;
+            var driverXVelo = -driver.getLeftY() * kMaxTranslationSpeed;
+            var driverYVelo = -driver.getLeftX() * kMaxTranslationSpeed;
+            var driverYawRate = -driver.getRightX() * angularRate;
 
             log_stickDesiredFieldX.accept(driverXVelo);
             log_stickDesiredFieldY.accept(driverYVelo);
@@ -143,9 +178,9 @@ public class Robot extends TimedRobot {
         m_drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             m_drivetrain.applyRequest(() ->
-                drive.withVelocityX(-m_driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-m_driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-m_driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
 
@@ -156,85 +191,85 @@ public class Robot extends TimedRobot {
             m_drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        m_driver.a().whileTrue(m_drivetrain.applyRequest(() -> brake));
-        m_driver.b().whileTrue(m_drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-m_driver.getLeftY(), -m_driver.getLeftX()))
+        driver.a().whileTrue(m_drivetrain.applyRequest(() -> brake));
+        driver.b().whileTrue(m_drivetrain.applyRequest(() ->
+            point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))
         ));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        m_driver.back().and(m_driver.y()).whileTrue(m_drivetrain.sysIdDynamic(Direction.kForward));
-        m_driver.back().and(m_driver.x()).whileTrue(m_drivetrain.sysIdDynamic(Direction.kReverse));
-        m_driver.start().and(m_driver.y()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kForward));
-        m_driver.start().and(m_driver.x()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kReverse));
+        driver.back().and(driver.y()).whileTrue(m_drivetrain.sysIdDynamic(Direction.kForward));
+        driver.back().and(driver.x()).whileTrue(m_drivetrain.sysIdDynamic(Direction.kReverse));
+        driver.start().and(driver.y()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kForward));
+        driver.start().and(driver.x()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset the field-centric heading on left bumper press.
-        m_driver.leftBumper().onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
+        driver.leftBumper().onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
 
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
 
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
-        m_driver.x().whileTrue(m_drivetrain.swerveToObject());
+        driver.x().whileTrue(m_drivetrain.swerveToObject());
     }
 
     private void configureTestBindings() {
         // Intake
-        // m_driver.a().onTrue(m_intake.setDeployPos(DeployPosition.RETRACTED));
-        // m_driver.b().onTrue(m_intake.setDeployPos(DeployPosition.SAFE));
-        // m_driver.x().onTrue(m_intake.setDeployPos(DeployPosition.DEPLOYED));
+        // driver.a().onTrue(m_intake.setDeployPos(DeployPosition.RETRACTED));
+        // driver.b().onTrue(m_intake.setDeployPos(DeployPosition.SAFE));
+        // driver.x().onTrue(m_intake.setDeployPos(DeployPosition.DEPLOYED));
 
-        // m_driver.povRight().onTrue(m_intake.setRollersSpeed(RollersVelocity.MID));
-        // m_driver.povDown().onTrue(m_intake.setRollersSpeed(RollersVelocity.STOP)); 
-        // m_driver.povUp().onTrue(m_intake.setRollersSpeed(RollersVelocity.MAX));
+        // driver.povRight().onTrue(m_intake.setRollersSpeed(RollersVelocity.MID));
+        // driver.povDown().onTrue(m_intake.setRollersSpeed(RollersVelocity.STOP)); 
+        // driver.povUp().onTrue(m_intake.setRollersSpeed(RollersVelocity.MAX));
 
         // Indexer
-        // m_driver.povUp().onTrue(m_indexer.startSpinner());
-        // m_driver.povDown().onTrue(m_indexer.stopSpinner());
-        // m_driver.povLeft().onTrue(m_indexer.startExhaust());
-        // m_driver.povRight().onTrue(m_indexer.stopExhaust());
+        // driver.povUp().onTrue(m_indexer.startSpinner());
+        // driver.povDown().onTrue(m_indexer.stopSpinner());
+        // driver.povLeft().onTrue(m_indexer.startExhaust());
+        // driver.povRight().onTrue(m_indexer.stopExhaust());
 
         // Shooter
-        // m_driver.povDown().onTrue(m_shooter.setFlywheelVelocityCmd(RotationsPerSecond.of(0)));
-        // m_driver.povUp().onTrue(m_shooter.setFlywheelVelocityCmd(ShooterK.kFlywheelMaxRPS));
+        // driver.povDown().onTrue(m_shooter.setFlywheelVelocityCmd(RotationsPerSecond.of(0)));
+        // driver.povUp().onTrue(m_shooter.setFlywheelVelocityCmd(ShooterK.kFlywheelMaxRPS));
 
-        // m_driver.a().onTrue(m_shooter.setHoodPositionCmd(ShooterK.kHoodMinDegs));
-        // m_driver.y().onTrue(m_shooter.setHoodPositionCmd(ShooterK.kHoodMaxDegs));
+        // driver.a().onTrue(m_shooter.setHoodPositionCmd(ShooterK.kHoodMinDegs));
+        // driver.y().onTrue(m_shooter.setHoodPositionCmd(ShooterK.kHoodMaxDegs));
 
-        // m_driver.leftTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMinRots));
-        // m_driver.leftBumper().onTrue(m_shooter.setTurretPositionCmd(Rotations.of(0)));
-        // m_driver.rightTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMaxRots));
+        // driver.leftTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMinRots));
+        // driver.leftBumper().onTrue(m_shooter.setTurretPositionCmd(Rotations.of(0)));
+        // driver.rightTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMaxRots));
 
         // Test sequences
-        m_manipulator.a().and(m_manipulator.b().negate()).onTrue(m_superstructure.activateIntake());
-        m_manipulator.x().and(m_manipulator.b().negate()).onTrue(m_superstructure.prepIntake());
-        m_manipulator.y().and(m_manipulator.b().negate()).onTrue(m_superstructure.retractIntake());
+        trg_activateIntake.onTrue(m_superstructure.activateIntake());
+        trg_prepIntake.onTrue(m_superstructure.prepIntake());
+        trg_retractIntake.onTrue(m_superstructure.retractIntake());
 
-        m_driver.rightTrigger().and(m_manipulator.b().negate()).onTrue(m_superstructure.normalOuttake()).onFalse(m_superstructure.deactivateOuttake());
-        m_driver.leftTrigger().and(m_manipulator.b().negate()).onTrue(m_superstructure.emergencyOuttake()).onFalse(m_superstructure.deactivateOuttake());
+        trg_normalOuttake.onTrue(m_superstructure.normalOuttake()).onFalse(m_superstructure.deactivateOuttake());
+        trg_emergencyOuttake.onTrue(m_superstructure.emergencyOuttake()).onFalse(m_superstructure.deactivateOuttake());
 
-        m_manipulator.rightBumper().and(m_manipulator.b().negate()).onTrue(m_superstructure.startPassing());
-        m_manipulator.leftBumper().and(m_manipulator.b().negate()).onTrue(m_superstructure.stopPassing());
+        trg_startPassing.onTrue(m_superstructure.startPassing());
+        trg_stopPassing.onTrue(m_superstructure.stopPassing());
 
         // Override commands
-        m_manipulator.b().and(m_manipulator.x()).onTrue(m_shooter.setFlywheelVelocityCmd(kFlywheelMaxRPS));
-        m_manipulator.b().and(m_manipulator.y()).onTrue(m_shooter.setFlywheelVelocityCmd(kFlywheelZeroRPS));
+        trg_maxShooter.onTrue(m_shooter.setFlywheelVelocityCmd(kFlywheelMaxRPS));
+        trg_stopShooter.onTrue(m_shooter.setFlywheelVelocityCmd(kFlywheelZeroRPS));
 
-        m_manipulator.b().and(m_manipulator.povRight()).onTrue(m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(180, Degree)));
-        m_manipulator.b().and(m_manipulator.povLeft()).onTrue(m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(0, Degree)));
+        trg_turret180.onTrue(m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(180, Degree)));
+        trg_turret0.onTrue(m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(0, Degree)));
 
-        m_manipulator.b().and(m_manipulator.povUp()).onTrue(m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(45, Degree)));
-        m_manipulator.b().and(m_manipulator.povDown()).onTrue(m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(0, Degree)));
+        trg_hood30.onTrue(m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(30, Degree)));
+        trg_hood0.onTrue(m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(0, Degree)));
 
-        m_manipulator.b().and(m_manipulator.rightBumper()).onTrue(m_indexer.startSpinner()).onFalse(m_indexer.stopSpinner());
+        trg_startSpinner.onTrue(m_indexer.startSpinner()).onFalse(m_indexer.stopSpinner());
 
-        m_manipulator.b().and(m_manipulator.leftBumper()).onTrue(m_indexer.startExhaust()).onFalse(m_indexer.stopExhaust());
+        trg_startExhaust.onTrue(m_indexer.startExhaust()).onFalse(m_indexer.stopExhaust());
 
-        m_manipulator.b().and(m_manipulator.a()).onTrue(m_intake.setRollersSpeed(RollersVelocity.MAX)).onFalse(m_intake.setRollersSpeed(RollersVelocity.STOP));
+        trg_maxRollers.onTrue(m_intake.setRollersSpeed(RollersVelocity.MAX)).onFalse(m_intake.setRollersSpeed(RollersVelocity.STOP));
 
-        m_manipulator.b().and(m_manipulator.rightTrigger()).onTrue(m_intake.setDeployPos(DeployPosition.DEPLOYED)).onFalse(m_intake.setDeployPos(DeployPosition.SAFE));
-        m_manipulator.b().and(m_manipulator.leftTrigger()).onTrue(m_intake.setDeployPos(DeployPosition.RETRACTED));
+        trg_deployIntake.onTrue(m_intake.setDeployPos(DeployPosition.DEPLOYED)).onFalse(m_intake.setDeployPos(DeployPosition.SAFE));
+        trg_intakeUp.onTrue(m_intake.setDeployPos(DeployPosition.RETRACTED));
     }
 
     public Command getAutonomousCommand() {
@@ -265,10 +300,10 @@ public class Robot extends TimedRobot {
         // periodics
         m_shooter.periodic();
         m_indexer.periodic();
-        log_povUp.accept(m_driver.povUp());
-        log_povDown.accept(m_driver.povDown());
-        log_povLeft.accept(m_driver.povLeft());
-        log_povRight.accept(m_driver.povRight());
+        log_povUp.accept(driver.povUp());
+        log_povDown.accept(driver.povDown());
+        log_povLeft.accept(driver.povLeft());
+        log_povRight.accept(driver.povRight());
         log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
     }
 
