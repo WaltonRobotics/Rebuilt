@@ -225,7 +225,7 @@ public class Robot extends TimedRobot {
         m_manipulator.b().and(m_manipulator.povLeft()).onTrue(m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(0, Degree)));
 
         m_manipulator.b().and(m_manipulator.povUp()).onTrue(m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(45, Degree)));
-        m_manipulator.b().and(m_manipulator.povUp()).onTrue(m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(0, Degree)));
+        m_manipulator.b().and(m_manipulator.povDown()).onTrue(m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(0, Degree)));
 
         m_manipulator.b().and(m_manipulator.rightBumper()).onTrue(m_indexer.startSpinner()).onFalse(m_indexer.stopSpinner());
 
