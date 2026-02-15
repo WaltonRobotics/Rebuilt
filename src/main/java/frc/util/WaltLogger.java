@@ -280,8 +280,8 @@ public class WaltLogger {
         }
     }
 
-    public static StringArrayLogger logStringArray(String table, String name, PubSubOption... options) {
-        return new StringArrayLogger(table, name, options);
+    public static StringLogger logString(String table, String name, PubSubOption... options) {
+        return new StringLogger(table, name, options);
     }
 
     public static final class StringArrayLogger implements Consumer<String[]> {
@@ -303,7 +303,7 @@ public class WaltLogger {
         }
     }
 
-    public static StringLogger logString(String table, String name, PubSubOption... options) {
-        return new StringLogger(table, name, options);
+    public static StringArrayLogger logStringArray(String table, String name, PubSubOption... options) {
+        return new StringArrayLogger(table, name, options);
     }
 }

@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -9,6 +10,7 @@ import frc.util.WaltLogger;
 import frc.util.WaltLogger.IntLogger;
 import frc.util.WaltLogger.StringLogger;
 
+import static edu.wpi.first.units.Units.Degree;
 import static frc.robot.Constants.RobotK.*;
 import static frc.robot.Constants.ShooterK.kFlywheelLowRPS;
 import static frc.robot.Constants.ShooterK.kFlywheelMaxRPS;
@@ -29,6 +31,8 @@ public class Superstructure {
     }
 
     /* button bind sequences */
+
+    // Regular Commands
     public Command prepIntake() {
         return Commands.sequence(
             m_indexer.stopSpinner(),
@@ -98,6 +102,97 @@ public class Superstructure {
             Commands.waitSeconds(0.3),
             m_indexer.stopSpinner(),
             m_indexer.stopExhaust()
+        );
+    }
+
+    // Override commands
+    public Command maxShooter() {
+        return Commands.sequence(
+            m_shooter.setFlywheelVelocityCmd(kFlywheelMaxRPS)
+        );
+    }
+
+    public Command stopShooter() {
+        return Commands.sequence(
+            m_shooter.setFlywheelVelocityCmd(kFlywheelZeroRPS)
+        );
+    }
+
+    public Command turret180() {
+        return Commands.sequence(
+            m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(180, Degree))
+        );
+    }
+
+    public Command turret0() {
+        return Commands.sequence(
+            m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(0, Degree))
+        );
+    }
+
+    public Command hood30() {
+        return Commands.sequence(
+            m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(30, Degree))
+        );
+    }
+
+    public Command hood0() {
+        return Commands.sequence(
+            m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(0, Degree))
+        );
+    }
+
+    public Command startSpinner() {
+        return Commands.sequence(
+            m_indexer.startSpinner()
+        );
+    }
+
+    public Command stopSpinner() {
+        return Commands.sequence(
+            m_indexer.stopSpinner()
+        );
+    }
+
+    public Command startExhaust() {
+        return Commands.sequence(
+            m_indexer.startExhaust()
+        );
+    }
+
+    public Command stopExhaust() {
+        return Commands.sequence(
+            m_indexer.stopExhaust()
+        );
+    }
+
+    public Command maxRollers() {
+        return Commands.sequence(
+            m_intake.setRollersSpeed(RollersVelocity.MAX)
+        );
+    }
+
+    public Command stopRollers() {
+        return Commands.sequence(
+            m_intake.setRollersSpeed(RollersVelocity.STOP)
+        );
+    }
+
+    public Command deployIntake() {
+        return Commands.sequence(
+            m_intake.setDeployPos(DeployPosition.DEPLOYED)
+        );
+    }
+
+    public Command safeIntake() {
+        return Commands.sequence(
+            m_intake.setDeployPos(DeployPosition.SAFE)
+        );
+    }
+
+    public Command intakeUp() {
+        return Commands.sequence(
+            m_intake.setDeployPos(DeployPosition.RETRACTED)
         );
     }
 }
