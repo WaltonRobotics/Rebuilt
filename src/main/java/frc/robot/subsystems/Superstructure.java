@@ -1,79 +1,249 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.event.EventLoop;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.Intake.DeployPosition;
+import frc.robot.subsystems.Intake.RollersVelocity;
 import frc.util.WaltLogger;
-import frc.util.WaltLogger.IntLogger;
-import frc.util.WaltLogger.StringLogger;
+import frc.util.WaltLogger.StringArrayLogger;
 
+import static edu.wpi.first.units.Units.Degree;
 import static frc.robot.Constants.RobotK.*;
+import static frc.robot.Constants.ShooterK.kFlywheelLowRPS;
+import static frc.robot.Constants.ShooterK.kFlywheelMaxRPS;
+import static frc.robot.Constants.ShooterK.kFlywheelZeroRPS;
+
+import java.util.ArrayList;
 
 public class Superstructure {
 
     /* declare subsystems */
-    public final EventLoop stateEventLoop = new EventLoop();
-    private State m_state = State.IDLE;
+    private final Intake m_intake;
+    private final Indexer m_indexer;
+    private final Shooter m_shooter;
+
+    /* loggers */
+    private ArrayList<String> activeCommands = new ArrayList<>();
+    private final StringArrayLogger log_activeCommands = WaltLogger.logStringArray(kLogTab, "Active Commands");
+
+    private ArrayList<String> activeOverrideCommands = new ArrayList<>();
+    private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
     
-    
-        
-
-        
-        
-    /* state transitions */
-    /* requests */
-
-    /* states */
-
-
-    public final Trigger stateTrg_idle = new Trigger(stateEventLoop, (() -> m_state == State.IDLE));
-    public final Trigger stateTrg_intaking = new Trigger(stateEventLoop, (() -> m_state == State.INTAKING));
-    public final Trigger stateTrg_intook = new Trigger(stateEventLoop, (() -> m_state == State.INTOOK));
-    public final Trigger stateTrg_shootReady = new Trigger(stateEventLoop, (() -> m_state == State.SHOOT_READY));
-    public final Trigger stateTrg_shooting = new Trigger(stateEventLoop, (() -> m_state == State.SHOOTING));
-    public final Trigger stateTrg_passReady = new Trigger(stateEventLoop, (() -> m_state == State.PASS_READY));
-    public final Trigger stateTrg_passing = new Trigger(stateEventLoop, (() -> m_state == State.PASSING));
-    public final Trigger stateTrg_climbing = new Trigger(stateEventLoop, (() -> m_state == State.CLIMBING));
-    public final Trigger stateTrg_climbed = new Trigger(stateEventLoop, (() -> m_state == State.CLIMBED));
-    public final Trigger stateTrg_releasing = new Trigger(stateEventLoop, (() -> m_state == State.RELEASING));
-    public final Trigger stateTrg_released = new Trigger(stateEventLoop, (() -> m_state == State.RELEASED));
-
-
-    /* configure states/ state transitions */
-
-
-    /* logs */
-
-    private IntLogger log_stateIdx = WaltLogger.logInt(kLogTab, "state idx");
-    private StringLogger log_stateName = WaltLogger.logString(kLogTab, "state name");
-
-
-    public Superstructure() {
-
+    /* constructor */
+    public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
+        m_intake = intake;
+        m_indexer = indexer;
+        m_shooter = shooter;
     }
 
+    /* button bind sequences */
 
+    // Regular Commands
+    public Command prepIntake() {
+        logActiveCommands("prepIntake", "activateIntake", "retractIntake");
+        return Commands.sequence(
+            m_indexer.stopSpinner(),
+            m_intake.setDeployPos(DeployPosition.SAFE),
+            m_intake.setRollersSpeed(RollersVelocity.STOP)
+        );
+    }
 
+    public Command activateIntake() {
+        logActiveCommands("activateIntake", "prepIntake", "retractIntake");
+        return Commands.sequence(
+            m_intake.setRollersSpeed(RollersVelocity.MAX),
+            m_indexer.startSpinner(),
+            m_intake.setDeployPos(DeployPosition.DEPLOYED)
+        );
+    }
 
-    public enum State {
-        IDLE(0, "idle"),
-        INTAKING(1, "intaking"),
-        INTOOK(2, "intook"),
-        SHOOT_READY(3, "shoot ready"),
-        SHOOTING(4, "shooting"),
-        PASS_READY(5, "pass ready"),
-        PASSING(6, "passing"),
-        CLIMBING(7, "climbing"),
-        CLIMBED(8, "climbed"),
-        RELEASING(9, "releasing"),
-        RELEASED(10, "released");
-        
-        public final int idx;
-        public final String name;
+    public Command retractIntake() {
+        logActiveCommands("retractIntake", "activateIntake", "prepIntake");
+        return Commands.sequence(
+            m_indexer.stopSpinner(),
+            m_intake.setDeployPos(DeployPosition.RETRACTED),
+            m_intake.setRollersSpeed(RollersVelocity.STOP)
+        );
+    }
 
-        private State (int index, String _name) {
-            idx = index;
-            name = _name;
+    private Command activateOuttake(AngularVelocity rps) {
+        return Commands.sequence(
+            m_indexer.startSpinner(),
+            m_indexer.startExhaust(),
+            m_shooter.setFlywheelVelocityCmd(rps)
+        );
+    }
+
+    public Command normalOuttake() {
+        logActiveCommands("normalOuttake", "deactivateOuttake", "emergencyOuttake");
+        return activateOuttake(kFlywheelMaxRPS);
+    }
+
+    public Command emergencyOuttake() {
+        logActiveCommands("emergencyOuttake", "normalOuttake", "deactivateOuttake");
+        return activateOuttake(kFlywheelLowRPS);
+    }
+
+    public Command deactivateOuttake() {
+            logActiveCommands("deactivateOuttake", "normalOuttake", "emergencyOuttake");
+            return Commands.sequence(
+                m_indexer.stopSpinner(),
+                m_indexer.stopExhaust(),
+                m_shooter.setFlywheelVelocityCmd(kFlywheelZeroRPS)
+            );
         }
-    }
     
+    public Command startPassing() {
+        logActiveCommands("startPassing", "stopPassing");
+        return Commands.sequence(
+            activateIntake(),
+            activateOuttake(kFlywheelMaxRPS)
+        );
+    }
+
+    public Command stopPassing() {
+        logActiveCommands("stopPassing", "startPassing");
+        return Commands.sequence(
+            prepIntake(),
+            deactivateOuttake()
+        );
+    }
+
+    /**
+     * Adds and removes specified Command names from the ActiveCommands ArrayList, then logs the ArrayList.
+     * @param toAdd Command name to add.
+     * @param toRemove Command names to remove.
+     */
+    private void logActiveCommands(String toAdd, String... toRemove) {
+        if (!activeCommands.contains(toAdd)) {
+            activeCommands.add(toAdd);
+        }
+        for (String r : toRemove) {
+            activeCommands.remove(r);
+        }
+        log_activeCommands.accept(activeCommands.toArray(new String[activeCommands.size()]));
+    }
+
+    // Override commands
+    public Command maxShooter() {
+        logActiveOverrideCommands("maxShooter", "stopShooter");
+        return Commands.sequence(
+            m_shooter.setFlywheelVelocityCmd(kFlywheelMaxRPS)
+        );
+    }
+
+    public Command stopShooter() {
+        logActiveOverrideCommands("stopShooter", "maxShooter");
+        return Commands.sequence(
+            m_shooter.setFlywheelVelocityCmd(kFlywheelZeroRPS)
+        );
+    }
+
+    public Command turret180() {
+        logActiveOverrideCommands("turret180", "turret0");
+        return Commands.sequence(
+            m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(180, Degree))
+        );
+    }
+
+    public Command turret0() {
+        logActiveOverrideCommands("turret0", "turret180");
+        return Commands.sequence(
+            m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(0, Degree))
+        );
+    }
+
+    public Command hood30() {
+        logActiveOverrideCommands("hood30", "hood0");
+        return Commands.sequence(
+            m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(30, Degree))
+        );
+    }
+
+    public Command hood0() {
+        logActiveOverrideCommands("hood0", "hood30");
+        return Commands.sequence(
+            m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(0, Degree))
+        );
+    }
+
+    public Command startSpinner() {
+        logActiveOverrideCommands("startSpinner", "stopSpinner");
+        return Commands.sequence(
+            m_indexer.startSpinner()
+        );
+    }
+
+    public Command stopSpinner() {
+        logActiveOverrideCommands("stopSpinner", "startSpinner");
+        return Commands.sequence(
+            m_indexer.stopSpinner()
+        );
+    }
+
+    public Command startExhaust() {
+        logActiveOverrideCommands("startExhaust", "stopExhaust");
+        return Commands.sequence(
+            m_indexer.startExhaust()
+        );
+    }
+
+    public Command stopExhaust() {
+        logActiveOverrideCommands("stopExhaust", "startExhaust");
+        return Commands.sequence(
+            m_indexer.stopExhaust()
+        );
+    }
+
+    public Command maxRollers() {
+        logActiveOverrideCommands("maxRollers", "stopRollers");
+        return Commands.sequence(
+            m_intake.setRollersSpeed(RollersVelocity.MAX)
+        );
+    }
+
+    public Command stopRollers() {
+        logActiveOverrideCommands("stopRollers", "maxRollers");
+        return Commands.sequence(
+            m_intake.setRollersSpeed(RollersVelocity.STOP)
+        );
+    }
+
+    public Command deployIntake() {
+        logActiveOverrideCommands("deployIntake", "safeIntake", "intakeUp");
+        return Commands.sequence(
+            m_intake.setDeployPos(DeployPosition.DEPLOYED)
+        );
+    }
+
+    public Command safeIntake() {
+        logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp");
+        return Commands.sequence(
+            m_intake.setDeployPos(DeployPosition.SAFE)
+        );
+    }
+
+    public Command intakeUp() {
+        logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake");
+        return Commands.sequence(
+            m_intake.setDeployPos(DeployPosition.RETRACTED)
+        );
+    }
+
+    /**
+     * Adds and removes specified override Command names from the activeOverridesCommands ArrayList, then logs the ArrayList.
+     * @param toAdd override Command name to add.
+     * @param toRemove override Command names to remove.
+     */
+    private void logActiveOverrideCommands(String toAdd, String... toRemove) {
+        if (!activeOverrideCommands.contains(toAdd)) {
+            activeOverrideCommands.add(toAdd);
+        }
+        for (String s : toRemove) {
+            activeOverrideCommands.remove(s);
+        }
+        log_activeOverrideCommands.accept(activeOverrideCommands.toArray(new String[activeOverrideCommands.size()]));
+    }
 }
