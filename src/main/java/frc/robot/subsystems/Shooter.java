@@ -54,6 +54,7 @@ import java.util.function.Supplier;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.RobotState;
+import frc.robot.subsystems.shooter.FuelSim;
 import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.shooter.TurretCalculator;
 import frc.robot.subsystems.shooter.TurretVisualizer;
@@ -88,6 +89,8 @@ public class Shooter extends SubsystemBase {
     private Angle m_hoodPosition;
     private Angle m_turretTurnPosition;
 
+    private int m_fuelStored = 8;
+
     private State m_setpoint = new State();
 
     private Debouncer m_atGoalDebouncer = new Debouncer(m_atGoalDebounce, DebounceType.kFalling);
@@ -99,6 +102,7 @@ public class Shooter extends SubsystemBase {
     Translation3d currentTarget = AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint);
 
     private final TurretVisualizer m_turretVisualizer;
+    private final FuelSim m_fuelSim;
 
     // motors + control requests
     private final TalonFX m_leader = new TalonFX(kLeaderCANID); //X60
@@ -194,8 +198,10 @@ public class Shooter extends SubsystemBase {
                         .get()
                         .rotateAround(poseSupplier.get().getTranslation(), new Rotation2d(m_turretTurnPosition)))
                         .transformBy(kRobotToTurret),
-                fieldSpeedsSupplier);
-        
+                fieldSpeedsSupplier,
+            FuelSim.getInstance());
+
+        m_fuelSim = FuelSim.getInstance();
     }
 
     public Command setGoal(TurretGoal goal) {
@@ -215,11 +221,11 @@ public class Shooter extends SubsystemBase {
 
     //sim stuff
     public boolean simAbleToIntake() {
-        return m_turretVisualizer.canIntake();
+        return canIntake();
     }
 
     public void simIntake() {
-        m_turretVisualizer.intakeFuel();
+        intakeFuel();
     }
 
     //TODO: update orientation values (if needed)
@@ -286,8 +292,12 @@ public class Shooter extends SubsystemBase {
         m_turretGoalVelocity = velocity;
     }
 
-    public double getHoodAngle() {
-        return m_hood.getPosition().getValue().in(Radians);
+    public Angle getHoodAngle() {
+        return m_hood.getPosition().getValue();
+    }
+
+    public AngularVelocity getFlywheelVelocity() {
+        return m_leader.getVelocity().getValue();
     }
 
     public boolean atGoal() {
@@ -295,7 +305,7 @@ public class Shooter extends SubsystemBase {
             DriverStation.isEnabled()
                 &&
                  m_hoodZeroed 
-                    && Math.abs(getHoodAngle() - m_hoodGoalAngle)
+                    && Math.abs(getHoodAngle().in(Radians) - m_hoodGoalAngle)
                         <= 1.0; //degrees
         // m_hoodAtGoal = true;
         // m_turretAtGoal = true;
@@ -362,8 +372,8 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> m_turret.setControl(m_MMVRequest.withPosition(azimuthAngle)));
     }
 
-    public double getTurretPosition() {
-        return m_turret.getPosition().getValueAsDouble();
+    public Angle getTurretPosition() {
+        return m_turret.getPosition().getValue();
     }
 
     public Command runTurretTrackTargetCommand() {
@@ -420,6 +430,41 @@ public class Shooter extends SubsystemBase {
     //             runFlywheelTrackTargetCommand();
     //         });
     // }
+
+    /**
+     * @return true if robot can store more fuel
+     */
+    public boolean canIntake() {
+        return m_fuelStored < kHopperCapacity;
+    }
+
+    public void intakeFuel() {
+        m_fuelStored++;
+    }
+
+    /**
+     * 
+     */
+    public void launchFuel() {
+        if (m_fuelStored == 0)
+            return;
+        // m_fuelStored--;
+
+        // m_fuelSim.launchFuel(
+        // TurretCalculator.angularToLinearVelocity(m_shooter.getFlywheelVelocity(),
+        // kFlywheelRadius),
+        // m_shooter.getHoodAngle(),
+        // m_shooter.getTurretPosition(),
+        // kDistanceAboveFunnel);
+        setFlywheelVelocityCmd(85.010);
+
+        m_fuelSim.launchFuel(
+                TurretCalculator.angularToLinearVelocity(getFlywheelVelocity(),
+                        kFlywheelRadius),
+                getHoodAngle(),
+                getTurretPosition(),
+                kDistanceAboveFunnel);
+    }
  
     /* PERIODICS */
     @Override

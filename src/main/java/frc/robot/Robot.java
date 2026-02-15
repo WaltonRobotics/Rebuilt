@@ -74,9 +74,7 @@ public class Robot extends TimedRobot {
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
     private Command m_autonomousCommand;
     private final AutoFactory autoFactory = m_drivetrain.createAutoFactory();
-    // private final TurretVisualizer m_turretVisualizer = new TurretVisualizer(
-    //     () -> new Pose3d(RobotState.getInstance().getEstimatedPose()),
-    //     () -> RobotState.getInstance().getRobotVelocity());
+    private final TurretVisualizer m_turretVisualizer;
 
 
     private final VisionSim visionSim = new VisionSim();
@@ -103,7 +101,14 @@ public class Robot extends TimedRobot {
         m_shooter.zeroHoodCommand();
         m_shooter.zeroTurretCommmand();
         configureBindings();
-        configureFuelSim();
+
+        if(Robot.isSimulation()) {
+            configureFuelSim();
+        }
+        m_turretVisualizer = new TurretVisualizer(
+                () -> new Pose3d(RobotState.getInstance().getEstimatedPose()),
+                () -> RobotState.getInstance().getRobotVelocity(),
+                FuelSim.getInstance());
     }
 
     private Command driveCommand() {
@@ -187,7 +192,7 @@ public class Robot extends TimedRobot {
             m_drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        driver.a().whileTrue(m_drivetrain.applyRequest(() -> brake));
+        // driver.a().whileTrue(m_drivetrain.applyRequest(() -> brake));
         driver.b().whileTrue(m_drivetrain.applyRequest(() ->
             point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))
         ));
@@ -233,7 +238,9 @@ public class Robot extends TimedRobot {
         //     .and(() -> shotCalculator.getParameters().isValid())
         //     .and(() -> m_shooter.atGoal())
         //     .whileTrue(m_shooter.runHoodTrackTargetCommand())
-        //     .whileTrue(m_shooter.setFlywheelVelocityCmd(shotCalculator.getParameters().flywheelSpeed()));   
+        //     .whileTrue(m_shooter.setFlywheelVelocityCmd(shotCalculator.getParameters().flywheelSpeed())); 
+        driver.a().whileTrue(Commands.run(() -> m_shooter.launchFuel()));  
+        driver.b().onTrue(Commands.run( () -> FuelSim.getInstance().clearFuel()));
         }
 
     public Command getAutonomousCommand() {
@@ -319,6 +326,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void simulationPeriodic() {
+        FuelSim instance = FuelSim.getInstance();
+        instance.logFuels();
         SwerveDriveState robotState = m_drivetrain.getState();
         Pose2d robotPose = robotState.Pose;
         visionSim.simulationPeriodic(robotPose);
