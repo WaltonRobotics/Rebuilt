@@ -25,7 +25,7 @@ public class TurretVisualizer {
     private Translation3d[] trajectory = new Translation3d[50];
     private Supplier<Pose3d> poseSupplier;
     private Supplier<ChassisSpeeds> fieldSpeedSupplier;
-    private final int CAPACITY = 30;
+    private final int CAPACITY = 55; //idk how accurate this is blame hrehaan
 
     private final Translation3dArrayLogger log_trajectory = WaltLogger.logTranslation3dArray(kLogTab, "trajectory");
     private final Pose3dLogger log_turretPose = WaltLogger.logPose3d(kLogTab, "turretPose");

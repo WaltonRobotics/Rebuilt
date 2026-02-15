@@ -6,7 +6,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.ShooterK.kRobotToTurret;
-import static frc.robot.Constants.ShooterK.kTurretPosition;
+
 
 import java.util.Optional;
 
@@ -74,9 +74,9 @@ public class Robot extends TimedRobot {
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
     private Command m_autonomousCommand;
     private final AutoFactory autoFactory = m_drivetrain.createAutoFactory();
-    private final TurretVisualizer m_turretVisualizer = new TurretVisualizer(
-        () -> new Pose3d(RobotState.getInstance().getEstimatedPose()),
-        () -> RobotState.getInstance().getRobotVelocity());
+    // private final TurretVisualizer m_turretVisualizer = new TurretVisualizer(
+    //     () -> new Pose3d(RobotState.getInstance().getEstimatedPose()),
+    //     () -> RobotState.getInstance().getRobotVelocity());
 
 
     private final VisionSim visionSim = new VisionSim();
@@ -96,10 +96,10 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
 
     public Robot() {
-        m_shooter = new Shooter(m_drivetrain);
+        m_shooter = new Shooter(m_drivetrain, () -> m_drivetrain.getState().Pose, () -> m_drivetrain.getChassisSpeeds());
         shotCalculator = new ShotCalculator(m_drivetrain);
 
-        m_shooter.setDefaultCommand(m_shooter.shooterDefaultCommands());
+        // m_shooter.setDefaultCommand(m_shooter.shooterDefaultCommands());
         m_shooter.zeroHoodCommand();
         m_shooter.zeroTurretCommmand();
         configureBindings();
@@ -136,12 +136,12 @@ public class Robot extends TimedRobot {
         instance.spawnStartingFuel();
         
 
-        // instance.registerRobot(
-        //         kRobotFullWidth.in(Meters),
-        //         kRobotFullLength.in(Meters),
-        //         kBumperHeight.in(Meters),
-        //         m_robotState::getEstimatedPose,
-        //         m_robotState::getFieldVelocity);
+        instance.registerRobot(
+                kRobotFullWidth.in(Meters),
+                kRobotFullLength.in(Meters),
+                kBumperHeight.in(Meters),
+                () -> m_drivetrain.getState().Pose,
+                () -> m_drivetrain.getChassisSpeeds());
         // instance.registerIntake(
         //         -kRobotFullLength.div(2).in(Meters),
         //         kRobotFullLength.div(2).in(Meters),
@@ -222,18 +222,18 @@ public class Robot extends TimedRobot {
 
         driver.rightTrigger().onTrue(m_shooter.zeroShooterCommand());
 
-        driver
-            .a()
-            .whileTrue(m_turretVisualizer.repeatedlyLaunchFuel(
-            () -> shotCalculator.getFuelPathVelocity(),
-            () -> Degrees.of(shotCalculator.getParameters().hoodAngle()),
-            m_shooter)) 
-            .negate()
-            .whileTrue(m_shooter.runTurretTrackTargetActiveShootingCommand())
-            .and(() -> shotCalculator.getParameters().isValid())
-            .and(() -> m_shooter.atGoal())
-            .whileTrue(m_shooter.runHoodTrackTargetCommand())
-            .whileTrue(m_shooter.setFlywheelVelocityCmd(shotCalculator.getParameters().flywheelSpeed()));   
+        // driver
+        //     .a()
+        //     .whileTrue(m_turretVisualizer.repeatedlyLaunchFuel(
+        //     () -> shotCalculator.getFuelPathVelocity(),
+        //     () -> Degrees.of(shotCalculator.getParameters().hoodAngle()),
+        //     m_shooter)) 
+        //     .negate()
+        //     .whileTrue(m_shooter.runTurretTrackTargetActiveShootingCommand())
+        //     .and(() -> shotCalculator.getParameters().isValid())
+        //     .and(() -> m_shooter.atGoal())
+        //     .whileTrue(m_shooter.runHoodTrackTargetCommand())
+        //     .whileTrue(m_shooter.setFlywheelVelocityCmd(shotCalculator.getParameters().flywheelSpeed()));   
         }
 
     public Command getAutonomousCommand() {
@@ -313,17 +313,17 @@ public class Robot extends TimedRobot {
     public void testExit() {}
 
     @Override
-    public void simulationPeriodic() {
-        SwerveDriveState robotState = m_drivetrain.getState();
-        Pose2d robotPose = robotState.Pose;
-        RobotState.getInstance().resetPose(robotPose);
-        visionSim.simulationPeriodic(robotPose);
-        m_drivetrain.simulationPeriodic();
-        m_shooter.simulationPeriodic();
+    public void simulationInit() {
+        FuelSim.getInstance().start();
     }
 
     @Override
-    public void simulationInit() {
-        FuelSim.getInstance().start();
+    public void simulationPeriodic() {
+        SwerveDriveState robotState = m_drivetrain.getState();
+        Pose2d robotPose = robotState.Pose;
+        visionSim.simulationPeriodic(robotPose);
+        // RobotState.getInstance().resetPose(robotPose);
+        m_drivetrain.simulationPeriodic();
+        m_shooter.simulationPeriodic();
     }
 }

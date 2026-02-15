@@ -83,6 +83,8 @@ public class Shooter extends SubsystemBase {
     private boolean m_flywheelAtGoal, m_turretAtGoal, m_hoodAtGoal = false;
     private boolean m_turretZeroed = false;
     private boolean m_hoodZeroed = false;
+    private AngularVelocity m_flywheelVelocity;
+
     private Angle m_hoodPosition;
     private Angle m_turretTurnPosition;
 
@@ -176,6 +178,8 @@ public class Shooter extends SubsystemBase {
 
         m_hoodPosition =  m_hood.getPosition().getValue();
         m_turretTurnPosition = m_turret.getPosition().getValue();
+
+        m_flywheelVelocity = m_leader.getVelocity().getValue();
 
         m_poseSupplier = poseSupplier;
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
@@ -302,10 +306,10 @@ public class Shooter extends SubsystemBase {
         return m_hoodAtGoal && m_turretAtGoal && m_flywheelAtGoal;
     }
 
-    private void setHoodGoalParams(double angle, double velocity) {
-        m_hoodGoalAngle = angle;
-        m_hoodGoalVelocity = velocity;
-    }
+    // private void setHoodGoalParams(double angle, double velocity) {
+    //     m_hoodGoalAngle = angle;
+    //     m_hoodGoalVelocity = velocity;
+    // }
 
 
     /* COMMANDS */
@@ -341,9 +345,9 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> m_hood.setControl(m_positionRequest.withPosition(rots)));
     }
 
-    public Command runHoodFixedCommand(DoubleSupplier angle, DoubleSupplier velocity) {
-        return run(() -> setHoodGoalParams(angle.getAsDouble(), velocity.getAsDouble()));
-    }
+    // public Command runHoodFixedCommand(DoubleSupplier angle, DoubleSupplier velocity) {
+    //     return run(() -> setHoodGoalParams(angle.getAsDouble(), velocity.getAsDouble()));
+    // }
 
     // Turret Commands (Motionmagic Angle Control)
     public Command setTurretPositionCmd(TurretPosition position) {
@@ -372,14 +376,14 @@ public class Shooter extends SubsystemBase {
         );
     }
 
-    public Command runHoodTrackTargetCommand() {
-        return run(
-            () -> {
-                var params = shotCalulator.getParameters();
-                setHoodGoalParams(params.hoodAngle(), params.turretVelocity());
-            }
-        );
-    }
+    // public Command runHoodTrackTargetCommand() {
+    //     return run(
+    //         () -> {
+    //             var params = shotCalulator.getParameters();
+    //             setHoodGoalParams(params.hoodAngle(), params.turretVelocity());
+    //         }
+    //     );
+    // }
 
     public Command runFlywheelTrackTargetCommand() {
         return runEnd(
@@ -408,14 +412,14 @@ public class Shooter extends SubsystemBase {
         setFlywheelVelocityCmd(TurretCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));
     }
 
-    public Command shooterDefaultCommands() {
-        return run (
-            () -> {
-                runTurretTrackTargetCommand();
-                runHoodTrackTargetCommand();
-                runFlywheelTrackTargetCommand();
-            });
-    }
+    // public Command shooterDefaultCommands() {
+    //     return run (
+    //         () -> {
+    //             runTurretTrackTargetCommand();
+    //             runHoodTrackTargetCommand();
+    //             runFlywheelTrackTargetCommand();
+    //         });
+    // }
  
     /* PERIODICS */
     @Override
@@ -440,12 +444,15 @@ public class Shooter extends SubsystemBase {
 
         m_hoodPosition = m_hood.getPosition().getValue();
         m_turretTurnPosition = m_turret.getPosition().getValue();
+        m_flywheelVelocity = m_leader.getVelocity().getValue();
 
         m_turretVisualizer.update3dPose(m_turretTurnPosition, m_hoodPosition);
     }
 
     @Override
     public void simulationPeriodic() {
+        m_turretVisualizer.updateFuel(
+            TurretCalculator.angularToLinearVelocity(m_flywheelVelocity, kFlywheelRadius), m_hoodPosition);
         // Flywheel
         var m_leaderFXSim = m_leader.getSimState();
 

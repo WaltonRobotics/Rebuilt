@@ -48,7 +48,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
 
-    private SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(getModuleLocations());
+    public SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(getModuleLocations());
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -259,7 +259,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             });
         }
         
-        RobotState.getInstance().setRobotVelocity(getChassisSpeeds());
     }
 
     private void startSimThread() {
@@ -322,7 +321,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
     }
 
-    private ChassisSpeeds getChassisSpeeds() {
+    public ChassisSpeeds getChassisSpeeds() {
         return m_kinematics.toChassisSpeeds(getState().ModuleStates);
     }
 

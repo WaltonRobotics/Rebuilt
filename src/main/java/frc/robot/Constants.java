@@ -39,8 +39,7 @@ public class Constants {
     public static class ShooterK {
         public static final String kLogTab = "Shooter";
         //cant really think of any other name but is where the turret is relative to the robot
-        public static final Transform3d kRobotToTurret = new Transform3d(0, 0, 0, Rotation3d.kZero); //DUMMY VALS
-        public static final Pose3d kTurretPosition = new Pose3d(RobotState.getInstance().getEstimatedPose());
+        public static final Transform3d kRobotToTurret = new Transform3d(new Translation3d(Inches.zero(), Inches.zero(), Inches.of(18)), Rotation3d.kZero); //DUMMY VALS
         public static final Distance kDistanceAboveFunnel = Inches.of(20); //distance above the hub funnel
 
         public static final double kTurretMinAngle = Units.degreesToRadians(-270.0);
@@ -49,7 +48,7 @@ public class Constants {
         public static final double kHoodMinAngle = Units.degreesToRadians(19);
         public static final double kHoodMaxAngle = Units.degreesToRadians(51);
 
-        public static final Distance kFlywheelRadius = Inches.of(2);
+        public static final Distance kFlywheelRadius = Inches.of(2); //fake
 
         //TODO: work out where our passing spots should be..?
         public static final Translation3d kPassingSpotLeft = new Translation3d(

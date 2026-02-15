@@ -6,16 +6,11 @@ import static edu.wpi.first.units.Units.InchesPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Radian;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static frc.robot.Constants.ShooterK.kDistanceAboveFunnel;
 import static frc.robot.Constants.ShooterK.kRobotToTurret;
-
-import java.lang.reflect.Field;
-
-import org.opencv.core.Mat;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -27,11 +22,8 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.FieldConstants;
 
-import static frc.robot.FieldConstants.Hub.*;
 import edu.wpi.first.units.measure.Time;
 
 public class TurretCalculator {
@@ -132,8 +124,7 @@ public class TurretCalculator {
 
     }
 
-    // use an iterative lookahead approach to determine shot parameters for a moving
-    // robot
+    // use an iterative lookahead approach to determine shot parameters for a moving robot
     public static ShotData iterativeMovingShotFromFunnelClearance(
             Pose2d robot, ChassisSpeeds fieldSpeeds, Translation3d target, int iterations) {
         // Perform initial estimation (assuming unmoving robot) to get time of flight estimate
