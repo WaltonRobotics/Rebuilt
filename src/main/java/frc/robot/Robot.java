@@ -234,49 +234,48 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledInit() {
-         m_waltAutonFactory.setAlliance( 
-            DriverStation.getAlliance().isPresent() && 
-            DriverStation.getAlliance().get().equals(Alliance.Red)
-        );
-
         AutonChooser.initialize();
     }
 
     @Override
     public void disabledPeriodic() {
-            m_waltAutonFactory.setAlliance( 
-                DriverStation.getAlliance().isPresent() && 
-                DriverStation.getAlliance().get().equals(Alliance.Red)
-            );
+        autonList.put("oneNeutralPickup", null);
+        autonList.put("twoNeutralPickup", null);
+        autonList.put("threeNeutralPickup", null);
+        
+        if (AutonChooser.m_chooser.getSelected().equals("oneNeutralPickup")) {
+            autonList.replace("oneNeutralPickup", m_waltAutonFactory.oneNeutralPickup());
+            m_desiredAuton = autonList.get("oneNeutralPickup");
 
-            m_desiredAuton = null;
+            AutonChooser.pub_autonName.set("One Neutral Pickup");
+            m_autonChosen = "oneNeutralPickup";
+            AutonChooser.pub_autonMade.set(true);
+        }   
+
+        if (AutonChooser.m_chooser.getSelected().equals("twoNeutralPickup")) {
+            autonList.replace("twoNeutralPickup", m_waltAutonFactory.twoNeutralPickup());
+            m_desiredAuton = autonList.get("twoNeutralPickup");
+
+            AutonChooser.pub_autonName.set("Two Neutral Pickup");
+            m_autonChosen = "twoNeutralPickup";
+            AutonChooser.pub_autonMade.set(true);
+        }
+
+        if (AutonChooser.m_chooser.getSelected().equals("threeNeutralPickup")) {
+            autonList.replace("threeNeutralPickup", m_waltAutonFactory.threeNeutralPickup());
+            m_desiredAuton = autonList.get("threeNeutralPickup");
             
-            if (AutonChooser.m_chooser.getSelected().equals("oneNeutralPickup")) {
-                m_desiredAuton = m_waltAutonFactory.oneNeutralPickup();
-                AutonChooser.pub_autonName.set("One Neutral Pickup");
-                m_autonChosen = "oneNeutralPickup";
-                AutonChooser.pub_autonMade.set(true);
-            }   
+            m_desiredAuton = m_waltAutonFactory.threeNeutralPickup();
+            AutonChooser.pub_autonName.set("Three Neutral Pickup");
+            m_autonChosen = "threeNeutralPickup";
+            AutonChooser.pub_autonMade.set(true);
+        }
 
-            if (AutonChooser.m_chooser.getSelected().equals("twoNeutralPickup")) {
-                m_desiredAuton = m_waltAutonFactory.twoNeutralPickup();
-                AutonChooser.pub_autonName.set("Two Neutral Pickup");
-                m_autonChosen = "twoNeutralPickup";
-                AutonChooser.pub_autonMade.set(true);
-            }
+        if (!AutonChooser.m_chooser.getSelected().equals(m_autonChosen)) {
+            AutonChooser.pub_autonName.set("No Auton Made");
 
-            if (AutonChooser.m_chooser.getSelected().equals("threeNeutralPickup")) {
-                m_desiredAuton = m_waltAutonFactory.threeNeutralPickup();
-                AutonChooser.pub_autonName.set("Three Neutral Pickup");
-                m_autonChosen = "threeNeutralPickup";
-                AutonChooser.pub_autonMade.set(true);
-            }
-
-            if (!AutonChooser.m_chooser.getSelected().equals(m_autonChosen)) {
-                AutonChooser.pub_autonName.set("No Auton Made");
-
-                AutonChooser.pub_autonMade.set(false);
-            }
+            AutonChooser.pub_autonMade.set(false);
+        }
     }
 
     @Override
@@ -284,15 +283,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-
-        // if (m_desiredAuton == null) {
-        //     for (String name : autonList.keySet()) {
-        //         if (m_autonChosen.equals(name)) {
-        //             m_desiredAuton = autonList.get(name);
-        //         }
-        //     }
-        // }
-
         m_autonomousCommand = getAutonomousCommand(m_desiredAuton);
 
         if (m_autonomousCommand != null) {
