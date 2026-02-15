@@ -81,7 +81,7 @@ public class Robot extends TimedRobot {
     private Command m_desiredAuton;
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
     private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
-    private HashMap<String, Command> autonList = new HashMap<String, Command>();
+    private HashMap<String, Command> m_autonList = new HashMap<String, Command>();
 
     private final VisionSim m_visionSim = new VisionSim();
 
@@ -239,13 +239,13 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledPeriodic() {
-        autonList.put("oneNeutralPickup", null);
-        autonList.put("twoNeutralPickup", null);
-        autonList.put("threeNeutralPickup", null);
+        m_autonList.put("oneNeutralPickup", null);
+        m_autonList.put("twoNeutralPickup", null);
+        m_autonList.put("threeNeutralPickup", null);
         
         if (AutonChooser.m_chooser.getSelected().equals("oneNeutralPickup")) {
-            autonList.replace("oneNeutralPickup", m_waltAutonFactory.oneNeutralPickup());
-            m_desiredAuton = autonList.get("oneNeutralPickup");
+            m_autonList.replace("oneNeutralPickup", m_waltAutonFactory.oneNeutralPickup());
+            m_desiredAuton = m_autonList.get("oneNeutralPickup");
 
             AutonChooser.pub_autonName.set("One Neutral Pickup");
             m_autonChosen = "oneNeutralPickup";
@@ -253,8 +253,8 @@ public class Robot extends TimedRobot {
         }   
 
         if (AutonChooser.m_chooser.getSelected().equals("twoNeutralPickup")) {
-            autonList.replace("twoNeutralPickup", m_waltAutonFactory.twoNeutralPickup());
-            m_desiredAuton = autonList.get("twoNeutralPickup");
+            m_autonList.replace("twoNeutralPickup", m_waltAutonFactory.twoNeutralPickup());
+            m_desiredAuton = m_autonList.get("twoNeutralPickup");
 
             AutonChooser.pub_autonName.set("Two Neutral Pickup");
             m_autonChosen = "twoNeutralPickup";
@@ -262,8 +262,8 @@ public class Robot extends TimedRobot {
         }
 
         if (AutonChooser.m_chooser.getSelected().equals("threeNeutralPickup")) {
-            autonList.replace("threeNeutralPickup", m_waltAutonFactory.threeNeutralPickup());
-            m_desiredAuton = autonList.get("threeNeutralPickup");
+            m_autonList.replace("threeNeutralPickup", m_waltAutonFactory.threeNeutralPickup());
+            m_desiredAuton = m_autonList.get("threeNeutralPickup");
             
             m_desiredAuton = m_waltAutonFactory.threeNeutralPickup();
             AutonChooser.pub_autonName.set("Three Neutral Pickup");
