@@ -39,9 +39,9 @@ public class Superstructure {
 
     public Command activateIntake() {
         return Commands.sequence(
+            m_intake.setRollersSpeed(RollersVelocity.MAX),
             m_indexer.startSpinner(),
-            m_intake.setDeployPos(DeployPosition.DEPLOYED),
-            m_intake.setRollersSpeed(RollersVelocity.MAX)
+            m_intake.setDeployPos(DeployPosition.DEPLOYED)
         );
     }
 
