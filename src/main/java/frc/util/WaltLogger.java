@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.struct.*;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.util.datalog.*;
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 
 public class WaltLogger {
@@ -271,6 +272,29 @@ public class WaltLogger {
 
         @Override
         public void accept(String value) {
+            if (shouldPublishNt()) {
+                ntPub.set(value);
+            } else {
+                logEntry.append(value);
+            }
+        }
+    }
+
+    public static StringArrayLogger logStringArray(String table, String name, PubSubOption... options) {
+        return new StringArrayLogger(table, name, options);
+    }
+
+    public static final class StringArrayLogger implements Consumer<String[]> {
+        public final StringArrayPublisher ntPub;
+        public final StringArrayLogEntry logEntry;
+
+        public StringArrayLogger(String subTable, String name, PubSubOption... options) {
+            ntPub = NTPublisherFactory.makeStringArrPub(logTable.getSubTable(subTable), name, options);
+            logEntry = new StringArrayLogEntry(DataLogManager.getLog(), "Robot/" + subTable + "/" + name);
+        }
+
+        @Override
+        public void accept(String[] value) {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
