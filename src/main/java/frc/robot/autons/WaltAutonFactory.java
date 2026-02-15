@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.AutonK;
@@ -52,6 +54,11 @@ public class WaltAutonFactory {
      * @return A command group containing a sequence of commands to execute the auton
      */
     private Command createAutonSequence(int pickupTimes) {
+        setAlliance( 
+            DriverStation.getAlliance().isPresent() && 
+            DriverStation.getAlliance().get().equals(Alliance.Red)
+        );
+        
         if (pickupTimes == 1) { // Base case when pickupTimes = 1 in the recursive loop
             return Commands.sequence(
                 runTrajCmd("ToNeutral"),
