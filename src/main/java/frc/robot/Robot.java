@@ -47,6 +47,7 @@ import frc.robot.vision.VisionSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.StringArrayLogger;
 
 public class Robot extends TimedRobot {
     private final double kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -60,6 +61,7 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_povRight = WaltLogger.logBoolean(kLogTab, "Pov Right");
     private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
     private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
+    private final StringArrayLogger log_activeCommands = WaltLogger.logStringArray(kLogTab, "Active Commands");
 
     private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
     private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger("Robot", "VisionSeenLastSec");
@@ -106,15 +108,15 @@ public class Robot extends TimedRobot {
     private Trigger trg_inOverride = trg_driverOverride.or(trg_manipOverride);
 
     // Command sequence triggers
-    private Trigger trg_activateIntakeOverride = manipulator.a().and(trg_manipOverride.negate());
-    private Trigger trg_prepIntakeOverride = manipulator.x().and(trg_manipOverride.negate());
-    private Trigger trg_retractIntakeOverride = manipulator.y().and(trg_manipOverride.negate());
+    private Trigger trg_activateIntake = manipulator.a().and(trg_manipOverride.negate());
+    private Trigger trg_prepIntake = manipulator.x().and(trg_manipOverride.negate());
+    private Trigger trg_retractIntake = manipulator.y().and(trg_manipOverride.negate());
 
-    private Trigger trg_normalOuttakeOverride = driver.rightTrigger().and(trg_manipOverride.negate());
-    private Trigger trg_emergencyOuttakeOverride = driver.leftTrigger().and(trg_manipOverride.negate());
+    private Trigger trg_normalOuttake = driver.rightTrigger().and(trg_manipOverride.negate());
+    private Trigger trg_emergencyOuttake = driver.leftTrigger().and(trg_manipOverride.negate());
 
-    private Trigger trg_startPassingOverride = manipulator.rightBumper().and(trg_manipOverride.negate());
-    private Trigger trg_stopPassingOverride = manipulator.leftBumper().and(trg_manipOverride.negate());
+    private Trigger trg_startPassing = manipulator.rightBumper().and(trg_manipOverride.negate());
+    private Trigger trg_stopPassing = manipulator.leftBumper().and(trg_manipOverride.negate());
 
     // Override triggers
     private Trigger trg_maxShooterOverride = trg_manipOverride.and(manipulator.x());
@@ -240,34 +242,34 @@ public class Robot extends TimedRobot {
         // driver.rightTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMaxRots));
 
         // Test sequences
-        trg_activateIntakeOverride.onTrue(m_superstructure.activateIntake());
-        trg_prepIntakeOverride.onTrue(m_superstructure.prepIntake());
-        trg_retractIntakeOverride.onTrue(m_superstructure.retractIntake());
+        trg_activateIntake.onTrue(m_superstructure.activateIntake());
+        trg_prepIntake.onTrue(m_superstructure.prepIntake());
+        trg_retractIntake.onTrue(m_superstructure.retractIntake());
 
-        trg_normalOuttakeOverride.onTrue(m_superstructure.normalOuttake()).onFalse(m_superstructure.deactivateOuttake());
-        trg_emergencyOuttakeOverride.onTrue(m_superstructure.emergencyOuttake()).onFalse(m_superstructure.deactivateOuttake());
+        trg_normalOuttake.onTrue(m_superstructure.normalOuttake()).onFalse(m_superstructure.deactivateOuttake());
+        trg_emergencyOuttake.onTrue(m_superstructure.emergencyOuttake()).onFalse(m_superstructure.deactivateOuttake());
 
-        trg_startPassingOverride.onTrue(m_superstructure.startPassing());
-        trg_stopPassingOverride.onTrue(m_superstructure.stopPassing());
+        trg_startPassing.onTrue(m_superstructure.startPassing());
+        trg_stopPassing.onTrue(m_superstructure.stopPassing());
 
         // Override commands
-        trg_maxShooterOverride.onTrue(m_shooter.setFlywheelVelocityCmd(kFlywheelMaxRPS));
-        trg_stopShooterOverride.onTrue(m_shooter.setFlywheelVelocityCmd(kFlywheelZeroRPS));
+        trg_maxShooterOverride.onTrue(m_superstructure.maxShooter());
+        trg_stopShooterOverride.onTrue(m_superstructure.stopShooter());
 
-        trg_turret180Override.onTrue(m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(180, Degree)));
-        trg_turret0Override.onTrue(m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(0, Degree)));
+        trg_turret180Override.onTrue(m_superstructure.turret180());
+        trg_turret0Override.onTrue(m_superstructure.turret0());
 
-        trg_hood30Override.onTrue(m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(30, Degree)));
-        trg_hood0Override.onTrue(m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(0, Degree)));
+        trg_hood30Override.onTrue(m_superstructure.hood30());
+        trg_hood0Override.onTrue(m_superstructure.hood0());
 
-        trg_startSpinnerOverride.onTrue(m_indexer.startSpinner()).onFalse(m_indexer.stopSpinner());
+        trg_startSpinnerOverride.onTrue(m_superstructure.startSpinner()).onFalse(m_superstructure.stopSpinner());
 
-        trg_startExhaustOverride.onTrue(m_indexer.startExhaust()).onFalse(m_indexer.stopExhaust());
+        trg_startExhaustOverride.onTrue(m_superstructure.startExhaust()).onFalse(m_superstructure.stopExhaust());
 
-        trg_maxRollersOverride.onTrue(m_intake.setRollersSpeed(RollersVelocity.MAX)).onFalse(m_intake.setRollersSpeed(RollersVelocity.STOP));
+        trg_maxRollersOverride.onTrue(m_superstructure.maxRollers()).onFalse(m_superstructure.stopRollers());
 
-        trg_deployIntakeOverride.onTrue(m_intake.setDeployPos(DeployPosition.DEPLOYED)).onFalse(m_intake.setDeployPos(DeployPosition.SAFE));
-        trg_intakeUpOverride.onTrue(m_intake.setDeployPos(DeployPosition.RETRACTED));
+        trg_deployIntakeOverride.onTrue(m_superstructure.deployIntake()).onFalse(m_superstructure.safeIntake());
+        trg_intakeUpOverride.onTrue(m_superstructure.intakeUp());
     }
 
     public Command getAutonomousCommand() {
