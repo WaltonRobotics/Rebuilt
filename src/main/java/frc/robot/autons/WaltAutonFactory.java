@@ -39,9 +39,17 @@ public class WaltAutonFactory {
     }
 
     public Command pickupCmd(boolean isNeutral) {
+        setAlliance( 
+            DriverStation.getAlliance().isPresent() && 
+            DriverStation.getAlliance().get().equals(Alliance.Red)
+        );
+
         Pose2d postPickupPose = isNeutral ? postPickupNeutral : postPickupDepot;
+        //postPickupPose = postPickupNeutral;
 
         return Commands.sequence(
+            Commands.print("-------------------------POST: " + postPickupPose.toString() + "------------------------------"),
+            Commands.print("------------------------------NEUTRAL: " + postPickupNeutral.toString() + "--------------------------------"),
             m_drivetrain.swerveToObject().withTimeout(1),
             m_drivetrain.toPose(postPickupPose).withTimeout(1)
         );
@@ -54,11 +62,6 @@ public class WaltAutonFactory {
      * @return A command group containing a sequence of commands to execute the auton
      */
     private Command createAutonSequence(int pickupTimes) {
-        setAlliance( 
-            DriverStation.getAlliance().isPresent() && 
-            DriverStation.getAlliance().get().equals(Alliance.Red)
-        );
-        
         if (pickupTimes == 1) { // Base case when pickupTimes = 1 in the recursive loop
             return Commands.sequence(
                 runTrajCmd("ToNeutral"),

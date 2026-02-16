@@ -235,45 +235,42 @@ public class Robot extends TimedRobot {
     @Override
     public void disabledInit() {
         AutonChooser.initialize();
+
+        m_waltAutonFactory.setAlliance( 
+            DriverStation.getAlliance().isPresent() && 
+            DriverStation.getAlliance().get().equals(Alliance.Red)
+        );
+
+        m_autonList.putIfAbsent("oneNeutralPickup", m_waltAutonFactory.oneNeutralPickup());
+        m_autonList.putIfAbsent("twoNeutralPickup", m_waltAutonFactory.twoNeutralPickup());
+        m_autonList.putIfAbsent("threeNeutralPickup", m_waltAutonFactory.threeNeutralPickup());
     }
 
     @Override
     public void disabledPeriodic() {
-        m_autonList.put("oneNeutralPickup", null);
-        m_autonList.put("twoNeutralPickup", null);
-        m_autonList.put("threeNeutralPickup", null);
-        
-        if (AutonChooser.m_chooser.getSelected().equals("oneNeutralPickup")) {
-            m_autonList.replace("oneNeutralPickup", m_waltAutonFactory.oneNeutralPickup());
-            m_desiredAuton = m_autonList.get("oneNeutralPickup");
+        m_desiredAuton = null;
 
+        if (AutonChooser.m_chooser.getSelected().equals("oneNeutralPickup")) {
             AutonChooser.pub_autonName.set("One Neutral Pickup");
             m_autonChosen = "oneNeutralPickup";
             AutonChooser.pub_autonMade.set(true);
         }   
 
         if (AutonChooser.m_chooser.getSelected().equals("twoNeutralPickup")) {
-            m_autonList.replace("twoNeutralPickup", m_waltAutonFactory.twoNeutralPickup());
-            m_desiredAuton = m_autonList.get("twoNeutralPickup");
-
             AutonChooser.pub_autonName.set("Two Neutral Pickup");
             m_autonChosen = "twoNeutralPickup";
             AutonChooser.pub_autonMade.set(true);
         }
 
         if (AutonChooser.m_chooser.getSelected().equals("threeNeutralPickup")) {
-            m_autonList.replace("threeNeutralPickup", m_waltAutonFactory.threeNeutralPickup());
-            m_desiredAuton = m_autonList.get("threeNeutralPickup");
-            
-            m_desiredAuton = m_waltAutonFactory.threeNeutralPickup();
             AutonChooser.pub_autonName.set("Three Neutral Pickup");
             m_autonChosen = "threeNeutralPickup";
             AutonChooser.pub_autonMade.set(true);
         }
 
-        if (!AutonChooser.m_chooser.getSelected().equals(m_autonChosen)) {
+        if (AutonChooser.m_chooser.getSelected().equals("noAutonSelected")){
             AutonChooser.pub_autonName.set("No Auton Made");
-
+            m_autonChosen = null;
             AutonChooser.pub_autonMade.set(false);
         }
     }
@@ -283,6 +280,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
+        m_desiredAuton = m_autonList.get(m_autonChosen);
+
         m_autonomousCommand = getAutonomousCommand(m_desiredAuton);
 
         if (m_autonomousCommand != null) {
