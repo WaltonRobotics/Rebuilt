@@ -36,6 +36,8 @@ import frc.robot.Constants.VisionK;
 import static frc.robot.Constants.RobotK.*;
 import frc.robot.subsystems.Shooter.FlywheelVelocity;
 import frc.robot.subsystems.Shooter.HoodPosition;
+import frc.robot.subsystems.Shooter.ShootingState;
+import frc.robot.subsystems.Shooter.TurretGoal;
 import frc.robot.subsystems.Shooter.TurretPosition;
 import frc.robot.subsystems.shooter.FuelSim;
 import frc.robot.subsystems.shooter.ShotCalculator;
@@ -97,6 +99,10 @@ public class Robot extends TimedRobot {
         m_shooter = new Shooter(m_drivetrain, () -> m_drivetrain.getState().Pose, () -> m_drivetrain.getChassisSpeeds());
         shotCalculator = new ShotCalculator(m_drivetrain);
 
+        m_turretVisualizer = new TurretVisualizer(
+                () -> new Pose3d(RobotState.getInstance().getEstimatedPose()),
+                () -> RobotState.getInstance().getRobotVelocity());
+
         // m_shooter.setDefaultCommand(m_shooter.shooterDefaultCommands());
         m_shooter.zeroHoodCommand();
         m_shooter.zeroTurretCommmand();
@@ -104,11 +110,8 @@ public class Robot extends TimedRobot {
 
         if(Robot.isSimulation()) {
             configureFuelSim();
+            FuelSim.getInstance().enableAirResistance();
         }
-        m_turretVisualizer = new TurretVisualizer(
-                () -> new Pose3d(RobotState.getInstance().getEstimatedPose()),
-                () -> RobotState.getInstance().getRobotVelocity(),
-                FuelSim.getInstance());
     }
 
     private Command driveCommand() {
@@ -138,7 +141,7 @@ public class Robot extends TimedRobot {
     //(nonsotm (just for simulating entire robot)) BLARGHHHHHH get intake dude (alex?) to give me his code (idk if he finished it yet)
     private void configureFuelSim() {
         FuelSim instance = FuelSim.getInstance();
-        instance.spawnStartingFuel();
+        // instance.spawnStartingFuel();
         
 
         instance.registerRobot(
@@ -215,10 +218,10 @@ public class Robot extends TimedRobot {
         driver.povDown().onTrue(m_shooter.setFlywheelVelocityCmd(FlywheelVelocity.MAX));
         driver.povLeft().onTrue(m_shooter.setFlywheelVelocityCmd(FlywheelVelocity.PASS));
 
-        // driver.a().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.MIN));
-        // driver.b().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.SCORE));
-        // driver.x().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.PASS));
-        // driver.y().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.MAX));
+        driver.leftBumper().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.MIN));
+        driver.rightBumper().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.SCORE));
+        driver.leftTrigger().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.PASS));
+        driver.y().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.MAX));
 
         // driver.leftBumper().onTrue(m_shooter.setTurretPositionCmd(TurretPosition.SCORE));
         // driver.rightBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.PASS));
@@ -239,10 +242,13 @@ public class Robot extends TimedRobot {
         //     .and(() -> m_shooter.atGoal())
         //     .whileTrue(m_shooter.runHoodTrackTargetCommand())
         //     .whileTrue(m_shooter.setFlywheelVelocityCmd(shotCalculator.getParameters().flywheelSpeed())); 
+
         driver.a().whileTrue(Commands.run(() -> m_shooter.launchFuel()));  
         driver.b().onTrue(Commands.runOnce(() -> {
             FuelSim.getInstance().clearFuel();
-            FuelSim.getInstance().spawnStartingFuel();}));
+            // FuelSim.getInstance().spawnStartingFuel();
+        }));
+        driver.x().onTrue(m_shooter.setGoal(TurretGoal.SCORING));
         }
 
     public Command getAutonomousCommand() {

@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.InchesPerSecond;
 import static edu.wpi.first.units.Units.InchesPerSecondPerSecond;
@@ -147,7 +148,7 @@ public class TurretCalculator {
 
     public record ShotData(double exitVelocity, double hoodAngle, Translation3d target) {
         public ShotData(LinearVelocity exitVelocity, Angle hoodAngle, Translation3d target) {
-            this(exitVelocity.in(MetersPerSecond), hoodAngle.in(Radians), target);
+            this(exitVelocity.in(MetersPerSecond), hoodAngle.in(Degrees), target);
         }
 
         public LinearVelocity getExitVelocity() {

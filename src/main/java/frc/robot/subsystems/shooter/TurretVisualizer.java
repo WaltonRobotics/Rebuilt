@@ -33,13 +33,11 @@ public class TurretVisualizer {
     private final Pose3dLogger log_hoodPose = new Pose3dLogger(kLogTab, "hoodPose");
 
 
-    private final FuelSim m_fuelSim;
     public Shooter m_shooter;
 
-    public TurretVisualizer(Supplier<Pose3d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier, FuelSim fuelSim) {
+    public TurretVisualizer(Supplier<Pose3d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
         m_poseSupplier = poseSupplier;
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
-        m_fuelSim = fuelSim;
     }
 
     private Translation3d launchVel(LinearVelocity vel, Angle angle) {
