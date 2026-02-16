@@ -55,8 +55,8 @@ public class Constants {
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.magnitude());
 
         public static final AngularVelocity kFlywheelMaxRPS = RotationsPerSecond.of(5785/60 * (0.9));   //Kraken X60Foc Max (RPM: 5785)
-        public static final AngularVelocity kFlywheelLowRPS = RotationsPerSecond.of(1500/60 * (0.9));
-        public static final AngularVelocity kFlywheelZeroRPS = RotationsPerSecond.of(0/60 * (0.9));
+        public static final AngularVelocity kFlywheelEmergencyRPS = RotationsPerSecond.of(1500/60 * (0.9));
+        public static final AngularVelocity kFlywheelZeroRPS = RotationsPerSecond.of(/* 0/60 * (0.9) */ 0);
 
         /* IDS */
         public static final int kLeaderCANID = 21; //TODO: Update CANID number
@@ -162,7 +162,7 @@ public class Constants {
 
         public static final CanandmagSettings kHoodEncoderSettings = new CanandmagSettings()
             .setInvertDirection(false);
-  
+
         //Left, Center, Right - Driver POV
         public static final Pose2d kShooterOverridePose [] = {
             AllianceFlipUtil.apply(new Pose2d(FieldK.kFieldLengthMeters / 6, FieldK.kFieldWidthMeters * 2 / 3, new Rotation2d(0))),
