@@ -15,6 +15,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import frc.util.BoundedQueue;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.Translation3dArrayLogger;
 
@@ -271,7 +272,7 @@ public class FuelSim {
     @SuppressWarnings("unchecked")
     private final ArrayList<Fuel>[][] grid = new ArrayList[GRID_COLS][GRID_ROWS];
 
-    private void handleFuelCollisions(ArrayList<Fuel> fuels) {
+    private void handleFuelCollisions(BoundedQueue<Fuel> fuels) {
         // Clear grid
         for (int i = 0; i < GRID_COLS; i++) {
             for (int j = 0; j < GRID_ROWS; j++) {
@@ -311,7 +312,7 @@ public class FuelSim {
         }
     }
 
-    private ArrayList<Fuel> fuels = new ArrayList<Fuel>();
+    private BoundedQueue<Fuel> fuels = new BoundedQueue<Fuel>(100);
     private boolean running = false;
     private boolean simulateAirResistance = false;
     private Supplier<Pose2d> robotPoseSupplier = null;
@@ -540,7 +541,7 @@ public class FuelSim {
         if (robotVel.dot(normal) > 0) fuel.addImpulse(new Translation3d(normal.times(robotVel.dot(normal))));
     }
 
-    private void handleRobotCollisions(ArrayList<Fuel> fuels) {
+    private void handleRobotCollisions(BoundedQueue<Fuel> fuels) {
         Pose2d robot = robotPoseSupplier.get();
         ChassisSpeeds speeds = robotFieldSpeedsSupplier.get();
         Translation2d robotVel = new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
@@ -550,7 +551,7 @@ public class FuelSim {
         }
     }
 
-    private void handleIntakes(ArrayList<Fuel> fuels) {
+    private void handleIntakes(BoundedQueue<Fuel> fuels) {
         Pose2d robot = robotPoseSupplier.get();
         for (SimIntake intake : intakes) {
             for (int i = 0; i < fuels.size(); i++) {
