@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.Constants.ShooterK.*;
 
 import frc.util.MotorSim;
@@ -141,9 +142,9 @@ public class Shooter extends SubsystemBase {
         );
     }
 
-    // The output needed to get to the setpoint from the current point
+    // The PIDOutput needed to get to the setpoint from the current point
     public void updateHood() {
-        double hoodPIDOutput = m_hoodPID.calculate(m_hoodEncoder.getPosition(), m_hoodSetpoint.magnitude());
+        double hoodPIDOutput = m_hoodPID.calculate(m_hoodEncoder.getPosition(), Rotations.convertFrom(m_hoodSetpoint.magnitude(), Degrees));
         hoodPIDOutput = MathUtil.clamp(hoodPIDOutput, -1.0, 1.0);
         hoodPIDOutput = (hoodPIDOutput + 1) / 2;
         m_hood.set(hoodPIDOutput);
