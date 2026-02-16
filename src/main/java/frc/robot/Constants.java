@@ -47,7 +47,7 @@ public class Constants {
         public static final double kTurretMoI = 0.104506595;
 
         public static final double kFlywheelGearing = 1/1;
-        public static final double kHoodGearing = 45/1;
+        public static final double kHoodGearing = 67/1;
         public static final double kTurretGearing = 41.66666666/1;
 
         public static final double kHoodLength = 0.153924; // hood circumference (49 degrees)
