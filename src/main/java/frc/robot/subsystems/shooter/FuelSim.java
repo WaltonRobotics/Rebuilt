@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 public class FuelSim {
+    private static final int startingFuel = 408;
     private static final double PERIOD = 0.02; // sec
     private static int subticks = 5;
     private static final Translation3d GRAVITY = new Translation3d(0, 0, -9.81); // m/s^2
@@ -312,7 +313,7 @@ public class FuelSim {
         }
     }
 
-    private BoundedQueue<Fuel> fuels = new BoundedQueue<Fuel>(100);
+    private BoundedQueue<Fuel> fuels = new BoundedQueue<Fuel>(100 + startingFuel); //when i catch you banks >:(
     private boolean running = false;
     private boolean simulateAirResistance = false;
     private Supplier<Pose2d> robotPoseSupplier = null;

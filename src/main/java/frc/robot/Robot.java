@@ -240,7 +240,9 @@ public class Robot extends TimedRobot {
         //     .whileTrue(m_shooter.runHoodTrackTargetCommand())
         //     .whileTrue(m_shooter.setFlywheelVelocityCmd(shotCalculator.getParameters().flywheelSpeed())); 
         driver.a().whileTrue(Commands.run(() -> m_shooter.launchFuel()));  
-        driver.b().onTrue(Commands.run( () -> FuelSim.getInstance().clearFuel()));
+        driver.b().onTrue(Commands.runOnce(() -> {
+            FuelSim.getInstance().clearFuel();
+            FuelSim.getInstance().spawnStartingFuel();}));
         }
 
     public Command getAutonomousCommand() {
