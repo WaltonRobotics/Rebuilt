@@ -144,7 +144,7 @@ public class Shooter extends SubsystemBase {
 
     // The PIDOutput needed to get to the setpoint from the current point
     public void updateHood() {
-        double hoodPIDOutput = m_hoodPID.calculate(m_hoodEncoder.getPosition(), Rotations.convertFrom(m_hoodSetpoint.magnitude(), Degrees));
+        double hoodPIDOutput = m_hoodPID.calculate(m_hoodEncoder.getPosition(), m_hoodSetpoint.in(Rotations));
         hoodPIDOutput = MathUtil.clamp(hoodPIDOutput, -1.0, 1.0);
         hoodPIDOutput = (hoodPIDOutput + 1) / 2;
         m_hood.set(hoodPIDOutput);
