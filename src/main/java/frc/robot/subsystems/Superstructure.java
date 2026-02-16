@@ -7,11 +7,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.Intake.DeployPosition;
 import frc.robot.subsystems.Intake.RollersVelocity;
 import frc.util.WaltLogger;
+import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.StringArrayLogger;
 
 import static edu.wpi.first.units.Units.Degree;
 import static frc.robot.Constants.RobotK.*;
-import static frc.robot.Constants.ShooterK.kFlywheelLowRPS;
+import static frc.robot.Constants.ShooterK.kFlywheelEmergencyRPS;
 import static frc.robot.Constants.ShooterK.kFlywheelMaxRPS;
 import static frc.robot.Constants.ShooterK.kFlywheelZeroRPS;
 
@@ -41,11 +42,15 @@ public class Superstructure {
     /* button bind sequences */
 
     // Regular Commands
-    public Command prepIntake() {
-        logActiveCommands("prepIntake", "activateIntake", "retractIntake");
+    public Command deactivateIntake(DeployPosition pos) {
+        if (pos == DeployPosition.SAFE) {
+            logActiveCommands("prepIntake", "activateIntake", "retractIntake");
+        } else {
+            logActiveCommands("retractIntake", "activateIntake", "prepIntake");
+        }
         return Commands.sequence(
             m_indexer.stopSpinner(),
-            m_intake.setDeployPos(DeployPosition.SAFE),
+            m_intake.setDeployPos(pos),
             m_intake.setRollersSpeed(RollersVelocity.STOP)
         );
     }
@@ -59,31 +64,17 @@ public class Superstructure {
         );
     }
 
-    public Command retractIntake() {
-        logActiveCommands("retractIntake", "activateIntake", "prepIntake");
-        return Commands.sequence(
-            m_indexer.stopSpinner(),
-            m_intake.setDeployPos(DeployPosition.RETRACTED),
-            m_intake.setRollersSpeed(RollersVelocity.STOP)
-        );
-    }
-
-    private Command activateOuttake(AngularVelocity rps) {
+    public Command activateOuttake(AngularVelocity rps) {
+        if (rps == kFlywheelMaxRPS) {
+            logActiveCommands("normalOuttake", "deactivateOuttake", "emergencyOuttake");
+        } else {
+            logActiveCommands("emergencyOuttake", "normalOuttake", "deactivateOuttake");
+        }
         return Commands.sequence(
             m_indexer.startSpinner(),
             m_indexer.startExhaust(),
             m_shooter.setFlywheelVelocityCmd(rps)
         );
-    }
-
-    public Command normalOuttake() {
-        logActiveCommands("normalOuttake", "deactivateOuttake", "emergencyOuttake");
-        return activateOuttake(kFlywheelMaxRPS);
-    }
-
-    public Command emergencyOuttake() {
-        logActiveCommands("emergencyOuttake", "normalOuttake", "deactivateOuttake");
-        return activateOuttake(kFlywheelLowRPS);
     }
 
     public Command deactivateOuttake() {
@@ -106,7 +97,7 @@ public class Superstructure {
     public Command stopPassing() {
         logActiveCommands("stopPassing", "startPassing");
         return Commands.sequence(
-            prepIntake(),
+            deactivateIntake(DeployPosition.SAFE),
             deactivateOuttake()
         );
     }
@@ -141,31 +132,25 @@ public class Superstructure {
         );
     }
 
-    public Command turret180() {
-        logActiveOverrideCommands("turret180", "turret0");
+    public Command turretTo(double degs) {
+        if (degs == 180) {
+            logActiveOverrideCommands("turret180", "turret0");
+        } else {
+            logActiveOverrideCommands("turret0", "turret180");
+        }
         return Commands.sequence(
-            m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(180, Degree))
+            m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(degs, Degree))
         );
     }
 
-    public Command turret0() {
-        logActiveOverrideCommands("turret0", "turret180");
+    public Command hoodTo(double degs) {
+        if (degs == 30) {
+            logActiveOverrideCommands("hood30", "hood0");
+        } else {
+            logActiveOverrideCommands("hood0", "hood30");
+        }
         return Commands.sequence(
-            m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(0, Degree))
-        );
-    }
-
-    public Command hood30() {
-        logActiveOverrideCommands("hood30", "hood0");
-        return Commands.sequence(
-            m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(30, Degree))
-        );
-    }
-
-    public Command hood0() {
-        logActiveOverrideCommands("hood0", "hood30");
-        return Commands.sequence(
-            m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(0, Degree))
+            m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(degs, Degree))
         );
     }
 
@@ -197,38 +182,27 @@ public class Superstructure {
         );
     }
 
-    public Command maxRollers() {
-        logActiveOverrideCommands("maxRollers", "stopRollers");
+    public Command setRollersSpeed(RollersVelocity velo) {
+        if (velo == RollersVelocity.MAX) {
+            logActiveOverrideCommands("maxRollers", "stopRollers");
+        } else {
+            logActiveOverrideCommands("stopRollers", "maxRollers");
+        }
         return Commands.sequence(
-            m_intake.setRollersSpeed(RollersVelocity.MAX)
+            m_intake.setRollersSpeed(velo)
         );
     }
 
-    public Command stopRollers() {
-        logActiveOverrideCommands("stopRollers", "maxRollers");
+    public Command intakeTo(DeployPosition pos) {
+        if (pos == DeployPosition.DEPLOYED) {
+            logActiveOverrideCommands("deployIntake", "safeIntake", "intakeUp");
+        } else if (pos == DeployPosition.SAFE) {
+            logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp");
+        } else {
+            logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake");
+        }
         return Commands.sequence(
-            m_intake.setRollersSpeed(RollersVelocity.STOP)
-        );
-    }
-
-    public Command deployIntake() {
-        logActiveOverrideCommands("deployIntake", "safeIntake", "intakeUp");
-        return Commands.sequence(
-            m_intake.setDeployPos(DeployPosition.DEPLOYED)
-        );
-    }
-
-    public Command safeIntake() {
-        logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp");
-        return Commands.sequence(
-            m_intake.setDeployPos(DeployPosition.SAFE)
-        );
-    }
-
-    public Command intakeUp() {
-        logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake");
-        return Commands.sequence(
-            m_intake.setDeployPos(DeployPosition.RETRACTED)
+            m_intake.setDeployPos(pos)
         );
     }
 
