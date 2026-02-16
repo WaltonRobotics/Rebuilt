@@ -1,9 +1,5 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
 import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -29,6 +25,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -43,22 +40,32 @@ public class Constants {
 
         /* MOTOR CONSTANTS */
         public static final double kFlywheelMoI = 0.000349 * 2.5;  //J for 5 3" 0.53lb flywheels
-        public static final double kHoodMoI = 0.000249;
         public static final double kTurretMoI = 0.104506595;
 
         public static final double kFlywheelGearing = 1/1;
-        public static final double kHoodGearing = 67/1;
         public static final double kTurretGearing = 41.66666666/1;
-
-        public static final double kHoodLength = 0.153924; // hood circumference (49 degrees)
-        public static final Angle kHoodMinDegs = Degrees.of(0);
-        public static final Angle kHoodMaxDegs = Degrees.of(40);
 
         public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.75); //0.75 rots in each direction from home
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.magnitude());
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.magnitude());
 
         public static final AngularVelocity kFlywheelMaxRPS = RotationsPerSecond.of(5785/60 * (0.9));   //Kraken X60Foc Max (RPM: 5785)
+
+        //---HOOD CONSTANTS
+        public static final double kHoodMoI = 0.00027505;
+        public static final double kHoodGearing = 8.1818181818;
+
+        public static final Angle kHoodMinDegs = Degrees.of(0);
+        public static final Angle kHoodMaxDegs = Degrees.of(40);
+
+        public static final DCMotor khoodDCMotorGearbox = new DCMotor(
+            6, 
+            0.047, 
+            2.5, 
+            0.2, 
+            24.0855, 
+            1
+        );
 
         /* IDS */
         public static final int kLeaderCANID = 21; //TODO: Update CANID number
