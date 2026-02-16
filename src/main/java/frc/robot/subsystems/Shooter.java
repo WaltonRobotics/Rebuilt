@@ -46,6 +46,7 @@ public class Shooter extends SubsystemBase {
     private final Servo m_hood = new Servo(kHoodChannel);
     private final Canandmag m_hoodEncoder = new Canandmag(kHoodEncoderChannel);
     private final PIDController m_hoodPID = new PIDController(1, 0, 0);
+
     private Angle m_hoodSetpoint = Degrees.of(0);
     private Angle m_currentHoodPos = Rotations.of(0);
 
@@ -95,7 +96,7 @@ public class Shooter extends SubsystemBase {
 
     // loggers
     private final DoubleLogger log_flywheelVelocityRPS = WaltLogger.logDouble(kLogTab, "flywheelVelocityRPS");
-    private final DoubleLogger log_hoodPositionRots = WaltLogger.logDouble(kLogTab, "hoodPositionRots");    //logs the encoder values
+    private final DoubleLogger log_hoodPositionDegs = WaltLogger.logDouble(kLogTab, "hoodPositionDegs");
     private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble(kLogTab, "turretPositionRots");
 
     private final BooleanLogger log_exitBeamBreak = WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
@@ -165,7 +166,7 @@ public class Shooter extends SubsystemBase {
 
         //---Loggers
         log_flywheelVelocityRPS.accept(m_flywheelLeader.getVelocity().getValueAsDouble());
-        log_hoodPositionRots.accept(m_currentHoodPos.magnitude());
+        log_hoodPositionDegs.accept(m_currentHoodPos.in(Degrees));
         log_turretPositionRots.accept(m_turret.getPosition().getValueAsDouble());
 
         log_exitBeamBreak.accept(trg_exitBeamBreak);
