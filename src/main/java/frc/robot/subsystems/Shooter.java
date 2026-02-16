@@ -13,10 +13,11 @@ import com.ctre.phoenix6.sim.TalonFXSimState;
 
 import com.reduxrobotics.sensors.canandmag.Canandmag;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -25,9 +26,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static frc.robot.Constants.ShooterK.*;
 
-import frc.robot.Constants;
 import frc.util.MotorSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
@@ -42,14 +43,16 @@ public class Shooter extends SubsystemBase {
 
     private final Servo m_hood = new Servo(kHoodChannel);
     private final Canandmag m_hoodEncoder = new Canandmag(kHoodEncoderChannel);
+    private final PIDController m_hoodPID = new PIDController(1, 0, 0);
+    private Angle m_hoodSetpoint = Degrees.of(0);
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID); //X44
     private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true);
 
-    // logic booleans
+    // UNUSED - logic booleans
     private boolean m_spunUp = false;
 
-    // beam breaks (if we have one on the shooter)
+    // UNUSED - beam breaks (if we have one on the shooter)
     public DigitalInput m_exitBeamBreak = new DigitalInput(kExitBeamBreakChannel);
 
     public final Trigger trg_exitBeamBreak = new Trigger(() -> !m_exitBeamBreak.get()); //true when beam is broken
@@ -58,7 +61,7 @@ public class Shooter extends SubsystemBase {
         return new Trigger(loop, () -> !m_exitBeamBreak.get());
     }
 
-    // sim (TODO: double check constants)
+    //---Sim objects
     private final FlywheelSim m_flywheelSim = new FlywheelSim(
         LinearSystemId.createFlywheelSystem(
             DCMotor.getKrakenX60Foc(2), 
@@ -66,6 +69,24 @@ public class Shooter extends SubsystemBase {
             kFlywheelGearing
         ),
         DCMotor.getKrakenX60Foc(2) // returns gearbox
+    );
+
+    // really a servo, but being used like a DC motor. Not sure how to simulate yet
+    private final DCMotor m_hoodDCMotorGearbox = new DCMotor(
+        6, 
+        0.047, 
+        2.5, 
+        0.2, 
+        24.0855, 
+        1
+    );
+    private final DCMotorSim m_hoodSim = new DCMotorSim(
+        LinearSystemId.createDCMotorSystem(
+            m_hoodDCMotorGearbox,
+            kHoodMoI,
+            kHoodGearing
+        ),
+        m_hoodDCMotorGearbox // returns gearbox
     );
 
     private final DCMotorSim m_turretSim = new DCMotorSim(
@@ -114,8 +135,18 @@ public class Shooter extends SubsystemBase {
     }
 
     // Hood Commands (Basic Position Control)
-    public Command setHoodPositionCmd(Angle degs) {
-        return runOnce(() -> m_hood.setAngle(degs.magnitude()));
+    public Command setHoodPositionCmd(Angle degs) {  
+        return runOnce(
+            () -> m_hoodSetpoint = degs
+        );
+    }
+
+    // The output needed to get to the setpoint from the current point
+    public void updateHood() {
+        double hoodPIDOutput = m_hoodPID.calculate(m_hoodEncoder.getPosition(), m_hoodSetpoint.magnitude());
+        hoodPIDOutput = MathUtil.clamp(hoodPIDOutput, -1.0, 1.0);
+        hoodPIDOutput = (hoodPIDOutput + 1) / 2;
+        m_hood.set(hoodPIDOutput);
     }
 
     // Turret Commands (Motionmagic Angle Control)
@@ -126,6 +157,10 @@ public class Shooter extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
+        //---Hood
+        updateHood();
+
+        //---Loggers
         log_flywheelVelocityRPS.accept(m_flywheelLeader.getVelocity().getValueAsDouble());
         log_hoodPositionRots.accept(m_hoodEncoder.getPosition());
         log_turretPositionRots.accept(m_turret.getPosition().getValueAsDouble());
