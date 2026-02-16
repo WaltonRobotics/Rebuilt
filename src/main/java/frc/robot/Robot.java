@@ -330,6 +330,7 @@ public class Robot extends TimedRobot {
     public void simulationPeriodic() {
         FuelSim instance = FuelSim.getInstance();
         instance.logFuels();
+        instance.updateSim();
         SwerveDriveState robotState = m_drivetrain.getState();
         Pose2d robotPose = robotState.Pose;
         visionSim.simulationPeriodic(robotPose);
