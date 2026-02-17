@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.IntakeK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.VisionK;
 import frc.robot.autons.WaltAutonFactory;
@@ -35,7 +36,6 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Intake.DeployPosition;
-import frc.robot.subsystems.Intake.RollersVelocity;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.Vision;
@@ -177,9 +177,8 @@ public class Robot extends TimedRobot {
         m_driver.b().onTrue(m_intake.setDeployPos(DeployPosition.SAFE));
         m_driver.x().onTrue(m_intake.setDeployPos(DeployPosition.DEPLOYED));
 
-        m_driver.povRight().onTrue(m_intake.setRollersSpeed(RollersVelocity.MID));
-        m_driver.povDown().onTrue(m_intake.setRollersSpeed(RollersVelocity.STOP)); 
-        m_driver.povUp().onTrue(m_intake.setRollersSpeed(RollersVelocity.MAX));
+        m_driver.povDown().onTrue(m_intake.setRollersSpeed(RotationsPerSecond.of(0))); 
+        m_driver.povUp().onTrue(m_intake.setRollersSpeed(IntakeK.kRollersMaxRPS));
 
         // Indexer
         // m_driver.povUp().onTrue(m_indexer.startSpinner());

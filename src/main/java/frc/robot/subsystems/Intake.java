@@ -31,8 +31,8 @@ import frc.util.MotorSim;
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
-    private final TalonFX m_deploy = new TalonFX(IntakeK.kDeployCANID);
-    private final TalonFX m_rollers = new TalonFX(IntakeK.kRollersCANID);
+    private final TalonFX m_deploy = new TalonFX(IntakeK.kDeployCANID); //X60Foc
+    private final TalonFX m_rollers = new TalonFX(IntakeK.kRollersCANID);   //X44Foc
 
     private MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0).withEnableFOC(true);
     private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
@@ -83,10 +83,6 @@ public class Intake extends SubsystemBase {
         return runOnce(() -> m_deploy.setControl(m_MMVReq.withPosition(rots)));
     }
 
-    public Command setRollersSpeed(RollersVelocity RPS) {
-        return setRollersSpeed(RPS.RPS);
-    }
-
     public Command setRollersSpeed(AngularVelocity RPS) {
         return runOnce(() -> m_rollers.setControl(m_VVReq.withVelocity(RPS)));
     }
@@ -116,18 +112,6 @@ public class Intake extends SubsystemBase {
         private DeployPosition(double degs) {
             this.degs = Degrees.of(degs);
             this.rots = Rotations.of(this.degs.in(Rotations));
-        }
-    }
-
-    public enum RollersVelocity{
-        MAX(50),
-        MID(33),
-        STOP(0);
-
-        private AngularVelocity RPS;
-
-        private RollersVelocity(double RPS) {
-            this.RPS = RotationsPerSecond.of(RPS);
         }
     }
 }
