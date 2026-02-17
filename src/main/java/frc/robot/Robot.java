@@ -19,11 +19,13 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
+import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -234,12 +236,12 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledInit() {
-        AutonChooser.initialize();
-
-        m_waltAutonFactory.setAlliance( 
+        m_waltAutonFactory.setAlliance(
             DriverStation.getAlliance().isPresent() && 
             DriverStation.getAlliance().get().equals(Alliance.Red)
         );
+
+        AutonChooser.initialize();
 
         m_autonList.putIfAbsent("oneNeutralPickup", m_waltAutonFactory.oneNeutralPickup());
         m_autonList.putIfAbsent("twoNeutralPickup", m_waltAutonFactory.twoNeutralPickup());
@@ -267,12 +269,6 @@ public class Robot extends TimedRobot {
             m_autonChosen = "threeNeutralPickup";
             AutonChooser.pub_autonMade.set(true);
         }
-
-        if (AutonChooser.m_chooser.getSelected().equals("noAutonSelected")){
-            AutonChooser.pub_autonName.set("No Auton Made");
-            m_autonChosen = null;
-            AutonChooser.pub_autonMade.set(false);
-        }
     }
 
     @Override
@@ -290,7 +286,12 @@ public class Robot extends TimedRobot {
     }
 
     @Override
-    public void autonomousPeriodic() {}
+    public void autonomousPeriodic() {
+        m_waltAutonFactory.setAlliance( 
+            DriverStation.getAlliance().isPresent() && 
+            DriverStation.getAlliance().get().equals(Alliance.Red)
+        );
+    }
 
     @Override
     public void autonomousExit() {}
