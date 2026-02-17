@@ -52,7 +52,7 @@ public class Superstructure {
                         m_indexer.stopSpinner(),
                         m_intake.setDeployPos(pos),
                         m_intake.setRollersSpeed(RollersVelocity.STOP),
-                        logActiveCommands("prepIntake", "activateIntake", "retractIntake")
+                        logActiveCommands("safeIntake", "activateIntake", "retractIntake")
                     );
                 } else {
                     return Commands.sequence();
@@ -62,7 +62,7 @@ public class Superstructure {
                     m_indexer.stopSpinner(),
                     m_intake.setDeployPos(pos),
                     m_intake.setRollersSpeed(RollersVelocity.STOP),
-                    logActiveCommands("retractIntake", "activateIntake", "prepIntake")
+                    logActiveCommands("retractIntake", "activateIntake", "safeIntake")
                 );
         }
     }
@@ -75,7 +75,7 @@ public class Superstructure {
             m_intake.setRollersSpeed(RollersVelocity.MAX),
             m_indexer.startSpinner(),
             m_intake.setDeployPos(DeployPosition.DEPLOYED),
-            logActiveCommands("activateIntake", "prepIntake", "retractIntake")
+            logActiveCommands("activateIntake", "safeIntake", "retractIntake")
         );
     }
 

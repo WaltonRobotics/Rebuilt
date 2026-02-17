@@ -117,7 +117,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_stopPassing = m_manipulator.leftBumper().and(trg_manipOverride.negate());
 
     // Override triggers
-    private Trigger trg_maxShooterOverride = trg_manipOverride.and(m_manipulator.x());
+    private Trigger trg_maxShooterOverride = trg_manipOverride.and(m_manipulator.povLeft());
 
     private Trigger trg_turret180Override = trg_manipOverride.and(m_manipulator.povRight());
 
@@ -127,7 +127,7 @@ public class Robot extends TimedRobot {
 
     private Trigger trg_startExhaustOverride = trg_manipOverride.and(m_manipulator.leftBumper());
 
-    private Trigger trg_maxRollersOverride = trg_manipOverride.and(m_manipulator.a());
+    private Trigger trg_maxRollersOverride = trg_manipOverride.and(m_manipulator.povDown());
 
     private Trigger trg_deployIntakeOverride = trg_manipOverride.and(m_manipulator.rightTrigger());
     private Trigger trg_intakeUpOverride = trg_manipOverride.and(m_manipulator.leftTrigger());
