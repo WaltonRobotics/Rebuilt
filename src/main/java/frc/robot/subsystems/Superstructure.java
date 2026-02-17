@@ -24,10 +24,10 @@ public class Superstructure {
     private final Shooter m_shooter;
 
     /* loggers */
-    private HashSet<String> activeCommands = new HashSet<>();
+    private HashSet<String> m_activeCommands = new HashSet<>();
     private final StringArrayLogger log_activeCommands = WaltLogger.logStringArray(kLogTab, "Active Commands");
 
-    private HashSet<String> activeOverrideCommands = new HashSet<>();
+    private HashSet<String> m_activeOverrideCommands = new HashSet<>();
     private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
     
     /* constructor */
@@ -40,6 +40,10 @@ public class Superstructure {
     /* button bind sequences */
 
     // Regular Commands
+    /**
+     * Turns off rollers and spinner and moves deploy to given pos.
+     * @param pos the position to move deploy to.
+     */
     public Command deactivateIntake(DeployPosition pos) {
         switch (pos) {
             case SAFE:
@@ -63,6 +67,9 @@ public class Superstructure {
         }
     }
 
+    /**
+     * Turns on rollers and spinner moves deploy to deployed positon.
+     */
     public Command activateIntake() {
         return Commands.sequence(
             m_intake.setRollersSpeed(RollersVelocity.MAX),
@@ -72,12 +79,18 @@ public class Superstructure {
         );
     }
 
-    public Command activateOuttake(AngularVelocity rps) {
-        if (rps == kFlywheelMaxRPS) {
+    /**
+     * Turns on spinner and exhaust and sets shooter speed to RPS.
+     * <p>
+     * Note: does not move turret or hood.
+     * @param RPS the speed for the shooter
+     */
+    public Command activateOuttake(AngularVelocity RPS) {
+        if (RPS == kFlywheelMaxRPS) {
             return Commands.sequence(
                 m_indexer.startSpinner(),
                 m_indexer.startExhaust(),
-                m_shooter.setFlywheelVelocityCmd(rps),
+                m_shooter.setFlywheelVelocityCmd(RPS),
                 logActiveCommands("normalOuttake", "deactivateOuttake", "emergencyOuttake")
             );
             
@@ -85,12 +98,17 @@ public class Superstructure {
             return Commands.sequence(
                 m_indexer.startSpinner(),
                 m_indexer.startExhaust(),
-                m_shooter.setFlywheelVelocityCmd(rps),
+                m_shooter.setFlywheelVelocityCmd(RPS),
                 logActiveCommands("emergencyOuttake", "normalOuttake", "deactivateOuttake")
             );
         }
     }
 
+    /**
+     * Turns off spinner, exhaust, and shooter.
+     * <p>
+     * Note: does not move turret or hood.
+     */
     public Command deactivateOuttake() {
         return Commands.sequence(
             m_indexer.stopSpinner(),
@@ -100,6 +118,9 @@ public class Superstructure {
         );
     }
     
+    /**
+     * Initiates passing by activating intake and outtake.
+     */
     public Command startPassing() {
         return Commands.sequence(
             activateIntake(),
@@ -108,6 +129,9 @@ public class Superstructure {
         );
     }
 
+    /**
+     * Exits passing mode by deactivating intake with deploy to SAFE and deactivating outtake.
+     */
     public Command stopPassing() {
         return Commands.sequence(
             deactivateIntake(DeployPosition.SAFE),
@@ -123,17 +147,17 @@ public class Superstructure {
      */
     private Command logActiveCommands(String toAdd, String... toRemove) {
         Command addTo = Commands.runOnce(
-            () -> activeCommands.add(toAdd)
+            () -> m_activeCommands.add(toAdd)
         );
         Command removeFrom = Commands.runOnce(
             () -> {
                 for (String s : toRemove) {
-                    activeCommands.remove(s);
+                    m_activeCommands.remove(s);
                 }
             }
         );
         Command updateLog = Commands.runOnce(
-            () -> log_activeCommands.accept(activeCommands.toArray(new String[activeCommands.size()]))
+            () -> log_activeCommands.accept(m_activeCommands.toArray(new String[m_activeCommands.size()]))
         );
 
         return Commands.sequence(
@@ -144,6 +168,9 @@ public class Superstructure {
     }
 
     // Override commands
+    /**
+     * Sets the shooter speed to max.
+     */
     public Command maxShooter() {
         return Commands.sequence(
             m_shooter.setFlywheelVelocityCmd(kFlywheelMaxRPS),
@@ -151,6 +178,9 @@ public class Superstructure {
         );
     }
 
+    /**
+     * Stops the shooter.
+     */
     public Command stopShooter() {
         return Commands.sequence(
             m_shooter.setFlywheelVelocityCmd(kFlywheelZeroRPS),
@@ -158,6 +188,10 @@ public class Superstructure {
         );
     }
 
+    /**
+     * Rotates the turret to the given degs
+     * @param degs degrees to rotate to.
+     */
     public Command turretTo(double degs) {
         if (degs == 180) {
             return Commands.sequence(
@@ -172,6 +206,11 @@ public class Superstructure {
         }
     }
 
+    /**
+     * Raises/lowers the hood to the given degs.
+     * @param degs degrees to raise/lower to.
+     * @return
+     */
     public Command hoodTo(double degs) {
         if (degs == 30) {
             return Commands.sequence(
@@ -187,6 +226,9 @@ public class Superstructure {
         
     }
 
+    /**
+     * Starts the indexer spinner.
+     */
     public Command startSpinner() {
         return Commands.sequence(
             m_indexer.startSpinner(),
@@ -194,6 +236,9 @@ public class Superstructure {
         );
     }
 
+    /**
+     * Stops the indexer spinner.
+     */
     public Command stopSpinner() {
         return Commands.sequence(
             m_indexer.stopSpinner(),
@@ -201,6 +246,9 @@ public class Superstructure {
         );
     }
 
+    /**
+     * Starts the indexer exhaust.
+     */
     public Command startExhaust() {
         return Commands.sequence(
             m_indexer.startExhaust(),
@@ -208,6 +256,9 @@ public class Superstructure {
         );
     }
 
+    /**
+     * Stops the indexer exhaust.
+     */
     public Command stopExhaust() {
         return Commands.sequence(
             m_indexer.stopExhaust(),
@@ -215,20 +266,31 @@ public class Superstructure {
         );
     }
 
-    public Command setRollersSpeed(RollersVelocity velo) {
-        if (velo == RollersVelocity.MAX) {
-            return Commands.sequence(
-                m_intake.setRollersSpeed(velo),
-                logActiveOverrideCommands("maxRollers", "stopRollers")
-            );
-        } else {
-            return Commands.sequence(
-                m_intake.setRollersSpeed(velo),
-                logActiveOverrideCommands("stopRollers", "maxRollers")
-            );            
+    /**
+     * Sets the intake rollers speed to the given RPS
+     * @param RPS RPS to set speed to.
+     * @return
+     */
+    public Command setRollersSpeed(RollersVelocity RPS) {
+        switch (RPS) {
+            case MAX:
+                return Commands.sequence(
+                    m_intake.setRollersSpeed(RPS),
+                    logActiveOverrideCommands("maxRollers", "stopRollers")
+                );
+            default:
+                return Commands.sequence(
+                    m_intake.setRollersSpeed(RPS),
+                    logActiveOverrideCommands("stopRollers", "maxRollers")
+                );  
         }
     }
 
+    /**
+     * Deploys the intake to the given pos.
+     * @param pos position to deploy to.
+     * @return
+     */
     public Command intakeTo(DeployPosition pos) {
         switch (pos) {
             case DEPLOYED:
@@ -261,17 +323,17 @@ public class Superstructure {
      */
     private Command logActiveOverrideCommands(String toAdd, String... toRemove) {
         Command addTo = Commands.runOnce(
-            () -> activeOverrideCommands.add(toAdd)   
+            () -> m_activeOverrideCommands.add(toAdd)   
         );
         Command removeFrom = Commands.runOnce(
             () -> {
                 for (String s : toRemove) {
-                    activeOverrideCommands.remove(s);
+                    m_activeOverrideCommands.remove(s);
                 }
             }
         );
         Command updateLog = Commands.runOnce(
-            () -> log_activeOverrideCommands.accept(activeOverrideCommands.toArray(new String[activeOverrideCommands.size()]))
+            () -> log_activeOverrideCommands.accept(m_activeOverrideCommands.toArray(new String[m_activeOverrideCommands.size()]))
         );
 
         return Commands.sequence(

@@ -102,7 +102,6 @@ public class Robot extends TimedRobot {
 
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
-    private Trigger trg_inOverride = trg_driverOverride.or(trg_manipOverride);
 
     // Command sequence triggers
     private Trigger trg_activateIntake = m_manipulator.a().and(trg_manipOverride.negate());
