@@ -46,6 +46,7 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Radian;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.Constants.ShooterK.*;
 
 import java.lang.reflect.Field;
@@ -398,7 +399,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setTurretPosition(Angle azimuthAngle, AngularVelocity azimuthVelocity) {
-        m_turret.setControl(m_velocityRequest.withVelocity(azimuthVelocity));
+        //TODO: work out how to get the feedforward speed
         m_turret.setControl(m_MMVRequest.withPosition(azimuthAngle));
     }
  
@@ -452,14 +453,6 @@ public class Shooter extends SubsystemBase {
         setFlywheelVelocity(TurretCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));
     }
 
-    // public Command shooterDefaultCommands() {
-    //     return run (
-    //         () -> {
-    //             runTurretTrackTargetCommand();
-    //             runHoodTrackTargetCommand();
-    //             runFlywheelTrackTargetCommand();
-    //         });
-    // }
 
     /**
      * @return true if robot can store more fuel
@@ -501,7 +494,7 @@ public class Shooter extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        //TODO: add constant turret homing
+        //TODO: add working constant turret homing
         Pose2d pose = m_poseSupplier.get();
 
         log_calculateShotCurrPose.accept(pose);

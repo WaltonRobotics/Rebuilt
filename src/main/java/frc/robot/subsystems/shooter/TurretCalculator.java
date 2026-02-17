@@ -83,6 +83,7 @@ public class TurretCalculator {
             m_shotMap.put(1.55, new ShotData(RotationsPerSecond.of(2275 / 60), Degrees.of(15)));
             m_timeOfFlightMap.put(1.55, 1.23);
         }
+
     /**
      * Gets the Distance from current robot position to desired target.
      * Intended for shot calculation
@@ -122,10 +123,19 @@ public class TurretCalculator {
     }
 
     public static LinearVelocity angularToLinearVelocity(AngularVelocity vel, Distance radius) {
-        return MetersPerSecond.of(vel.in(RadiansPerSecond) / radius.in(Meters));
+        return MetersPerSecond.of(vel.in(RadiansPerSecond) * radius.in(Meters));
     }
 
-    //angle of turret relative to robot to hit a target
+    /**
+     * Calculates the turret's *TARGET* angle while ensuring it stays within physical limits.
+     * IF the turret is near a limit, snaps 360 degrees in the opposite direction to reach the same angle
+     * without hitting the hardstop.
+     * @param robot used to calculate where on the robot the turret will be
+     * @param target target position
+     * @param currentAngle current measured position of the turret
+     * @return safe rotation setpoint that is accurate to the target within bounds of kTurretMaxAngle
+     * and kTurretMinAngle
+     */
     public static Angle calculateAzimuthAngle(Pose2d robot, Translation3d target, Angle currentAngle) {
         Translation2d turretTranslation = new Pose3d(robot)
             .transformBy(kRobotToTurret)
@@ -213,7 +223,8 @@ public class TurretCalculator {
 
  
     /**
-     * use an iterative interpolation approach to determine shot parameters for a moving robot compensating for speed, the target.
+     * use an iterative interpolation approach to determine shot parameters for a moving robot 
+     * compensating for speed, the target.
      * @param robot current robot pose
      * @param fieldSpeeds current robot speeds (w direction)
      * @param target target you are aiming for (either the passing point OR the HUB)

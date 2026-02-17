@@ -68,7 +68,7 @@ public class TurretVisualizer {
             trajectory[i] = new Translation3d(x, y, z);
         }
 
-        log_trajectoryArray.accept(trajectory);;
+        log_trajectoryArray.accept(trajectory);
     }
 
     public void update3dPose(Angle azimuthAngle, Angle hoodAngle) {

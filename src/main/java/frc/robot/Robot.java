@@ -243,12 +243,15 @@ public class Robot extends TimedRobot {
         //     .whileTrue(m_shooter.runHoodTrackTargetCommand())
         //     .whileTrue(m_shooter.setFlywheelVelocityCmd(shotCalculator.getParameters().flywheelSpeed())); 
 
-        driver.a().whileTrue(Commands.run(() -> m_shooter.launchFuel()));  
+        driver.a().whileTrue(Commands.repeatingSequence(
+            Commands.runOnce(m_shooter::launchFuel),
+            Commands.waitSeconds(0.1)));  
         driver.b().onTrue(Commands.runOnce(() -> {
             FuelSim.getInstance().clearFuel();
             // FuelSim.getInstance().spawnStartingFuel();
         }));
         driver.x().onTrue(m_shooter.setGoal(TurretGoal.SCORING));
+        driver.leftBumper().onTrue(m_shooter.setGoal(TurretGoal.OFF));
         }
 
     public Command getAutonomousCommand() {
