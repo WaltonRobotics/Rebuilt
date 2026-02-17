@@ -43,12 +43,16 @@ public class Superstructure {
     public Command deactivateIntake(DeployPosition pos) {
         switch (pos) {
             case SAFE:
-                return Commands.sequence(
-                    m_indexer.stopSpinner(),
-                    m_intake.setDeployPos(pos),
-                    m_intake.setRollersSpeed(RollersVelocity.STOP),
-                    logActiveCommands("prepIntake", "activateIntake", "retractIntake")
-                );
+                if (m_intake.getDeployMotor().getStatorCurrent().getValueAsDouble() < 40) {
+                    return Commands.sequence(
+                        m_indexer.stopSpinner(),
+                        m_intake.setDeployPos(pos),
+                        m_intake.setRollersSpeed(RollersVelocity.STOP),
+                        logActiveCommands("prepIntake", "activateIntake", "retractIntake")
+                    );
+                } else {
+                    return Commands.sequence();
+                }
             default:
                 return Commands.sequence(
                     m_indexer.stopSpinner(),
@@ -191,7 +195,6 @@ public class Superstructure {
     }
 
     public Command stopSpinner() {
-
         return Commands.sequence(
             m_indexer.stopSpinner(),
             logActiveOverrideCommands("stopSpinner", "startSpinner")
@@ -239,10 +242,15 @@ public class Superstructure {
                     logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp")
                 );
             default:
-                return Commands.sequence(
-                    m_intake.setDeployPos(pos),
-                    logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake")
-                );
+                if (m_intake.getDeployMotor().getStatorCurrent().getValueAsDouble() < 40) {
+                    return Commands.sequence(
+                        m_intake.setDeployPos(pos),
+                        logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake")
+                    );
+                }
+                else {
+                    return Commands.sequence();
+                } 
         }
     }
 
