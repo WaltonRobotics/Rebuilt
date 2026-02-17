@@ -96,7 +96,7 @@ public class Robot extends TimedRobot {
     private final Intake m_intake = new Intake();
     private final Indexer m_indexer = new Indexer();
 
-    private final VisualSim m_visualSim = new VisualSim(m_intake, m_indexer);
+    private final VisualSim m_visualSim = new VisualSim(m_intake, m_indexer, m_shooter);
 
     /* log and replay timestamp and joystick data */
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -196,55 +196,89 @@ public class Robot extends TimedRobot {
         // m_driver.povRight().onTrue(
         //     Commands.parallel(
         //         m_intake.setRollersSpeed(RollersVelocity.MID),
-        //         m_visualSim.setVelocity()
+        //         m_visualSim.setRollerVelocity()
         // ));
         // m_driver.povDown().onTrue(
         //     Commands.parallel(
         //         m_intake.setRollersSpeed(RollersVelocity.STOP),
-        //         m_visualSim.setVelocity()
+        //         m_visualSim.setRollerVelocity()
         // )); 
         // m_driver.povUp().onTrue(
         //     Commands.parallel(
         //         m_intake.setRollersSpeed(RollersVelocity.MAX),
-        //         m_visualSim.setVelocity()
+        //         m_visualSim.setRollerVelocity()
         // ));
 
         // Indexer
-        m_driver.povUp().onTrue(
-            Commands.parallel(
-                m_indexer.startSpinner(),
-                m_visualSim.setSpinnerVelocity()
-            )
-        );
-        m_driver.povDown().onTrue(
-            Commands.parallel(
-                m_indexer.stopSpinner(),
-                m_visualSim.setSpinnerVelocity()
-            )
-        );
-        m_driver.povLeft().onTrue(
-            Commands.parallel(
-                m_indexer.startExhaust(),
-                m_visualSim.setExhaustVelocity()
-            )
-        );
-        m_driver.povRight().onTrue(
-            Commands.parallel(
-                m_indexer.stopExhaust(),
-                m_visualSim.setExhaustVelocity()
-            )
-        );
+        // m_driver.povUp().onTrue(
+        //     Commands.parallel(
+        //         m_indexer.startSpinner(),
+        //         m_visualSim.setSpinnerVelocity()
+        //     )
+        // );
+        // m_driver.povDown().onTrue(
+        //     Commands.parallel(
+        //         m_indexer.stopSpinner(),
+        //         m_visualSim.setSpinnerVelocity()
+        //     )
+        // );
+        // m_driver.povLeft().onTrue(
+        //     Commands.parallel(
+        //         m_indexer.startExhaust(),
+        //         m_visualSim.setExhaustVelocity()
+        //     )
+        // );
+        // m_driver.povRight().onTrue(
+        //     Commands.parallel(
+        //         m_indexer.stopExhaust(),
+        //         m_visualSim.setExhaustVelocity()
+        //     )
+        // );
 
         // Shooter
-        // m_driver.povDown().onTrue(m_shooter.setFlywheelVelocityCmd(RotationsPerSecond.of(0)));
-        // m_driver.povUp().onTrue(m_shooter.setFlywheelVelocityCmd(ShooterK.kFlywheelMaxRPS));
+        m_driver.povDown().onTrue(
+            Commands.parallel(
+                m_shooter.setFlywheelVelocityCmd(RotationsPerSecond.of(0)),
+                m_visualSim.setFlywheelVelocity()
+            )
+        );
+        m_driver.povUp().onTrue(
+            Commands.parallel(
+                m_shooter.setFlywheelVelocityCmd(ShooterK.kFlywheelMaxRPS),
+                m_visualSim.setFlywheelVelocity()
+            )
+        );
 
-        // m_driver.a().onTrue(m_shooter.setHoodPositionCmd(ShooterK.kHoodMinDegs));
-        // m_driver.y().onTrue(m_shooter.setHoodPositionCmd(ShooterK.kHoodMaxDegs));
+        m_driver.a().onTrue(
+            Commands.parallel(
+                m_shooter.setHoodPositionCmd(ShooterK.kHoodMinDegs),
+                m_visualSim.setHoodPosition()
+            )
+        );
+        m_driver.y().onTrue(
+            Commands.parallel(
+                m_shooter.setHoodPositionCmd(ShooterK.kHoodMaxDegs),
+                m_visualSim.setHoodPosition()
+            )
+        );
 
-        // m_driver.leftTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMinRots));
-        // m_driver.leftBumper().onTrue(m_shooter.setTurretPositionCmd(Rotations.of(0)));
-        // m_driver.rightTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMaxRots));
+        m_driver.leftTrigger().onTrue(
+            Commands.parallel(
+                m_shooter.setTurretPositionCmd(ShooterK.kTurretMinRots),
+                m_visualSim.setTurretPosition()
+            )
+        );
+        m_driver.leftBumper().onTrue(
+            Commands.parallel(
+                m_shooter.setTurretPositionCmd(Rotations.of(0)),
+                m_visualSim.setTurretPosition()
+            ));
+        m_driver.rightTrigger().onTrue(
+            Commands.parallel(
+                m_shooter.setTurretPositionCmd(ShooterK.kTurretMaxRots),
+                m_visualSim.setTurretPosition()
+            )
+        );
 
     }
 
