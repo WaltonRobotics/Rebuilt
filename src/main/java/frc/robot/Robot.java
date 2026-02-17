@@ -253,30 +253,30 @@ public class Robot extends TimedRobot {
 
     private void configureTestBindings() {
         // Intake
-        // driver.a().onTrue(m_intake.setDeployPos(DeployPosition.RETRACTED));
-        // driver.b().onTrue(m_intake.setDeployPos(DeployPosition.SAFE));
-        // driver.x().onTrue(m_intake.setDeployPos(DeployPosition.DEPLOYED));
+        // m_driver.a().onTrue(m_intake.setDeployPos(DeployPosition.RETRACTED));
+        // m_driver.b().onTrue(m_intake.setDeployPos(DeployPosition.SAFE));
+        // m_driver.x().onTrue(m_intake.setDeployPos(DeployPosition.DEPLOYED));
 
-        // driver.povRight().onTrue(m_intake.setRollersSpeed(RollersVelocity.MID));
-        // driver.povDown().onTrue(m_intake.setRollersSpeed(RollersVelocity.STOP)); 
-        // driver.povUp().onTrue(m_intake.setRollersSpeed(RollersVelocity.MAX));
+        // m_driver.povRight().onTrue(m_intake.setRollersSpeed(RollersVelocity.MID));
+        // m_driver.povDown().onTrue(m_intake.setRollersSpeed(RollersVelocity.STOP)); 
+        // m_driver.povUp().onTrue(m_intake.setRollersSpeed(RollersVelocity.MAX));
 
         // Indexer
-        // driver.povUp().onTrue(m_indexer.startSpinner());
-        // driver.povDown().onTrue(m_indexer.stopSpinner());
-        // driver.povLeft().onTrue(m_indexer.startExhaust());
-        // driver.povRight().onTrue(m_indexer.stopExhaust());
+        // m_driver.povUp().onTrue(m_indexer.startSpinner());
+        // m_driver.povDown().onTrue(m_indexer.stopSpinner());
+        // m_driver.povLeft().onTrue(m_indexer.startExhaust());
+        // m_driver.povRight().onTrue(m_indexer.stopExhaust());
 
         // Shooter
-        // driver.povDown().onTrue(m_shooter.setFlywheelVelocityCmd(RotationsPerSecond.of(0)));
-        // driver.povUp().onTrue(m_shooter.setFlywheelVelocityCmd(ShooterK.kFlywheelMaxRPS));
+        // m_driver.povDown().onTrue(m_shooter.setFlywheelVelocityCmd(RotationsPerSecond.of(0)));
+        // m_driver.povUp().onTrue(m_shooter.setFlywheelVelocityCmd(ShooterK.kFlywheelMaxRPS));
 
-        // driver.a().onTrue(m_shooter.setHoodPositionCmd(ShooterK.kHoodMinDegs));
-        // driver.y().onTrue(m_shooter.setHoodPositionCmd(ShooterK.kHoodMaxDegs));
+        // m_driver.a().onTrue(m_shooter.setHoodPositionCmd(ShooterK.kHoodMinDegs));
+        // m_driver.y().onTrue(m_shooter.setHoodPositionCmd(ShooterK.kHoodMaxDegs));
 
-        // driver.leftTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMinRots));
-        // driver.leftBumper().onTrue(m_shooter.setTurretPositionCmd(Rotations.of(0)));
-        // driver.rightTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMaxRots));
+        // m_driver.leftTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMinRots));
+        // m_driver.leftBumper().onTrue(m_shooter.setTurretPositionCmd(Rotations.of(0)));
+        // m_driver.rightTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMaxRots));
 
         // Test sequences
         trg_activateIntake.onTrue(m_superstructure.activateIntake());

@@ -41,22 +41,22 @@ public class Superstructure {
 
     // Regular Commands
     public Command deactivateIntake(DeployPosition pos) {
-        if (pos == DeployPosition.SAFE) {
-            return Commands.sequence(
-                m_indexer.stopSpinner(),
-                m_intake.setDeployPos(pos),
-                m_intake.setRollersSpeed(RollersVelocity.STOP),
-                logActiveCommands("prepIntake", "activateIntake", "retractIntake")
-            );
-        } else {
-            return Commands.sequence(
-                m_indexer.stopSpinner(),
-                m_intake.setDeployPos(pos),
-                m_intake.setRollersSpeed(RollersVelocity.STOP),
-                logActiveCommands("retractIntake", "activateIntake", "prepIntake")
-            );
+        switch (pos) {
+            case SAFE:
+                return Commands.sequence(
+                    m_indexer.stopSpinner(),
+                    m_intake.setDeployPos(pos),
+                    m_intake.setRollersSpeed(RollersVelocity.STOP),
+                    logActiveCommands("prepIntake", "activateIntake", "retractIntake")
+                );
+            default:
+                return Commands.sequence(
+                    m_indexer.stopSpinner(),
+                    m_intake.setDeployPos(pos),
+                    m_intake.setRollersSpeed(RollersVelocity.STOP),
+                    logActiveCommands("retractIntake", "activateIntake", "prepIntake")
+                );
         }
-        
     }
 
     public Command activateIntake() {
@@ -227,21 +227,22 @@ public class Superstructure {
     }
 
     public Command intakeTo(DeployPosition pos) {
-        if (pos == DeployPosition.DEPLOYED) {
-            return Commands.sequence(
-                m_intake.setDeployPos(pos),
-                logActiveOverrideCommands("deployIntake", "safeIntake", "intakeUp")
-            );
-        } else if (pos == DeployPosition.SAFE) {
-            return Commands.sequence(
-                m_intake.setDeployPos(pos),
-                logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp")
-            );
-        } else {
-            return Commands.sequence(
-                m_intake.setDeployPos(pos),
-                logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake")
-            );
+        switch (pos) {
+            case DEPLOYED:
+                return Commands.sequence(
+                    m_intake.setDeployPos(pos),
+                    logActiveOverrideCommands("deployIntake", "safeIntake", "intakeUp")
+                );
+            case SAFE:
+                return Commands.sequence(
+                    m_intake.setDeployPos(pos),
+                    logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp")
+                );
+            default:
+                return Commands.sequence(
+                    m_intake.setDeployPos(pos),
+                    logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake")
+                );
         }
     }
 
