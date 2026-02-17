@@ -45,26 +45,30 @@ public class Superstructure {
      * @param pos the position to move deploy to.
      */
     public Command deactivateIntake(DeployPosition pos) {
+        Command logCommand;
         switch (pos) {
             case SAFE:
                 if (m_intake.getDeployMotor().getStatorCurrent().getValueAsDouble() < 40) {
-                    return Commands.sequence(
+                    logCommand = Commands.sequence(
                         m_indexer.stopSpinner(),
                         m_intake.setDeployPos(pos),
                         m_intake.setRollersSpeed(RollersVelocity.STOP),
                         logActiveCommands("safeIntake", "activateIntake", "retractIntake")
                     );
                 } else {
-                    return Commands.sequence();
+                    logCommand = Commands.none();
                 }
+                break;
             default:
-                return Commands.sequence(
+                logCommand =  Commands.sequence(
                     m_indexer.stopSpinner(),
                     m_intake.setDeployPos(pos),
                     m_intake.setRollersSpeed(RollersVelocity.STOP),
                     logActiveCommands("retractIntake", "activateIntake", "safeIntake")
                 );
+                break;
         }
+        return logCommand;
     }
 
     /**
@@ -86,8 +90,9 @@ public class Superstructure {
      * @param RPS the speed for the shooter
      */
     public Command activateOuttake(AngularVelocity RPS) {
+        Command logCommand;
         if (RPS == kFlywheelMaxRPS) {
-            return Commands.sequence(
+            logCommand = Commands.sequence(
                 m_indexer.startSpinner(),
                 m_indexer.startExhaust(),
                 m_shooter.setFlywheelVelocityCmd(RPS),
@@ -95,13 +100,14 @@ public class Superstructure {
             );
             
         } else {
-            return Commands.sequence(
+            logCommand = Commands.sequence(
                 m_indexer.startSpinner(),
                 m_indexer.startExhaust(),
                 m_shooter.setFlywheelVelocityCmd(RPS),
                 logActiveCommands("emergencyOuttake", "normalOuttake", "deactivateOuttake")
             );
         }
+        return logCommand;
     }
 
     /**
@@ -193,17 +199,19 @@ public class Superstructure {
      * @param degs degrees to rotate to.
      */
     public Command turretTo(double degs) {
+        Command logCommand;
         if (degs == 180) {
-            return Commands.sequence(
+            logCommand = Commands.sequence(
                 m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(degs, Degree)),
                 logActiveOverrideCommands("turret180", "turret0")
             );
         } else {
-            return Commands.sequence(
+            logCommand = Commands.sequence(
                 m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(degs, Degree)),
                 logActiveOverrideCommands("turret0", "turret180")
             );
         }
+        return logCommand;
     }
 
     /**
@@ -212,18 +220,19 @@ public class Superstructure {
      * @return
      */
     public Command hoodTo(double degs) {
+        Command logCommand;
         if (degs == 30) {
-            return Commands.sequence(
+            logCommand = Commands.sequence(
                 m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(degs, Degree)),
                 logActiveOverrideCommands("hood30", "hood0")
             );
         } else {
-            return Commands.sequence(
+            logCommand = Commands.sequence(
                 m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(degs, Degree)),
                 logActiveOverrideCommands("hood0", "hood30")
             );
         }
-        
+        return logCommand;
     }
 
     /**
@@ -272,18 +281,22 @@ public class Superstructure {
      * @return
      */
     public Command setRollersSpeed(RollersVelocity RPS) {
+        Command logCommand;
         switch (RPS) {
             case MAX:
-                return Commands.sequence(
+                logCommand = Commands.sequence(
                     m_intake.setRollersSpeed(RPS),
                     logActiveOverrideCommands("maxRollers", "stopRollers")
                 );
+                break;
             default:
-                return Commands.sequence(
+                logCommand = Commands.sequence(
                     m_intake.setRollersSpeed(RPS),
                     logActiveOverrideCommands("stopRollers", "maxRollers")
-                );  
+                );
+                break;
         }
+        return logCommand;
     }
 
     /**
@@ -292,28 +305,33 @@ public class Superstructure {
      * @return
      */
     public Command intakeTo(DeployPosition pos) {
+        Command logCommand;
         switch (pos) {
             case DEPLOYED:
-                return Commands.sequence(
+                logCommand = Commands.sequence(
                     m_intake.setDeployPos(pos),
                     logActiveOverrideCommands("deployIntake", "safeIntake", "intakeUp")
                 );
+                break;
             case SAFE:
-                return Commands.sequence(
+                logCommand = Commands.sequence(
                     m_intake.setDeployPos(pos),
                     logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp")
                 );
+                break;
             default:
                 if (m_intake.getDeployMotor().getStatorCurrent().getValueAsDouble() < 40) {
-                    return Commands.sequence(
+                    logCommand = Commands.sequence(
                         m_intake.setDeployPos(pos),
                         logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake")
                     );
                 }
                 else {
-                    return Commands.sequence();
-                } 
+                    logCommand = Commands.none();
+                }
+                break;
         }
+        return logCommand;
     }
 
     /**
