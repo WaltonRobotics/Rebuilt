@@ -96,6 +96,14 @@ public class Indexer extends SubsystemBase {
         return runOnce(() -> m_exhaust.setControl(m_exhaustVelocityRequest.withVelocity(RPS)));
     }
 
+    public TalonFX getSpinner() {
+        return m_spinner;
+    }
+
+    public TalonFX getExhaust() {
+        return m_exhaust;
+    }
+
     /* PERIODICS */
     @Override
     public void periodic() {

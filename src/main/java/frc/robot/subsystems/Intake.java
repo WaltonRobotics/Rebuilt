@@ -91,6 +91,14 @@ public class Intake extends SubsystemBase {
         return runOnce(() -> m_rollers.setControl(m_VVReq.withVelocity(RPS)));
     }
 
+    public TalonFX getRollers() {
+        return m_rollers;
+    }
+
+    public TalonFX getDeploy() {
+        return m_deploy;
+    }
+
     @Override
     public void periodic() {
         log_targetDeployRots.accept(m_MMVReq.Position);
@@ -110,8 +118,8 @@ public class Intake extends SubsystemBase {
         SAFE(72),
         DEPLOYED(87.485);
 
-        private Angle degs;
-        private Angle rots;
+        public Angle degs;
+        public Angle rots;
 
         private DeployPosition(double degs) {
             this.degs = Degrees.of(degs);
