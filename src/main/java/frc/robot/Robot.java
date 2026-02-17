@@ -10,6 +10,7 @@ import static frc.robot.Constants.ShooterK.kFlywheelEmergencyRPS;
 import static frc.robot.Constants.ShooterK.kFlywheelMaxRPS;
 import static frc.robot.Constants.ShooterK.kFlywheelZeroRPS;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
@@ -62,7 +63,12 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_povRight = WaltLogger.logBoolean(kLogTab, "Pov Right");
     private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
     private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
+    
+    private ArrayList<String> activeCommands = new ArrayList<>();
     private final StringArrayLogger log_activeCommands = WaltLogger.logStringArray(kLogTab, "Active Commands");
+
+    private ArrayList<String> activeOverrideCommands = new ArrayList<>();
+    private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
 
     private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
     private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger("Robot", "VisionSeenLastSec");
