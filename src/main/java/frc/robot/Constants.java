@@ -243,7 +243,7 @@ public class Constants {
         public static final double kDeployGearing = 5/1;
 
         public static final double kRollersMOI = 0.00005;
-        public static final double kRollersGearing = 1.0/2;
+        public static final double kRollersGearing = 12.0/30;
 
         /* IDS */
         public static final int kDeployCANID = 41; //TODO: change to correct

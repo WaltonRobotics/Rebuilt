@@ -115,7 +115,7 @@ public class Intake extends SubsystemBase {
 
         private DeployPosition(double degs) {
             this.degs = Degrees.of(degs);
-            this.rots = Rotations.of(Rotations.convertFrom(this.degs.magnitude(), Degrees));
+            this.rots = Rotations.of(this.degs.in(Rotations));
         }
     }
 
