@@ -1,9 +1,5 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
 import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -242,7 +238,7 @@ public class Constants {
         public static final double kDeployMOI = 0.0209;
         public static final double kDeployGearing = 5/1;
 
-        public static final double kRollersMOI = 0.00005;
+        public static final double kRollersMOI = 0.00343880857; // 0.00005;
         public static final double kRollersGearing = 12.0/30;
 
         /* IDS */
