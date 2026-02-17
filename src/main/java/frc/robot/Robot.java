@@ -8,9 +8,7 @@ import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.IndexerK.kLogTab;
 import static frc.robot.Constants.ShooterK.kFlywheelEmergencyRPS;
 import static frc.robot.Constants.ShooterK.kFlywheelMaxRPS;
-import static frc.robot.Constants.ShooterK.kFlywheelZeroRPS;
 
-import java.util.ArrayList;
 import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
@@ -24,7 +22,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -49,7 +46,6 @@ import frc.robot.vision.VisionSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
-import frc.util.WaltLogger.StringArrayLogger;
 
 public class Robot extends TimedRobot {
     private final double kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -63,12 +59,6 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_povRight = WaltLogger.logBoolean(kLogTab, "Pov Right");
     private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
     private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
-    
-    private ArrayList<String> activeCommands = new ArrayList<>();
-    private final StringArrayLogger log_activeCommands = WaltLogger.logStringArray(kLogTab, "Active Commands");
-
-    private ArrayList<String> activeOverrideCommands = new ArrayList<>();
-    private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
 
     private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
     private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger("Robot", "VisionSeenLastSec");
@@ -127,13 +117,10 @@ public class Robot extends TimedRobot {
 
     // Override triggers
     private Trigger trg_maxShooterOverride = trg_manipOverride.and(m_manipulator.x());
-    private Trigger trg_stopShooterOverride = trg_manipOverride.and(m_manipulator.y());
 
     private Trigger trg_turret180Override = trg_manipOverride.and(m_manipulator.povRight());
-    private Trigger trg_turret0Override = trg_manipOverride.and(m_manipulator.povLeft());
 
     private Trigger trg_hood30Override = trg_manipOverride.and(m_manipulator.povUp());
-    private Trigger trg_hood0Override = trg_manipOverride.and(m_manipulator.povDown());
 
     private Trigger trg_startSpinnerOverride = trg_manipOverride.and(m_manipulator.rightBumper());
 
@@ -232,14 +219,11 @@ public class Robot extends TimedRobot {
         trg_stopPassing.onTrue(m_superstructure.stopPassing());
 
         // Override commands
-        trg_maxShooterOverride.onTrue(m_superstructure.maxShooter());
-        trg_stopShooterOverride.onTrue(m_superstructure.stopShooter());
+        trg_maxShooterOverride.onTrue(m_superstructure.maxShooter()).onFalse(m_superstructure.stopShooter());
 
-        trg_turret180Override.onTrue(m_superstructure.turretTo(180));
-        trg_turret0Override.onTrue(m_superstructure.turretTo(0));
+        trg_turret180Override.onTrue(m_superstructure.turretTo(180)).onFalse(m_superstructure.turretTo(0));
 
-        trg_hood30Override.onTrue(m_superstructure.hoodTo(30));
-        trg_hood0Override.onTrue(m_superstructure.hoodTo(0));
+        trg_hood30Override.onTrue(m_superstructure.hoodTo(30)).onFalse(m_superstructure.hoodTo(0));
 
         trg_startSpinnerOverride.onTrue(m_superstructure.startSpinner()).onFalse(m_superstructure.stopSpinner());
 
@@ -291,13 +275,10 @@ public class Robot extends TimedRobot {
 
         // Override commands
         trg_maxShooterOverride.onTrue(m_superstructure.maxShooter());
-        trg_stopShooterOverride.onTrue(m_superstructure.stopShooter());
 
         trg_turret180Override.onTrue(m_superstructure.turretTo(180));
-        trg_turret0Override.onTrue(m_superstructure.turretTo(0));
 
         trg_hood30Override.onTrue(m_superstructure.hoodTo(30));
-        trg_hood0Override.onTrue(m_superstructure.hoodTo(0));
 
         trg_startSpinnerOverride.onTrue(m_superstructure.startSpinner()).onFalse(m_superstructure.stopSpinner());
 
