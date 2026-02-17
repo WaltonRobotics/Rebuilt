@@ -141,12 +141,8 @@ public class Shooter extends SubsystemBase {
 
     // The PIDOutput needed to get to the setpoint from the current point
     public void updateHood() {
-        m_currentHoodPos = Rotations.of(m_hoodEncoder.getPosition());
-
-        if (RobotBase.isSimulation()) {
-            // can't read from hardware in Sim, so we read from the hoodSim object
-            m_currentHoodPos = Rotations.of(m_hoodSim.getAngularPositionRotations());
-        }
+        // can't read from hardware in Sim, so we read from the hoodSim object
+        m_currentHoodPos = RobotBase.isSimulation() ? Rotations.of(m_hoodSim.getAngularPositionRotations()) : Rotations.of(m_hoodEncoder.getPosition());
 
         double hoodPIDOutput = m_hoodPID.calculate(m_currentHoodPos.magnitude(), m_hoodSetpoint.in(Rotations)) * 7;
         
