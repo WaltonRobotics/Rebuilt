@@ -72,7 +72,7 @@ public class TurretVisualizer {
     }
 
     public void update3dPose(Angle azimuthAngle, Angle hoodAngle) {
-        Pose3d turretPose = new Pose3d(0, 0, 0, new Rotation3d(0, 0, azimuthAngle.in(Radians)));
+        Pose3d turretPose = new Pose3d( m_poseSupplier.get().getX(), m_poseSupplier.get().getY(), m_poseSupplier.get().getZ(), new Rotation3d(0, 0, azimuthAngle.in(Radians)));
         log_turretPose.accept(turretPose);
         Pose3d hoodPose = new Pose3d(0.1, 0, 0, new Rotation3d(0, hoodAngle.in(Radians), 0));
         hoodPose = hoodPose.rotateAround(new Translation3d(), new Rotation3d(0, 0, azimuthAngle.in(Radians)));

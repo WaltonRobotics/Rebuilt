@@ -396,6 +396,11 @@ public class Shooter extends SubsystemBase {
     public void setTurretPosition(Angle azimuthAngle) {
         m_turret.setControl(m_MMVRequest.withPosition(azimuthAngle));
     }
+
+    public void setTurretPosition(Angle azimuthAngle, AngularVelocity azimuthVelocity) {
+        m_turret.setControl(m_velocityRequest.withVelocity(azimuthVelocity));
+        m_turret.setControl(m_MMVRequest.withPosition(azimuthAngle));
+    }
  
     public Angle getTurretPosition() {
         return m_turret.getPosition().getValue();
@@ -439,12 +444,12 @@ public class Shooter extends SubsystemBase {
     private void calculateShot(Pose2d robot) {
         ChassisSpeeds fieldSpeeds = m_fieldSpeedsSupplier.get();
 
-        ShotData calculatedShot = TurretCalculator.iterativeMovingShotFromFunnelClearance(robot, fieldSpeeds, currentTarget , 5);
-        Angle azimuthAngle = TurretCalculator.calculateAzimuthAngle(robot, calculatedShot.target());
-        setTurretPosition((azimuthAngle));
+        ShotData calculatedShot = TurretCalculator.iterativeMovingShotFromInterpolationMap(robot, fieldSpeeds, currentTarget, 3);
+        Angle azimuthAngle = TurretCalculator.calculateAzimuthAngle(robot, calculatedShot.target(), m_turret.getPosition().getValue());
+        AngularVelocity azimuthVelocity = RadiansPerSecond.of(-fieldSpeeds.omegaRadiansPerSecond);
+        setTurretPosition(azimuthAngle, azimuthVelocity);
         setHoodPosition(calculatedShot.hoodAngle());
         setFlywheelVelocity(TurretCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));
-        double velocity = getFlywheelVelocityDouble();
     }
 
     // public Command shooterDefaultCommands() {
@@ -481,8 +486,6 @@ public class Shooter extends SubsystemBase {
         // m_shooter.getHoodAngle(),
         // m_shooter.getTurretPosition(),
         // kDistanceAboveFunnel);
-        AngularVelocity mreowow = AngularVelocity.ofBaseUnits(100000000, RadiansPerSecond);
-        setFlywheelVelocity(mreowow);
         AngularVelocity flywheelVelocity = getFlywheelVelocity();
         Angle hoodAngle = getHoodAngle();
         Angle turretPosition = getTurretPosition();

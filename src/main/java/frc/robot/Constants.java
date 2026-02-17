@@ -2,6 +2,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Rotations;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +31,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.DistanceUnit;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 
 public class Constants {
@@ -42,8 +44,9 @@ public class Constants {
         public static final Transform3d kRobotToTurret = new Transform3d(new Translation3d(Inches.zero(), Inches.zero(), Inches.of(18)), Rotation3d.kZero); //DUMMY VALS
         public static final Distance kDistanceAboveFunnel = Inches.of(20); //distance above the hub funnel
 
-        public static final double kTurretMinAngle = Units.degreesToRadians(-270.0);
-        public static final double kTurretMaxAngle = Units.degreesToRadians(270.0);
+
+        public static final Angle kTurretMinAngle = Angle.ofBaseUnits(-0.75, Rotations);//Units.degreesToRadians(-270.0);
+        public static final Angle kTurretMaxAngle = Angle.ofBaseUnits(0.75, Rotations); //Units.degreesToRadians(270.0);
 
         public static final double kHoodMinAngle = Units.degreesToRadians(19);
         public static final double kHoodMaxAngle = Units.degreesToRadians(51);
