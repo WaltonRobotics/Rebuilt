@@ -123,6 +123,18 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> m_turret.setControl(m_MMVRequest.withPosition(rots)));
     }
 
+    public TalonFX getFlywheel() {
+        return m_flywheelLeader;
+    }
+
+    public Canandmag getHoodEncoder() {
+        return m_hoodEncoder;
+    }
+
+    public TalonFX getTurret() {
+        return m_turret;
+    }
+
     /* PERIODICS */
     @Override
     public void periodic() {
