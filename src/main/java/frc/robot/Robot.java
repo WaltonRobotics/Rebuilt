@@ -19,13 +19,11 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
-import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -77,10 +75,10 @@ public class Robot extends TimedRobot {
     private final CommandXboxController m_driver = new CommandXboxController(0);
 
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
-    private Command m_autonomousCommand;
 
+    private Command m_autonomousCommand;
     private String m_autonChosen = "noAutonSelected";
-    private Command m_desiredAuton;
+
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
     private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
     private HashMap<String, Command> m_autonList = new HashMap<String, Command>();
@@ -250,24 +248,30 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledPeriodic() {
-        m_desiredAuton = null;
+        if (!AutonChooser.m_chooser.getSelected().equals(m_autonChosen)) {
+            if (AutonChooser.m_chooser.getSelected().equals("oneNeutralPickup")) {
+                AutonChooser.pub_autonName.set("One Neutral Pickup");
+                m_autonChosen = "oneNeutralPickup";
+                AutonChooser.pub_autonMade.set(false);
+            }   
 
-        if (AutonChooser.m_chooser.getSelected().equals("oneNeutralPickup")) {
-            AutonChooser.pub_autonName.set("One Neutral Pickup");
-            m_autonChosen = "oneNeutralPickup";
-            AutonChooser.pub_autonMade.set(true);
-        }   
+            if (AutonChooser.m_chooser.getSelected().equals("twoNeutralPickup")) {
+                AutonChooser.pub_autonName.set("Two Neutral Pickup");
+                m_autonChosen = "twoNeutralPickup";
+                AutonChooser.pub_autonMade.set(false);
+            }
 
-        if (AutonChooser.m_chooser.getSelected().equals("twoNeutralPickup")) {
-            AutonChooser.pub_autonName.set("Two Neutral Pickup");
-            m_autonChosen = "twoNeutralPickup";
-            AutonChooser.pub_autonMade.set(true);
+            if (AutonChooser.m_chooser.getSelected().equals("threeNeutralPickup")) {
+                AutonChooser.pub_autonName.set("Three Neutral Pickup");
+                m_autonChosen = "threeNeutralPickup";
+                AutonChooser.pub_autonMade.set(false);
+            }
         }
 
-        if (AutonChooser.m_chooser.getSelected().equals("threeNeutralPickup")) {
-            AutonChooser.pub_autonName.set("Three Neutral Pickup");
-            m_autonChosen = "threeNeutralPickup";
+        if (AutonChooser.sub_makeAuton.get()) {
+            m_autonomousCommand = m_autonList.get(m_autonChosen);
             AutonChooser.pub_autonMade.set(true);
+            AutonChooser.pub_makeAuton.set(false);
         }
     }
 
@@ -276,10 +280,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        m_desiredAuton = m_autonList.get(m_autonChosen);
-
-        m_autonomousCommand = getAutonomousCommand(m_desiredAuton);
-
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
         }
