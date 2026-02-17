@@ -1,9 +1,5 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
 import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -314,6 +310,9 @@ public class Constants {
 
         public static final double kSpinnerMOI = 0.00166190059;
         public static final double kExhaustMOI = 0.000215968064;
+
+        public static final AngularVelocity m_spinnerRPS = RotationsPerSecond.of((5785/60) / kSpinnerGearing);  //Max RPM for X60Foc is 5785
+        public static final AngularVelocity m_exhaustRPS = RotationsPerSecond.of((5785/60) / kExhaustGearing);
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
