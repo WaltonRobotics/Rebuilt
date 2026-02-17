@@ -238,10 +238,10 @@ public class Constants {
         public static final double kDeployMOI = 0.0209;
         public static final double kDeployGearing = 5/1;
 
-        public static final double kRollersMOI = 0.00343880857; // 0.00005;
+        public static final double kRollersMOI = 0.0001; // 0.00343880857
         public static final double kRollersGearing = 12.0/30;
 
-        public static final AngularVelocity kRollersMaxRPS = RotationsPerSecond.of(7368 / 60);  //100% RPS
+        public static final AngularVelocity kRollersMaxRPS = RotationsPerSecond.of((7368 / 60) / kRollersGearing);  //100% RPS
 
         /* IDS */
         public static final int kDeployCANID = 41; //TODO: change to correct
@@ -282,7 +282,7 @@ public class Constants {
             .withSupplyCurrentLimitEnable(true);
         private static final Slot0Configs kRollersSlot0Configs = new Slot0Configs()
             .withKS(0)
-            .withKV(0.19543973941)
+            .withKV(0.488599348534) // 0.19543973941
             .withKA(0)
             .withKP(0)
             .withKI(0)
