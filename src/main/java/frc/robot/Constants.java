@@ -241,7 +241,7 @@ public class Constants {
         public static final double kRollersMOI = 0.00343880857; // 0.00005;
         public static final double kRollersGearing = 12.0/30;
 
-        public static final AngularVelocity kRollersMaxRPS = RotationsPerSecond.of(7368 / 60);
+        public static final AngularVelocity kRollersMaxRPS = RotationsPerSecond.of(7368 / 60);  //100% RPS
 
         /* IDS */
         public static final int kDeployCANID = 41; //TODO: change to correct
