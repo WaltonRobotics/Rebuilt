@@ -202,10 +202,6 @@ public class Robot extends TimedRobot {
         m_driver.rightTrigger().onTrue(m_shooter.setTurretPositionCmd(ShooterK.kTurretMaxRots));
     }
 
-    public Command getAutonomousCommand(Command auton) {
-        return auton;
-    }
-
     @Override
     public void robotPeriodic() {
         m_timeAndJoystickReplay.update();
@@ -287,10 +283,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousPeriodic() {
-        m_waltAutonFactory.setAlliance( 
-            DriverStation.getAlliance().isPresent() && 
-            DriverStation.getAlliance().get().equals(Alliance.Red)
-        );
     }
 
     @Override
