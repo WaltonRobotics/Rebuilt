@@ -3,9 +3,11 @@ package frc.robot.autons;
 import java.util.ArrayList;
 
 import choreo.auto.AutoFactory;
+import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.AutonK;
@@ -17,9 +19,9 @@ public class WaltAutonFactory {
     private final Swerve m_drivetrain;
 
     //desired pose to go to after fuel pickup
-    private Pose2d postPickupNeutral;
+    private Pose2d m_postPickupNeutral;
     //desired pose to go to after depot pickup
-    private Pose2d postPickupDepot;
+    private Pose2d m_postPickupDepot;
 
     public WaltAutonFactory(AutoFactory autoFactory, Swerve drivetrain) {
         m_autoFactory = autoFactory;
@@ -27,8 +29,8 @@ public class WaltAutonFactory {
     }
 
     public void setAlliance(boolean isRed) {
-        postPickupNeutral = isRed ? AllianceFlipUtil.flip(AutonK.neutralPose) : AutonK.neutralPose;
-        postPickupDepot = isRed ? AllianceFlipUtil.flip(AutonK.depotPose) : AutonK.depotPose;
+        m_postPickupNeutral = isRed ? AllianceFlipUtil.flip(AutonK.neutralPose) : AutonK.neutralPose;
+        m_postPickupDepot = isRed ? AllianceFlipUtil.flip(AutonK.depotPose) : AutonK.depotPose;
     }
 
     public Command runTrajCmd(String traj) {
@@ -39,17 +41,11 @@ public class WaltAutonFactory {
     }
 
     public Command pickupCmd(boolean isNeutral) {
-        setAlliance( 
-            DriverStation.getAlliance().isPresent() && 
-            DriverStation.getAlliance().get().equals(Alliance.Red)
-        );
-
-        Pose2d postPickupPose = isNeutral ? postPickupNeutral : postPickupDepot;
-        //postPickupPose = postPickupNeutral;
+        Pose2d postPickupPose = isNeutral ? m_postPickupNeutral : m_postPickupDepot;
 
         return Commands.sequence(
             Commands.print("-------------------------POST: " + postPickupPose.toString() + "------------------------------"),
-            Commands.print("------------------------------NEUTRAL: " + postPickupNeutral.toString() + "--------------------------------"),
+            Commands.print("------------------------------NEUTRAL: " + m_postPickupNeutral.toString() + "--------------------------------"),
             m_drivetrain.swerveToObject().withTimeout(1),
             m_drivetrain.toPose(postPickupPose).withTimeout(1)
         );
