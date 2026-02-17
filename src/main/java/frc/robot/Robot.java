@@ -100,6 +100,8 @@ public class Robot extends TimedRobot {
 
     private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
 
+    private Trigger trg_swerveToObject = m_driver.x();
+
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
 
@@ -204,7 +206,7 @@ public class Robot extends TimedRobot {
         /* CUSTOM BINDS */
 
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
-        m_driver.x().whileTrue(m_drivetrain.swerveToObject());
+        trg_swerveToObject.whileTrue(m_drivetrain.swerveToObject());
 
         // Test sequences
         trg_activateIntake.onTrue(m_superstructure.activateIntake());
