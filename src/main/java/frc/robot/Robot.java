@@ -150,8 +150,8 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
 
     public Robot() {
-        // configureBindings();
-        configureTestBindings();    //this should be commented out during competition matches
+        configureBindings();
+        // configureTestBindings();    //this should be commented out during competition matches
     }
 
     private Command driveCommand() {
@@ -219,6 +219,36 @@ public class Robot extends TimedRobot {
 
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
         m_driver.x().whileTrue(m_drivetrain.swerveToObject());
+
+        // Test sequences
+        trg_activateIntake.onTrue(m_superstructure.activateIntake());
+        trg_prepIntake.onTrue(m_superstructure.deactivateIntake(DeployPosition.SAFE));
+        trg_retractIntake.onTrue(m_superstructure.deactivateIntake(DeployPosition.RETRACTED));
+
+        trg_normalOuttake.onTrue(m_superstructure.activateOuttake(kFlywheelMaxRPS)).onFalse(m_superstructure.deactivateOuttake());
+        trg_emergencyOuttake.onTrue(m_superstructure.activateOuttake(kFlywheelEmergencyRPS)).onFalse(m_superstructure.deactivateOuttake());
+
+        trg_startPassing.onTrue(m_superstructure.startPassing());
+        trg_stopPassing.onTrue(m_superstructure.stopPassing());
+
+        // Override commands
+        trg_maxShooterOverride.onTrue(m_superstructure.maxShooter());
+        trg_stopShooterOverride.onTrue(m_superstructure.stopShooter());
+
+        trg_turret180Override.onTrue(m_superstructure.turretTo(180));
+        trg_turret0Override.onTrue(m_superstructure.turretTo(0));
+
+        trg_hood30Override.onTrue(m_superstructure.hoodTo(30));
+        trg_hood0Override.onTrue(m_superstructure.hoodTo(0));
+
+        trg_startSpinnerOverride.onTrue(m_superstructure.startSpinner()).onFalse(m_superstructure.stopSpinner());
+
+        trg_startExhaustOverride.onTrue(m_superstructure.startExhaust()).onFalse(m_superstructure.stopExhaust());
+
+        trg_maxRollersOverride.onTrue(m_superstructure.setRollersSpeed(RollersVelocity.MAX)).onFalse(m_superstructure.setRollersSpeed(RollersVelocity.STOP));
+
+        trg_deployIntakeOverride.onTrue(m_superstructure.intakeTo(DeployPosition.DEPLOYED)).onFalse(m_superstructure.intakeTo(DeployPosition.SAFE));
+        trg_intakeUpOverride.onTrue(m_superstructure.intakeTo(DeployPosition.RETRACTED));
     }
 
     private void configureTestBindings() {
