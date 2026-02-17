@@ -7,16 +7,14 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.Intake.DeployPosition;
 import frc.robot.subsystems.Intake.RollersVelocity;
 import frc.util.WaltLogger;
-import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.StringArrayLogger;
 
 import static edu.wpi.first.units.Units.Degree;
 import static frc.robot.Constants.RobotK.*;
-import static frc.robot.Constants.ShooterK.kFlywheelEmergencyRPS;
 import static frc.robot.Constants.ShooterK.kFlywheelMaxRPS;
 import static frc.robot.Constants.ShooterK.kFlywheelZeroRPS;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 public class Superstructure {
 
@@ -26,10 +24,10 @@ public class Superstructure {
     private final Shooter m_shooter;
 
     /* loggers */
-    private ArrayList<String> activeCommands = new ArrayList<>();
+    private HashSet<String> activeCommands = new HashSet<>();
     private final StringArrayLogger log_activeCommands = WaltLogger.logStringArray(kLogTab, "Active Commands");
 
-    private ArrayList<String> activeOverrideCommands = new ArrayList<>();
+    private HashSet<String> activeOverrideCommands = new HashSet<>();
     private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
     
     /* constructor */
@@ -121,11 +119,7 @@ public class Superstructure {
      */
     private Command logActiveCommands(String toAdd, String... toRemove) {
         Command addTo = Commands.runOnce(
-            () -> {
-                if (!activeCommands.contains(toAdd)) {
-                    activeCommands.add(toAdd);
-                }
-            }    
+            () -> activeCommands.add(toAdd)
         );
         Command removeFrom = Commands.runOnce(
             () -> {
@@ -258,11 +252,7 @@ public class Superstructure {
      */
     private Command logActiveOverrideCommands(String toAdd, String... toRemove) {
         Command addTo = Commands.runOnce(
-            () -> {
-                if (!activeOverrideCommands.contains(toAdd)) {
-                    activeOverrideCommands.add(toAdd);
-                }
-            }    
+            () -> activeOverrideCommands.add(toAdd)   
         );
         Command removeFrom = Commands.runOnce(
             () -> {
