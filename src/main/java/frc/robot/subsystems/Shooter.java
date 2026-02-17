@@ -105,6 +105,8 @@ public class Shooter extends SubsystemBase {
     private final BooleanLogger log_hoodEncoderMagnetInRange = WaltLogger.logBoolean(kLogTab, "hoodEncoderMagnetInRange");
     private final BooleanLogger log_hoodEncoderPresent = WaltLogger.logBoolean(kLogTab, "hoodEncoderPresent");
 
+    private final DoubleLogger log_PIDOutput = WaltLogger.logDouble(kLogTab, "PIDOutput");
+
     /* CONSTRUCTOR */
     public Shooter() {
         m_flywheelLeader.getConfigurator().apply(kFlywheelLeaderTalonFXConfiguration);
@@ -146,11 +148,14 @@ public class Shooter extends SubsystemBase {
             m_currentHoodPos = Rotations.of(m_hoodSim.getAngularPositionRotations());
         }
 
-        double hoodPIDOutput = m_hoodPID.calculate(m_currentHoodPos.magnitude(), m_hoodSetpoint.in(Rotations));
+        double hoodPIDOutput = m_hoodPID.calculate(m_currentHoodPos.magnitude(), m_hoodSetpoint.in(Rotations)) * 20;
 
+        
         hoodPIDOutput = MathUtil.clamp(hoodPIDOutput, -1.0, 1.0);
         hoodPIDOutput = (hoodPIDOutput + 1) / 2;
         m_hood.set(hoodPIDOutput);
+
+        log_PIDOutput.accept(hoodPIDOutput);
     }
 
     // Turret Commands (Motionmagic Angle Control)
