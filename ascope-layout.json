@@ -1,0 +1,207 @@
+{
+  "hubs": [
+    {
+      "x": 203,
+      "y": 236,
+      "width": 1101,
+      "height": 656,
+      "state": {
+        "sidebar": {
+          "width": 300,
+          "expanded": [
+            "/Robot",
+            "/Pose/robotPose",
+            "/Robot/Shooter",
+            "/Robot/Robot",
+            "/Robot/Intake",
+            "/Robot/Indexer",
+            "/Robot/Superstructure",
+            "/Robot/Superstructure/Active Commands",
+            "/Robot/Superstructure/Active Override Commands"
+          ]
+        },
+        "tabs": {
+          "selected": 1,
+          "tabs": [
+            {
+              "type": 0,
+              "title": "",
+              "controller": null,
+              "controllerUUID": "97trp3s1hbs120v0mau6b3592qnv33bc",
+              "renderer": "",
+              "controlsHeight": 0
+            },
+            {
+              "type": 1,
+              "title": "Line Graph",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Intake/intakeArmRots",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Shooter/hoodPositionDegs",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#3b875a",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Intake/intakeRollersRPS",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Shooter/shooterVelocityRPS",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Indexer/spindexerRPS",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#80588e",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Indexer/tunnelRPS",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e48b32",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "discreteSources": [
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/Robot/Superstructure/Active Commands",
+                    "logType": "StringArray",
+                    "visible": true,
+                    "options": {
+                      "color": "#c0b487"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/Robot/Superstructure/Active Override Commands",
+                    "logType": "StringArray",
+                    "visible": true,
+                    "options": {
+                      "color": "#858584"
+                    }
+                  }
+                ],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "db51jbjproi2pz7pesjvxknr6ndtzrdr",
+              "renderer": null,
+              "controlsHeight": 257
+            },
+            {
+              "type": 2,
+              "title": "2D Field",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robotLegacy",
+                    "logKey": "NT:/Pose/robotPose",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "bumpers": "",
+                      "format": "Pose2d",
+                      "units": "radians"
+                    }
+                  }
+                ],
+                "field": "FRC:2026 Field",
+                "orientation": 0,
+                "size": "large"
+              },
+              "controllerUUID": "ti0ylp8p0cmh52s41yuspb27g8u4tiwh",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 3,
+              "title": "3D Field",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robotLegacy",
+                    "logKey": "NT:/Pose/robotPose",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "model": "2026 KitBot",
+                      "format": "Pose2d",
+                      "units": "radians"
+                    }
+                  }
+                ],
+                "game": "FRC:2026 Field"
+              },
+              "controllerUUID": "bypzk7vf8b4yeqzlbrgyg6gi7ekau8ch",
+              "renderer": {
+                "cameraIndex": -1,
+                "orbitFov": 50,
+                "cameraPosition": [
+                  11.846755407657712,
+                  17.15758839624855,
+                  -5.829341748874562
+                ],
+                "cameraTarget": [
+                  -0.29988558515525204,
+                  0.48182580615580106,
+                  -0.008329838845257795
+                ]
+              },
+              "controlsHeight": 200
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "satellites": [],
+  "version": "26.0.0"
+}
