@@ -15,22 +15,24 @@ import frc.robot.Constants.VisionK;
 
 
 public class Detection {
-    private final PhotonCamera[] cameras = {
+    /* CLASS VARIABLES */
+    private final PhotonCamera[] m_cameras = {
         new PhotonCamera(VisionK.kCameras[0].getCameraName()),
         new PhotonCamera(VisionK.kCameras[1].getCameraName()),
         new PhotonCamera(VisionK.kCameras[2].getCameraName()),
         new PhotonCamera(VisionK.kCameras[3].getCameraName())
     };
-    private final VisionSim visionSim = new VisionSim();
+    private final VisionSim m_visionSim = new VisionSim();
 
-    private List<PhotonTrackedTarget> targetList = new LinkedList<>();
+    private List<PhotonTrackedTarget> m_targetList = new LinkedList<>();
 
+    /* METHODS */
     /**
      * loops through the pipeline results and adds target data results to a list of targetData
      */
     private void processCameraData() {
         List<PhotonPipelineResult> results = new LinkedList<>();
-        for(PhotonCamera camera : cameras) {
+        for(PhotonCamera camera : m_cameras) {
             results.addAll(camera.getAllUnreadResults());
         }
 
@@ -39,7 +41,7 @@ public class Detection {
                 Optional<PhotonTrackedTarget> bestTarget = Optional.of(result.getBestTarget());
 
                 if (bestTarget.isPresent()) {
-                    targetList.add(bestTarget.get()); 
+                    m_targetList.add(bestTarget.get()); 
                 }
             }
         }
@@ -53,13 +55,13 @@ public class Detection {
         PhotonTrackedTarget closestTarget = new PhotonTrackedTarget();
 
         if (Robot.isSimulation()) {
-            targetList = visionSim.simFuelList();
+            m_targetList = m_visionSim.simFuelList();
         }
 
-        if (targetList.size() > 0) {
+        if (m_targetList.size() > 0) {
             double closestArea = 0;
                     
-            for (PhotonTrackedTarget target : targetList) {
+            for (PhotonTrackedTarget target : m_targetList) {
                 double area = target.getArea();
 
                 //closer the target, the larger the area
@@ -84,6 +86,6 @@ public class Detection {
     }
 
     public void addFuel(Pose2d destination) {
-        visionSim.getSimDebugField().getObject("fuel").setPose(destination);
+        m_visionSim.getSimDebugField().getObject("fuel").setPose(destination);
     }
 }
