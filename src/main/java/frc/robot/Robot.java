@@ -245,136 +245,137 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
-        // Intake
-        m_driver.a().onTrue(
-            Commands.parallel(
-                m_intake.setIntakeArmPos(IntakeArmPosition.RETRACTED),
-                m_visualSim.setDeployPosition()
-        ));
-        m_driver.b().onTrue(
-            Commands.parallel(
-                m_intake.setIntakeArmPos(IntakeArmPosition.SAFE),
-                m_visualSim.setDeployPosition()
-        ));
-        m_driver.x().onTrue(
-            Commands.parallel(
-                m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED),
-                m_visualSim.setDeployPosition()
-        ));
-
-        m_driver.povRight().onTrue(
-            Commands.parallel(
-                m_intake.setIntakeRollersSpeed(IntakeRollersVelocity.MID),
-                m_visualSim.setRollerVelocity()
-        ));
-        m_driver.povDown().onTrue(
-            Commands.parallel(
-                m_intake.setIntakeRollersSpeed(IntakeRollersVelocity.STOP),
-                m_visualSim.setRollerVelocity()
-        )); 
-        m_driver.povUp().onTrue(
-            Commands.parallel(
-                m_intake.setIntakeRollersSpeed(IntakeRollersVelocity.MAX),
-                m_visualSim.setRollerVelocity()
-        ));
-
-        // Indexer
-        m_driver.povUp().onTrue(
-            Commands.parallel(
-                m_indexer.startSpindexer(),
-                m_visualSim.setSpinnerVelocity()
-            )
-        );
-        m_driver.povDown().onTrue(
-            Commands.parallel(
-                m_indexer.stopSpindexer(),
-                m_visualSim.setSpinnerVelocity()
-            )
-        );
-        m_driver.povLeft().onTrue(
-            Commands.parallel(
-                m_indexer.startTunnel(),
-                m_visualSim.setExhaustVelocity()
-            )
-        );
-        m_driver.povRight().onTrue(
-            Commands.parallel(
-                m_indexer.stopTunnel(),
-                m_visualSim.setExhaustVelocity()
-            )
-        );
-
-        // Shooter
-        m_driver.povDown().onTrue(
-            Commands.parallel(
-                m_shooter.setShooterVelocityCmd(RotationsPerSecond.of(0)),
-                m_visualSim.setFlywheelVelocity()
-            )
-        );
-        m_driver.povUp().onTrue(
-            Commands.parallel(
-                m_shooter.setShooterVelocityCmd(ShooterK.kShooterMaxRPS),
-                m_visualSim.setFlywheelVelocity()
-            )
-        );
-
-        m_driver.a().onTrue(
-            Commands.parallel(
-                m_shooter.setHoodPositionCmd(ShooterK.kHoodMinDegs),
-                m_visualSim.setHoodPosition()
-            )
-        );
-        m_driver.y().onTrue(
-            Commands.parallel(
-                m_shooter.setHoodPositionCmd(ShooterK.kHoodMaxDegs),
-                m_visualSim.setHoodPosition()
-            )
-        );
-
-        m_driver.leftTrigger().onTrue(
-            Commands.parallel(
-                m_shooter.setTurretPositionCmd(ShooterK.kTurretMinRots),
-                m_visualSim.setTurretPosition()
-            )
-        );
-        m_driver.leftBumper().onTrue(
-            Commands.parallel(
-                m_shooter.setTurretPositionCmd(Rotations.of(0)),
-                m_visualSim.setTurretPosition()
-            ));
-        m_driver.rightTrigger().onTrue(
-            Commands.parallel(
-                m_shooter.setTurretPositionCmd(ShooterK.kTurretMaxRots),
-                m_visualSim.setTurretPosition()
-            )
-        );
-
         // Test sequences
-        trg_activateIntake.onTrue(m_superstructure.activateIntake());
-        trg_prepIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.SAFE));
-        trg_retractIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED));
+        trg_activateIntake.onTrue(
+            Commands.parallel(
+                m_superstructure.activateIntake(),
+                m_visualSim.setIntakeArmPosition()
+            )
+        );
+        trg_prepIntake.onTrue(
+            Commands.parallel(
+                m_superstructure.deactivateIntake(IntakeArmPosition.SAFE),
+                m_visualSim.setIntakeArmPosition()
+            )
+        );
+        trg_retractIntake.onTrue(
+            Commands.parallel(    
+                m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED),
+                m_visualSim.setIntakeArmPosition()
+            )
+        );
 
-        trg_shoot.onTrue(m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)).onFalse(m_superstructure.deactivateOuttake());
-        trg_emergencyBarf.onTrue(m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)).onFalse(m_superstructure.deactivateOuttake());
+        trg_shoot.onTrue(
+            Commands.parallel(
+                m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS),
+                m_visualSim.setShooterVelocity()
+            )
+        ).onFalse(
+            Commands.parallel(
+                m_superstructure.deactivateOuttake(),
+                m_visualSim.setShooterVelocity()
+            )
+        );
+        trg_emergencyBarf.onTrue(
+            Commands.parallel(
+                m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS),
+                m_visualSim.setShooterVelocity()
+            )
+        ).onFalse(
+            Commands.parallel(
+                m_superstructure.deactivateOuttake(),
+                m_visualSim.setShooterVelocity()
+            )
+        );
 
-        trg_startPassing.onTrue(m_superstructure.startPassing());
-        trg_stopPassing.onTrue(m_superstructure.stopPassing());
+        trg_startPassing.onTrue(
+            Commands.parallel(
+                m_superstructure.startPassing(),
+                m_visualSim.setShooterVelocity()
+            )
+        );
+        trg_stopPassing.onTrue(
+            Commands.parallel(
+                m_superstructure.stopPassing(),
+                m_visualSim.setShooterVelocity()
+            )
+        );
 
         // Override commands
-        trg_maxShooterOverride.onTrue(m_superstructure.maxShooter());
+        trg_maxShooterOverride.onTrue(
+            Commands.parallel(
+                m_superstructure.maxShooter(),
+                m_visualSim.setShooterVelocity()
+            )
+        );
 
-        trg_turret180Override.onTrue(m_superstructure.turretTo(180));
+        trg_turret180Override.onTrue(
+            Commands.parallel(
+                m_superstructure.turretTo(180),
+                m_visualSim.setTurretPosition()
+            )
+        );
 
-        trg_hood30Override.onTrue(m_superstructure.hoodTo(30));
+        trg_hood30Override.onTrue(
+            Commands.parallel(
+                m_superstructure.hoodTo(30),
+                m_visualSim.setHoodPosition()
+            )
+        );
 
-        trg_startSpindexerOverride.onTrue(m_superstructure.startSpindexer()).onFalse(m_superstructure.stopSpindexer());
+        trg_startSpindexerOverride.onTrue(
+            Commands.parallel(
+                m_superstructure.startSpindexer(),
+                m_visualSim.setIntakeArmPosition()
+            )
+        ).onFalse(
+            Commands.parallel(
+                m_superstructure.stopSpindexer(),
+                m_visualSim.setIntakeArmPosition()
+            )
+        );
 
-        trg_startTunnelOverride.onTrue(m_superstructure.startTunnel()).onFalse(m_superstructure.stopTunnel());
+        trg_startTunnelOverride.onTrue(
+            Commands.parallel(
+                m_superstructure.startTunnel(),
+                m_visualSim.setTunnelVelocity()
+            )
+        ).onFalse(
+            Commands.parallel(
+                m_superstructure.stopTunnel(),
+                m_visualSim.setTunnelVelocity()
+            )
+        );
 
-        trg_maxRollersOverride.onTrue(m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.MAX)).onFalse(m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.STOP));
+        trg_maxRollersOverride.onTrue(
+            Commands.parallel(
+                m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.MAX),
+                m_visualSim.setIntakeRollerVelocity()
+            )
+        ).onFalse(
+            Commands.parallel(
+                m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.STOP),
+                m_visualSim.setIntakeRollerVelocity()
+            )
+        );
 
-        trg_deployIntakeOverride.onTrue(m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)).onFalse(m_superstructure.intakeTo(IntakeArmPosition.SAFE));
-        trg_intakeUpOverride.onTrue(m_superstructure.intakeTo(IntakeArmPosition.RETRACTED));
+        trg_deployIntakeOverride.onTrue(
+            Commands.parallel(
+                m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED),
+                m_visualSim.setIntakeArmPosition()
+            )
+        ).onFalse(
+            Commands.parallel(
+                m_superstructure.intakeTo(IntakeArmPosition.SAFE),
+                m_visualSim.setIntakeArmPosition()
+            )
+        );
+        trg_intakeUpOverride.onTrue(
+            Commands.parallel(
+                m_superstructure.intakeTo(IntakeArmPosition.RETRACTED),
+                m_visualSim.setIntakeArmPosition()
+            )
+        );
 
     }
 
