@@ -56,8 +56,6 @@ public class WaltAutonFactory {
 
 
         return Commands.sequence(
-            Commands.print("-------------------------POST: " + postPickupPose.toString() + "------------------------------"),
-            Commands.print("------------------------------NEUTRAL: " + m_postRightPickupNeutral.toString() + "--------------------------------"),
             m_drivetrain.swerveToObject().withTimeout(1),
             m_drivetrain.toPose(postPickupPose).withTimeout(1)
         );
