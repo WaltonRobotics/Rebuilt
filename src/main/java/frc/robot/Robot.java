@@ -335,6 +335,8 @@ public class Robot extends TimedRobot {
         m_autonList.putIfAbsent("oneLeftNeutralPickup", m_waltAutonFactory.oneLeftNeutralPickup());
         m_autonList.putIfAbsent("twoLeftNeutralPickup", m_waltAutonFactory.twoLeftNeutralPickup());
         m_autonList.putIfAbsent("threeLeftNeutralPickup", m_waltAutonFactory.threeLeftNeutralPickup());
+
+        m_autonomousCommand = m_autonList.get("threeRightNeutralPickup");
     }
 
     @Override
