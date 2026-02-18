@@ -15,8 +15,8 @@
      "val":2.6657562255859375
     },
     "heading":{
-     "exp":"2.3380149015041254 rad",
-     "val":2.3380149015041254
+     "exp":"-0.8223814729706524 rad",
+     "val":-0.8223814729706524
     }
    },
    "bumpNeutral":{
@@ -30,7 +30,7 @@
     },
     "heading":{
      "exp":"bumpAlliance.heading",
-     "val":2.3380149015041254
+     "val":-0.8223814729706524
     }
    },
    "depotPickup":{
@@ -43,8 +43,8 @@
      "val":5.958622932434082
     },
     "heading":{
-     "exp":"0 deg",
-     "val":0.0
+     "exp":"pi rad",
+     "val":3.141592653589793
     }
    },
    "depotShootPose":{
@@ -57,8 +57,8 @@
      "val":4.208367347717285
     },
     "heading":{
-     "exp":"0 deg",
-     "val":0.0
+     "exp":"pi rad",
+     "val":3.141592653589793
     }
    },
    "fuelPickupFour":{
@@ -72,7 +72,7 @@
     },
     "heading":{
      "exp":"fuelPickupThree.heading",
-     "val":3.141592653589793
+     "val":0.0
     }
    },
    "fuelPickupOne":{
@@ -85,8 +85,8 @@
      "val":2.6657562255859375
     },
     "heading":{
-     "exp":"3.141592653589793 rad",
-     "val":3.141592653589793
+     "exp":"0 rad",
+     "val":0.0
     }
    },
    "fuelPickupThree":{
@@ -100,7 +100,7 @@
     },
     "heading":{
      "exp":"fuelPickupTwo.heading",
-     "val":3.141592653589793
+     "val":0.0
     }
    },
    "fuelPickupTwo":{
@@ -114,7 +114,7 @@
     },
     "heading":{
      "exp":"fuelPickupOne.heading",
-     "val":3.141592653589793
+     "val":0.0
     }
    },
    "neutralShootPose":{
@@ -127,8 +127,8 @@
      "val":3.6933207511901855
     },
     "heading":{
-     "exp":"1.9426348471900197 rad",
-     "val":1.9426348471900197
+     "exp":"-1.2145398092226503 rad",
+     "val":-1.2145398092226505
     }
    },
    "outpostPickup":{
