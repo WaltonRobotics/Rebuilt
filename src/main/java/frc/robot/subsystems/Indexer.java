@@ -25,14 +25,11 @@ import frc.util.WaltLogger.DoubleLogger;
 public class Indexer extends SubsystemBase {
     /* VARIABLES */
     // Motors and Control Requests
-    private final TalonFX m_spindexer = new TalonFX(kSpindexerCANID, Constants.kCanivoreBus); // X60
-    private final TalonFX m_tunnel = new TalonFX(kTunnelCANID, Constants.kCanivoreBus); // X60
+    private final TalonFX m_spindexer = new TalonFX(kSpindexerCANID, Constants.kCanivoreBus); // X60Foc
+    private final TalonFX m_tunnel = new TalonFX(kTunnelCANID, Constants.kCanivoreBus); // X60Foc
 
     private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
     private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
-
-    private final AngularVelocity m_spindexerRPS = RotationsPerSecond.of(30);
-    private final AngularVelocity m_tunnelRPS = RotationsPerSecond.of(108);
 
     // Simulation
     private final DCMotorSim m_spindexerSim = new DCMotorSim(
