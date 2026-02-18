@@ -9,6 +9,7 @@ import static frc.robot.Constants.IndexerK.kLogTab;
 import static frc.robot.Constants.ShooterK.kFlywheelEmergencyRPS;
 import static frc.robot.Constants.ShooterK.kFlywheelMaxRPS;
 
+import java.util.HashMap;
 import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
@@ -32,7 +33,6 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.VisionK;
-import frc.robot.autons.WaltAutonFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Superstructure;
@@ -79,10 +79,13 @@ public class Robot extends TimedRobot {
     private final CommandXboxController m_manipulator = new CommandXboxController(1);
 
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
+
     private Command m_autonomousCommand;
+    private String m_autonChosen = "noAutonSelected";
 
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
     private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
+    private HashMap<String, Command> m_autonList = new HashMap<String, Command>();
 
     private final VisionSim m_visionSim = new VisionSim();
 
@@ -291,15 +294,6 @@ public class Robot extends TimedRobot {
         trg_intakeUpOverride.onTrue(m_superstructure.intakeTo(DeployPosition.RETRACTED));
     }
 
-    public Command getAutonomousCommand() {
-        m_waltAutonFactory.setAlliance( 
-            DriverStation.getAlliance().isPresent() && 
-            DriverStation.getAlliance().get().equals(Alliance.Red)
-        );
-
-        return m_waltAutonFactory.threeNeutralPickup();
-    }
-
     @Override
     public void robotPeriodic() {
         m_timeAndJoystickReplay.update();
@@ -327,18 +321,53 @@ public class Robot extends TimedRobot {
     }
 
     @Override
-    public void disabledInit() {}
+    public void disabledInit() {
+        m_waltAutonFactory.setAlliance(
+            DriverStation.getAlliance().isPresent() && 
+            DriverStation.getAlliance().get().equals(Alliance.Red)
+        );
+
+        AutonChooser.initialize();
+
+        m_autonList.putIfAbsent("oneNeutralPickup", m_waltAutonFactory.oneNeutralPickup());
+        m_autonList.putIfAbsent("twoNeutralPickup", m_waltAutonFactory.twoNeutralPickup());
+        m_autonList.putIfAbsent("threeNeutralPickup", m_waltAutonFactory.threeNeutralPickup());
+    }
 
     @Override
-    public void disabledPeriodic() {}
+    public void disabledPeriodic() {
+        if (!AutonChooser.m_chooser.getSelected().equals(m_autonChosen)) {
+            if (AutonChooser.m_chooser.getSelected().equals("oneNeutralPickup")) {
+                AutonChooser.pub_autonName.set("One Neutral Pickup");
+                m_autonChosen = "oneNeutralPickup";
+                AutonChooser.pub_autonMade.set(false);
+            }   
+
+            if (AutonChooser.m_chooser.getSelected().equals("twoNeutralPickup")) {
+                AutonChooser.pub_autonName.set("Two Neutral Pickup");
+                m_autonChosen = "twoNeutralPickup";
+                AutonChooser.pub_autonMade.set(false);
+            }
+
+            if (AutonChooser.m_chooser.getSelected().equals("threeNeutralPickup")) {
+                AutonChooser.pub_autonName.set("Three Neutral Pickup");
+                m_autonChosen = "threeNeutralPickup";
+                AutonChooser.pub_autonMade.set(false);
+            }
+        }
+
+        if (AutonChooser.sub_makeAuton.get()) {
+            m_autonomousCommand = m_autonList.get(m_autonChosen);
+            AutonChooser.pub_autonMade.set(true);
+            AutonChooser.pub_makeAuton.set(false);
+        }
+    }
 
     @Override
     public void disabledExit() {}
 
     @Override
     public void autonomousInit() {
-        m_autonomousCommand = getAutonomousCommand();
-
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
         }
