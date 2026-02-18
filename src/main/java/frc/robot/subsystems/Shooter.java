@@ -53,8 +53,9 @@ public class Shooter extends SubsystemBase {
     private final TalonFX m_turret = new TalonFX(kTurretCANID); //X44
     private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true);
 
-    // UNUSED - logic booleans
-    private boolean m_spunUp = false;
+    // logic booleans
+    private boolean m_spunUp = false;   //unused
+    private final boolean m_inSim = RobotBase.isSimulation();
 
     // UNUSED - beam breaks (if we have one on the shooter)
     public DigitalInput m_exitBeamBreak = new DigitalInput(kExitBeamBreakChannel);
@@ -142,9 +143,9 @@ public class Shooter extends SubsystemBase {
     // The PIDOutput needed to get to the setpoint from the current point
     public void updateHood() {
         // can't read from hardware in Sim, so we read from the hoodSim object
-        m_currentHoodPos = RobotBase.isSimulation() ? Rotations.of(m_hoodSim.getAngularPositionRotations()) : Rotations.of(m_hoodEncoder.getPosition());
+        m_currentHoodPos = m_inSim ? Rotations.of(m_hoodSim.getAngularPositionRotations()) : Rotations.of(m_hoodEncoder.getPosition());
 
-        double hoodPIDOutput = m_hoodPID.calculate(m_currentHoodPos.magnitude(), m_hoodSetpoint.in(Rotations)) * 7;
+        double hoodPIDOutput = m_hoodPID.calculate(m_currentHoodPos.magnitude(), m_hoodSetpoint.in(Rotations)) * 8;
         
         hoodPIDOutput = MathUtil.clamp(hoodPIDOutput, -1.0, 1.0);
         hoodPIDOutput = (hoodPIDOutput + 1) / 2;
