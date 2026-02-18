@@ -9,7 +9,6 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
-import frc.robot.Camera;
 import frc.robot.Robot;
 
 import java.util.List;
