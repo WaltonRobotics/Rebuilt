@@ -321,6 +321,9 @@ public class Constants {
 
         public static final double kSpindexerMOI = 0.00166190059;
         public static final double kTunnelMOI = 0.000215968064;
+      
+        public static final AngularVelocity m_spindexerRPS = RotationsPerSecond.of((5785/60) * (0.9) / kSpindexerGearing);  //Max RPM for X60Foc is 5785
+        public static final AngularVelocity m_tunnelRPS = RotationsPerSecond.of((5785/60) * (0.9) / kTunnelGearing);
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
