@@ -1,5 +1,5 @@
 {
- "name":"DepotToShoot",
+ "name":"RightDepotToShoot",
  "version":3,
  "snapshot":{
   "waypoints":[
@@ -13,8 +13,8 @@
  },
  "params":{
   "waypoints":[
-    {"x":{"exp":"depotPickup.x", "val":1.1576627492904663}, "y":{"exp":"depotPickup.y", "val":5.958622932434082}, "heading":{"exp":"depotPickup.heading", "val":3.141592653589793}, "intervals":29, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"depotShootPose.x", "val":2.660599708557129}, "y":{"exp":"depotShootPose.y", "val":4.208367347717285}, "heading":{"exp":"depotShootPose.heading", "val":3.141592653589793}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":{"exp":"rightDepotPickup.x", "val":1.1576627492904663}, "y":{"exp":"rightDepotPickup.y", "val":5.958622932434082}, "heading":{"exp":"rightDepotPickup.heading", "val":3.141592653589793}, "intervals":29, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"rightDepotShootPose.x", "val":2.660599708557129}, "y":{"exp":"rightDepotShootPose.y", "val":4.208367347717285}, "heading":{"exp":"rightDepotShootPose.heading", "val":3.141592653589793}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
