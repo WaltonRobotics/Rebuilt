@@ -86,7 +86,7 @@ public class Intake extends SubsystemBase {
     }
 
     public TalonFX getDeployMotor() {
-        return m_deploy;
+        return m_intakeArm;
     }
 
     @Override

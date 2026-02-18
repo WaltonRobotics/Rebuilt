@@ -5,9 +5,9 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.Constants.IndexerK.kLogTab;
-import static frc.robot.Constants.ShooterK.kFlywheelEmergencyRPS;
-import static frc.robot.Constants.ShooterK.kFlywheelMaxRPS;
+import static frc.robot.Constants.IndexerK;
+import static frc.robot.Constants.ShooterK;
+import static frc.robot.Constants.RobotK.*;
 
 import java.util.Optional;
 
@@ -61,7 +61,7 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
 
     private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
-    private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger("Robot", "VisionSeenLastSec");
+    private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger(kLogTab, "VisionSeenLastSec");
 
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
@@ -110,8 +110,8 @@ public class Robot extends TimedRobot {
     private Trigger trg_prepIntake = m_manipulator.x().and(trg_manipOverride.negate());
     private Trigger trg_retractIntake = m_manipulator.y().and(trg_manipOverride.negate());
 
-    private Trigger trg_normalOuttake = m_driver.rightTrigger().and(trg_manipOverride.negate());
-    private Trigger trg_emergencyOuttake = m_driver.leftTrigger().and(trg_manipOverride.negate());
+    private Trigger trg_shoot = m_driver.rightTrigger().and(trg_manipOverride.negate());
+    private Trigger trg_emergencyBarf = m_driver.leftTrigger().and(trg_manipOverride.negate());
 
     private Trigger trg_startPassing = m_manipulator.rightBumper().and(trg_manipOverride.negate());
     private Trigger trg_stopPassing = m_manipulator.leftBumper().and(trg_manipOverride.negate());
@@ -123,9 +123,9 @@ public class Robot extends TimedRobot {
 
     private Trigger trg_hood30Override = trg_manipOverride.and(m_manipulator.povUp());
 
-    private Trigger trg_startSpinnerOverride = trg_manipOverride.and(m_manipulator.rightBumper());
+    private Trigger trg_startSpindexerOverride = trg_manipOverride.and(m_manipulator.rightBumper());
 
-    private Trigger trg_startExhaustOverride = trg_manipOverride.and(m_manipulator.leftBumper());
+    private Trigger trg_startTunnelOverride = trg_manipOverride.and(m_manipulator.leftBumper());
 
     private Trigger trg_maxRollersOverride = trg_manipOverride.and(m_manipulator.povDown());
 
@@ -210,11 +210,11 @@ public class Robot extends TimedRobot {
 
         // Test sequences
         trg_activateIntake.onTrue(m_superstructure.activateIntake());
-        trg_prepIntake.onTrue(m_superstructure.deactivateIntake(DeployPosition.SAFE));
-        trg_retractIntake.onTrue(m_superstructure.deactivateIntake(DeployPosition.RETRACTED));
+        trg_prepIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.SAFE));
+        trg_retractIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED));
 
-        trg_normalOuttake.onTrue(m_superstructure.activateOuttake(kFlywheelMaxRPS)).onFalse(m_superstructure.deactivateOuttake());
-        trg_emergencyOuttake.onTrue(m_superstructure.activateOuttake(kFlywheelEmergencyRPS)).onFalse(m_superstructure.deactivateOuttake());
+        trg_shoot.onTrue(m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)).onFalse(m_superstructure.deactivateOuttake());
+        trg_emergencyBarf.onTrue(m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)).onFalse(m_superstructure.deactivateOuttake());
 
         trg_startPassing.onTrue(m_superstructure.startPassing());
         trg_stopPassing.onTrue(m_superstructure.stopPassing());
@@ -226,14 +226,14 @@ public class Robot extends TimedRobot {
 
         trg_hood30Override.onTrue(m_superstructure.hoodTo(30)).onFalse(m_superstructure.hoodTo(0));
 
-        trg_startSpinnerOverride.onTrue(m_superstructure.startSpinner()).onFalse(m_superstructure.stopSpinner());
+        trg_startSpindexerOverride.onTrue(m_superstructure.startSpindexer()).onFalse(m_superstructure.stopSpindexer());
 
-        trg_startExhaustOverride.onTrue(m_superstructure.startExhaust()).onFalse(m_superstructure.stopExhaust());
+        trg_startTunnelOverride.onTrue(m_superstructure.startTunnel()).onFalse(m_superstructure.stopTunnel());
 
-        trg_maxRollersOverride.onTrue(m_superstructure.setRollersSpeed(RollersVelocity.MAX)).onFalse(m_superstructure.setRollersSpeed(RollersVelocity.STOP));
+        trg_maxRollersOverride.onTrue(m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.MAX)).onFalse(m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.STOP));
 
-        trg_deployIntakeOverride.onTrue(m_superstructure.intakeTo(DeployPosition.DEPLOYED)).onFalse(m_superstructure.intakeTo(DeployPosition.SAFE));
-        trg_intakeUpOverride.onTrue(m_superstructure.intakeTo(DeployPosition.RETRACTED));
+        trg_deployIntakeOverride.onTrue(m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)).onFalse(m_superstructure.intakeTo(IntakeArmPosition.SAFE));
+        trg_intakeUpOverride.onTrue(m_superstructure.intakeTo(IntakeArmPosition.RETRACTED));
     }
 
     private void configureTestBindings() {
@@ -242,9 +242,9 @@ public class Robot extends TimedRobot {
         // m_driver.b().onTrue(m_intake.setIntakeArmPos(IntakeArmPosition.SAFE));
         // m_driver.x().onTrue(m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED));
 
-        // m_driver.povRight().onTrue(m_intake.setIntakeRollersSpeed(IntakeRollersVelocity.MID));
-        // m_driver.povDown().onTrue(m_intake.setIntakeRollersSpeed(IntakeRollersVelocity.STOP)); 
-        // m_driver.povUp().onTrue(m_intake.setIntakeRollersSpeed(IntakeRollersVelocity.MAX));
+        // m_driver.povRight().onTrue(m_intake.setIntakeRollersSpeed(IntakeIntakeRollersVelocity.MID));
+        // m_driver.povDown().onTrue(m_intake.setIntakeRollersSpeed(IntakeIntakeRollersVelocity.STOP)); 
+        // m_driver.povUp().onTrue(m_intake.setIntakeRollersSpeed(IntakeIntakeRollersVelocity.MAX));
 
         // Indexer
         // m_driver.povUp().onTrue(m_indexer.startSpindexer());
@@ -265,11 +265,11 @@ public class Robot extends TimedRobot {
 
         // Test sequences
         trg_activateIntake.onTrue(m_superstructure.activateIntake());
-        trg_prepIntake.onTrue(m_superstructure.deactivateIntake(DeployPosition.SAFE));
-        trg_retractIntake.onTrue(m_superstructure.deactivateIntake(DeployPosition.RETRACTED));
+        trg_prepIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.SAFE));
+        trg_retractIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED));
 
-        trg_normalOuttake.onTrue(m_superstructure.activateOuttake(kFlywheelMaxRPS)).onFalse(m_superstructure.deactivateOuttake());
-        trg_emergencyOuttake.onTrue(m_superstructure.activateOuttake(kFlywheelEmergencyRPS)).onFalse(m_superstructure.deactivateOuttake());
+        trg_shoot.onTrue(m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)).onFalse(m_superstructure.deactivateOuttake());
+        trg_emergencyBarf.onTrue(m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)).onFalse(m_superstructure.deactivateOuttake());
 
         trg_startPassing.onTrue(m_superstructure.startPassing());
         trg_stopPassing.onTrue(m_superstructure.stopPassing());
@@ -281,14 +281,14 @@ public class Robot extends TimedRobot {
 
         trg_hood30Override.onTrue(m_superstructure.hoodTo(30));
 
-        trg_startSpinnerOverride.onTrue(m_superstructure.startSpinner()).onFalse(m_superstructure.stopSpinner());
+        trg_startSpindexerOverride.onTrue(m_superstructure.startSpindexer()).onFalse(m_superstructure.stopSpindexer());
 
-        trg_startExhaustOverride.onTrue(m_superstructure.startExhaust()).onFalse(m_superstructure.stopExhaust());
+        trg_startTunnelOverride.onTrue(m_superstructure.startTunnel()).onFalse(m_superstructure.stopTunnel());
 
-        trg_maxRollersOverride.onTrue(m_superstructure.setRollersSpeed(RollersVelocity.MAX)).onFalse(m_superstructure.setRollersSpeed(RollersVelocity.STOP));
+        trg_maxRollersOverride.onTrue(m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.MAX)).onFalse(m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.STOP));
 
-        trg_deployIntakeOverride.onTrue(m_superstructure.intakeTo(DeployPosition.DEPLOYED)).onFalse(m_superstructure.intakeTo(DeployPosition.SAFE));
-        trg_intakeUpOverride.onTrue(m_superstructure.intakeTo(DeployPosition.RETRACTED));
+        trg_deployIntakeOverride.onTrue(m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)).onFalse(m_superstructure.intakeTo(IntakeArmPosition.SAFE));
+        trg_intakeUpOverride.onTrue(m_superstructure.intakeTo(IntakeArmPosition.RETRACTED));
     }
 
     public Command getAutonomousCommand() {

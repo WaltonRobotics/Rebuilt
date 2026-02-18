@@ -230,6 +230,10 @@ public class Constants {
     }
 
     public static class RobotK {
+        public static final String kLogTab = "Robot";
+    }
+
+    public static class SuperstructureK {
         public static final String kLogTab = "Superstructure";
     }
 
