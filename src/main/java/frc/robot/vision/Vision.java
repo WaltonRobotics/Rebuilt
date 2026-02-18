@@ -18,7 +18,6 @@ import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -54,10 +53,7 @@ public class Vision {
         m_simVisualName = simVisualName;
         m_visionSim = visionSim;
 
-        m_photonEstimator =
-                new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, roboToCam);
-        m_photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
-
+        m_photonEstimator = new PhotonPoseEstimator(kTagLayout, roboToCam);
         log_camPose = NetworkTableInstance.getDefault()
             .getStructTopic("Vision/" + cameraName + "/estRobotPose", Pose2d.struct).publish();
         log_stdDevs = NetworkTableInstance.getDefault()
@@ -107,7 +103,7 @@ public class Vision {
         List<PhotonPipelineResult> unreadCameraResults = m_camera.getAllUnreadResults();
 
         for (var change : unreadCameraResults) {
-            visionEst = m_photonEstimator.update(change);
+            visionEst = m_photonEstimator.estimateCoprocMultiTagPose(change);
             updateEstimationStdDevs(visionEst, change.getTargets());
             log_stdDevs.accept(m_curStdDevs.getData());
 

@@ -42,7 +42,6 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Intake.IntakeRollersVelocity;
@@ -230,9 +229,9 @@ public class Robot extends TimedRobot {
         // Override commands
         trg_maxShooterOverride.onTrue(m_superstructure.maxShooter()).onFalse(m_superstructure.stopShooter());
 
-        trg_turret180Override.onTrue(m_superstructure.turretTo(180)).onFalse(m_superstructure.turretTo(0));
+        trg_turret180Override.onTrue(m_superstructure.turretTo(Degrees.of(180))).onFalse(m_superstructure.turretTo(Degrees.of(0)));
 
-        trg_hood30Override.onTrue(m_superstructure.hoodTo(30)).onFalse(m_superstructure.hoodTo(0));
+        trg_hood30Override.onTrue(m_superstructure.hoodTo(Degrees.of(30))).onFalse(m_superstructure.hoodTo(Degrees.of(0)));
 
         trg_startSpindexerOverride.onTrue(m_superstructure.startSpindexer()).onFalse(m_superstructure.stopSpindexer());
 
@@ -314,24 +313,24 @@ public class Robot extends TimedRobot {
 
         trg_turret180Override.onTrue(
             Commands.parallel(
-                m_superstructure.turretTo(180),
+                m_superstructure.turretTo(Degrees.of(180)),
                 m_visualSim.setTurretPosition()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.turretTo(0),
+                m_superstructure.turretTo(Degrees.of(0)),
                 m_visualSim.setTurretPosition()
             )
         );
 
         trg_hood30Override.onTrue(
             Commands.parallel(
-                m_superstructure.hoodTo(30),
+                m_superstructure.hoodTo(Degrees.of(30)),
                 m_visualSim.setHoodPosition()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.hoodTo(0),
+                m_superstructure.hoodTo(Degrees.of(0)),
                 m_visualSim.setHoodPosition()
             )
         );
@@ -430,6 +429,8 @@ public class Robot extends TimedRobot {
         m_autonList.putIfAbsent("oneNeutralPickup", m_waltAutonFactory.oneNeutralPickup());
         m_autonList.putIfAbsent("twoNeutralPickup", m_waltAutonFactory.twoNeutralPickup());
         m_autonList.putIfAbsent("threeNeutralPickup", m_waltAutonFactory.threeNeutralPickup());
+
+        m_autonomousCommand = m_autonList.get("threeNeutralPickup");
     }
 
     @Override
