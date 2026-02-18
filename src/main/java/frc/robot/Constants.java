@@ -207,11 +207,11 @@ public class Constants {
 
     public static class RobotK {
         public static final String kLogTab = "Superstructure";
-        //these values arent even dummy theyre just stupid
-        //TODO: ask hrehaan or build for dimensions
-        public static final Distance kRobotFullWidth = Feet.of(6.9);
-        public static final Distance kRobotFullLength = Feet.of(6.9);
-        public static final Distance kBumperHeight = Feet.of(6.9);
+
+        //real values
+        public static final Distance kRobotFullWidth = Inches.of(33.6875);
+        public static final Distance kRobotFullLength = Inches.of(32.6875);
+        public static final Distance kBumperHeight = Inches.of(4.5);
 
     }
 }
