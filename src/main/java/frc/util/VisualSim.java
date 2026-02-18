@@ -24,17 +24,17 @@ public class VisualSim {
     private final Indexer m_indexer;
     private final Shooter m_shooter;
 
-    private final MechanismLigament2d m_deployPosition;
-    private final MechanismLigament2d m_rollerVelocity;
+    private final MechanismLigament2d m_intakeArmPosition;
+    private final MechanismLigament2d m_intakeRollerVelocity;
 
-    private final MechanismLigament2d m_spinnerVelocity;
-    private final MechanismLigament2d m_exhaustVelocity;
+    private final MechanismLigament2d m_spindexerVelocity;
+    private final MechanismLigament2d m_tunnelVelocity;
 
-    private final MechanismLigament2d m_flywheelVelocity;
+    private final MechanismLigament2d m_shooterVelocity;
     private final MechanismLigament2d m_hoodPosition;
     private final MechanismLigament2d m_turretPosition;
 
-    private final Rotation2d m_deployStartAngle;
+    private final Rotation2d m_intakeArmStartAngle;
     private final Rotation2d m_hoodStartAngle;
     private final Rotation2d m_turretStartAngle;
 
@@ -53,25 +53,25 @@ public class VisualSim {
         MechanismRoot2d shooterRoot = shooterMech.getRoot("shooter", 5, 5);
 
         //--INTAKE
-        m_deployPosition = intakeRoot.append(
-            new MechanismLigament2d("deployPosition", 4, 90)
+        m_intakeArmPosition = intakeRoot.append(
+            new MechanismLigament2d("intakeArmPosition", 4, 90)
         );
-        m_rollerVelocity = intakeRoot.append(
-            new MechanismLigament2d("intakeVelocity", 0, 0, 4, new Color8Bit(Color.kPeachPuff))
+        m_intakeRollerVelocity = intakeRoot.append(
+            new MechanismLigament2d("intakeRollerVelocity", 0, 0, 4, new Color8Bit(Color.kPeachPuff))
         );
-        m_deployStartAngle = new Rotation2d(Degrees.of(90));
+        m_intakeArmStartAngle = new Rotation2d(Degrees.of(90));
 
         //--INDEXER
-        m_spinnerVelocity = indexerRoot.append(
-            new MechanismLigament2d("spinnerVelocity", 0, 0, 4, new Color8Bit(Color.kCornflowerBlue))
+        m_spindexerVelocity = indexerRoot.append(
+            new MechanismLigament2d("spindexerVelocity", 0, 0, 4, new Color8Bit(Color.kCornflowerBlue))
         );
-        m_exhaustVelocity = indexerRoot.append(
-            new MechanismLigament2d("exhaustVelocity", 0, 90, 4, new Color8Bit(Color.kAzure))
+        m_tunnelVelocity = indexerRoot.append(
+            new MechanismLigament2d("tunnelVelocity", 0, 90, 4, new Color8Bit(Color.kAzure))
         );
 
         //--SHOOTER
-        m_flywheelVelocity = shooterRoot.append(
-            new MechanismLigament2d("flywheelVelocity", 0, 270, 4, new Color8Bit(Color.kFirebrick))
+        m_shooterVelocity = shooterRoot.append(
+            new MechanismLigament2d("shooterVelocity", 0, 270, 4, new Color8Bit(Color.kFirebrick))
         );
         m_hoodPosition = shooterRoot.append(
             new MechanismLigament2d("hoodPosition", 4, 90, 4, new Color8Bit(Color.kDarkSalmon))
@@ -97,30 +97,30 @@ public class VisualSim {
     }
 
     //--INTAKE
-    public Command setDeployPosition() {
+    public Command setIntakeArmPosition() {
         return Commands.run(
             () -> {
-                m_deployPosition.setAngle(new Rotation2d(m_intake.getDeploy().getPosition().getValue()).plus(m_deployStartAngle));
+                m_intakeArmPosition.setAngle(new Rotation2d(m_intake.getIntakeArmMotor().getPosition().getValue()).plus(m_intakeArmStartAngle));
             }
         );
     }
 
-    public Command setRollerVelocity() {
-        return setVelocity(m_rollerVelocity, m_intake.getRollers());
+    public Command setIntakeRollerVelocity() {
+        return setVelocity(m_intakeRollerVelocity, m_intake.getIntakeRollers());
     }
 
     //--INDEXER
-    public Command setSpinnerVelocity() {
-        return setVelocity(m_spinnerVelocity, m_indexer.getSpinner());
+    public Command setSpindexerVelocity() {
+        return setVelocity(m_spindexerVelocity, m_indexer.getSpindexer());
     }
 
-    public Command setExhaustVelocity() {
-        return setVelocity(m_exhaustVelocity, m_indexer.getExhaust());
+    public Command setTunnelVelocity() {
+        return setVelocity(m_tunnelVelocity, m_indexer.getTunnel());
     }
 
     //--SHOOTER
-    public Command setFlywheelVelocity() {
-        return setVelocity(m_flywheelVelocity, m_shooter.getShooter());
+    public Command setShooterVelocity() {
+        return setVelocity(m_shooterVelocity, m_shooter.getShooter());
     }
 
     //currently this will not work until hrehaan's fixies exist

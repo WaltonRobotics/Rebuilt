@@ -85,16 +85,12 @@ public class Intake extends SubsystemBase {
         return runOnce(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RPS)));
     }
 
-    public TalonFX getDeployMotor() {
+    public TalonFX getIntakeArmMotor() {
         return m_intakeArm;
     }
 
-    public TalonFX getRollers() {
+    public TalonFX getIntakeRollers() {
         return m_intakeRollers;
-    }
-
-    public TalonFX getDeploy() {
-        return m_intakeArm;
     }
 
     @Override

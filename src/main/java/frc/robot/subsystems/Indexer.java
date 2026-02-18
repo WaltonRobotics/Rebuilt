@@ -96,11 +96,11 @@ public class Indexer extends SubsystemBase {
         return runOnce(() -> m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS)));
     }
 
-    public TalonFX getSpinner() {
+    public TalonFX getSpindexer() {
         return m_spindexer;
     }
 
-    public TalonFX getExhaust() {
+    public TalonFX getTunnel() {
         return m_tunnel;
     }
 
