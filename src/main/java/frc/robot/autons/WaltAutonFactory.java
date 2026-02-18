@@ -16,12 +16,13 @@ public class WaltAutonFactory {
 
     //desired pose to go to after right fuel pickup
     private Pose2d m_postRightPickupNeutral;
-    //desired pose to go to after right depot pickup
-    private Pose2d m_postRightPickupDepot;
-    
-    //desired pose to go to after left fuel pickup
+        //desired pose to go to after left fuel pickup
     private Pose2d m_postLeftPickupNeutral;
 
+    //desired pose to go to after right depot pickup
+    //note: this name might change if a left depot path is created
+    private Pose2d m_postPickupDepot;
+    
     private String[] neutralCycle;
 
     public WaltAutonFactory(AutoFactory autoFactory, Swerve drivetrain) {
@@ -33,7 +34,7 @@ public class WaltAutonFactory {
 
     public void setAlliance(boolean isRed) {
         m_postRightPickupNeutral = isRed ? AllianceFlipUtil.flip(AutonK.rightNeutralPose) : AutonK.rightNeutralPose;
-        m_postRightPickupDepot = isRed ? AllianceFlipUtil.flip(AutonK.rightDepotPose) : AutonK.rightDepotPose;
+        m_postPickupDepot = isRed ? AllianceFlipUtil.flip(AutonK.rightDepotPose) : AutonK.rightDepotPose;
 
         m_postLeftPickupNeutral = isRed ? AllianceFlipUtil.flip(AutonK.leftNeutralPose) : AutonK.leftNeutralPose;
     }
@@ -46,11 +47,11 @@ public class WaltAutonFactory {
     }
 
     public Command pickupCmd(boolean isNeutral, boolean isRight) {
-        Pose2d postPickupPose = isNeutral ? m_postLeftPickupNeutral : m_postRightPickupDepot;
+        Pose2d postPickupPose = isNeutral ? m_postLeftPickupNeutral : m_postPickupDepot;
 
         //b/c there are currently no left auton paths that go to the depot, if the path is to depot, it will default to the right post depot pickup
         if (isRight) {
-            postPickupPose = isNeutral ? m_postRightPickupNeutral : m_postRightPickupDepot;
+            postPickupPose = isNeutral ? m_postRightPickupNeutral : m_postPickupDepot;
         }
 
 
