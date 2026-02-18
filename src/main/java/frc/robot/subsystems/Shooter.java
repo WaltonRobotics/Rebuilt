@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+import static frc.robot.Constants;
 import static frc.robot.Constants.ShooterK.*;
 
 import frc.util.MotorSim;
@@ -34,14 +35,14 @@ import frc.util.WaltLogger.DoubleLogger;
 public class Shooter extends SubsystemBase {
     /* VARIABLES */
     // motors + control requests
-    private final TalonFX m_shooterLeader = new TalonFX(kLeaderCANID); //X60
-    private final TalonFX m_shooterFollower = new TalonFX(kFollowerCANID); //X60
+    private final TalonFX m_shooterLeader = new TalonFX(kLeaderCANID, Constants.kCanivoreBus); //X60
+    private final TalonFX m_shooterFollower = new TalonFX(kFollowerCANID, Constants.kCanivoreBus); //X60
     private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(true);
 
     private final Servo m_hood = new Servo(kHoodChannel);
     private final Canandmag m_hoodEncoder = new Canandmag(kHoodEncoderChannel);
 
-    private final TalonFX m_turret = new TalonFX(kTurretCANID); //X44
+    private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); //X44
     private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true);
 
     // logic booleans
