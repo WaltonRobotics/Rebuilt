@@ -116,7 +116,7 @@ public class Robot extends TimedRobot {
 
     // Command sequence triggers
     private Trigger trg_activateIntake = m_manipulator.a().and(trg_manipOverride.negate());
-    private Trigger trg_prepIntake = m_manipulator.x().and(trg_manipOverride.negate());
+    private Trigger trg_safeIntake = m_manipulator.x().and(trg_manipOverride.negate());
     private Trigger trg_retractIntake = m_manipulator.y().and(trg_manipOverride.negate());
 
     private Trigger trg_shoot = m_driver.rightTrigger().and(trg_manipOverride.negate());
@@ -176,8 +176,8 @@ public class Robot extends TimedRobot {
 
     private void configureBindings() {
         /* GENERATED SWERVE BINDS */
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
+        // +X: forward according to WPILib convention
+        // +Y: left according to WPILib convention
         m_drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             m_drivetrain.applyRequest(() ->
@@ -218,7 +218,7 @@ public class Robot extends TimedRobot {
 
         // Test sequences
         trg_activateIntake.onTrue(m_superstructure.activateIntake());
-        trg_prepIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.SAFE));
+        trg_safeIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.SAFE));
         trg_retractIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED));
 
         trg_shoot.and(trg_pass.negate()).onTrue(m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)).onFalse(m_superstructure.deactivateOuttake());
@@ -250,7 +250,7 @@ public class Robot extends TimedRobot {
                 m_visualSim.setIntakeArmPosition()
             )
         );
-        trg_prepIntake.onTrue(
+        trg_safeIntake.onTrue(
             Commands.parallel(
                 m_superstructure.deactivateIntake(IntakeArmPosition.SAFE),
                 m_visualSim.setIntakeArmPosition()
