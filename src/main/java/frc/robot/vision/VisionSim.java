@@ -60,7 +60,6 @@ public class VisionSim {
             45, 30, 90, 20, -1, -1, -1, new Transform3d(8, 5, 0, fuelRotation), new Transform3d(), 0, new LinkedList<>(), new LinkedList<>()
         );
 
-        
         simTargetList.add(simFuel);
         simTargetList.add(simFuelTwo);
         simTargetList.add(simFuelThree);
