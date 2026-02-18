@@ -49,7 +49,7 @@ public class Superstructure {
         Command logCommand;
         switch (pos) {
             case SAFE:
-                if (m_intake.getDeployMotor().getStatorCurrent().getValueAsDouble() < 40) {
+                if (m_intake.getIntakeArmMotor().getStatorCurrent().getValueAsDouble() < 40) {
                     logCommand = logActiveCommands("safeIntake", "activateIntake", "retractIntake");
                 } else {
                     return Commands.none();
@@ -295,7 +295,7 @@ public class Superstructure {
                 logCommand = logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp");
                 break;
             default:
-                if (m_intake.getDeployMotor().getStatorCurrent().getValueAsDouble() < 40) {
+                if (m_intake.getIntakeArmMotor().getStatorCurrent().getValueAsDouble() < 40) {
                     logCommand = logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake");
                 }
                 else {

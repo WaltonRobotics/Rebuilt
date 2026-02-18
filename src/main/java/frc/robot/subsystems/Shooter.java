@@ -160,6 +160,18 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> m_turret.setControl(m_MMVRequest.withPosition(rots)));
     }
 
+    public TalonFX getShooter() {
+        return m_shooterLeader;
+    }
+
+    public DCMotorSim getSimHoodEncoder() {
+        return m_hoodSim;
+    }
+
+    public TalonFX getTurret() {
+        return m_turret;
+    }
+
     /* PERIODICS */
     @Override
     public void periodic() {
