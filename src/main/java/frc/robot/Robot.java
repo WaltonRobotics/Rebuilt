@@ -226,9 +226,9 @@ public class Robot extends TimedRobot {
         // Override commands
         trg_maxShooterOverride.onTrue(m_superstructure.maxShooter()).onFalse(m_superstructure.stopShooter());
 
-        trg_turret180Override.onTrue(m_superstructure.turretTo(180)).onFalse(m_superstructure.turretTo(0));
+        trg_turret180Override.onTrue(m_superstructure.turretTo(Degrees.of(180))).onFalse(m_superstructure.turretTo(Degrees.of(0)));
 
-        trg_hood30Override.onTrue(m_superstructure.hoodTo(30)).onFalse(m_superstructure.hoodTo(0));
+        trg_hood30Override.onTrue(m_superstructure.hoodTo(Degrees.of(30))).onFalse(m_superstructure.hoodTo(Degrees.of(0)));
 
         trg_startSpindexerOverride.onTrue(m_superstructure.startSpindexer()).onFalse(m_superstructure.stopSpindexer());
 
@@ -279,9 +279,9 @@ public class Robot extends TimedRobot {
         // Override commands
         trg_maxShooterOverride.onTrue(m_superstructure.maxShooter());
 
-        trg_turret180Override.onTrue(m_superstructure.turretTo(180));
+        trg_turret180Override.onTrue(m_superstructure.turretTo(Degrees.of(180)));
 
-        trg_hood30Override.onTrue(m_superstructure.hoodTo(30));
+        trg_hood30Override.onTrue(m_superstructure.hoodTo(Degrees.of(30)));
 
         trg_startSpindexerOverride.onTrue(m_superstructure.startSpindexer()).onFalse(m_superstructure.stopSpindexer());
 
