@@ -1,12 +1,11 @@
 package frc.util;
 
-import static frc.robot.Constants.ShooterK.kTurretGearing;
-
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import frc.robot.Constants;
@@ -37,5 +36,16 @@ public class MotorSim {
 
         motorFXSimState.setRotorVelocity(motorSim.getAngularVelocity().times(motorSim.getGearing()));
         motorFXSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+    }
+
+    // designed for the hood servo, but can be used by other servos
+    public static void updateSimServo(Servo servo, DCMotorSim motorSim) {
+        double volts = servo.get();
+        volts -= 0.5; // sets the range from [0, 1] to be [-0.5, 0.5]
+        volts *= 2; // sets the range from [-0.5, 0.5] to be [-1, 1]
+        volts *= motorSim.getGearbox().nominalVoltageVolts; // applies the volts sent to the servo on a [-6, 6] range
+
+        motorSim.setInputVoltage(volts);
+        motorSim.update(Constants.kSimPeriodicUpdateInterval);
     }
 }
