@@ -44,7 +44,6 @@ import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
-import frc.robot.subsystems.Intake.IntakeRollersVelocity;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
@@ -237,7 +236,7 @@ public class Robot extends TimedRobot {
 
         trg_startTunnelOverride.onTrue(m_superstructure.startTunnel()).onFalse(m_superstructure.stopTunnel());
 
-        trg_maxRollersOverride.onTrue(m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.MAX)).onFalse(m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.STOP));
+        trg_maxRollersOverride.onTrue(m_superstructure.startIntakeRollers()).onFalse(m_superstructure.stopIntakeRollers());
 
         trg_deployIntakeOverride.onTrue(m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)).onFalse(m_superstructure.intakeTo(IntakeArmPosition.SAFE));
         trg_intakeUpOverride.onTrue(m_superstructure.intakeTo(IntakeArmPosition.RETRACTED));
@@ -361,12 +360,12 @@ public class Robot extends TimedRobot {
 
         trg_maxRollersOverride.onTrue(
             Commands.parallel(
-                m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.MAX),
+                m_superstructure.startIntakeRollers(),
                 m_visualSim.setIntakeRollerVelocity()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.STOP),
+                m_superstructure.stopIntakeRollers(),
                 m_visualSim.setIntakeRollerVelocity()
             )
         );
