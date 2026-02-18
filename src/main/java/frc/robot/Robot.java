@@ -35,6 +35,8 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
+import frc.robot.subsystems.Intake.IntakeArmPosition;
+import frc.robot.subsystems.Intake.IntakeRollersVelocity;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
@@ -171,13 +173,13 @@ public class Robot extends TimedRobot {
 
     private void configureTestBindings() {
         // Intake
-        // m_driver.a().onTrue(m_intake.setDeployPos(DeployPosition.RETRACTED));
-        // m_driver.b().onTrue(m_intake.setDeployPos(DeployPosition.SAFE));
-        // m_driver.x().onTrue(m_intake.setDeployPos(DeployPosition.DEPLOYED));
+        // m_driver.a().onTrue(m_intake.setIntakeArmPos(IntakeArmPosition.RETRACTED));
+        // m_driver.b().onTrue(m_intake.setIntakeArmPos(IntakeArmPosition.SAFE));
+        // m_driver.x().onTrue(m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED));
 
-        // m_driver.povRight().onTrue(m_intake.setRollersSpeed(RollersVelocity.MID));
-        // m_driver.povDown().onTrue(m_intake.setRollersSpeed(RollersVelocity.STOP)); 
-        // m_driver.povUp().onTrue(m_intake.setRollersSpeed(RollersVelocity.MAX));
+        // m_driver.povRight().onTrue(m_intake.setIntakeRollersSpeed(IntakeRollersVelocity.MID));
+        // m_driver.povDown().onTrue(m_intake.setIntakeRollersSpeed(IntakeRollersVelocity.STOP)); 
+        // m_driver.povUp().onTrue(m_intake.setIntakeRollersSpeed(IntakeRollersVelocity.MAX));
 
         // Indexer
         // m_driver.povUp().onTrue(m_indexer.startSpindexer());
