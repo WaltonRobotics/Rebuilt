@@ -120,7 +120,7 @@ public class VisualSim {
 
     //--SHOOTER
     public Command setFlywheelVelocity() {
-        return setVelocity(m_flywheelVelocity, m_shooter.getFlywheel());
+        return setVelocity(m_flywheelVelocity, m_shooter.getShooter());
     }
 
     //currently this will not work until hrehaan's fixies exist

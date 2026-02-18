@@ -97,11 +97,11 @@ public class Indexer extends SubsystemBase {
     }
 
     public TalonFX getSpinner() {
-        return m_spinner;
+        return m_spindexer;
     }
 
     public TalonFX getExhaust() {
-        return m_exhaust;
+        return m_tunnel;
     }
 
     /* PERIODICS */
