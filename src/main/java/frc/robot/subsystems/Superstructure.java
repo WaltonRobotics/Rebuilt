@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -10,6 +11,7 @@ import frc.util.WaltLogger;
 import frc.util.WaltLogger.StringArrayLogger;
 
 import static edu.wpi.first.units.Units.Degree;
+import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.Constants.SuperstructureK.*;
 import static frc.robot.Constants.ShooterK;
 
@@ -186,15 +188,15 @@ public class Superstructure {
      * Rotates the turret to the given degs
      * @param degs degrees to rotate to.
      */
-    public Command turretTo(double degs) {
+    public Command turretTo(Angle degs) {
         Command logCommand;
-        if (degs == 180) {
+        if (degs.magnitude() == 180) {
             logCommand = logActiveOverrideCommands("turret180", "turret0");
         } else {
             logCommand = logActiveOverrideCommands("turret0", "turret180");
         }
         return Commands.sequence(
-            m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(degs, Degree)),
+            m_shooter.setTurretPositionCmd(Rotations.of(degs.in(Rotations))),
             logCommand
         );
     }
@@ -204,15 +206,15 @@ public class Superstructure {
      * @param degs degrees to raise/lower to.
      * @return
      */
-    public Command hoodTo(double degs) {
+    public Command hoodTo(Angle degs) {
         Command logCommand;
-        if (degs == 30) {
+        if (degs.magnitude() == 30) {
             logCommand = logActiveOverrideCommands("hood30", "hood0");
         } else {
             logCommand = logActiveOverrideCommands("hood0", "hood30");
         }
         return Commands.sequence(
-            m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(degs, Degree)),
+            m_shooter.setHoodPositionCmd(degs),
             logCommand
         );
     }
