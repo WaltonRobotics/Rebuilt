@@ -399,13 +399,19 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     /**
      * robot goes to detected target
      */
-    public Command swerveToObject() {
-        
+    public Command swerveToObject() {   
         PhotonTrackedTarget target = detection.getClosestObject();
         Pose2d destination = detection.targetToPose(getState().Pose, target);
+        // Pose2d destination = new Pose2d(5,5, Rotation2d.kZero);
         detection.addFuel(destination);
         
-        return toPose(destination);
+        return Commands.parallel(
+            toPose(destination)
+            // Commands.print("=========DESIRED TARGET: " + !target.equals(new PhotonTrackedTarget()) + "====================="),
+            // Commands.print("=============TRANSLATION X: " + target.getBestCameraToTarget().getX() + "===================="),
+            // Commands.print("===================TRANSLATION Y: " + target.getBestCameraToTarget().getY() + "=============="),
+            // Commands.print("===============TRANSLATION Z: " + target.getBestCameraToTarget().getZ() + "=================")
+        );
     }
 
     public static Pose2d faceFuelPose(Pose2d robotPose, Pose2d fuelLocation) {
