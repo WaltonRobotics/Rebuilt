@@ -213,15 +213,15 @@ public class Robot extends TimedRobot {
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
-        driver.povUp().onTrue(m_shooter.setFlywheelVelocityCmd(FlywheelVelocity.ZERO));
-        driver.povRight().onTrue(m_shooter.setFlywheelVelocityCmd(FlywheelVelocity.SCORE));
-        driver.povDown().onTrue(m_shooter.setFlywheelVelocityCmd(FlywheelVelocity.MAX));
-        driver.povLeft().onTrue(m_shooter.setFlywheelVelocityCmd(FlywheelVelocity.PASS));
+        // driver.povUp().onTrue(m_shooter.setFlywheelVelocityCmd(FlywheelVelocity.ZERO));
+        // driver.povRight().onTrue(m_shooter.setFlywheelVelocityCmd(FlywheelVelocity.SCORE));
+        // driver.povDown().onTrue(m_shooter.setFlywheelVelocityCmd(FlywheelVelocity.MAX));
+        // driver.povLeft().onTrue(m_shooter.setFlywheelVelocityCmd(FlywheelVelocity.PASS));
 
-        driver.leftBumper().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.MIN));
-        driver.rightBumper().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.SCORE));
-        driver.leftTrigger().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.PASS));
-        driver.y().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.MAX));
+        // driver.leftBumper().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.MIN));
+        // driver.rightBumper().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.SCORE));
+        // driver.leftTrigger().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.PASS));
+        // driver.y().onTrue(m_shooter.setHoodPositionCmd(HoodPosition.MAX));
 
         // driver.leftBumper().onTrue(m_shooter.setTurretPositionCmd(TurretPosition.SCORE));
         // driver.rightBumper().onTrue(shooter.setTurretPositionCmd(TurretPosition.PASS));
@@ -250,8 +250,10 @@ public class Robot extends TimedRobot {
             FuelSim.getInstance().clearFuel();
             // FuelSim.getInstance().spawnStartingFuel();
         }));
+
         driver.x().onTrue(m_shooter.setGoal(TurretGoal.SCORING));
         driver.leftBumper().onTrue(m_shooter.setGoal(TurretGoal.OFF));
+        driver.y().onTrue(m_shooter.setGoal(TurretGoal.TEST));
         }
 
     public Command getAutonomousCommand() {

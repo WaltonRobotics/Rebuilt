@@ -469,7 +469,6 @@ public class FuelSim {
      * @param vel Initial velocity vector
      */
     public void spawnFuel(Translation3d pos, Translation3d vel) {
-        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~SPAWNING FUEL~~~~~~~~~~~~~~~~~~~~~~~~~");
         fuels.add(new Fuel(pos, vel));
     }
 
@@ -492,14 +491,19 @@ public class FuelSim {
 
         double horizontalVel = Math.cos(hoodAngle.in(Radians)) * launchVelocity.in(MetersPerSecond);
         double verticalVel = Math.sin(hoodAngle.in(Radians)) * launchVelocity.in(MetersPerSecond);
-        double xVel = horizontalVel * Math.cos(turretYaw.in(Radians));
-        double yVel = horizontalVel * Math.sin(turretYaw.in(Radians));
+        double xVel = horizontalVel
+                * Math.cos(
+                        turretYaw.plus(launchPose.getRotation().getMeasureZ()).in(Radians));
+        double yVel = horizontalVel
+                * Math.sin(
+                        turretYaw.plus(launchPose.getRotation().getMeasureZ()).in(Radians));
 
         xVel += fieldSpeeds.vxMetersPerSecond;
         yVel += fieldSpeeds.vyMetersPerSecond;
 
         spawnFuel(launchPose.getTranslation(), new Translation3d(xVel, yVel, verticalVel));
     }
+
 
     private void handleRobotCollision(Fuel fuel, Pose2d robot, Translation2d robotVel) {
         Translation2d relativePos = new Pose2d(fuel.pos.toTranslation2d(), Rotation2d.kZero)

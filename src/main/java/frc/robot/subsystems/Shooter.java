@@ -220,6 +220,9 @@ public class Shooter extends SubsystemBase {
                 case PASSING:
                     setTarget(getPassingTarget(m_poseSupplier.get()));
                     break;
+                case TEST:
+                    setTargetAheadOfRobot(3);
+                    break;
                 case OFF:
                     zeroShooterCommand();
             }   }); 
@@ -283,6 +286,17 @@ public class Shooter extends SubsystemBase {
             Translation2d flipped = AllianceFlipUtil.apply(target.toTranslation2d());
             currentTarget = new Translation3d(flipped.getX(), flipped.getY(), target.getZ());
         }
+    }
+
+    private void setTargetAheadOfRobot(double distanceMeters) {
+        Pose2d currentPose = m_poseSupplier.get();
+        
+        Translation2d ahead = currentPose.getTranslation().plus(
+            new Translation2d(distanceMeters, currentPose.getRotation())
+        );
+        
+        // set target at a standard height
+        setTarget(new Translation3d(ahead.getX(), ahead.getY(), 2.0)); 
     }
 
     private Translation3d getPassingTarget(Pose2d pose) {
@@ -446,13 +460,24 @@ public class Shooter extends SubsystemBase {
         ChassisSpeeds fieldSpeeds = m_fieldSpeedsSupplier.get();
 
         ShotData calculatedShot = TurretCalculator.iterativeMovingShotFromInterpolationMap(robot, fieldSpeeds, currentTarget, 3);
-        Angle azimuthAngle = TurretCalculator.calculateAzimuthAngle(robot, calculatedShot.target(), m_turret.getPosition().getValue());
+        Angle azimuthAngle = TurretCalculator.calculateAzimuthAngle(robot, calculatedShot.getTarget(), m_turret.getPosition().getValue());
         AngularVelocity azimuthVelocity = RadiansPerSecond.of(-fieldSpeeds.omegaRadiansPerSecond);
         setTurretPosition(azimuthAngle, azimuthVelocity);
         setHoodPosition(calculatedShot.hoodAngle());
         setFlywheelVelocity(TurretCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));
     }
 
+    /**
+     * Version of calculateShot where, FOR TESTING, the turret will align to the target.
+     * @param robot
+     */
+    private void calculateTurretAngle(Pose2d robot) {
+        ChassisSpeeds fieldSpeeds = m_fieldSpeedsSupplier.get();
+
+        ShotData calculatedShot = TurretCalculator.iterativeMovingShotFromInterpolationMap(robot, fieldSpeeds, currentTarget, 3);
+        Angle azimuthAngle = TurretCalculator.calculateAzimuthAngle(robot, calculatedShot.getTarget(), m_turret.getPosition().getValue());
+        setTurretPosition(azimuthAngle);
+    }
 
     /**
      * @return true if robot can store more fuel
@@ -482,10 +507,10 @@ public class Shooter extends SubsystemBase {
         AngularVelocity flywheelVelocity = getFlywheelVelocity();
         Angle hoodAngle = getHoodAngle();
         Angle turretPosition = getTurretPosition();
-        LinearVelocity blargh = TurretCalculator.angularToLinearVelocity(flywheelVelocity, kFlywheelRadius);
+        LinearVelocity flywheelLinearVelocity = TurretCalculator.angularToLinearVelocity(flywheelVelocity, kFlywheelRadius);
         
         m_fuelSim.launchFuel(
-                blargh,
+                flywheelLinearVelocity,
                 hoodAngle,
                 turretPosition,
                 kDistanceAboveFunnel);
@@ -501,6 +526,10 @@ public class Shooter extends SubsystemBase {
 
         if (m_goal == TurretGoal.SCORING || m_goal == TurretGoal.PASSING) {
             calculateShot(pose);
+        }
+
+        if (m_goal == TurretGoal.TEST) {
+            calculateTurretAngle(pose);
         }
 
         if (m_goal == TurretGoal.PASSING) {
@@ -601,6 +630,7 @@ public class Shooter extends SubsystemBase {
     public enum TurretGoal {
         SCORING,
         PASSING,
+        TEST,
         OFF
     }
 
