@@ -85,8 +85,12 @@ public class Intake extends SubsystemBase {
         return runOnce(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RPS)));
     }
 
-    public TalonFX getDeployMotor() {
+    public TalonFX getIntakeArmMotor() {
         return m_intakeArm;
+    }
+
+    public TalonFX getIntakeRollers() {
+        return m_intakeRollers;
     }
 
     @Override
@@ -108,8 +112,8 @@ public class Intake extends SubsystemBase {
         SAFE(72),
         DEPLOYED(87.485);
 
-        private Angle degs;
-        private Angle rots;
+        public Angle degs;
+        public Angle rots;
 
         private IntakeArmPosition(double degs) {
             this.degs = Degrees.of(degs);
