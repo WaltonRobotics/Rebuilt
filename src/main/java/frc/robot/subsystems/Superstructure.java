@@ -18,7 +18,6 @@ import static frc.robot.Constants.ShooterK;
 import java.util.HashSet;
 
 public class Superstructure {
-    
     /* SUBSYSTEMS */
     private final Intake m_intake;
     private final Indexer m_indexer;
