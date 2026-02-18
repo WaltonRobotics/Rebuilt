@@ -29,8 +29,8 @@ import static frc.robot.Constants.FieldK.kTagLayout;
 public class Vision {
     //TODO: research about april tag pipeline code (see reefscape at-cmp)
     private final PhotonCamera m_camera;
-    private final PhotonPoseEstimator photonEstimator;
-    private Matrix<N3, N1> curStdDevs;
+    private final PhotonPoseEstimator m_photonEstimator;
+    private Matrix<N3, N1> m_curStdDevs;
 
     // Simulation
     private PhotonCameraSim m_cameraSim;
@@ -54,9 +54,9 @@ public class Vision {
         m_simVisualName = simVisualName;
         m_visionSim = visionSim;
 
-        photonEstimator =
+        m_photonEstimator =
                 new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, roboToCam);
-        photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+        m_photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
         log_camPose = NetworkTableInstance.getDefault()
             .getStructTopic("Vision/" + cameraName + "/estRobotPose", Pose2d.struct).publish();
@@ -107,9 +107,9 @@ public class Vision {
         List<PhotonPipelineResult> unreadCameraResults = m_camera.getAllUnreadResults();
 
         for (var change : unreadCameraResults) {
-            visionEst = photonEstimator.update(change);
+            visionEst = m_photonEstimator.update(change);
             updateEstimationStdDevs(visionEst, change.getTargets());
-            log_stdDevs.accept(curStdDevs.getData());
+            log_stdDevs.accept(m_curStdDevs.getData());
 
             if (Robot.isSimulation()) {
                 visionEst.ifPresentOrElse(
@@ -141,7 +141,7 @@ public class Vision {
             Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets) {
         if (estimatedPose.isEmpty()) {
             // No pose input. Default to single-tag std devs
-            curStdDevs = kSingleTagStdDevs;
+            m_curStdDevs = kSingleTagStdDevs;
 
         } else {
             // Pose present. Start running Heuristic
@@ -151,7 +151,7 @@ public class Vision {
 
             // Precalculation - see how many tags we found, and calculate an average-distance metric
             for (var tgt : targets) {
-                var tagPose = photonEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
+                var tagPose = m_photonEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
                 if (tagPose.isEmpty()) continue;
                 numTags++;
                 avgDist +=
@@ -164,7 +164,7 @@ public class Vision {
 
             if (numTags == 0) {
                 // No tags visible. Default to single-tag std devs
-                curStdDevs = kSingleTagStdDevs;
+                m_curStdDevs = kSingleTagStdDevs;
             } else {
                 // One or more tags visible, run the full heuristic.
                 avgDist /= numTags;
@@ -174,7 +174,7 @@ public class Vision {
                 else if (numTags == 1 && avgDist > 4)
                     estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
                 else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
-                curStdDevs = estStdDevs;
+                m_curStdDevs = estStdDevs;
             }
         }
     }
@@ -186,6 +186,6 @@ public class Vision {
      * only be used when there are targets visible.
      */
     public Matrix<N3, N1> getEstimationStdDevs() {
-        return curStdDevs;
+        return m_curStdDevs;
     }
 }
