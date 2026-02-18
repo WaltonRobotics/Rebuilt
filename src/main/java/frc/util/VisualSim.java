@@ -2,6 +2,7 @@ package frc.util;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 
@@ -49,7 +50,7 @@ public class VisualSim {
         Mechanism2d indexerMech = new Mechanism2d(7, 15);
         MechanismRoot2d indexerRoot = indexerMech.getRoot("indexer", 3.5, 3.5);
 
-        Mechanism2d shooterMech = new Mechanism2d(10, 15);
+        Mechanism2d shooterMech = new Mechanism2d(10, 20);
         MechanismRoot2d shooterRoot = shooterMech.getRoot("shooter", 5, 5);
 
         //--INTAKE
@@ -71,15 +72,15 @@ public class VisualSim {
 
         //--SHOOTER
         m_shooterVelocity = shooterRoot.append(
-            new MechanismLigament2d("shooterVelocity", 0, 270, 4, new Color8Bit(Color.kFirebrick))
+            new MechanismLigament2d("shooterVelocity", 0, 90, 4, new Color8Bit(Color.kFirebrick))
         );
         m_hoodPosition = shooterRoot.append(
-            new MechanismLigament2d("hoodPosition", 4, 90, 4, new Color8Bit(Color.kDarkSalmon))
+            new MechanismLigament2d("hoodPosition", 4, 180, 4, new Color8Bit(Color.kDarkSalmon))
         );
         m_turretPosition = shooterRoot.append(
             new MechanismLigament2d("turretPosition", 4, 0, 4, new Color8Bit(Color.kTomato))
         );
-        m_hoodStartAngle = new Rotation2d(Degrees.of(90));
+        m_hoodStartAngle = new Rotation2d(Degrees.of(180));
         m_turretStartAngle = new Rotation2d(Degrees.of(0));
 
         SmartDashboard.putData("IntakeMech2d", intakeMech);
@@ -126,7 +127,7 @@ public class VisualSim {
     public Command setHoodPosition() {
         return Commands.run(
             () -> {
-                m_hoodPosition.setAngle(new Rotation2d(m_shooter.getHoodEncoder().getPosition() * 2 * Math.PI).plus(m_hoodStartAngle));
+                m_hoodPosition.setAngle(m_hoodStartAngle.minus(new Rotation2d(Rotations.of(m_shooter.getSimHoodEncoder().getAngularPositionRotations()))));
             }
         );
     }
