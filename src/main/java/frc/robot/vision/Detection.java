@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.vision;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -10,8 +10,8 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import frc.robot.Robot;
 import frc.robot.Constants.VisionK;
-import frc.robot.vision.VisionSim;
 
 
 public class Detection {

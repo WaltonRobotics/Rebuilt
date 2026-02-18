@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.vision;
 
 import org.photonvision.simulation.SimCameraProperties;
 
