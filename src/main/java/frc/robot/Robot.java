@@ -148,8 +148,8 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
 
     public Robot() {
-        configureBindings();
-        // configureTestBindings();    //this should be commented out during competition matches
+        //configureBindings();
+        configureTestBindings();    //this should be commented out during competition matches
     }
 
     private Command driveCommand() {
@@ -305,11 +305,21 @@ public class Robot extends TimedRobot {
                 m_superstructure.maxShooter(),
                 m_visualSim.setShooterVelocity()
             )
+        ).onFalse(
+            Commands.parallel(
+                m_superstructure.stopShooter(),
+                m_visualSim.setShooterVelocity()
+            )
         );
 
         trg_turret180Override.onTrue(
             Commands.parallel(
                 m_superstructure.turretTo(180),
+                m_visualSim.setTurretPosition()
+            )
+        ).onFalse(
+            Commands.parallel(
+                m_superstructure.turretTo(0),
                 m_visualSim.setTurretPosition()
             )
         );
@@ -319,17 +329,22 @@ public class Robot extends TimedRobot {
                 m_superstructure.hoodTo(30),
                 m_visualSim.setHoodPosition()
             )
+        ).onFalse(
+            Commands.parallel(
+                m_superstructure.hoodTo(0),
+                m_visualSim.setHoodPosition()
+            )
         );
 
         trg_startSpindexerOverride.onTrue(
             Commands.parallel(
                 m_superstructure.startSpindexer(),
-                m_visualSim.setIntakeArmPosition()
+                m_visualSim.setSpindexerVelocity()
             )
         ).onFalse(
             Commands.parallel(
                 m_superstructure.stopSpindexer(),
-                m_visualSim.setIntakeArmPosition()
+                m_visualSim.setSpindexerVelocity()
             )
         );
 
