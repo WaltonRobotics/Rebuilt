@@ -31,6 +31,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.Constants.ShooterK.*;
 
+import frc.robot.Constants;
 import frc.util.MotorSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
