@@ -25,8 +25,8 @@ import frc.util.WaltLogger.DoubleLogger;
 public class Indexer extends SubsystemBase {
     /* VARIABLES */
     // Motors and Control Requests
-    private final TalonFX m_spinner = new TalonFX(kSpinnerCANID); // X60
-    private final TalonFX m_exhaust = new TalonFX(kExhaustCANID); // X60
+    private final TalonFX m_spinner = new TalonFX(kSpinnerCANID, Constants.kCanivoreBusName); // X60
+    private final TalonFX m_exhaust = new TalonFX(kExhaustCANID, Constants.kCanivoreBusName); // X60
 
     private final VelocityVoltage m_spinnerVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
     private final VelocityVoltage m_exhaustVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);

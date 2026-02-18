@@ -39,6 +39,8 @@ public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
+    public static final String kCanivoreBusName = "fd";
+
     public static class ShooterK {
         public static final String kLogTab = "Shooter";
 
@@ -64,7 +66,7 @@ public class Constants {
         /* IDS */
         public static final int kLeaderCANID = 21; //TODO: Update CANID number
         public static final int kFollowerCANID = 22; //TODO: Update CANID number
-        public static final int kTurretCANID = 24; //TODO: Update CANID number
+        public static final int kTurretCANID = 12;
 
         public static final int kExitBeamBreakChannel = 0; //TODO: Update channel number
         public static final int kHoodChannel = 1;
@@ -306,8 +308,8 @@ public class Constants {
         
         /* IDS */
         //TODO: Make ids accurate
-        public static final int kSpinnerCANID = 49;
-        public static final int kExhaustCANID = 50;
+        public static final int kSpinnerCANID = 10;
+        public static final int kExhaustCANID = 11;
 
         public static final double kSpinnerGearing = 3;
         public static final double kExhaustGearing = 1/1.2;

@@ -36,14 +36,14 @@ import frc.util.WaltLogger.DoubleLogger;
 public class Shooter extends SubsystemBase {
     /* VARIABLES */
     // motors + control requests
-    private final TalonFX m_flywheelLeader = new TalonFX(kLeaderCANID); //X60
-    private final TalonFX m_flywheelFollower = new TalonFX(kFollowerCANID); //X60
+    private final TalonFX m_flywheelLeader = new TalonFX(kLeaderCANID, Constants.kCanivoreBusName); //X60
+    private final TalonFX m_flywheelFollower = new TalonFX(kFollowerCANID, Constants.kCanivoreBusName); //X60
     private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(true);
 
     private final Servo m_hood = new Servo(kHoodChannel);
     private final Canandmag m_hoodEncoder = new Canandmag(kHoodEncoderChannel);
 
-    private final TalonFX m_turret = new TalonFX(kTurretCANID); //X44
+    private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBusName); //X44
     private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true);
 
     // logic booleans
