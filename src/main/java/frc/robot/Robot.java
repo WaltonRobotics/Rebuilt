@@ -148,8 +148,8 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
 
     public Robot() {
-        //configureBindings();
-        configureTestBindings();    //this should be commented out during competition matches
+        configureBindings();
+        //configureTestBindings();    //this should be commented out during competition matches
     }
 
     private Command driveCommand() {
