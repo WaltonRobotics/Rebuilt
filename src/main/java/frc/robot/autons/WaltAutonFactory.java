@@ -19,7 +19,7 @@ public class WaltAutonFactory {
     //desired pose to go to after right depot pickup
     private Pose2d m_postRightPickupDepot;
     
-    //desired pose to go to after ledt fuel pickup
+    //desired pose to go to after left fuel pickup
     private Pose2d m_postLeftPickupNeutral;
 
     private String[] neutralCycle;
@@ -100,47 +100,56 @@ public class WaltAutonFactory {
     }
 
     /**
-     * pickup and shoot one time
+     * right pickup and shoot one time
      */
     public Command oneRightNeutralPickup() {
         return createAutonSequence(1, true);
     }
 
     /**
-     * pick up two times and shoot once
+     * right pick up two times and shoot once
      */
     public Command twoRightNeutralPickup() {
         return createAutonSequence(2, true);
     }
 
     /**
-     * pick up three times and shoot twice
+     * right pick up three times and shoot twice
      */
     public Command threeRightNeutralPickup() {
         return createAutonSequence(3, true);
     }
 
     /**
-     * pick up four times and shoot thrice
+     * right pick up four times and shoot thrice
      */
     public Command fourRightNeutralPickup() {
         return createAutonSequence(4, true);
     }
 
+    /**
+     * left pickup and shoot one time
+     */
     public Command oneLeftNeutralPickup() {
         return createAutonSequence(1, false);
     }
 
+    /**
+     * left pick up two times and shoot once
+     */
     public Command twoLeftNeutralPickup() {
         return createAutonSequence(2, false);
     }
 
+    /**
+     * left pick up three times and shoot twice
+     */
     public Command threeLeftNeutralPickup() {
         return createAutonSequence(3, false);
     }
 
     /**
-     * goes to depot once and shoots
+     * goes to depot once and shoots for the right side
      */
     public Command oneRightDepotPickup() {
         return Commands.sequence(
@@ -153,7 +162,7 @@ public class WaltAutonFactory {
     }
 
     /**
-     * goes to outpost once, shoots, then goes to neutral to pickup
+     * goes to outpost once, shoots, then goes to neutral to pickup for the right side
      */
     public Command oneRightOutpostPickup() {
         return Commands.sequence(
