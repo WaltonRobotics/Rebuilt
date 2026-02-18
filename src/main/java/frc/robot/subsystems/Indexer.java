@@ -25,21 +25,21 @@ import frc.util.WaltLogger.DoubleLogger;
 public class Indexer extends SubsystemBase {
     /* VARIABLES */
     // Motors and Control Requests
-    private final TalonFX m_spinner = new TalonFX(kSpinnerCANID); // X60
+    private final TalonFX m_spindexer = new TalonFX(kSpindexerCANID); // X60
     private final TalonFX m_tunnel = new TalonFX(kTunnelCANID); // X60
 
-    private final VelocityVoltage m_spinnerVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
+    private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
     private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
 
-    private final AngularVelocity m_spinnerRPS = RotationsPerSecond.of(30);
+    private final AngularVelocity m_spindexerRPS = RotationsPerSecond.of(30);
     private final AngularVelocity m_tunnelRPS = RotationsPerSecond.of(108);
 
     // Simulation
-    private final DCMotorSim m_spinnerSim = new DCMotorSim(
+    private final DCMotorSim m_spindexerSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX60Foc(1),
-            kSpinnerMOI,
-            kSpinnerGearing
+            kSpindexerMOI,
+            kSpindexerGearing
         ),
         DCMotor.getKrakenX60Foc(1)
     );
@@ -54,12 +54,12 @@ public class Indexer extends SubsystemBase {
     );
     
     // Loggers
-    private final DoubleLogger log_spinnerRPS = WaltLogger.logDouble(kLogTab, "spinnerRPS");
+    private final DoubleLogger log_spindexerRPS = WaltLogger.logDouble(kLogTab, "spindexerRPS");
     private final DoubleLogger log_tunnelRPS = WaltLogger.logDouble(kLogTab, "tunnelRPS");
 
     /* CONSTRUCTOR */
     public Indexer() {
-        m_spinner.getConfigurator().apply(kSpinnerTalonFXConfiguration);
+        m_spindexer.getConfigurator().apply(kSpindexerTalonFXConfiguration);
         m_tunnel.getConfigurator().apply(kTunnelTalonFXConfiguration);
 
         initSim();
@@ -67,17 +67,17 @@ public class Indexer extends SubsystemBase {
 
     //TODO: Change orientation if necessary
     private void initSim() {
-        MotorSim.initSimFX(m_spinner, ChassisReference.CounterClockwise_Positive, MotorType.KrakenX60);
+        MotorSim.initSimFX(m_spindexer, ChassisReference.CounterClockwise_Positive, MotorType.KrakenX60);
         MotorSim.initSimFX(m_tunnel, ChassisReference.CounterClockwise_Positive, MotorType.KrakenX60);
     }
 
     /* COMMANDS */
-    public Command startSpinner() {
-        return setSpinnerVelocityCmd(m_spinnerRPS);
+    public Command startSpindexer() {
+        return setSpindexerVelocityCmd(m_spindexerRPS);
     }
 
-    public Command stopSpinner() {
-        return setSpinnerVelocityCmd(RotationsPerSecond.of(0));
+    public Command stopSpindexer() {
+        return setSpindexerVelocityCmd(RotationsPerSecond.of(0));
     }
 
     public Command startTunnel() {
@@ -88,8 +88,8 @@ public class Indexer extends SubsystemBase {
         return setTunnelVelocityCmd(RotationsPerSecond.of(0));
     }
 
-    public Command setSpinnerVelocityCmd(AngularVelocity RPS) {
-        return runOnce(() -> m_spinner.setControl(m_spinnerVelocityRequest.withVelocity(RPS)));
+    public Command setSpindexerVelocityCmd(AngularVelocity RPS) {
+        return runOnce(() -> m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RPS)));
     }
 
     public Command setTunnelVelocityCmd(AngularVelocity RPS) {
@@ -99,13 +99,13 @@ public class Indexer extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        log_spinnerRPS.accept(m_spinner.getVelocity().getValueAsDouble());
+        log_spindexerRPS.accept(m_spindexer.getVelocity().getValueAsDouble());
         log_tunnelRPS.accept(m_tunnel.getVelocity().getValueAsDouble());
     }
 
     @Override
     public void simulationPeriodic() {
         MotorSim.updateSimFX(m_tunnel, m_tunnelSim);
-        MotorSim.updateSimFX(m_spinner, m_spinnerSim);
+        MotorSim.updateSimFX(m_spindexer, m_spindexerSim);
     }
 }
