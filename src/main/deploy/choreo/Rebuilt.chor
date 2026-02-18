@@ -5,7 +5,63 @@
  "variables":{
   "expressions":{},
   "poses":{
-   "bumpAlliance":{
+   "leftBumpAlliance":{
+    "x":{
+     "exp":"rightBumpAlliance.x",
+     "val":3.3882551193237305
+    },
+    "y":{
+     "exp":"5.437880039215088 m",
+     "val":5.437880039215088
+    },
+    "heading":{
+     "exp":"rightBumpAlliance.heading",
+     "val":-0.8223814729706524
+    }
+   },
+   "leftBumpNeutral":{
+    "x":{
+     "exp":"rightBumpNeutral.x",
+     "val":5.795487403869629
+    },
+    "y":{
+     "exp":"leftBumpAlliance.y",
+     "val":5.437880039215088
+    },
+    "heading":{
+     "exp":"rightBumpAlliance.heading",
+     "val":-0.8223814729706524
+    }
+   },
+   "leftFuelPickup":{
+    "x":{
+     "exp":"rightFuelPickup.x",
+     "val":6.924767017364502
+    },
+    "y":{
+     "exp":"leftBumpAlliance.y",
+     "val":5.437880039215088
+    },
+    "heading":{
+     "exp":"rightFuelPickup.heading",
+     "val":0.0
+    }
+   },
+   "leftNeutralShootPose":{
+    "x":{
+     "exp":"rightNeutralShootPose.x",
+     "val":2.125295639038086
+    },
+    "y":{
+     "exp":"4.291376113891602 m",
+     "val":4.291376113891602
+    },
+    "heading":{
+     "exp":"-1.513715544388632 rad",
+     "val":-1.513715544388632
+    }
+   },
+   "rightBumpAlliance":{
     "x":{
      "exp":"3.3882551193237305 m",
      "val":3.3882551193237305
@@ -19,21 +75,21 @@
      "val":-0.8223814729706524
     }
    },
-   "bumpNeutral":{
+   "rightBumpNeutral":{
     "x":{
      "exp":"5.795487403869629 m",
      "val":5.795487403869629
     },
     "y":{
-     "exp":"bumpAlliance.y",
+     "exp":"rightBumpAlliance.y",
      "val":2.6657562255859375
     },
     "heading":{
-     "exp":"bumpAlliance.heading",
+     "exp":"rightBumpAlliance.heading",
      "val":-0.8223814729706524
     }
    },
-   "depotPickup":{
+   "rightDepotPickup":{
     "x":{
      "exp":"1.1576627492904663 m",
      "val":1.1576627492904663
@@ -47,7 +103,7 @@
      "val":3.141592653589793
     }
    },
-   "depotShootPose":{
+   "rightDepotShootPose":{
     "x":{
      "exp":"2.660599708557129 m",
      "val":2.660599708557129
@@ -61,27 +117,13 @@
      "val":3.141592653589793
     }
    },
-   "fuelPickupFour":{
-    "x":{
-     "exp":"fuelPickupThree.x",
-     "val":6.924767017364502
-    },
-    "y":{
-     "exp":"3.636219024658203 m",
-     "val":3.636219024658203
-    },
-    "heading":{
-     "exp":"fuelPickupThree.heading",
-     "val":0.0
-    }
-   },
-   "fuelPickupOne":{
+   "rightFuelPickup":{
     "x":{
      "exp":"6.924767017364502 m",
      "val":6.924767017364502
     },
     "y":{
-     "exp":"bumpNeutral.y",
+     "exp":"rightBumpNeutral.y",
      "val":2.6657562255859375
     },
     "heading":{
@@ -89,35 +131,7 @@
      "val":0.0
     }
    },
-   "fuelPickupThree":{
-    "x":{
-     "exp":"fuelPickupTwo.x",
-     "val":6.924767017364502
-    },
-    "y":{
-     "exp":"3.297109842300415 m",
-     "val":3.297109842300415
-    },
-    "heading":{
-     "exp":"fuelPickupTwo.heading",
-     "val":0.0
-    }
-   },
-   "fuelPickupTwo":{
-    "x":{
-     "exp":"fuelPickupOne.x",
-     "val":6.924767017364502
-    },
-    "y":{
-     "exp":"2.819326162338257 m",
-     "val":2.819326162338257
-    },
-    "heading":{
-     "exp":"fuelPickupOne.heading",
-     "val":0.0
-    }
-   },
-   "neutralShootPose":{
+   "rightNeutralShootPose":{
     "x":{
      "exp":"2.125295639038086 m",
      "val":2.125295639038086
@@ -131,7 +145,7 @@
      "val":-1.2145398092226505
     }
    },
-   "outpostPickup":{
+   "rightOutpostPickup":{
     "x":{
      "exp":"0.45375561714172363 m",
      "val":0.4537556171417236
@@ -145,7 +159,7 @@
      "val":0.0
     }
    },
-   "outpostShootPose":{
+   "rightOutpostShootPose":{
     "x":{
      "exp":"2.6225507259368896 m",
      "val":2.6225507259368896

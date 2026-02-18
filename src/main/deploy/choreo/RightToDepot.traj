@@ -1,5 +1,5 @@
 {
- "name":"ToDepot",
+ "name":"RightToDepot",
  "version":3,
  "snapshot":{
   "waypoints":[
@@ -13,8 +13,8 @@
  },
  "params":{
   "waypoints":[
-    {"x":{"exp":"bumpAlliance.x", "val":3.3882551193237305}, "y":{"exp":"bumpAlliance.y", "val":2.6657562255859375}, "heading":{"exp":"bumpAlliance.heading", "val":-0.8223814729706524}, "intervals":55, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"depotPickup.x", "val":1.1576627492904663}, "y":{"exp":"depotPickup.y", "val":5.958622932434082}, "heading":{"exp":"depotPickup.heading", "val":3.141592653589793}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":{"exp":"rightBumpAlliance.x", "val":3.3882551193237305}, "y":{"exp":"rightBumpAlliance.y", "val":2.6657562255859375}, "heading":{"exp":"rightBumpAlliance.heading", "val":-0.8223814729706524}, "intervals":55, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"rightDepotPickup.x", "val":1.1576627492904663}, "y":{"exp":"rightDepotPickup.y", "val":5.958622932434082}, "heading":{"exp":"rightDepotPickup.heading", "val":3.141592653589793}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},

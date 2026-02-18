@@ -1,5 +1,5 @@
 {
- "name":"OutpostToNeutral",
+ "name":"RightOutpostToNeutral",
  "version":3,
  "snapshot":{
   "waypoints":[
@@ -16,11 +16,11 @@
  },
  "params":{
   "waypoints":[
-    {"x":{"exp":"outpostPickup.x", "val":0.4537556171417236}, "y":{"exp":"outpostPickup.y", "val":0.669806957244873}, "heading":{"exp":"outpostPickup.heading", "val":0.0}, "intervals":43, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"rightOutpostPickup.x", "val":0.4537556171417236}, "y":{"exp":"rightOutpostPickup.y", "val":0.669806957244873}, "heading":{"exp":"rightOutpostPickup.heading", "val":0.0}, "intervals":43, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"2.108888626098633 m", "val":2.108888626098633}, "y":{"exp":"2.305915594100952 m", "val":2.305915594100952}, "heading":{"exp":"1.471127829404881 rad", "val":1.471127829404881}, "intervals":39, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"bumpAlliance.x", "val":3.3882551193237305}, "y":{"exp":"bumpAlliance.y", "val":2.6657562255859375}, "heading":{"exp":"bumpAlliance.heading", "val":-0.8223814729706524}, "intervals":29, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"bumpNeutral.x", "val":5.795487403869629}, "y":{"exp":"bumpNeutral.y", "val":2.6657562255859375}, "heading":{"exp":"bumpNeutral.heading", "val":-0.8223814729706524}, "intervals":31, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"fuelPickupOne.x", "val":6.924767017364502}, "y":{"exp":"fuelPickupOne.y", "val":2.6657562255859375}, "heading":{"exp":"fuelPickupOne.heading", "val":0.0}, "intervals":39, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":{"exp":"rightBumpAlliance.x", "val":3.3882551193237305}, "y":{"exp":"rightBumpAlliance.y", "val":2.6657562255859375}, "heading":{"exp":"rightBumpAlliance.heading", "val":-0.8223814729706524}, "intervals":29, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"rightBumpNeutral.x", "val":5.795487403869629}, "y":{"exp":"rightBumpNeutral.y", "val":2.6657562255859375}, "heading":{"exp":"rightBumpNeutral.heading", "val":-0.8223814729706524}, "intervals":31, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"rightFuelPickup.x", "val":6.924767017364502}, "y":{"exp":"rightFuelPickup.y", "val":2.6657562255859375}, "heading":{"exp":"rightFuelPickup.heading", "val":0.0}, "intervals":39, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},

@@ -56,9 +56,9 @@ public class WaltAutonFactory {
     private Command createAutonSequence(int pickupTimes) {
         if (pickupTimes == 1) { // Base case when pickupTimes = 1 in the recursive loop
             return Commands.sequence(
-                runTrajCmd("ToNeutral"),
+                runTrajCmd("RightToNeutral"),
                 pickupCmd(true),
-                runTrajCmd("NeutralToShoot")
+                runTrajCmd("RightNeutralToShoot")
             );
         }
 
@@ -71,10 +71,10 @@ public class WaltAutonFactory {
         commandSequence.add(createAutonSequence(pickupTimes - 1)); // Loop back recursively until it reaches the base case
 
         if (pickupTimes != 2) { // Code that is needed for pickupTimes >= 3 but not == 2
-            commandSequence.add(runTrajCmd("NeutralToShoot"));
+            commandSequence.add(runTrajCmd("RightNeutralToShoot"));
         }
 
-        commandSequence.add(runTrajCmd("ShootToNeutral")); // Code required for both pickupTimes == 2 and != 2 
+        commandSequence.add(runTrajCmd("RightShootToNeutral")); // Code required for both pickupTimes == 2 and != 2 
         commandSequence.add(pickupCmd(true));
 
         return Commands.sequence(commandSequence.toArray(new Command[commandSequence.size()]));// Return final command
@@ -113,11 +113,11 @@ public class WaltAutonFactory {
      */
     public Command oneDepotPickup() {
         return Commands.sequence(
-            runTrajCmd("ToDepot"),
+            runTrajCmd("RightToDepot"),
             
             pickupCmd(false),
 
-            runTrajCmd("DepotToShoot")
+            runTrajCmd("RightDepotToShoot")
         );
     }
 
@@ -126,8 +126,8 @@ public class WaltAutonFactory {
      */
     public Command oneOutpostPickup() {
         return Commands.sequence(
-            runTrajCmd("ToOutpost"),
-            runTrajCmd("OutpostToNeutral")
+            runTrajCmd("RightToOutpost"),
+            runTrajCmd("RightOutpostToNeutral")
         );
     }
 }
