@@ -5,6 +5,8 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import static edu.wpi.first.units.Units.*;
+
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
@@ -39,7 +41,7 @@ public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
-    public static final String kCanivoreBusName = "fd";
+    public static final CANBus kCanivoreBus = new CANBus("fd");
 
     public static class ShooterK {
         public static final String kLogTab = "Shooter";
@@ -64,8 +66,8 @@ public class Constants {
         public static final AngularVelocity kFlywheelMaxRPS = RotationsPerSecond.of(5785/60 * (0.9));   //Kraken X60Foc Max (RPM: 5785)
 
         /* IDS */
-        public static final int kLeaderCANID = 21; //TODO: Update CANID number
-        public static final int kFollowerCANID = 22; //TODO: Update CANID number
+        public static final int kLeaderCANID = 20;
+        public static final int kFollowerCANID = 21; 
         public static final int kTurretCANID = 12;
 
         public static final int kExitBeamBreakChannel = 0; //TODO: Update channel number
@@ -248,8 +250,8 @@ public class Constants {
         public static final double kRollersGearing = 1.0/2;
 
         /* IDS */
-        public static final int kDeployCANID = 41; //TODO: change to correct
-        public static final int kRollersCANID = 42; //TODO: change to correct
+        public static final int kDeployCANID = 40;
+        public static final int kRollersCANID = 41; 
 
         /* CONFIGS */
         //Deploy Motor
@@ -307,7 +309,6 @@ public class Constants {
         public static String kLogTab = "Indexer";
         
         /* IDS */
-        //TODO: Make ids accurate
         public static final int kSpinnerCANID = 10;
         public static final int kExhaustCANID = 11;
 
