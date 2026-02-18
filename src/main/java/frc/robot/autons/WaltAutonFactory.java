@@ -86,7 +86,7 @@ public class WaltAutonFactory {
     public Command oneNeutralPickup() {
         return createAutonSequence(1);
     }
-    
+
     /**
      * pick up two times and shoot once
      */
