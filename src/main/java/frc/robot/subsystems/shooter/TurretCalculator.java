@@ -145,7 +145,7 @@ public class TurretCalculator {
         Translation2d direction = target.toTranslation2d().minus(turretTranslation);
 
         double angle = MathUtil.inputModulus(
-                direction.getAngle().minus(robot.getRotation()).getRotations(), -0.5, 0.5);
+                direction.getAngle().minus(robot.getRotation()).getRotations(), -0.75, 0.75);
         double current = currentAngle.in(Rotations);
 
         if (current > 0 && angle + 1 <= kTurretMaxAngle.in(Rotations))
