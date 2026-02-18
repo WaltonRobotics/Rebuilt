@@ -24,9 +24,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-import static frc.robot.Constants;
 import static frc.robot.Constants.ShooterK.*;
 
+import frc.robot.Constants;
 import frc.util.MotorSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
