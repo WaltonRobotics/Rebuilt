@@ -67,7 +67,7 @@ public class Constants {
 
         /* IDS */
         public static final int kLeaderCANID = 20;
-        public static final int kFollowerCANID = 21; 
+        public static final int kFollowerCANID = 21;
         public static final int kTurretCANID = 12;
 
         public static final int kExitBeamBreakChannel = 0; //TODO: Update channel number
@@ -251,7 +251,7 @@ public class Constants {
 
         /* IDS */
         public static final int kDeployCANID = 40;
-        public static final int kRollersCANID = 41; 
+        public static final int kRollersCANID = 41;
 
         /* CONFIGS */
         //Deploy Motor
