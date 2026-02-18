@@ -67,4 +67,17 @@ public final class NTPublisherFactory {
     public static StringPublisher makeStringTracePub(String name) {
         return makeStringPub(traceTable, name, PubSubOption.periodic(TimedRobot.kDefaultPeriod));
     }
+
+    public static StringArrayPublisher makeStringArrPub(NetworkTable table, String name, PubSubOption... options) {
+        StringArrayTopic topic = table.getStringArrayTopic(name);
+        return topic.publish(options);
+    }
+
+    public static StringArrayPublisher makeStringArrPub(String table, String name, PubSubOption... options) {
+        return makeStringArrPub(inst.getTable(table), name, options);
+    }
+
+    public static StringArrayPublisher makeStringArrTracePub(String name) {
+        return makeStringArrPub(traceTable, name, PubSubOption.periodic(TimedRobot.kDefaultPeriod));
+    }
 }
