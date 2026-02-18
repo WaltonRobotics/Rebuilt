@@ -15,9 +15,12 @@ public class AutonChooser {
     public static SendableChooser<String> m_chooser = new SendableChooser<>();
 
     //---AUTON PATH NAMES
-    public static final String oneRightNeutralPickup = "oneNeutralPickup";
-    public static final String twoRightNeutralPickup = "twoNeutralPickup";
-    public static final String threeRightNeutralPickup = "threeNeutralPickup";
+    public static final String oneRightNeutralPickup = "oneRightNeutralPickup";
+    public static final String twoRightNeutralPickup = "twoRightNeutralPickup";
+    public static final String threeRightNeutralPickup = "threeRightNeutralPickup";
+    public static final String oneLeftNeutralPickup = "oneLeftNeutralPickup";
+    public static final String twoLeftNeutralPickup = "twoLeftNeutralPickup";
+    public static final String threeLeftNeutralPickup = "threeLeftNeutralPickup";
 
     //---TOPICS
     public static NetworkTableInstance nte_inst = NetworkTableInstance.getDefault();
@@ -55,7 +58,10 @@ public class AutonChooser {
 
         m_chooser.setDefaultOption("One Right Neutral Pickup", oneRightNeutralPickup);
         m_chooser.addOption("Two Right Neutral Pickup", twoRightNeutralPickup);
-        m_chooser.addOption("Three Right Neutral Pickup ", threeRightNeutralPickup);
+        m_chooser.addOption("Three Right Neutral Pickup", threeRightNeutralPickup);
+        m_chooser.addOption("One Left Neutral Pickup", oneLeftNeutralPickup);
+        m_chooser.addOption("Two Left Neutral Pickup", twoLeftNeutralPickup);
+        m_chooser.addOption("Three Left Neutral Pickup", threeLeftNeutralPickup);
 
         SmartDashboard.putData(m_chooser);
     }

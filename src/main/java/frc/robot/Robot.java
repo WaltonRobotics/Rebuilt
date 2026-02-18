@@ -329,29 +329,50 @@ public class Robot extends TimedRobot {
 
         AutonChooser.initialize();
 
-        m_autonList.putIfAbsent("oneNeutralPickup", m_waltAutonFactory.oneNeutralPickup());
-        m_autonList.putIfAbsent("twoNeutralPickup", m_waltAutonFactory.twoNeutralPickup());
-        m_autonList.putIfAbsent("threeNeutralPickup", m_waltAutonFactory.threeNeutralPickup());
+        m_autonList.putIfAbsent("oneRightNeutralPickup", m_waltAutonFactory.oneRightNeutralPickup());
+        m_autonList.putIfAbsent("twoRightNeutralPickup", m_waltAutonFactory.twoRightNeutralPickup());
+        m_autonList.putIfAbsent("threeRightNeutralPickup", m_waltAutonFactory.threeRightNeutralPickup());
+        m_autonList.putIfAbsent("oneLeftNeutralPickup", m_waltAutonFactory.oneLeftNeutralPickup());
+        m_autonList.putIfAbsent("twoLeftNeutralPickup", m_waltAutonFactory.twoLeftNeutralPickup());
+        m_autonList.putIfAbsent("threeLeftNeutralPickup", m_waltAutonFactory.threeLeftNeutralPickup());
     }
 
     @Override
     public void disabledPeriodic() {
         if (!AutonChooser.m_chooser.getSelected().equals(m_autonChosen)) {
-            if (AutonChooser.m_chooser.getSelected().equals("oneNeutralPickup")) {
-                AutonChooser.pub_autonName.set("One Neutral Pickup");
-                m_autonChosen = "oneNeutralPickup";
+            if (AutonChooser.m_chooser.getSelected().equals("oneRightNeutralPickup")) {
+                AutonChooser.pub_autonName.set("One Right Neutral Pickup");
+                m_autonChosen = "oneRightNeutralPickup";
                 AutonChooser.pub_autonMade.set(false);
             }   
 
-            if (AutonChooser.m_chooser.getSelected().equals("twoNeutralPickup")) {
-                AutonChooser.pub_autonName.set("Two Neutral Pickup");
-                m_autonChosen = "twoNeutralPickup";
+            if (AutonChooser.m_chooser.getSelected().equals("twoRightNeutralPickup")) {
+                AutonChooser.pub_autonName.set("Two Right Neutral Pickup");
+                m_autonChosen = "twoRightNeutralPickup";
                 AutonChooser.pub_autonMade.set(false);
             }
 
-            if (AutonChooser.m_chooser.getSelected().equals("threeNeutralPickup")) {
-                AutonChooser.pub_autonName.set("Three Neutral Pickup");
-                m_autonChosen = "threeNeutralPickup";
+            if (AutonChooser.m_chooser.getSelected().equals("threeRightNeutralPickup")) {
+                AutonChooser.pub_autonName.set("Three Right Neutral Pickup");
+                m_autonChosen = "threeRightNeutralPickup";
+                AutonChooser.pub_autonMade.set(false);
+            }
+
+            if (AutonChooser.m_chooser.getSelected().equals("oneLeftNeutralPickup")) {
+                AutonChooser.pub_autonName.set("One Left Neutral Pickup");
+                m_autonChosen = "oneLeftNeutralPickup";
+                AutonChooser.pub_autonMade.set(false);
+            }
+
+            if (AutonChooser.m_chooser.getSelected().equals("twoLeftNeutralPickup")) {
+                AutonChooser.pub_autonName.set("Two Left Neutral Pickup");
+                m_autonChosen = "twoLeftNeutralPickup";
+                AutonChooser.pub_autonMade.set(false);
+            }
+
+            if (AutonChooser.m_chooser.getSelected().equals("threeLeftNeutralPickup")) {
+                AutonChooser.pub_autonName.set("Three Left Neutral Pickup");
+                m_autonChosen = "threeLeftNeutralPickup";
                 AutonChooser.pub_autonMade.set(false);
             }
         }
