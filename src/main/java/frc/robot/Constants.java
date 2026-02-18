@@ -43,11 +43,11 @@ public class Constants {
         public static final String kLogTab = "Shooter";
 
         /* MOTOR CONSTANTS */
-        public static final double kFlywheelMoI = 0.000349 * 2.5;  //J for 5 3" 0.53lb flywheels
+        public static final double kShooterMoI = 0.000349 * 2.5;  //J for 5 3" 0.53lb flywheels
         public static final double kHoodMoI = 0.000249;
         public static final double kTurretMoI = 0.104506595;
 
-        public static final double kFlywheelGearing = 1/1;
+        public static final double kShooterGearing = 1/1;
         public static final double kHoodGearing = 45/1;
         public static final double kTurretGearing = 41.66666666/1;
 
@@ -59,7 +59,7 @@ public class Constants {
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.magnitude());
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.magnitude());
 
-        public static final AngularVelocity kFlywheelMaxRPS = RotationsPerSecond.of(5785/60 * (0.9));   //Kraken X60Foc Max (RPM: 5785)
+        public static final AngularVelocity kShooterMaxRPS = RotationsPerSecond.of(5785/60 * (0.9));   //Kraken X60Foc Max (RPM: 5785)
 
         /* IDS */
         public static final int kLeaderCANID = 21; //TODO: Update CANID number
@@ -72,30 +72,30 @@ public class Constants {
 
         /* CONFIGS */
         // TODO: Check what more configs would be necessary
-        private static final Slot0Configs kFlywheelLeaderSlot0Configs = new Slot0Configs()   //Note to self (hrehaan) (and saarth cuz i did the same thing): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
+        private static final Slot0Configs kShooterLeaderSlot0Configs = new Slot0Configs()   //Note to self (hrehaan) (and saarth cuz i did the same thing): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
             .withKS(0)
             .withKV(0.1217)
             .withKA(0)
             .withKP(0)
             .withKI(0)
             .withKD(0); // kP was causing the werid sinusoid behavior, kS and kA were adding inconsistency with the destination values
-        private static final CurrentLimitsConfigs kFlywheelLeaderCurrentLimitConfigs = new CurrentLimitsConfigs()
+        private static final CurrentLimitsConfigs kShooterLeaderCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(120)
             .withSupplyCurrentLimit(50)
             .withStatorCurrentLimitEnable(true);
-        private static final MotorOutputConfigs kFlywheelLeaderOutputConfigs = new MotorOutputConfigs()
+        private static final MotorOutputConfigs kShooterLeaderOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
             .withNeutralMode(NeutralModeValue.Brake);
-        private static final FeedbackConfigs kFlywheelFeedbackConfigs = new FeedbackConfigs()
-            .withSensorToMechanismRatio(kFlywheelGearing);
-        public static final TalonFXConfiguration kFlywheelLeaderTalonFXConfiguration = new TalonFXConfiguration()
-            .withSlot0(kFlywheelLeaderSlot0Configs)
-            .withCurrentLimits(kFlywheelLeaderCurrentLimitConfigs)
-            .withMotorOutput(kFlywheelLeaderOutputConfigs)
-            .withFeedback(kFlywheelFeedbackConfigs);
+        private static final FeedbackConfigs kShooterFeedbackConfigs = new FeedbackConfigs()
+            .withSensorToMechanismRatio(kShooterGearing);
+        public static final TalonFXConfiguration kShooterLeaderTalonFXConfiguration = new TalonFXConfiguration()
+            .withSlot0(kShooterLeaderSlot0Configs)
+            .withCurrentLimits(kShooterLeaderCurrentLimitConfigs)
+            .withMotorOutput(kShooterLeaderOutputConfigs)
+            .withFeedback(kShooterFeedbackConfigs);
         
         // TODO: mimics the leader, so it doesn't need its own configs - right?
-        public static final TalonFXConfiguration kFlywheelFollowerTalonFXConfiguration = new TalonFXConfiguration()
+        public static final TalonFXConfiguration kShooterFollowerTalonFXConfiguration = new TalonFXConfiguration()
             .withMotorOutput(
                 new MotorOutputConfigs()
                     .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
