@@ -26,12 +26,12 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import static frc.robot.Constants.FieldK.kTagLayout;
 
 public class Vision {
-    //TODO: research about april tag pipeline code (see reefscape at-cmp)
+    /* CLASS VARIABLES */
     private final PhotonCamera m_camera;
     private final PhotonPoseEstimator m_photonEstimator;
     private Matrix<N3, N1> m_curStdDevs;
 
-    // Simulation
+    //---SIM
     private PhotonCameraSim m_cameraSim;
     private final VisionSim m_visionSim;
     private final String m_simVisualName;
@@ -39,13 +39,15 @@ public class Vision {
     private String m_cameraName;
     private final Transform3d m_roboToCam;
 
-    //Constants
+    //---CONSTANTS
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.5, 1.5, 6.24);
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 6.24);
 
+    /* LOGGERS */
     private final StructPublisher<Pose2d> log_camPose;
     private final DoubleArrayPublisher log_stdDevs;
 
+    /* CONSTRUCTOR */
     public Vision(String cameraName, String simVisualName, Transform3d roboToCam, VisionSim visionSim, SimCameraProperties simCameraProperties) {
         m_cameraName = cameraName;
         m_camera = new PhotonCamera(m_cameraName);
@@ -74,6 +76,7 @@ public class Vision {
         this(camera.getCameraName(), camera.getSimVisualName(), camera.getRoboToCam(), visionSim, camera.getSimCameraProperties());
     }
 
+    /* METHODS */
     public void takeOutputSnapshot() {
         m_camera.takeOutputSnapshot();
     }
