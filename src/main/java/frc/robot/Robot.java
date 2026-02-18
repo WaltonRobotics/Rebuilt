@@ -33,6 +33,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.IntakeK;
+import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.VisionK;
 import frc.robot.autons.AutonChooser;
 import frc.robot.autons.WaltAutonFactory;
@@ -40,6 +42,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Intake.IntakeRollersVelocity;
@@ -121,8 +124,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_shoot = m_driver.rightTrigger().and(trg_manipOverride.negate());
     private Trigger trg_emergencyBarf = m_driver.leftTrigger().and(trg_manipOverride.negate());
 
-    private Trigger trg_startPassing = m_manipulator.rightBumper().and(trg_manipOverride.negate());
-    private Trigger trg_stopPassing = m_manipulator.leftBumper().and(trg_manipOverride.negate());
+    private Trigger trg_pass = m_driver.rightBumper().and(trg_manipOverride.negate());
 
     // Override triggers
     private Trigger trg_maxShooterOverride = trg_manipOverride.and(m_manipulator.povLeft());
@@ -221,11 +223,9 @@ public class Robot extends TimedRobot {
         trg_prepIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.SAFE));
         trg_retractIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED));
 
-        trg_shoot.onTrue(m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)).onFalse(m_superstructure.deactivateOuttake());
+        trg_shoot.and(trg_pass.negate()).onTrue(m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)).onFalse(m_superstructure.deactivateOuttake());
+        trg_shoot.and(trg_pass).onTrue(m_superstructure.startPassing()).onFalse(m_superstructure.stopPassing());
         trg_emergencyBarf.onTrue(m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)).onFalse(m_superstructure.deactivateOuttake());
-
-        trg_startPassing.onTrue(m_superstructure.startPassing());
-        trg_stopPassing.onTrue(m_superstructure.stopPassing());
 
         // Override commands
         trg_maxShooterOverride.onTrue(m_superstructure.maxShooter()).onFalse(m_superstructure.stopShooter());
@@ -265,7 +265,7 @@ public class Robot extends TimedRobot {
             )
         );
 
-        trg_shoot.onTrue(
+        trg_shoot.and(trg_pass.negate()).onTrue(
             Commands.parallel(
                 m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS),
                 m_visualSim.setShooterVelocity()
@@ -287,14 +287,12 @@ public class Robot extends TimedRobot {
                 m_visualSim.setShooterVelocity()
             )
         );
-
-        trg_startPassing.onTrue(
+        trg_shoot.and(trg_pass).onTrue(
             Commands.parallel(
                 m_superstructure.startPassing(),
                 m_visualSim.setShooterVelocity()
             )
-        );
-        trg_stopPassing.onTrue(
+        ).onFalse(
             Commands.parallel(
                 m_superstructure.stopPassing(),
                 m_visualSim.setShooterVelocity()
