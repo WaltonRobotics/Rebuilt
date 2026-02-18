@@ -41,7 +41,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.Intake.DeployPosition;
+import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Intake.IntakeRollersVelocity;
