@@ -2,10 +2,8 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.TalonFXSimState;
-import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import com.ctre.phoenix6.sim.ChassisReference;
 
-import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -15,12 +13,8 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -31,81 +25,85 @@ import frc.util.MotorSim;
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
-    private final TalonFX m_deploy = new TalonFX(IntakeK.kDeployCANID);
-    private final TalonFX m_rollers = new TalonFX(IntakeK.kRollersCANID);
+    private final TalonFX m_intakeArm = new TalonFX(IntakeK.kIntakeArmCANID);
+    private final TalonFX m_intakeRollers = new TalonFX(IntakeK.kIntakeRollersCANID);
 
     private MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0).withEnableFOC(true);
     private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
 
     // Loggers
-    DoubleLogger log_deployRots = WaltLogger.logDouble(IntakeK.kLogTab, "deployRots");
-    DoubleLogger log_targetDeployRots = WaltLogger.logDouble(IntakeK.kLogTab, "targetDeployRots");
+    DoubleLogger log_intakeArmRots = WaltLogger.logDouble(IntakeK.kLogTab, "intakeArmRots");
+    DoubleLogger log_targetIntakeArmRots = WaltLogger.logDouble(IntakeK.kLogTab, "targetIntakeArmRots");
 
-    DoubleLogger log_rollersRPS = WaltLogger.logDouble(IntakeK.kLogTab, "rollersRPS");
-    DoubleLogger log_targetRollersRPS = WaltLogger.logDouble(IntakeK.kLogTab, "targetRollersRPS");
+    DoubleLogger log_intakeRollersRPS = WaltLogger.logDouble(IntakeK.kLogTab, "intakeRollersRPS");
+    DoubleLogger log_targetIntakeRollersRPS = WaltLogger.logDouble(IntakeK.kLogTab, "targetIntakeRollersRPS");
 
     // Sims
-    private final DCMotorSim m_deploySim = new DCMotorSim(
+    private final DCMotorSim m_intakeArmSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX60Foc(1),
-            IntakeK.kDeployMOI,
-            IntakeK.kDeployGearing
+            IntakeK.kIntakeArmMOI,
+            IntakeK.kIntakeArmGearing
         ),
         DCMotor.getKrakenX60Foc(1)
     );
 
-    private final DCMotorSim m_rollersSim = new DCMotorSim(
+    private final DCMotorSim m_intakeRollersSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX44Foc(1),
-            IntakeK.kRollersMOI,
-            IntakeK.kRollersGearing
+            IntakeK.kIntakeRollersMOI,
+            IntakeK.kIntakeRollersGearing
         ),
         DCMotor.getKrakenX44Foc(1) // returns gearbox
     );
 
     public Intake() {
-        m_deploy.getConfigurator().apply(IntakeK.kDeployConfiguration);
-        m_rollers.getConfigurator().apply(IntakeK.kRollersConfiguration);
+        m_intakeArm.getConfigurator().apply(IntakeK.kIntakeArmConfiguration);
+        m_intakeRollers.getConfigurator().apply(IntakeK.kIntakeRollersConfiguration);
         initSim();
     }
 
     private void initSim() {
-        MotorSim.initSimFX(m_deploy, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
-        MotorSim.initSimFX(m_rollers, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
+        MotorSim.initSimFX(m_intakeArm, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
+        MotorSim.initSimFX(m_intakeRollers, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
     }
 
     /* COMMANDS */
-    public Command setDeployPos(DeployPosition rots) {
-        return setDeployPos(rots.rots);
+    public Command setIntakeArmPos(IntakeArmPosition rots) {
+        return setIntakeArmPos(rots.rots);
     }
 
-    public Command setDeployPos(Angle rots) {
-        return runOnce(() -> m_deploy.setControl(m_MMVReq.withPosition(rots)));
+    public Command setIntakeArmPos(Angle rots) {
+        return runOnce(() -> m_intakeArm.setControl(m_MMVReq.withPosition(rots)));
     }
 
-    public Command setRollersSpeed(RollersVelocity RPS) {
-        return setRollersSpeed(RPS.RPS);
+    public Command setIntakeRollersSpeed(IntakeRollersVelocity RPS) {
+        return setIntakeRollersSpeed(RPS.RPS);
     }
 
-    public Command setRollersSpeed(AngularVelocity RPS) {
-        return runOnce(() -> m_rollers.setControl(m_VVReq.withVelocity(RPS)));
+    public Command setIntakeRollersSpeed(AngularVelocity RPS) {
+        return runOnce(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RPS)));
+    }
+
+    public TalonFX getDeployMotor() {
+        return m_intakeArm;
     }
 
     @Override
     public void periodic() {
-        log_targetDeployRots.accept(m_MMVReq.Position);
-        log_targetRollersRPS.accept(m_VVReq.Velocity);
-        log_rollersRPS.accept(m_rollers.getVelocity().getValueAsDouble());
-        log_deployRots.accept(m_deploy.getPosition().getValueAsDouble());
+        log_targetIntakeArmRots.accept(m_MMVReq.Position);
+        log_targetIntakeRollersRPS.accept(m_VVReq.Velocity);
+        log_intakeRollersRPS.accept(m_intakeRollers.getVelocity().getValueAsDouble());
+        log_intakeArmRots.accept(m_intakeArm.getPosition().getValueAsDouble());
     }
 
     @Override
     public void simulationPeriodic() {
-        MotorSim.updateSimFX(m_deploy, m_deploySim);
-        MotorSim.updateSimFX(m_rollers, m_rollersSim);
+        MotorSim.updateSimFX(m_intakeArm, m_intakeArmSim);
+        MotorSim.updateSimFX(m_intakeRollers, m_intakeRollersSim);
     }
 
-    public enum DeployPosition{
+    public enum IntakeArmPosition{
         RETRACTED(0),
         SAFE(72),
         DEPLOYED(87.485);
@@ -113,20 +111,20 @@ public class Intake extends SubsystemBase {
         private Angle degs;
         private Angle rots;
 
-        private DeployPosition(double degs) {
+        private IntakeArmPosition(double degs) {
             this.degs = Degrees.of(degs);
             this.rots = Rotations.of(this.degs.in(Rotations));
         }
     }
 
-    public enum RollersVelocity{
+    public enum IntakeRollersVelocity{
         MAX(50),
         MID(33),
         STOP(0);
 
         private AngularVelocity RPS;
 
-        private RollersVelocity(double RPS) {
+        private IntakeRollersVelocity(double RPS) {
             this.RPS = RotationsPerSecond.of(RPS);
         }
     }
