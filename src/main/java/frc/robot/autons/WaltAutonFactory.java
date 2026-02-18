@@ -48,6 +48,7 @@ public class WaltAutonFactory {
     public Command pickupCmd(boolean isNeutral, boolean isRight) {
         Pose2d postPickupPose = isNeutral ? m_postLeftPickupNeutral : m_postRightPickupDepot;
 
+        //b/c there are currently no left auton paths that go to the depot, if the path is to depot, it will default to the right post depot pickup
         if (isRight) {
             postPickupPose = isNeutral ? m_postRightPickupNeutral : m_postRightPickupDepot;
         }
