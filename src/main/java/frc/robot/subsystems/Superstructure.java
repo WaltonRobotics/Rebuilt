@@ -49,26 +49,21 @@ public class Superstructure {
         switch (pos) {
             case SAFE:
                 if (m_intake.getDeployMotor().getStatorCurrent().getValueAsDouble() < 40) {
-                    logCommand = Commands.sequence(
-                        m_indexer.stopSpinner(),
-                        m_intake.setDeployPos(pos),
-                        m_intake.setRollersSpeed(RollersVelocity.STOP),
-                        logActiveCommands("safeIntake", "activateIntake", "retractIntake")
-                    );
+                    logCommand = logActiveCommands("safeIntake", "activateIntake", "retractIntake");
                 } else {
-                    logCommand = Commands.none();
+                    return Commands.none();
                 }
                 break;
             default:
-                logCommand =  Commands.sequence(
-                    m_indexer.stopSpinner(),
-                    m_intake.setDeployPos(pos),
-                    m_intake.setRollersSpeed(RollersVelocity.STOP),
-                    logActiveCommands("retractIntake", "activateIntake", "safeIntake")
-                );
+                logCommand = logActiveCommands("retractIntake", "activateIntake", "safeIntake");
                 break;
         }
-        return logCommand;
+        return Commands.sequence(
+            m_indexer.stopSpinner(),
+            m_intake.setDeployPos(pos),
+            m_intake.setRollersSpeed(RollersVelocity.STOP),
+            logCommand
+        );
     }
 
     /**
@@ -92,22 +87,16 @@ public class Superstructure {
     public Command activateOuttake(AngularVelocity RPS) {
         Command logCommand;
         if (RPS == kFlywheelMaxRPS) {
-            logCommand = Commands.sequence(
-                m_indexer.startSpinner(),
-                m_indexer.startExhaust(),
-                m_shooter.setFlywheelVelocityCmd(RPS),
-                logActiveCommands("normalOuttake", "deactivateOuttake", "emergencyOuttake")
-            );
-            
+            logCommand = logActiveCommands("shooting", "deactivateOuttake", "emergencyDump");   
         } else {
-            logCommand = Commands.sequence(
-                m_indexer.startSpinner(),
-                m_indexer.startExhaust(),
-                m_shooter.setFlywheelVelocityCmd(RPS),
-                logActiveCommands("emergencyOuttake", "normalOuttake", "deactivateOuttake")
-            );
+            logCommand = logActiveCommands("emergencyDump", "shooting", "deactivateOuttake");
         }
-        return logCommand;
+        return Commands.sequence(
+            m_indexer.startSpinner(),
+            m_indexer.startExhaust(),
+            m_shooter.setFlywheelVelocityCmd(RPS),
+            logCommand
+        );
     }
 
     /**
@@ -120,7 +109,7 @@ public class Superstructure {
             m_indexer.stopSpinner(),
             m_indexer.stopExhaust(),
             m_shooter.setFlywheelVelocityCmd(kFlywheelZeroRPS),
-            logActiveCommands("deactivateOuttake", "normalOuttake", "emergencyOuttake")
+            logActiveCommands("deactivateOuttake", "shooting", "emergencyDump")
         );
     }
     
@@ -201,17 +190,14 @@ public class Superstructure {
     public Command turretTo(double degs) {
         Command logCommand;
         if (degs == 180) {
-            logCommand = Commands.sequence(
-                m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(degs, Degree)),
-                logActiveOverrideCommands("turret180", "turret0")
-            );
+            logCommand = logActiveOverrideCommands("turret180", "turret0");
         } else {
-            logCommand = Commands.sequence(
-                m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(degs, Degree)),
-                logActiveOverrideCommands("turret0", "turret180")
-            );
+            logCommand = logActiveOverrideCommands("turret0", "turret180");
         }
-        return logCommand;
+        return Commands.sequence(
+            m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(degs, Degree)),
+            logCommand
+        );
     }
 
     /**
@@ -222,17 +208,14 @@ public class Superstructure {
     public Command hoodTo(double degs) {
         Command logCommand;
         if (degs == 30) {
-            logCommand = Commands.sequence(
-                m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(degs, Degree)),
-                logActiveOverrideCommands("hood30", "hood0")
-            );
+            logCommand = logActiveOverrideCommands("hood30", "hood0");
         } else {
-            logCommand = Commands.sequence(
-                m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(degs, Degree)),
-                logActiveOverrideCommands("hood0", "hood30")
-            );
+            logCommand = logActiveOverrideCommands("hood0", "hood30");
         }
-        return logCommand;
+        return Commands.sequence(
+            m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(degs, Degree)),
+            logCommand
+        );
     }
 
     /**
@@ -284,19 +267,16 @@ public class Superstructure {
         Command logCommand;
         switch (RPS) {
             case MAX:
-                logCommand = Commands.sequence(
-                    m_intake.setRollersSpeed(RPS),
-                    logActiveOverrideCommands("maxRollers", "stopRollers")
-                );
+                logCommand = logActiveOverrideCommands("maxRollers", "stopRollers");
                 break;
             default:
-                logCommand = Commands.sequence(
-                    m_intake.setRollersSpeed(RPS),
-                    logActiveOverrideCommands("stopRollers", "maxRollers")
-                );
+                logCommand = logActiveOverrideCommands("stopRollers", "maxRollers");
                 break;
         }
-        return logCommand;
+        return Commands.sequence(
+            m_intake.setRollersSpeed(RPS),
+            logCommand
+        );
     }
 
     /**
@@ -308,30 +288,24 @@ public class Superstructure {
         Command logCommand;
         switch (pos) {
             case DEPLOYED:
-                logCommand = Commands.sequence(
-                    m_intake.setDeployPos(pos),
-                    logActiveOverrideCommands("deployIntake", "safeIntake", "intakeUp")
-                );
+                logCommand = logActiveOverrideCommands("deployIntake", "safeIntake", "intakeUp");
                 break;
             case SAFE:
-                logCommand = Commands.sequence(
-                    m_intake.setDeployPos(pos),
-                    logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp")
-                );
+                logCommand = logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp");
                 break;
             default:
                 if (m_intake.getDeployMotor().getStatorCurrent().getValueAsDouble() < 40) {
-                    logCommand = Commands.sequence(
-                        m_intake.setDeployPos(pos),
-                        logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake")
-                    );
+                    logCommand = logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake");
                 }
                 else {
-                    logCommand = Commands.none();
+                   return Commands.none();
                 }
                 break;
         }
-        return logCommand;
+        return logCommand = Commands.sequence(
+            m_intake.setDeployPos(pos),
+            logCommand
+        );
     }
 
     /**
