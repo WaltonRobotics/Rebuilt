@@ -90,11 +90,11 @@ public class Intake extends SubsystemBase {
     }
 
     public TalonFX getRollers() {
-        return m_rollers;
+        return m_intakeRollers;
     }
 
     public TalonFX getDeploy() {
-        return m_deploy;
+        return m_intakeArm;
     }
 
     @Override

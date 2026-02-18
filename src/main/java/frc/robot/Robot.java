@@ -307,13 +307,13 @@ public class Robot extends TimedRobot {
         // Shooter
         m_driver.povDown().onTrue(
             Commands.parallel(
-                m_shooter.setFlywheelVelocityCmd(RotationsPerSecond.of(0)),
+                m_shooter.setShooterVelocityCmd(RotationsPerSecond.of(0)),
                 m_visualSim.setFlywheelVelocity()
             )
         );
         m_driver.povUp().onTrue(
             Commands.parallel(
-                m_shooter.setFlywheelVelocityCmd(ShooterK.kFlywheelMaxRPS),
+                m_shooter.setShooterVelocityCmd(ShooterK.kShooterMaxRPS),
                 m_visualSim.setFlywheelVelocity()
             )
         );
@@ -349,8 +349,6 @@ public class Robot extends TimedRobot {
             )
         );
 
-    }
-
         // Test sequences
         trg_activateIntake.onTrue(m_superstructure.activateIntake());
         trg_prepIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.SAFE));
@@ -377,6 +375,7 @@ public class Robot extends TimedRobot {
 
         trg_deployIntakeOverride.onTrue(m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)).onFalse(m_superstructure.intakeTo(IntakeArmPosition.SAFE));
         trg_intakeUpOverride.onTrue(m_superstructure.intakeTo(IntakeArmPosition.RETRACTED));
+
     }
 
     @Override
