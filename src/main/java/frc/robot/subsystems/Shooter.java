@@ -164,8 +164,8 @@ public class Shooter extends SubsystemBase {
         return m_shooterLeader;
     }
 
-    public Canandmag getHoodEncoder() {
-        return m_hoodEncoder;
+    public DCMotorSim getSimHoodEncoder() {
+        return m_hoodSim;
     }
 
     public TalonFX getTurret() {
