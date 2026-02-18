@@ -383,7 +383,7 @@ public class Constants {
             Distance.ofRelativeUnits(5.958622932434082, Meter), new Rotation2d(Math.PI));
 
         public static final Pose2d leftNeutralPose = new Pose2d(Distance.ofRelativeUnits(6.924767017364502, Meter), 
-        Distance.ofRelativeUnits(5.437880039215088, Meter), new Rotation2d(0));
+            Distance.ofRelativeUnits(5.437880039215088, Meter), new Rotation2d(0));
 
     }
 }
