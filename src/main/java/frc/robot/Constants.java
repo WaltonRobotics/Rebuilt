@@ -1,6 +1,8 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
+
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
@@ -34,6 +36,9 @@ import frc.util.AllianceFlipUtil;
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
     public static final double kSimPeriodicUpdateInterval = 0.020;
+
+    public static final CANBus kCanivoreBus = new CANBus("fd");
+
     public static class ShooterK {
         public static final String kLogTab = "Shooter";
 
@@ -59,9 +64,9 @@ public class Constants {
         public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.of(/* 0/60 * (0.9) */ 0);
 
         /* IDS */
-        public static final int kLeaderCANID = 21; //TODO: Update CANID number
-        public static final int kFollowerCANID = 22; //TODO: Update CANID number
-        public static final int kTurretCANID = 24; //TODO: Update CANID number
+        public static final int kLeaderCANID = 20;
+        public static final int kFollowerCANID = 21;
+        public static final int kTurretCANID = 12;
 
         public static final int kExitBeamBreakChannel = 0; //TODO: Update channel number
         public static final int kHoodChannel = 1;
@@ -248,8 +253,8 @@ public class Constants {
         public static final double kIntakeRollersGearing = 1.0/2;
 
         /* IDS */
-        public static final int kIntakeArmCANID = 41; //TODO: change to correct
-        public static final int kIntakeRollersCANID = 42; //TODO: change to correct
+        public static final int kIntakeArmCANID = 40;
+        public static final int kIntakeRollersCANID = 41;
 
         /* CONFIGS */
         //IntakeArm Motor
@@ -308,8 +313,8 @@ public class Constants {
         
         /* IDS */
         //TODO: Make ids accurate
-        public static final int kSpindexerCANID = 49;
-        public static final int kTunnelCANID = 50;
+        public static final int kSpindexerCANID = 10;
+        public static final int kTunnelCANID = 11;
 
         public static final double kSpindexerGearing = 3;
         public static final double kTunnelGearing = 1/1.2;
