@@ -246,63 +246,63 @@ public class Robot extends TimedRobot {
 
     private void configureTestBindings() {
         // Intake
-        // m_driver.a().onTrue(
-        //     Commands.parallel(
-        //         m_intake.setDeployPos(DeployPosition.RETRACTED),
-        //         m_visualSim.setDeployPosition()
-        // ));
-        // m_driver.b().onTrue(
-        //     Commands.parallel(
-        //         m_intake.setDeployPos(DeployPosition.SAFE),
-        //         m_visualSim.setDeployPosition()
-        // ));
-        // m_driver.x().onTrue(
-        //     Commands.parallel(
-        //         m_intake.setDeployPos(DeployPosition.DEPLOYED),
-        //         m_visualSim.setDeployPosition()
-        // ));
+        m_driver.a().onTrue(
+            Commands.parallel(
+                m_intake.setIntakeArmPos(IntakeArmPosition.RETRACTED),
+                m_visualSim.setDeployPosition()
+        ));
+        m_driver.b().onTrue(
+            Commands.parallel(
+                m_intake.setIntakeArmPos(IntakeArmPosition.SAFE),
+                m_visualSim.setDeployPosition()
+        ));
+        m_driver.x().onTrue(
+            Commands.parallel(
+                m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED),
+                m_visualSim.setDeployPosition()
+        ));
 
-        // m_driver.povRight().onTrue(
-        //     Commands.parallel(
-        //         m_intake.setRollersSpeed(RollersVelocity.MID),
-        //         m_visualSim.setRollerVelocity()
-        // ));
-        // m_driver.povDown().onTrue(
-        //     Commands.parallel(
-        //         m_intake.setRollersSpeed(RollersVelocity.STOP),
-        //         m_visualSim.setRollerVelocity()
-        // )); 
-        // m_driver.povUp().onTrue(
-        //     Commands.parallel(
-        //         m_intake.setRollersSpeed(RollersVelocity.MAX),
-        //         m_visualSim.setRollerVelocity()
-        // ));
+        m_driver.povRight().onTrue(
+            Commands.parallel(
+                m_intake.setIntakeRollersSpeed(IntakeRollersVelocity.MID),
+                m_visualSim.setRollerVelocity()
+        ));
+        m_driver.povDown().onTrue(
+            Commands.parallel(
+                m_intake.setIntakeRollersSpeed(IntakeRollersVelocity.STOP),
+                m_visualSim.setRollerVelocity()
+        )); 
+        m_driver.povUp().onTrue(
+            Commands.parallel(
+                m_intake.setIntakeRollersSpeed(IntakeRollersVelocity.MAX),
+                m_visualSim.setRollerVelocity()
+        ));
 
         // Indexer
-        // m_driver.povUp().onTrue(
-        //     Commands.parallel(
-        //         m_indexer.startSpinner(),
-        //         m_visualSim.setSpinnerVelocity()
-        //     )
-        // );
-        // m_driver.povDown().onTrue(
-        //     Commands.parallel(
-        //         m_indexer.stopSpinner(),
-        //         m_visualSim.setSpinnerVelocity()
-        //     )
-        // );
-        // m_driver.povLeft().onTrue(
-        //     Commands.parallel(
-        //         m_indexer.startExhaust(),
-        //         m_visualSim.setExhaustVelocity()
-        //     )
-        // );
-        // m_driver.povRight().onTrue(
-        //     Commands.parallel(
-        //         m_indexer.stopExhaust(),
-        //         m_visualSim.setExhaustVelocity()
-        //     )
-        // );
+        m_driver.povUp().onTrue(
+            Commands.parallel(
+                m_indexer.startSpindexer(),
+                m_visualSim.setSpinnerVelocity()
+            )
+        );
+        m_driver.povDown().onTrue(
+            Commands.parallel(
+                m_indexer.stopSpindexer(),
+                m_visualSim.setSpinnerVelocity()
+            )
+        );
+        m_driver.povLeft().onTrue(
+            Commands.parallel(
+                m_indexer.startTunnel(),
+                m_visualSim.setExhaustVelocity()
+            )
+        );
+        m_driver.povRight().onTrue(
+            Commands.parallel(
+                m_indexer.stopTunnel(),
+                m_visualSim.setExhaustVelocity()
+            )
+        );
 
         // Shooter
         m_driver.povDown().onTrue(
