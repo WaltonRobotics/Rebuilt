@@ -123,7 +123,6 @@ public class VisualSim {
         return setVelocity(m_shooterVelocity, m_shooter.getShooter());
     }
 
-    //currently this will not work until hrehaan's fixies exist
     public Command setHoodPosition() {
         return Commands.run(
             () -> {
