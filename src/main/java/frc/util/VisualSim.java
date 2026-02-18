@@ -126,7 +126,7 @@ public class VisualSim {
     public Command setHoodPosition() {
         return Commands.run(
             () -> {
-                m_hoodPosition.setAngle(m_hoodStartAngle.minus(new Rotation2d(Rotations.of(m_shooter.getSimHoodEncoder().getAngularPositionRotations()))));
+                m_hoodPosition.setAngle(m_hoodStartAngle.minus(new Rotation2d(Rotations.of(m_shooter.getHoodSimEncoder().getAngularPositionRotations()))));
             }
         );
     }
