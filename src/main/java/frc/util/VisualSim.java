@@ -87,11 +87,10 @@ public class VisualSim {
         SmartDashboard.putData("ShooterMech2d", shooterMech);
     } 
 
-    //TODO: come up with better names
-    private Command setVelocity(MechanismLigament2d simPart, TalonFX subsystem) {
+    private Command setVelocity(MechanismLigament2d simPart, TalonFX subsystemMotor) {
         return Commands.run(
             () -> {
-               simPart.setLength(subsystem.getVelocity().getValueAsDouble()/10);
+               simPart.setLength(subsystemMotor.getVelocity().getValueAsDouble()/10);
             }
         );
     }
