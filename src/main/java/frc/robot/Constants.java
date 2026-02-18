@@ -306,39 +306,39 @@ public class Constants {
         
         /* IDS */
         //TODO: Make ids accurate
-        public static final int kSpinnerCANID = 49;
+        public static final int kSpindexerCANID = 49;
         public static final int kTunnelCANID = 50;
 
-        public static final double kSpinnerGearing = 3;
+        public static final double kSpindexerGearing = 3;
         public static final double kTunnelGearing = 1/1.2;
 
-        public static final double kSpinnerMOI = 0.00166190059;
+        public static final double kSpindexerMOI = 0.00166190059;
         public static final double kTunnelMOI = 0.000215968064;
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
-        private static final Slot0Configs kSpinnerSlot0Configs = new Slot0Configs()
+        private static final Slot0Configs kSpindexerSlot0Configs = new Slot0Configs()
             .withKS(0.012)
             .withKV(0.371)
             .withKA(0)
             .withKP(0.1)
             .withKI(0)
             .withKD(0.03);
-        private static final CurrentLimitsConfigs kSpinnerCurrentLimitConfigs = new CurrentLimitsConfigs()
+        private static final CurrentLimitsConfigs kSpindexerCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(120)
             .withSupplyCurrentLimit(70)
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
-        private static final MotorOutputConfigs kSpinnerMotorOutputConfigs = new MotorOutputConfigs()
+        private static final MotorOutputConfigs kSpindexerMotorOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: CW or CCW?
             .withNeutralMode(NeutralModeValue.Brake);
-        private static final FeedbackConfigs kSpinnerFeedbackConfigs = new FeedbackConfigs()
-            .withSensorToMechanismRatio(kSpinnerGearing);
-        public static final TalonFXConfiguration kSpinnerTalonFXConfiguration = new TalonFXConfiguration()
-            .withSlot0(kSpinnerSlot0Configs)
-            .withCurrentLimits(kSpinnerCurrentLimitConfigs)
-            .withMotorOutput(kSpinnerMotorOutputConfigs)
-            .withFeedback(kSpinnerFeedbackConfigs);
+        private static final FeedbackConfigs kSpindexerFeedbackConfigs = new FeedbackConfigs()
+            .withSensorToMechanismRatio(kSpindexerGearing);
+        public static final TalonFXConfiguration kSpindexerTalonFXConfiguration = new TalonFXConfiguration()
+            .withSlot0(kSpindexerSlot0Configs)
+            .withCurrentLimits(kSpindexerCurrentLimitConfigs)
+            .withMotorOutput(kSpindexerMotorOutputConfigs)
+            .withFeedback(kSpindexerFeedbackConfigs);
 
         private static final Slot0Configs kTunnelSlot0Configs = new Slot0Configs()
             .withKS(0.1124)

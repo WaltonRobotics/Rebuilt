@@ -180,8 +180,8 @@ public class Robot extends TimedRobot {
         // m_driver.povUp().onTrue(m_intake.setRollersSpeed(RollersVelocity.MAX));
 
         // Indexer
-        // m_driver.povUp().onTrue(m_indexer.startSpinner());
-        // m_driver.povDown().onTrue(m_indexer.stopSpinner());
+        // m_driver.povUp().onTrue(m_indexer.startSpindexer());
+        // m_driver.povDown().onTrue(m_indexer.stopSpindexer());
         // m_driver.povLeft().onTrue(m_indexer.startTunnel());
         // m_driver.povRight().onTrue(m_indexer.stopTunnel());
 
