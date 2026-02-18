@@ -16,7 +16,6 @@ import com.reduxrobotics.sensors.canandmag.Canandmag;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -27,7 +26,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static frc.robot.Constants.ShooterK.*;
 
-import frc.robot.Constants;
 import frc.util.MotorSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
