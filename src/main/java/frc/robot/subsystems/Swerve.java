@@ -323,7 +323,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
     }
 
-
     private void followPath(SwerveSample sample) {
         m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
         var pose = getState().Pose;
