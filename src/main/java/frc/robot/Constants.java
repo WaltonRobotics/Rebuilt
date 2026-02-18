@@ -249,8 +249,10 @@ public class Constants {
         public static final double kIntakeArmMOI = 0.0209;
         public static final double kIntakeArmGearing = 5/1;
 
-        public static final double kIntakeRollersMOI = 0.00005;
-        public static final double kIntakeRollersGearing = 1.0/2;
+        public static final double kIntakeRollersMOI = 0.0001; // 0.00343880857
+        public static final double kIntakeRollersGearing = 12.0/30;
+
+        public static final AngularVelocity kRollersMaxRPS = RotationsPerSecond.of((7368 / 60) / kIntakeRollersGearing);  //100% RPS
 
         /* IDS */
         public static final int kIntakeArmCANID = 40;
@@ -291,7 +293,7 @@ public class Constants {
             .withSupplyCurrentLimitEnable(true);
         private static final Slot0Configs kIntakeRollersSlot0Configs = new Slot0Configs()
             .withKS(0)
-            .withKV(0.19543973941)
+            .withKV(0.488599348534) // 0.19543973941
             .withKA(0)
             .withKP(0)
             .withKI(0)
