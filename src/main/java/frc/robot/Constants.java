@@ -307,13 +307,13 @@ public class Constants {
         /* IDS */
         //TODO: Make ids accurate
         public static final int kSpinnerCANID = 49;
-        public static final int kExhaustCANID = 50;
+        public static final int kTunnelCANID = 50;
 
         public static final double kSpinnerGearing = 3;
-        public static final double kExhaustGearing = 1/1.2;
+        public static final double kTunnelGearing = 1/1.2;
 
         public static final double kSpinnerMOI = 0.00166190059;
-        public static final double kExhaustMOI = 0.000215968064;
+        public static final double kTunnelMOI = 0.000215968064;
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
@@ -340,28 +340,28 @@ public class Constants {
             .withMotorOutput(kSpinnerMotorOutputConfigs)
             .withFeedback(kSpinnerFeedbackConfigs);
 
-        private static final Slot0Configs kExhaustSlot0Configs = new Slot0Configs()
+        private static final Slot0Configs kTunnelSlot0Configs = new Slot0Configs()
             .withKS(0.1124)
             .withKV(0.102)
             .withKA(0)
             .withKP(0.06)
             .withKI(0)
             .withKD(0);
-        private static final CurrentLimitsConfigs kExhaustCurrentLimitConfigs = new CurrentLimitsConfigs()
+        private static final CurrentLimitsConfigs kTunnelCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(140)
             .withSupplyCurrentLimit(60)
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
-        private static final MotorOutputConfigs kExhaustMotorOutputConfigs = new MotorOutputConfigs()
+        private static final MotorOutputConfigs kTunnelMotorOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: CW or CCW?
             .withNeutralMode(NeutralModeValue.Brake);
-        private static final FeedbackConfigs kExhaustFeedbackConfigs = new FeedbackConfigs()
-            .withSensorToMechanismRatio(kExhaustGearing);
-        public static final TalonFXConfiguration kExhaustTalonFXConfiguration = new TalonFXConfiguration()
-            .withSlot0(kExhaustSlot0Configs)
-            .withCurrentLimits(kExhaustCurrentLimitConfigs)
-            .withMotorOutput(kExhaustMotorOutputConfigs)
-            .withFeedback(kExhaustFeedbackConfigs);
+        private static final FeedbackConfigs kTunnelFeedbackConfigs = new FeedbackConfigs()
+            .withSensorToMechanismRatio(kTunnelGearing);
+        public static final TalonFXConfiguration kTunnelTalonFXConfiguration = new TalonFXConfiguration()
+            .withSlot0(kTunnelSlot0Configs)
+            .withCurrentLimits(kTunnelCurrentLimitConfigs)
+            .withMotorOutput(kTunnelMotorOutputConfigs)
+            .withFeedback(kTunnelFeedbackConfigs);
     }
 
     public static class AutonK {

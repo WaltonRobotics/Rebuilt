@@ -182,8 +182,8 @@ public class Robot extends TimedRobot {
         // Indexer
         // m_driver.povUp().onTrue(m_indexer.startSpinner());
         // m_driver.povDown().onTrue(m_indexer.stopSpinner());
-        // m_driver.povLeft().onTrue(m_indexer.startExhaust());
-        // m_driver.povRight().onTrue(m_indexer.stopExhaust());
+        // m_driver.povLeft().onTrue(m_indexer.startTunnel());
+        // m_driver.povRight().onTrue(m_indexer.stopTunnel());
 
         // Shooter
         m_driver.povDown().onTrue(m_shooter.setFlywheelVelocityCmd(RotationsPerSecond.of(0)));
