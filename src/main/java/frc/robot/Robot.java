@@ -92,7 +92,7 @@ public class Robot extends TimedRobot {
         new Vision(VisionK.kCameras[2], m_visionSim),
         new Vision(VisionK.kCameras[3], m_visionSim),
     };
-  
+
     private final Shooter m_shooter = new Shooter();
     private final Intake m_intake = new Intake();
     private final Indexer m_indexer = new Indexer();
