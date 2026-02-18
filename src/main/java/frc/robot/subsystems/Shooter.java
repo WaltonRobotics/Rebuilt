@@ -38,11 +38,14 @@ import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
 public class Shooter extends SubsystemBase {
-    /* VARIABLES */
-    // motors + control requests
-    private final TalonFX m_shooterLeader = new TalonFX(kLeaderCANID, Constants.kCanivoreBus); //X60
-    private final TalonFX m_shooterFollower = new TalonFX(kFollowerCANID, Constants.kCanivoreBus); //X60
+    /* CLASS VARIABLES */
+    //---MOTORS + CONTROL REQUESTS
+    private final TalonFX m_shooterLeader = new TalonFX(kLeaderCANID, Constants.kCanivoreBus); //X60Foc
+    private final TalonFX m_shooterFollower = new TalonFX(kFollowerCANID, Constants.kCanivoreBus); //X60Foc
     private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(true);
+
+    private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); //X44Foc
+    private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true);
 
     private final Servo m_hood = new Servo(kHoodChannel);
     private final Canandmag m_hoodEncoder = new Canandmag(kHoodEncoderChannel);
@@ -51,23 +54,19 @@ public class Shooter extends SubsystemBase {
     private Angle m_hoodSetpoint = Degrees.of(0);
     private Angle m_currentHoodPos = Rotations.of(0);
 
-    private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); //X44
-    private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true);
-
-    // logic booleans
-    private boolean m_spunUp = false;   //unused
+    //---LOGIC BOOLEANS
+    private boolean m_spunUp = false;   // currently unused
     private final boolean m_inSim = RobotBase.isSimulation();
 
-    // UNUSED - beam breaks (if we have one on the shooter)
+    //---BEAM BREAKS (if we have one on the shooter)
     public DigitalInput m_exitBeamBreak = new DigitalInput(kExitBeamBreakChannel);
-
     public final Trigger trg_exitBeamBreak = new Trigger(() -> !m_exitBeamBreak.get()); //true when beam is broken
 
     public final Trigger exitBeamBreakTrigger(EventLoop loop) {
         return new Trigger(loop, () -> !m_exitBeamBreak.get());
     }
 
-    // sim (TODO: double check constants)
+    /* SIM OBJECTS */
     private final FlywheelSim m_shooterSim = new FlywheelSim(
         LinearSystemId.createFlywheelSystem(
             DCMotor.getKrakenX60Foc(2), 
@@ -96,7 +95,7 @@ public class Shooter extends SubsystemBase {
         DCMotor.getKrakenX44Foc(1) // returns gearbox
     );
 
-    // loggers
+    /* LOGGERS */
     private final DoubleLogger log_shooterVelocityRPS = WaltLogger.logDouble(kLogTab, "shooterVelocityRPS");
     private final DoubleLogger log_hoodPositionDegs = WaltLogger.logDouble(kLogTab, "hoodPositionDegs");
     private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble(kLogTab, "turretPositionRots");
@@ -129,12 +128,12 @@ public class Shooter extends SubsystemBase {
     }
 
     /* COMMANDS */
-    // Shooter Commands (Veloity Control)
+    //---SHOOTER (Veloity Control)
     public Command setShooterVelocityCmd(AngularVelocity RPS) {
         return runOnce(() -> m_shooterLeader.setControl(m_velocityRequest.withVelocity(RPS)));
     }
 
-    // Hood Commands (Basic Position Control)
+    //---HOOD (Basic Position Control)
     public Command setHoodPositionCmd(Angle degs) {  
         return runOnce(
             () -> m_hoodSetpoint = degs
@@ -155,16 +154,17 @@ public class Shooter extends SubsystemBase {
         log_hoodPIDOutput.accept(hoodPIDOutput);
     }
 
-    // Turret Commands (Motionmagic Angle Control)
+    //---TURRET (Motionmagic Angle Control)
     public Command setTurretPositionCmd(Angle rots) {
         return runOnce(() -> m_turret.setControl(m_MMVRequest.withPosition(rots)));
     }
 
+    /* GETTERS */
     public TalonFX getShooter() {
         return m_shooterLeader;
     }
 
-    public DCMotorSim getSimHoodEncoder() {
+    public DCMotorSim getHoodSimEncoder() {
         return m_hoodSim;
     }
 
