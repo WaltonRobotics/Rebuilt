@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class AutonChooser {
     public static SendableChooser<String> m_chooser = new SendableChooser<>();
 
+    /* CLASS VARIABLES */
     //---AUTON PATH NAMES
     public static final String oneRightNeutralPickup = "oneRightNeutralPickup";
     public static final String twoRightNeutralPickup = "twoRightNeutralPickup";
@@ -26,7 +27,6 @@ public class AutonChooser {
     public static NetworkTableInstance nte_inst = NetworkTableInstance.getDefault();
     public static NetworkTable nte_autonChooser = nte_inst.getTable("AutonChooser");
 
-    //---TOPICS
     public static StringTopic ST_autonName = nte_inst.getStringTopic("/AutonChooser/autonName");
     public static BooleanTopic BT_autonMade = nte_inst.getBooleanTopic("/AutonChooser/autonMade");
     public static BooleanTopic BT_makeAuton = nte_inst.getBooleanTopic("/AutonChooser/makeAuton");
@@ -43,16 +43,13 @@ public class AutonChooser {
 
     public static void initialize() {
         pub_autonName = ST_autonName.publish();
-
         pub_autonMade = BT_autonMade.publish();
         pub_makeAuton = BT_makeAuton.publish();
 
         pub_autonName.setDefault("No Auton Made");
-
         pub_autonMade.setDefault(false);
 
         sub_autonName = ST_autonName.subscribe("No Auton Made");
-
         sub_autonMade = BT_autonMade.subscribe(false);
         sub_makeAuton = BT_makeAuton.subscribe(false);
 

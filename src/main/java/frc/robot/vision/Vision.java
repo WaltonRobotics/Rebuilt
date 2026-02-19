@@ -9,7 +9,6 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
-import frc.robot.Camera;
 import frc.robot.Robot;
 
 import java.util.List;
@@ -18,7 +17,6 @@ import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -27,12 +25,12 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import static frc.robot.Constants.FieldK.kTagLayout;
 
 public class Vision {
-    //TODO: research about april tag pipeline code (see reefscape at-cmp)
+    /* CLASS VARIABLES */
     private final PhotonCamera m_camera;
     private final PhotonPoseEstimator m_photonEstimator;
     private Matrix<N3, N1> m_curStdDevs;
 
-    // Simulation
+    //---SIM
     private PhotonCameraSim m_cameraSim;
     private final VisionSim m_visionSim;
     private final String m_simVisualName;
@@ -40,13 +38,15 @@ public class Vision {
     private String m_cameraName;
     private final Transform3d m_roboToCam;
 
-    //Constants
+    //---CONSTANTS
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.5, 1.5, 6.24);
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 6.24);
 
+    /* LOGGERS */
     private final StructPublisher<Pose2d> log_camPose;
     private final DoubleArrayPublisher log_stdDevs;
 
+    /* CONSTRUCTOR */
     public Vision(String cameraName, String simVisualName, Transform3d roboToCam, VisionSim visionSim, SimCameraProperties simCameraProperties) {
         m_cameraName = cameraName;
         m_camera = new PhotonCamera(m_cameraName);
@@ -54,10 +54,7 @@ public class Vision {
         m_simVisualName = simVisualName;
         m_visionSim = visionSim;
 
-        m_photonEstimator =
-                new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, roboToCam);
-        m_photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
-
+        m_photonEstimator = new PhotonPoseEstimator(kTagLayout, roboToCam);
         log_camPose = NetworkTableInstance.getDefault()
             .getStructTopic("Vision/" + cameraName + "/estRobotPose", Pose2d.struct).publish();
         log_stdDevs = NetworkTableInstance.getDefault()
@@ -78,6 +75,7 @@ public class Vision {
         this(camera.getCameraName(), camera.getSimVisualName(), camera.getRoboToCam(), visionSim, camera.getSimCameraProperties());
     }
 
+    /* METHODS */
     public void takeOutputSnapshot() {
         m_camera.takeOutputSnapshot();
     }
@@ -107,7 +105,7 @@ public class Vision {
         List<PhotonPipelineResult> unreadCameraResults = m_camera.getAllUnreadResults();
 
         for (var change : unreadCameraResults) {
-            visionEst = m_photonEstimator.update(change);
+            visionEst = m_photonEstimator.estimateCoprocMultiTagPose(change);
             updateEstimationStdDevs(visionEst, change.getTargets());
             log_stdDevs.accept(m_curStdDevs.getData());
 

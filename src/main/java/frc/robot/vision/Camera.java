@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.vision;
 
 import org.photonvision.simulation.SimCameraProperties;
 
@@ -8,11 +8,13 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 
 public class Camera {
+    /* CLASS VARIABLES */
     private SimCameraProperties m_simCameraProperties;
     private String m_cameraName;
     private String m_simVisualName;
     private Transform3d m_roboToCam;
-    
+
+    /* CONSTRUCTOR */
     public Camera(SimCameraProperties simCameraProperties, String cameraName, String simVisualName, Transform3d roboToCam) {
         m_cameraName = cameraName;
         m_simVisualName = cameraName + simVisualName;
@@ -20,6 +22,7 @@ public class Camera {
         m_simCameraProperties = simCameraProperties;
     }
 
+    /* METHODS */
     /**
      * Helper function to convert from user-friendly units (inches and degrees) to the units used by the simulation (meters and radians).
      * @param x in inches
@@ -112,6 +115,7 @@ public class Camera {
         }
     }
 
+    /* GETTERS */
     public Transform3d getRoboToCam() {
         return m_roboToCam;
     }

@@ -11,6 +11,7 @@ import frc.robot.subsystems.Swerve;
 import frc.util.AllianceFlipUtil;
 
 public class WaltAutonFactory {
+    /* CLASS VARIABLES */
     private final AutoFactory m_autoFactory;
     private final Swerve m_drivetrain;
 
@@ -25,6 +26,7 @@ public class WaltAutonFactory {
     
     private String[] neutralCycle;
 
+    /* CONSTRUCTOR */
     public WaltAutonFactory(AutoFactory autoFactory, Swerve drivetrain) {
         m_autoFactory = autoFactory;
         m_drivetrain = drivetrain;  
@@ -39,6 +41,8 @@ public class WaltAutonFactory {
         m_postLeftPickupNeutral = isRed ? AllianceFlipUtil.flip(AutonK.leftNeutralPose) : AutonK.leftNeutralPose;
     }
 
+    /* AUTON COMMANDS */
+    //---AUTON CONSTRUCTION
     public Command runTrajCmd(String traj) {
         return Commands.sequence(
             m_autoFactory.resetOdometry(traj),
@@ -97,6 +101,7 @@ public class WaltAutonFactory {
         return Commands.sequence(commandSequence.toArray(new Command[commandSequence.size()]));// Return final command
     }
 
+    //---AUTON OPTIONS
     /**
      * right pickup and shoot one time
      */
