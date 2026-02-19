@@ -13,17 +13,9 @@ public class Superstructure {
     /* declare subsystems */
     public final EventLoop stateEventLoop = new EventLoop();
     private State m_state = State.IDLE;
-    
-    
-        
-
-        
-        
     /* state transitions */
     /* requests */
-
     /* states */
-
 
     public final Trigger stateTrg_idle = new Trigger(stateEventLoop, (() -> m_state == State.IDLE));
     public final Trigger stateTrg_intaking = new Trigger(stateEventLoop, (() -> m_state == State.INTAKING));
@@ -36,19 +28,11 @@ public class Superstructure {
     public final Trigger stateTrg_climbed = new Trigger(stateEventLoop, (() -> m_state == State.CLIMBED));
     public final Trigger stateTrg_releasing = new Trigger(stateEventLoop, (() -> m_state == State.RELEASING));
     public final Trigger stateTrg_released = new Trigger(stateEventLoop, (() -> m_state == State.RELEASED));
-
-
     /* configure states/ state transitions */
-
-
     /* logs */
-
     private IntLogger log_stateIdx = WaltLogger.logInt(kLogTab, "state idx");
     private StringLogger log_stateName = WaltLogger.logString(kLogTab, "state name");
-
-
     public Superstructure() {
-
     }
 
 
