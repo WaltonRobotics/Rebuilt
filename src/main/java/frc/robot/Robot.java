@@ -5,8 +5,6 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.Constants.ShooterK.kRobotToTurret;
-
 
 import java.util.Optional;
 
@@ -20,9 +18,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -34,14 +30,9 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.Constants.VisionK;
 import static frc.robot.Constants.RobotK.*;
-import frc.robot.subsystems.Shooter.FlywheelVelocity;
-import frc.robot.subsystems.Shooter.HoodPosition;
-import frc.robot.subsystems.Shooter.ShootingState;
 import frc.robot.subsystems.Shooter.TurretGoal;
 import frc.robot.subsystems.Shooter.TurretPosition;
 import frc.robot.subsystems.shooter.FuelSim;
-import frc.robot.subsystems.shooter.ShotCalculator;
-import frc.robot.subsystems.shooter.TurretVisualizer;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Swerve;
@@ -76,7 +67,6 @@ public class Robot extends TimedRobot {
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
     private Command m_autonomousCommand;
     private final AutoFactory autoFactory = m_drivetrain.createAutoFactory();
-    private final TurretVisualizer m_turretVisualizer;
 
 
     private final VisionSim visionSim = new VisionSim();
@@ -88,7 +78,6 @@ public class Robot extends TimedRobot {
 
     private final Shooter m_shooter;
 
-    private final ShotCalculator shotCalculator;
 
     /* log and replay timestamp and joystick data */
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -96,16 +85,11 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
 
     public Robot() {
-        m_shooter = new Shooter(m_drivetrain, () -> m_drivetrain.getState().Pose, () -> m_drivetrain.getChassisSpeeds());
-        shotCalculator = new ShotCalculator(m_drivetrain);
-
-        m_turretVisualizer = new TurretVisualizer(
-                () -> new Pose3d(RobotState.getInstance().getEstimatedPose()),
-                () -> RobotState.getInstance().getRobotVelocity());
+        m_shooter = new Shooter(() -> m_drivetrain.getState().Pose, () -> m_drivetrain.getChassisSpeeds());
 
         // m_shooter.setDefaultCommand(m_shooter.shooterDefaultCommands());
-        m_shooter.zeroHoodCommand();
-        m_shooter.zeroTurretCommmand();
+        m_shooter.zeroHoodCmd();
+        m_shooter.zeroTurretCmd();
         configureBindings();
 
         if(Robot.isSimulation()) {
@@ -228,7 +212,7 @@ public class Robot extends TimedRobot {
         // driver.leftTrigger().onTrue(m_shooter.setTurretPositionCmd(TurretPosition.MIN));
         driver.leftTrigger().onTrue(m_shooter.setTurretPositionCmd(TurretPosition.MAX));
 
-        driver.rightTrigger().onTrue(m_shooter.zeroShooterCommand());
+        driver.rightTrigger().onTrue(m_shooter.zeroShooterCmd());
 
         // driver
         //     .a()
@@ -309,7 +293,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
-        m_shooter.zeroShooterCommand();
+        m_shooter.zeroShooterCmd();
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().cancel(m_autonomousCommand);
         }

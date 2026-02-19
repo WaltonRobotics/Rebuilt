@@ -10,17 +10,12 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -40,30 +35,19 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-import static edu.wpi.first.units.Units.Degree;
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Radian;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.Constants.ShooterK.*;
 
-import java.lang.reflect.Field;
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
-import frc.robot.RobotState;
 import frc.robot.subsystems.shooter.FuelSim;
-import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.shooter.TurretCalculator;
 import frc.robot.subsystems.shooter.TurretVisualizer;
-import frc.robot.subsystems.shooter.FuelSim.Hub;
 import frc.robot.subsystems.shooter.TurretCalculator.ShotData;
 import frc.util.AllianceFlipUtil;
-import frc.util.EqualsUtil;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -73,30 +57,14 @@ import frc.util.WaltLogger.Pose2dLogger;
 public class Shooter extends SubsystemBase {
     /* VARIABLES */
 
-    private Rotation2d m_goalAngle = Rotation2d.kZero;
-    private double m_turretGoalVelocity = 0.0;
-    private double m_turretLastGoalAngle = 0.0;
-    private final double m_atGoalDebounce = 0.2;
-    private double m_hoodLastGoalAngle = 0.0;
-    private double m_hoodGoalAngle = 0.0;
-    
-
-    private ShootingState m_shootState = ShootingState.ACTIVE_SHOOTING;
     private TurretGoal m_goal = TurretGoal.OFF;
 
-    private boolean m_flywheelAtGoal, m_turretAtGoal, m_hoodAtGoal = false;
-    private boolean m_turretZeroed = false;
-    private boolean m_hoodZeroed = false;
     private AngularVelocity m_flywheelVelocity;
 
     private Angle m_hoodPosition;
     private Angle m_turretTurnPosition;
 
     private int m_fuelStored = 8;
-
-    private State m_setpoint = new State();
-
-    private Debouncer m_atGoalDebouncer = new Debouncer(m_atGoalDebounce, DebounceType.kFalling);
 
     private final Supplier<Pose2d> m_poseSupplier;
     private final Supplier<ChassisSpeeds> m_fieldSpeedsSupplier;
@@ -119,7 +87,6 @@ public class Shooter extends SubsystemBase {
     private final TalonFX m_turret = new TalonFX(kTurretCANID); //X44
     private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0);
 
-    private final ShotCalculator shotCalulator;
 
     // logic booleans
     private boolean m_spunUp = false;
@@ -176,10 +143,8 @@ public class Shooter extends SubsystemBase {
     
     private final Pose2dLogger log_calculateShotCurrPose = WaltLogger.logPose2d(kLogTab, "calculateShotCurrPose");
 
-    private final DoubleLogger log_flywheelVelocity = WaltLogger.logDouble(kLogTab, "flywheelVelocity");
-
     /* CONSTRUCTOR */
-    public Shooter(Swerve drivetrain, Supplier<Pose2d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
+    public Shooter(Supplier<Pose2d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
         m_leader.getConfigurator().apply(kLeaderTalonFXConfiguration);
         m_follower.getConfigurator().apply(kFollowerTalonFXConfiguration);  //TODO: should the follower use the leader's configs?
         m_hood.getConfigurator().apply(kHoodTalonFXConfiguration);
@@ -195,7 +160,6 @@ public class Shooter extends SubsystemBase {
         m_poseSupplier = poseSupplier;
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
 
-        shotCalulator = new ShotCalculator(drivetrain);
 
         initSim();
 
@@ -224,7 +188,7 @@ public class Shooter extends SubsystemBase {
                     setTargetAheadOfRobot(3);
                     break;
                 case OFF:
-                    zeroShooterCommand();
+                    zeroShooterCmd();
             }   }); 
     }
 
@@ -251,33 +215,37 @@ public class Shooter extends SubsystemBase {
         m_turretFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
         m_turretFXSim.setMotorType(TalonFXSimState.MotorType.KrakenX44);
     }
-    
-    public void setShootState(ShootingState shootState) {
-        this.m_shootState = shootState;
-    }
 
     public void zeroTurret() {
         setTurretPositionCmd(TurretPosition.HOME);
-        m_turretZeroed = true;
     }
 
-    public Command zeroTurretCommmand() {
+    public Command zeroTurretCmd() {
         return runOnce(this::zeroTurret).ignoringDisable(true);
     }
 
     public void zeroHood() {
         setHoodPositionCmd(HoodPosition.HOME);
-        m_hoodZeroed = true;
     }
 
-    public Command zeroHoodCommand() {
+    public Command zeroHoodCmd() {
         return runOnce(this::zeroHood).ignoringDisable(true);
     }
 
-    public Command zeroShooterCommand() {
+    private void stopFlywheel() {
+        m_leader.setNeutralMode(NeutralModeValue.Coast);
+        setFlywheelVelocityCmd(0);
+    }
+
+    public Command zeroFlywheelCmd() {
+        return runOnce(this::stopFlywheel).ignoringDisable(true);
+    }
+
+    public Command zeroShooterCmd() {
         return Commands.sequence(
-        zeroHoodCommand(),
-        zeroTurretCommmand());
+        zeroFlywheelCmd(),
+        zeroHoodCmd(),
+        zeroTurretCmd());
     }
 
     public void setTarget(Translation3d target) {
@@ -307,11 +275,6 @@ public class Shooter extends SubsystemBase {
         return isBlue == onBlueLeftSide ? kPassingSpotLeft : kPassingSpotCenter;
     }
 
-    private void setFieldRelativeTarget(Rotation2d angle, double velocity) {
-        m_goalAngle = angle;
-        m_turretGoalVelocity = velocity;
-    }
-
     public Angle getHoodAngle() {
         return m_hood.getPosition().getValue();
     }
@@ -323,27 +286,6 @@ public class Shooter extends SubsystemBase {
     public double getFlywheelVelocityDouble() {
         return m_leader.getVelocity().getValueAsDouble();
     }
-
-    public boolean atGoal() {
-        m_hoodAtGoal = 
-            DriverStation.isEnabled()
-                &&
-                 m_hoodZeroed 
-                    && Math.abs(getHoodAngle().in(Radians) - m_hoodGoalAngle)
-                        <= 1.0; //degrees
-        // m_hoodAtGoal = true;
-        // m_turretAtGoal = true;
-        // m_flywheelAtGoal = true;
-        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" + (m_hoodAtGoal && m_turretAtGoal
-                && m_flywheelAtGoal) + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-
-        return m_hoodAtGoal && m_turretAtGoal && m_flywheelAtGoal;
-    }
-
-    // private void setHoodGoalParams(double angle, double velocity) {
-    //     m_hoodGoalAngle = angle;
-    //     m_hoodGoalVelocity = velocity;
-    // }
 
 
     /* COMMANDS */
@@ -362,16 +304,6 @@ public class Shooter extends SubsystemBase {
 
     public void setFlywheelVelocity(AngularVelocity velocity) {
         m_leader.setControl(m_velocityRequest.withVelocity(velocity));
-    }
-
-    private void stopFlywheel() {
-        m_leader.setNeutralMode(NeutralModeValue.Coast);
-        setFlywheelVelocityCmd(0);
-        m_flywheelAtGoal = false;
-    }
-
-    public Command runFlywheelFixedCommand(DoubleSupplier velocity) {
-        return runEnd(() -> setFlywheelVelocityCmd(velocity.getAsDouble()), this::stopFlywheel);
     }
 
     // Hood Commands (Basic Position Control)
@@ -419,41 +351,6 @@ public class Shooter extends SubsystemBase {
  
     public Angle getTurretPosition() {
         return m_turret.getPosition().getValue();
-    }
-
-    public Command runTurretTrackTargetCommand() {
-        return run(
-            () -> {
-                var params = shotCalulator.getParameters();
-                setFieldRelativeTarget(params.turretAngle(), params.turretVelocity());
-                setShootState(ShootingState.TRACKING);
-            }
-        );
-    }
-
-    // public Command runHoodTrackTargetCommand() {
-    //     return run(
-    //         () -> {
-    //             var params = shotCalulator.getParameters();
-    //             setHoodGoalParams(params.hoodAngle(), params.turretVelocity());
-    //         }
-    //     );
-    // }
-
-    public Command runFlywheelTrackTargetCommand() {
-        return runEnd(
-            () -> setFlywheelVelocityCmd(shotCalulator.getParameters().flywheelSpeed()), 
-            this::stopFlywheel);
-    }
-
-    public Command runTurretTrackTargetActiveShootingCommand() {
-        return run(
-            () -> {
-                var params = shotCalulator.getParameters();
-                atGoal();
-                setFieldRelativeTarget(params.turretAngle(), params.turretVelocity());
-                setShootState(ShootingState.ACTIVE_SHOOTING);
-            });
     }
 
     private void calculateShot(Pose2d robot) {
