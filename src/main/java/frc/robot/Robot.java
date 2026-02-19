@@ -157,8 +157,8 @@ public class Robot extends TimedRobot {
 
     /* CONSTRUCTOR */
     public Robot() {
-        configureBindings();
-        //configureTestBindings();    //this should be commented out during competition matches
+        //configureBindings();
+        configureTestBindings();    //this should be commented out during competition matches
     }
 
     /* COMMANDS */
@@ -231,7 +231,8 @@ public class Robot extends TimedRobot {
             m_drivetrain.swerveToObject()
         );
 
-        // Normal sequences
+        //---NORMAL SEQUENCES
+        //Intake
         trg_activateIntake.onTrue(
             m_superstructure.activateIntake()
         );
@@ -242,6 +243,7 @@ public class Robot extends TimedRobot {
             m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
         );
 
+        //Shooting
         trg_shoot.and(trg_pass.negate()).onTrue(
             m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)
         ).onFalse(
@@ -258,7 +260,7 @@ public class Robot extends TimedRobot {
             m_superstructure.deactivateOuttake()
         );
 
-        // Override commands
+        //---OVERRIDE COMMANDS
         trg_maxShooterOverride.onTrue(
             m_superstructure.maxShooter()
         ).onFalse(
@@ -291,10 +293,12 @@ public class Robot extends TimedRobot {
         trg_intakeUpOverride.onTrue(
             m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
         );
+
+        // TODO: add shooter overrides for drivet but waiting for sohan's calculate method
     }
 
     private void configureTestBindings() {
-        // Test sequences
+        //---TEST SEQUENCES
         trg_activateIntake.onTrue(
             Commands.parallel(
                 m_superstructure.activateIntake(),
@@ -348,7 +352,7 @@ public class Robot extends TimedRobot {
             )
         );
 
-        // Test commands
+        //---TEST COMMANDS (for singular subsystem testing)
         trg_maxShooterOverride.onTrue(
             Commands.parallel(
                 m_superstructure.maxShooter(),
