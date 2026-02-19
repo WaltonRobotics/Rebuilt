@@ -1,0 +1,71 @@
+{
+  "version": 1.0,
+  "grid_size": 125,
+  "tabs": [
+    {
+      "name": "AutonChooser",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "autonName",
+            "x": 375.0,
+            "y": 375.0,
+            "width": 250.0,
+            "height": 125.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AutonChooser/autonName",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "autonMade",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 875.0,
+            "height": 375.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AutonChooser/autonMade",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "SendableChooser[0]",
+            "x": 0.0,
+            "y": 375.0,
+            "width": 375.0,
+            "height": 125.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/SendableChooser[0]",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "makeAuton",
+            "x": 625.0,
+            "y": 375.0,
+            "width": 250.0,
+            "height": 125.0,
+            "type": "Toggle Button",
+            "properties": {
+              "topic": "/AutonChooser/makeAuton",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

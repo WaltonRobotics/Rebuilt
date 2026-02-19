@@ -5,6 +5,8 @@ import static edu.wpi.first.units.Units.*;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.photonvision.targeting.PhotonTrackedTarget;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
@@ -12,6 +14,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory;
@@ -31,10 +34,12 @@ import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotState;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.vision.Detection;
 
 /**
  * CommandSwerveDrivetrain: Class that extends the Phoenix 6 SwerveDrivetrain class 
@@ -68,6 +73,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds = new SwerveRequest.ApplyFieldSpeeds()
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.Position);
+
+    private final Detection detection = new Detection();
+
+    private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
+        .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
 
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
@@ -325,7 +335,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         return m_kinematics.toChassisSpeeds(getState().ModuleStates);
     }
 
-     private void followPath(SwerveSample sample) {
+    private void followPath(SwerveSample sample) {
         m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
         var pose = getState().Pose;
         var samplePose = sample.getPose();
@@ -351,7 +361,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
 
 
-     /**
+    /**
      * Creates a new auto factory for this drivetrain.
      *
      * @return AutoFactory for this drivetrain
@@ -378,4 +388,53 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         );
     }
 
+    /**
+     * robot goes to specified pose
+     * @param destination
+     * @return
+     */
+    public Command toPose(Pose2d destination) {
+        return Commands.run(
+            () -> {
+                Pose2d curPose = getState().Pose;
+
+                double xSpeed = m_pathXController.calculate(curPose.getX(), destination.getX());
+                double ySpeed = m_pathYController.calculate(curPose.getY(), destination.getY());
+                double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), destination.getRotation().getRadians());
+
+                setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
+            }
+        );
+    }
+
+    /**
+     * robot goes to detected target
+     */
+    public Command swerveToObject() {   
+        PhotonTrackedTarget target = detection.getClosestObject();
+        Pose2d destination = detection.targetToPose(getState().Pose, target);
+        // Pose2d destination = new Pose2d(5,5, Rotation2d.kZero);
+        detection.addFuel(destination);
+        
+        return Commands.parallel(
+            toPose(destination)
+            // Commands.print("=========DESIRED TARGET: " + !target.equals(new PhotonTrackedTarget()) + "====================="),
+            // Commands.print("=============TRANSLATION X: " + target.getBestCameraToTarget().getX() + "===================="),
+            // Commands.print("===================TRANSLATION Y: " + target.getBestCameraToTarget().getY() + "=============="),
+            // Commands.print("===============TRANSLATION Z: " + target.getBestCameraToTarget().getZ() + "=================")
+        );
+    }
+
+    public static Pose2d faceFuelPose(Pose2d robotPose, Pose2d fuelLocation) {
+        double dx = fuelLocation.getX() - robotPose.getX();
+        double dy = fuelLocation.getY() - robotPose.getY();
+
+        Rotation2d desiredRotation = new Rotation2d(Math.atan2(dy, dx)).plus(Rotation2d.fromDegrees(180));
+
+        return new Pose2d(
+            fuelLocation.getX(),
+            fuelLocation.getY(),
+            desiredRotation
+        );
+    }
 }
