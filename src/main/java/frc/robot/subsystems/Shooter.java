@@ -416,7 +416,7 @@ public class Shooter extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        //TODO: add working constant turret homing
+        //TODO: how on earth are we going to zero the turret? JIG RAHHHHHHh
         Pose2d pose = m_poseSupplier.get();
 
         log_calculateShotCurrPose.accept(pose);

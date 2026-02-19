@@ -23,14 +23,11 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 
@@ -45,8 +42,8 @@ public class Constants {
         public static final Distance kDistanceAboveFunnel = Inches.of(20); //distance above the hub funnel
 
 
-        public static final Angle kTurretMinAngle = Angle.ofBaseUnits(-0.75, Rotations);//Units.degreesToRadians(-270.0);
-        public static final Angle kTurretMaxAngle = Angle.ofBaseUnits(0.75, Rotations); //Units.degreesToRadians(270.0);
+        public static final Angle kTurretMinAngle = Rotations.of(-0.75);
+        public static final Angle kTurretMaxAngle = Rotations.of(0.75); 
 
         public static final double kHoodMinAngle = Units.degreesToRadians(19);
         public static final double kHoodMaxAngle = Units.degreesToRadians(51);
