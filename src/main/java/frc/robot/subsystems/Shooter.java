@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static frc.robot.Constants.ShooterK.*;
@@ -402,7 +403,7 @@ public class Shooter extends SubsystemBase {
         // m_shooter.getTurretPosition(),
         // kDistanceAboveFunnel);
         AngularVelocity flywheelVelocity = getFlywheelVelocity();
-        Angle hoodAngle = getHoodAngle();
+        Angle hoodAngle = Degrees.of(90).minus(getHoodAngle());
         Angle turretPosition = getTurretPosition();
         LinearVelocity flywheelLinearVelocity = TurretCalculator.angularToLinearVelocity(flywheelVelocity, kFlywheelRadius);
         
@@ -410,7 +411,7 @@ public class Shooter extends SubsystemBase {
                 flywheelLinearVelocity,
                 hoodAngle,
                 turretPosition,
-                kDistanceAboveFunnel);
+                kRobotToTurret.getMeasureZ());
     }
  
     /* PERIODICS */
