@@ -22,7 +22,11 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -32,8 +36,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.Constants.IntakeK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.VisionK;
 import frc.robot.autons.AutonChooser;
@@ -53,6 +55,7 @@ import frc.util.VisualSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.Pose3dLogger;
 
 public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
@@ -149,6 +152,9 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_povRight = WaltLogger.logBoolean(kLogTab, "Pov Right");
     private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
     private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
+
+    // for testing only
+    private final Pose3dLogger log_turretDirection = WaltLogger.logPose3d(kLogTab, "Turret Direction");
 
     // log and replay timestamp and joystick data
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -371,13 +377,13 @@ public class Robot extends TimedRobot {
 
         trg_turret180Override.onTrue(
             Commands.parallel(
-                m_superstructure.turretTo(Degrees.of(180)),
-                m_visualSim.setTurretPosition()
+                m_superstructure.turretTo(Degrees.of(180))
+                // m_visualSim.setTurretPosition()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.turretTo(Degrees.of(0)),
-                m_visualSim.setTurretPosition()
+                m_superstructure.turretTo(Degrees.of(0))
+                // m_visualSim.setTurretPosition()
             )
         );
 
@@ -474,6 +480,22 @@ public class Robot extends TimedRobot {
         log_povLeft.accept(m_driver.povLeft());
         log_povRight.accept(m_driver.povRight());
         log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
+        log_turretDirection.accept(
+            new Pose3d(
+                m_drivetrain.getState().Pose
+            ).plus(
+                kTurretTransform
+            ).plus(
+                new Transform3d(
+                    new Translation3d(), new Rotation3d(
+                        Radians.of(0),
+                        Radians.of(0),
+                        m_shooter.getTurret().getPosition().getValue()
+                    )
+                )
+            )
+        );
+        
     }
 
     @Override
