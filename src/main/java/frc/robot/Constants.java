@@ -32,6 +32,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
+import frc.robot.vision.Camera;
 import frc.util.AllianceFlipUtil;
 
 public class Constants {

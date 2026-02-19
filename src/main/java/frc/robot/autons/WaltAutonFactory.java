@@ -11,14 +11,14 @@ import frc.robot.subsystems.Swerve;
 import frc.util.AllianceFlipUtil;
 
 public class WaltAutonFactory {
+    /* CLASS VARIABLES */
     private final AutoFactory m_autoFactory;
     private final Swerve m_drivetrain;
 
-    //desired pose to go to after fuel pickup
-    private Pose2d m_postPickupNeutral;
-    //desired pose to go to after depot pickup
-    private Pose2d m_postPickupDepot;
+    private Pose2d m_postPickupNeutral;     //desired pose to go to after fuel pickup
+    private Pose2d m_postPickupDepot;    //desired pose to go to after depot pickup
 
+    /* CONSTRUCTOR */
     public WaltAutonFactory(AutoFactory autoFactory, Swerve drivetrain) {
         m_autoFactory = autoFactory;
         m_drivetrain = drivetrain;  
@@ -29,6 +29,8 @@ public class WaltAutonFactory {
         m_postPickupDepot = isRed ? AllianceFlipUtil.flip(AutonK.depotPose) : AutonK.depotPose;
     }
 
+    /* AUTON COMMANDS */
+    //---AUTON CONSTRUCTION
     public Command runTrajCmd(String traj) {
         return Commands.sequence(
             m_autoFactory.resetOdometry(traj),
@@ -80,6 +82,7 @@ public class WaltAutonFactory {
         return Commands.sequence(commandSequence.toArray(new Command[commandSequence.size()]));// Return final command
     }
 
+    //---AUTON OPTIONS
     /**
      * pickup and shoot one time
      */
