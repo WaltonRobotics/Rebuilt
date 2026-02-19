@@ -20,6 +20,7 @@ import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 
+
 public class VisualSim {
     private final Intake m_intake;
     private final Indexer m_indexer;
@@ -38,7 +39,7 @@ public class VisualSim {
     private final Rotation2d m_intakeArmStartAngle;
     private final Rotation2d m_hoodStartAngle;
     private final Rotation2d m_turretStartAngle;
-
+    
     public VisualSim(Intake intake, Indexer indexer, Shooter shooter) {
         m_intake = intake;
         m_indexer = indexer;
@@ -87,7 +88,12 @@ public class VisualSim {
         SmartDashboard.putData("IndexerMech2d", indexerMech);
         SmartDashboard.putData("ShooterMech2d", shooterMech);
     } 
-
+    /**
+     * Sets the length of the simPart based on the velocity
+     * @param simPart A part of the simulated robot
+     * @param subsystemMotor The motor for the part.
+     * @return A command that sets the length of the simPart to the motor velocity / 10.
+     */
     private Command setVelocity(MechanismLigament2d simPart, TalonFX subsystemMotor) {
         return Commands.run(
             () -> {
@@ -97,6 +103,10 @@ public class VisualSim {
     }
 
     //--INTAKE
+    /**
+     * Sets the angle of the intake arm sim object.
+     * @return A command that sets the angle of the intake arm to the current position plus the start angle.
+     */
     public Command setIntakeArmPosition() {
         return Commands.run(
             () -> {
@@ -104,25 +114,45 @@ public class VisualSim {
             }
         );
     }
-
+    /**
+     * Sets the intake roller sim object velocity.
+     * 
+     * @return A call to setVelocity that takes the intakeRollerVelocity and the intake rollers.
+     */
     public Command setIntakeRollerVelocity() {
         return setVelocity(m_intakeRollerVelocity, m_intake.getIntakeRollers());
     }
 
     //--INDEXER
+    /**
+     * Sets the spindexer sim object velocity.
+     * @return A call to setVelocity that takes spindexerVelocity and the spindexer.
+     */
     public Command setSpindexerVelocity() {
         return setVelocity(m_spindexerVelocity, m_indexer.getSpindexer());
     }
 
+    /**
+     * Sets the tunnel sim object velocity.
+     * @return A call to setVelocity that takes tunnelVelocity and the tunnel.
+     */
     public Command setTunnelVelocity() {
         return setVelocity(m_tunnelVelocity, m_indexer.getTunnel());
     }
 
     //--SHOOTER
+    /**
+     * Sets the shooter sim object velocity.
+     * @return A call to setVelocity that takes shooterVelocity and the shooter.
+     */
     public Command setShooterVelocity() {
         return setVelocity(m_shooterVelocity, m_shooter.getShooter());
     }
 
+    /**
+     * Sets the hood sim object position.
+     * @return A command that sets the angle to the start angle minus the current position of the shooter.
+     */
     public Command setHoodPosition() {
         return Commands.run(
             () -> {
@@ -131,6 +161,10 @@ public class VisualSim {
         );
     }
 
+    /**
+     * Sets the turret position.
+     * @return A command that sets the angle to the position of the turret plus the start angle.
+     */
     public Command setTurretPosition() {
         return Commands.run(
             () -> {
