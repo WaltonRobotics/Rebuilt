@@ -27,8 +27,8 @@ import frc.util.WaltLogger;
 public class Intake extends SubsystemBase {
     /* CLASS VARIABLES */
     //---MOTORS + CONTROL REQUESTS
-    private final TalonFX m_intakeArm = new TalonFX(IntakeK.kIntakeArmCANID);
-    private final TalonFX m_intakeRollers = new TalonFX(IntakeK.kIntakeRollersCANID);
+    private final TalonFX m_intakeArm = new TalonFX(IntakeK.kIntakeArmCANID);   //X44Foc
+    private final TalonFX m_intakeRollers = new TalonFX(IntakeK.kIntakeRollersCANID);   //X44Foc
 
     private MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0).withEnableFOC(true);
     private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
@@ -36,11 +36,11 @@ public class Intake extends SubsystemBase {
     /* SIM OBJECTS */
     private final DCMotorSim m_intakeArmSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX60Foc(1),
+            DCMotor.getKrakenX44Foc(1),
             IntakeK.kIntakeArmMOI,
             IntakeK.kIntakeArmGearing
         ),
-        DCMotor.getKrakenX60Foc(1)
+        DCMotor.getKrakenX44Foc(1)
     );
 
     private final DCMotorSim m_intakeRollersSim = new DCMotorSim(
@@ -67,7 +67,7 @@ public class Intake extends SubsystemBase {
     }
 
     private void initSim() {
-        MotorSim.initSimFX(m_intakeArm, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
+        MotorSim.initSimFX(m_intakeArm, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
         MotorSim.initSimFX(m_intakeRollers, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
     }
 
