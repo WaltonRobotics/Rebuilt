@@ -22,6 +22,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -53,6 +54,7 @@ import frc.util.VisualSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.Pose3dLogger;
 
 public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
@@ -149,6 +151,12 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_povRight = WaltLogger.logBoolean(kLogTab, "Pov Right");
     private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
     private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
+
+    private Pose3dLogger log_robotPose3dCam0 = WaltLogger.logPose3d(kLogTab, "3d robot poses/3d robot pose 0");
+    private Pose3dLogger log_robotPose3dCam1 = WaltLogger.logPose3d(kLogTab, "3d robot poses/3d robot pose 1");
+    private Pose3dLogger log_robotPose3dCam2 = WaltLogger.logPose3d(kLogTab, "3d robot poses/3d robot pose 2");
+    private Pose3dLogger log_robotPose3dCam3 = WaltLogger.logPose3d(kLogTab, "3d robot poses/3d robot pose 3");
+    private Pose3dLogger[] log_robotPoses3d = {log_robotPose3dCam0, log_robotPose3dCam1, log_robotPose3dCam2, log_robotPose3dCam3};
 
     // log and replay timestamp and joystick data
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -409,14 +417,16 @@ public class Robot extends TimedRobot {
         m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run(); 
 
-        for (Vision camera : m_cameras) {
-            Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
+        for (int i = 0; i < m_cameras.length; i++) {
+            Optional<EstimatedRobotPose> estimatedPoseOptional = m_cameras[i].getEstimatedGlobalPose();
             if (estimatedPoseOptional.isPresent()) {
                 EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
                 Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
+                Pose3d estimatedRobotPose3d = estimatedRobotPose.estimatedPose;
                 var ctreTime = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
-                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());                
+                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, m_cameras[i].getEstimationStdDevs());                
                 m_visionSeenLastSec = ctreTime;
+                // log_robotPoses3d[i].accept(estimatedRobotPose3d);
             }
         }
 
