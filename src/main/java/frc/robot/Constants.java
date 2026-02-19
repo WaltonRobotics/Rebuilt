@@ -277,10 +277,10 @@ public class Constants {
             .withSupplyCurrentLimit(20)
             .withStatorCurrentLimitEnable(true);
         private static final Slot0Configs kIntakeArmSlot0Configs = new Slot0Configs()
-            .withKS(0.04)
+            .withKS(0)
             .withKV(0)
             .withKA(0)
-            .withKP(0.8)
+            .withKP(3)
             .withKI(0)
             .withKD(0);
         public static final MotorOutputConfigs kIntakeArmMotorOutputConfigs = new MotorOutputConfigs()
