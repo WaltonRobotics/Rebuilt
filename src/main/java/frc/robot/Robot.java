@@ -157,8 +157,8 @@ public class Robot extends TimedRobot {
 
     /* CONSTRUCTOR */
     public Robot() {
-        configureBindings();
-        //configureTestBindings();    //this should be commented out during competition matches
+        //configureBindings();
+        configureTestBindings();    //this should be commented out during competition matches
     }
 
     /* COMMANDS */
@@ -256,6 +256,25 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
+        /* GENERATED SWERVE BINDS */
+        // Note that X is defined as forward according to WPILib convention,
+        // and Y is defined as to the left according to WPILib convention.
+        m_drivetrain.setDefaultCommand(
+            // Drivetrain will execute this command periodically
+            m_drivetrain.applyRequest(() ->
+                drive.withVelocityX(-m_driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-m_driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-m_driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+            )
+        );
+
+        // Idle while the robot is disabled. This ensures the configured
+        // neutral mode is applied to the drive motors while disabled.
+        final var idle = new SwerveRequest.Idle();
+        RobotModeTriggers.disabled().whileTrue(
+            m_drivetrain.applyRequest(() -> idle).ignoringDisable(true)
+        );
+        
         // Test sequences
         trg_activateIntake.onTrue(
             Commands.parallel(
