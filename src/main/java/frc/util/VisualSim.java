@@ -49,7 +49,7 @@ public class VisualSim {
         MechanismRoot2d intakeRoot = intakeMech.getRoot("intake", 4.55, 0.1);
 
         Mechanism2d indexerMech = new Mechanism2d(7, 15);
-        MechanismRoot2d indexerRoot = indexerMech.getRoot("indexer", 3.5, 3.5);
+        MechanismRoot2d indexerRoot = indexerMech.getRoot("indexer", 3.5, 0.15);
 
         Mechanism2d shooterMech = new Mechanism2d(10, 20);
         MechanismRoot2d shooterRoot = shooterMech.getRoot("shooter", 5, 5);
@@ -65,10 +65,10 @@ public class VisualSim {
 
         //---INDEXER
         m_spindexerVelocity = indexerRoot.append(
-            new MechanismLigament2d("spindexerVelocity", 0, 0, 4, new Color8Bit(Color.kCornflowerBlue))
+            new MechanismLigament2d("spindexerVelocity", 0, 180, 2, new Color8Bit(Color.kCornflowerBlue))
         );
         m_tunnelVelocity = indexerRoot.append(
-            new MechanismLigament2d("tunnelVelocity", 0, 90, 4, new Color8Bit(Color.kAzure))
+            new MechanismLigament2d("tunnelVelocity", 0, 90, 2, new Color8Bit(Color.kAzure))
         );
 
         //---SHOOTER
@@ -112,11 +112,11 @@ public class VisualSim {
 
     //---INDEXER
     public Command setSpindexerVelocity() {
-        return setVelocity(m_spindexerVelocity, m_indexer.getSpindexer(), 10);
+        return setVelocity(m_spindexerVelocity, m_indexer.getSpindexer(), 100);
     }
 
     public Command setTunnelVelocity() {
-        return setVelocity(m_tunnelVelocity, m_indexer.getTunnel(), 10);
+        return setVelocity(m_tunnelVelocity, m_indexer.getTunnel(), 200);
     }
 
     //---SHOOTER
