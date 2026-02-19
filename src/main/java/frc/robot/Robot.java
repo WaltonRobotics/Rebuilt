@@ -49,7 +49,7 @@ import frc.robot.subsystems.Indexer;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
 import frc.util.Telemetry;
-import frc.util.VisualSim;
+import frc.util.WaltVisualSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -87,7 +87,7 @@ public class Robot extends TimedRobot {
     private final Intake m_intake = new Intake();
     private final Indexer m_indexer = new Indexer();
 
-    private final VisualSim m_visualSim = new VisualSim(m_intake, m_indexer, m_shooter);
+    private final WaltVisualSim m_visualSim = new WaltVisualSim(m_intake, m_indexer, m_shooter);
     private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
 
     //---AUTONS
