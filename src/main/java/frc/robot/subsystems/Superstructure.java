@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -10,35 +11,34 @@ import frc.util.WaltLogger;
 import frc.util.WaltLogger.StringArrayLogger;
 
 import static edu.wpi.first.units.Units.Degree;
+import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.Constants.SuperstructureK.*;
 import static frc.robot.Constants.ShooterK;
 
 import java.util.HashSet;
 
 public class Superstructure {
-
-    /* declare subsystems */
+    /* SUBSYSTEMS */
     private final Intake m_intake;
     private final Indexer m_indexer;
     private final Shooter m_shooter;
 
-    /* loggers */
+    /* LOGGERS */
     private HashSet<String> m_activeCommands = new HashSet<>();
     private final StringArrayLogger log_activeCommands = WaltLogger.logStringArray(kLogTab, "Active Commands");
 
     private HashSet<String> m_activeOverrideCommands = new HashSet<>();
     private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
     
-    /* constructor */
+    /* CONSTRUCTOR */
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
         m_intake = intake;
         m_indexer = indexer;
         m_shooter = shooter;
     }
 
-    /* button bind sequences */
+    /* BUTTON BIND SEQUENCES */
 
-    // Regular Commands
     /**
      * Turns off rollers and spinner and moves deploy to given pos.
      * @param pos the position to move deploy to.
@@ -47,7 +47,7 @@ public class Superstructure {
         Command logCommand;
         switch (pos) {
             case SAFE:
-                if (m_intake.getDeployMotor().getStatorCurrent().getValueAsDouble() < 40) {
+                if (m_intake.getIntakeArmMotor().getStatorCurrent().getValueAsDouble() < 40) {
                     logCommand = logActiveCommands("safeIntake", "activateIntake", "retractIntake");
                 } else {
                     return Commands.none();
@@ -186,15 +186,15 @@ public class Superstructure {
      * Rotates the turret to the given degs
      * @param degs degrees to rotate to.
      */
-    public Command turretTo(double degs) {
+    public Command turretTo(Angle degs) {
         Command logCommand;
-        if (degs == 180) {
+        if (degs.magnitude() == 180) {
             logCommand = logActiveOverrideCommands("turret180", "turret0");
         } else {
             logCommand = logActiveOverrideCommands("turret0", "turret180");
         }
         return Commands.sequence(
-            m_shooter.setTurretPositionCmd(Angle.ofBaseUnits(degs, Degree)),
+            m_shooter.setTurretPositionCmd(Rotations.of(degs.in(Rotations))),
             logCommand
         );
     }
@@ -204,15 +204,15 @@ public class Superstructure {
      * @param degs degrees to raise/lower to.
      * @return
      */
-    public Command hoodTo(double degs) {
+    public Command hoodTo(Angle degs) {
         Command logCommand;
-        if (degs == 30) {
+        if (degs.magnitude() == 30) {
             logCommand = logActiveOverrideCommands("hood30", "hood0");
         } else {
             logCommand = logActiveOverrideCommands("hood0", "hood30");
         }
         return Commands.sequence(
-            m_shooter.setHoodPositionCmd(Angle.ofBaseUnits(degs, Degree)),
+            m_shooter.setHoodPositionCmd(degs),
             logCommand
         );
     }
@@ -293,7 +293,7 @@ public class Superstructure {
                 logCommand = logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp");
                 break;
             default:
-                if (m_intake.getDeployMotor().getStatorCurrent().getValueAsDouble() < 40) {
+                if (m_intake.getIntakeArmMotor().getStatorCurrent().getValueAsDouble() < 40) {
                     logCommand = logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake");
                 }
                 else {

@@ -16,19 +16,18 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.Robot;
 
 public class VisionSim {
+    /* CLASS VARIABLES */
     private final VisionSystemSim m_photonVisionSim;
 
+    /* CONSTRUCTOR */
     public VisionSim() {
         m_photonVisionSim = new VisionSystemSim("main");
         m_photonVisionSim.addAprilTags(kTagLayout);
     }
 
+    /* METHODS */
     public void addCamera(PhotonCameraSim photonCameraSim, Transform3d roboToCam) {
         m_photonVisionSim.addCamera(photonCameraSim, roboToCam);
-    }
-
-    public void simulationPeriodic(Pose2d robotSimPose) {
-        m_photonVisionSim.update(robotSimPose);
     }
 
     public void resetSimPose(Pose2d pose) {
@@ -67,4 +66,8 @@ public class VisionSim {
         return simTargetList;
     }
 
+    /* PERIODICS */
+    public void simulationPeriodic(Pose2d robotSimPose) {
+        m_photonVisionSim.update(robotSimPose);
+    }
 }
