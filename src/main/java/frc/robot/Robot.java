@@ -227,28 +227,70 @@ public class Robot extends TimedRobot {
         /* CUSTOM BINDS */
 
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
-        trg_swerveToObject.whileTrue(m_drivetrain.swerveToObject());
+        trg_swerveToObject.whileTrue(
+            m_drivetrain.swerveToObject()
+        );
 
         // Normal sequences
-        trg_activateIntake.onTrue(m_superstructure.activateIntake());
-        trg_prepIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.SAFE));
-        trg_retractIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED));
+        trg_activateIntake.onTrue(
+            m_superstructure.activateIntake()
+        );
+        trg_prepIntake.onTrue(
+            m_superstructure.deactivateIntake(IntakeArmPosition.SAFE)
+        );
+        trg_retractIntake.onTrue(
+            m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
+        );
 
-        trg_shoot.and(trg_pass.negate()).onTrue(m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)).onFalse(m_superstructure.deactivateOuttake());
-        trg_shoot.and(trg_pass).onTrue(m_superstructure.startPassing()).onFalse(m_superstructure.stopPassing());
-        trg_emergencyBarf.onTrue(m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)).onFalse(m_superstructure.deactivateOuttake());
+        trg_shoot.and(trg_pass.negate()).onTrue(
+            m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)
+        ).onFalse(
+            m_superstructure.deactivateOuttake()
+        );
+        trg_shoot.and(trg_pass).onTrue(
+            m_superstructure.startPassing()
+        ).onFalse(
+            m_superstructure.stopPassing()
+        );
+        trg_emergencyBarf.onTrue(
+            m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)
+        ).onFalse(
+            m_superstructure.deactivateOuttake()
+        );
 
         // Override commands
-        trg_maxShooterOverride.onTrue(m_superstructure.maxShooter()).onFalse(m_superstructure.stopShooter());
+        trg_maxShooterOverride.onTrue(
+            m_superstructure.maxShooter()
+        ).onFalse(
+            m_superstructure.stopShooter()
+        );
 
-        trg_startSpindexerOverride.onTrue(m_superstructure.startSpindexer()).onFalse(m_superstructure.stopSpindexer());
+        trg_startSpindexerOverride.onTrue(
+            m_superstructure.startSpindexer()
+        ).onFalse(
+            m_superstructure.stopSpindexer()
+        );
 
-        trg_startTunnelOverride.onTrue(m_superstructure.startTunnel()).onFalse(m_superstructure.stopTunnel());
+        trg_startTunnelOverride.onTrue(
+            m_superstructure.startTunnel()
+        ).onFalse(
+            m_superstructure.stopTunnel()
+        );
 
-        trg_maxRollersOverride.onTrue(m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.MAX)).onFalse(m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.STOP));
+        trg_maxRollersOverride.onTrue(
+            m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.MAX)
+        ).onFalse(
+            m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.STOP)
+        );
 
-        trg_deployIntakeOverride.onTrue(m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)).onFalse(m_superstructure.intakeTo(IntakeArmPosition.SAFE));
-        trg_intakeUpOverride.onTrue(m_superstructure.intakeTo(IntakeArmPosition.RETRACTED));
+        trg_deployIntakeOverride.onTrue(
+            m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)
+        ).onFalse(
+            m_superstructure.intakeTo(IntakeArmPosition.SAFE)
+        );
+        trg_intakeUpOverride.onTrue(
+            m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
+        );
     }
 
     private void configureTestBindings() {
