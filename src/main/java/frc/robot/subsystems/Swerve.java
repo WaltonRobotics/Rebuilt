@@ -404,9 +404,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         Pose2d destination = detection.targetToPose(getState().Pose, target);
         detection.addFuel(destination);
         
-        return Commands.parallel(
-            toPose(destination)
-        );
+        return toPose(destination);
     }
 
     public static Pose2d faceFuelPose(Pose2d robotPose, Pose2d fuelLocation) {
