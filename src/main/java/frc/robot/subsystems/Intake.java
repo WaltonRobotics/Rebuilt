@@ -25,6 +25,8 @@ import frc.util.MotorSim;
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
+    /* CLASS VARIABLES */
+    //---MOTORS + CONTROL REQUESTS
     private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID);
     private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID);
 
