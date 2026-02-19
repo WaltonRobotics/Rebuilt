@@ -54,7 +54,6 @@ public class WaltAutonFactory {
             postPickupPose = isNeutral ? m_postRightPickupNeutral : m_postPickupDepot;
         }
 
-
         return Commands.sequence(
             m_drivetrain.swerveToObject().withTimeout(1),
             m_drivetrain.toPose(postPickupPose).withTimeout(1)
