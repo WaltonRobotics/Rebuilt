@@ -84,6 +84,12 @@ public class FieldConstants {
   /** Hub related constants */
   public static class Hub {
 
+    
+    public static final Translation3d blueHubShootingPoint =
+            new Translation3d(Inches.of(181.56), fieldWidthIn.div(2), Inches.of(56.4));
+    public static final Translation3d redHubShootingPoint =
+            new Translation3d(fieldLengthIn.minus(Inches.of(181.56)), fieldWidthIn.div(2), Inches.of(56.4));
+
     public static final Distance funnelRadius = Inches.of(24); //see 5000's code
     public static final Distance funnelHeight = Inches.of(72 - 56.4);
 

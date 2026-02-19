@@ -214,19 +214,6 @@ public class Robot extends TimedRobot {
 
         driver.rightTrigger().onTrue(m_shooter.zeroShooterCmd());
 
-        // driver
-        //     .a()
-        //     .whileTrue(m_turretVisualizer.repeatedlyLaunchFuel(
-        //     () -> shotCalculator.getFuelPathVelocity(),
-        //     () -> Degrees.of(shotCalculator.getParameters().hoodAngle()),
-        //     m_shooter)) 
-        //     .negate()
-        //     .whileTrue(m_shooter.runTurretTrackTargetActiveShootingCommand())
-        //     .and(() -> shotCalculator.getParameters().isValid())
-        //     .and(() -> m_shooter.atGoal())
-        //     .whileTrue(m_shooter.runHoodTrackTargetCommand())
-        //     .whileTrue(m_shooter.setFlywheelVelocityCmd(shotCalculator.getParameters().flywheelSpeed())); 
-
         driver.a().whileTrue(Commands.repeatingSequence(
             Commands.runOnce(m_shooter::launchFuel),
             Commands.waitSeconds(0.1)));  

@@ -54,7 +54,6 @@ import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.Pose2dLogger;
 
-//TODO: for sohan - make sure to implement m_atGoal for Hood
 public class Shooter extends SubsystemBase {
     /* VARIABLES */
 
@@ -324,10 +323,6 @@ public class Shooter extends SubsystemBase {
         m_hood.setControl(m_positionRequest.withPosition(degrees));
     }
 
-    // public Command runHoodFixedCommand(DoubleSupplier angle, DoubleSupplier velocity) {
-    //     return run(() -> setHoodGoalParams(angle.getAsDouble(), velocity.getAsDouble()));
-    // }
-
     // Turret Commands (Motionmagic Angle Control)
     public Command setTurretPositionCmd(TurretPosition position) {
         return setTurretPositionCmd(position.rots);
@@ -344,11 +339,6 @@ public class Shooter extends SubsystemBase {
     public void setTurretPosition(Angle azimuthAngle) {
         m_turret.setControl(m_MMVRequest.withPosition(azimuthAngle));
     }
-
-    public void setTurretPosition(Angle azimuthAngle, AngularVelocity azimuthVelocity) {
-        //TODO: work out how to get the feedforward speed
-        m_turret.setControl(m_MMVRequest.withPosition(azimuthAngle));
-    }
  
     public Angle getTurretPosition() {
         return m_turret.getPosition().getValue();
@@ -359,8 +349,7 @@ public class Shooter extends SubsystemBase {
 
         ShotData calculatedShot = TurretCalculator.iterativeMovingShotFromInterpolationMap(robot, fieldSpeeds, currentTarget, 3);
         Angle azimuthAngle = TurretCalculator.calculateAzimuthAngle(robot, calculatedShot.getTarget(), m_turret.getPosition().getValue());
-        AngularVelocity azimuthVelocity = RadiansPerSecond.of(-fieldSpeeds.omegaRadiansPerSecond);
-        setTurretPosition(azimuthAngle, azimuthVelocity);
+        setTurretPosition(azimuthAngle);
         setHoodPosition(calculatedShot.hoodAngle());
         setFlywheelVelocity(TurretCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));
     }
@@ -396,12 +385,6 @@ public class Shooter extends SubsystemBase {
             return;
         // m_fuelStored--;
 
-        // m_fuelSim.launchFuel(
-        // TurretCalculator.angularToLinearVelocity(m_shooter.getFlywheelVelocity(),
-        // kFlywheelRadius),
-        // m_shooter.getHoodAngle(),
-        // m_shooter.getTurretPosition(),
-        // kDistanceAboveFunnel);
         AngularVelocity flywheelVelocity = getFlywheelVelocity();
         Angle hoodAngle = Degrees.of(90).minus(getHoodAngle());
         Angle turretPosition = getTurretPosition();
