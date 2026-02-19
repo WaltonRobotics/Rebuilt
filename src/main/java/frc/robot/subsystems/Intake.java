@@ -51,11 +51,11 @@ public class Intake extends SubsystemBase {
     );
 
     /* LOGGERS */
-    DoubleLogger log_intakeArmRots = WaltLogger.logDouble(IntakeK.kLogTab, "intakeArmRots");
-    DoubleLogger log_targetIntakeArmRots = WaltLogger.logDouble(IntakeK.kLogTab, "targetIntakeArmRots");
+    DoubleLogger log_intakeArmRots = WaltLogger.logDouble(kLogTab, "intakeArmRots");
+    DoubleLogger log_targetIntakeArmRots = WaltLogger.logDouble(kLogTab, "targetIntakeArmRots");
 
-    DoubleLogger log_intakeRollersRPS = WaltLogger.logDouble(IntakeK.kLogTab, "intakeRollersRPS");
-    DoubleLogger log_targetIntakeRollersRPS = WaltLogger.logDouble(IntakeK.kLogTab, "targetIntakeRollersRPS");
+    DoubleLogger log_intakeRollersRPS = WaltLogger.logDouble(kLogTab, "intakeRollersRPS");
+    DoubleLogger log_targetIntakeRollersRPS = WaltLogger.logDouble(kLogTab, "targetIntakeRollersRPS");
 
     /* CONSTRUCTOR */
     public Intake() {
