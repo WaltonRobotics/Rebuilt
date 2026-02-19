@@ -495,6 +495,9 @@ public class Robot extends TimedRobot {
                 )
             )
         );
+
+        /* for the mechanism2d in 3d, drag all 3 mechanisms2ds onto the robot pose
+        and also log the shooter position pose */ 
     }
 
     @Override
