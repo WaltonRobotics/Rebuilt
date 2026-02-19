@@ -259,7 +259,7 @@ public class Constants {
 
         /* MOTOR CONSTANTS */
         public static final double kIntakeArmMOI = 0.0209;
-        public static final double kIntakeArmGearing = 5/1;
+        public static final double kIntakeArmGearing = 125/1;
 
         public static final double kIntakeRollersMOI = 0.0001; // 0.00343880857
         public static final double kIntakeRollersGearing = 12.0/30;
