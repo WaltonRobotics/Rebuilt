@@ -152,7 +152,7 @@ public class WaltAutonFactory {
     }
 
     /**
-     * goes to depot once and shoots for the right side
+     * goes to depot once and shoots
      */
     public Command oneRightDepotPickup() {
         return Commands.sequence(
@@ -165,7 +165,7 @@ public class WaltAutonFactory {
     }
 
     /**
-     * goes to outpost once, shoots, then goes to neutral to pickup for the right side
+     * goes to outpost once, shoots, then goes to neutral to pickup
      */
     public Command oneRightOutpostPickup() {
         return Commands.sequence(
