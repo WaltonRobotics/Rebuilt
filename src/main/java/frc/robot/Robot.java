@@ -47,6 +47,7 @@ import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
+import frc.util.Telemetry;
 import frc.util.VisualSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;

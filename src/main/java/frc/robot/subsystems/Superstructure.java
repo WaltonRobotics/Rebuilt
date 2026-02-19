@@ -18,29 +18,27 @@ import static frc.robot.Constants.IntakeK.kIntakeRollersMaxRPS;
 import java.util.HashSet;
 
 public class Superstructure {
-
-    /* declare subsystems */
+    /* SUBSYSTEMS */
     private final Intake m_intake;
     private final Indexer m_indexer;
     private final Shooter m_shooter;
 
-    /* loggers */
+    /* LOGGERS */
     private HashSet<String> m_activeCommands = new HashSet<>();
     private final StringArrayLogger log_activeCommands = WaltLogger.logStringArray(kLogTab, "Active Commands");
 
     private HashSet<String> m_activeOverrideCommands = new HashSet<>();
     private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
     
-    /* constructor */
+    /* CONSTRUCTOR */
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
         m_intake = intake;
         m_indexer = indexer;
         m_shooter = shooter;
     }
 
-    /* button bind sequences */
+    /* BUTTON BIND SEQUENCES */
 
-    // Regular Commands
     /**
      * Turns off rollers and spinner and moves deploy to given pos.
      * @param pos the position to move deploy to.
