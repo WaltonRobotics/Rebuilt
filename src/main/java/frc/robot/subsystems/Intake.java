@@ -25,20 +25,15 @@ import frc.util.MotorSim;
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
+    /* CLASS VARIABLES */
+    //---MOTORS + CONTROL REQUESTS
     private final TalonFX m_intakeArm = new TalonFX(IntakeK.kIntakeArmCANID);
     private final TalonFX m_intakeRollers = new TalonFX(IntakeK.kIntakeRollersCANID);
 
     private MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0).withEnableFOC(true);
     private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
 
-    // Loggers
-    DoubleLogger log_intakeArmRots = WaltLogger.logDouble(IntakeK.kLogTab, "intakeArmRots");
-    DoubleLogger log_targetIntakeArmRots = WaltLogger.logDouble(IntakeK.kLogTab, "targetIntakeArmRots");
-
-    DoubleLogger log_intakeRollersRPS = WaltLogger.logDouble(IntakeK.kLogTab, "intakeRollersRPS");
-    DoubleLogger log_targetIntakeRollersRPS = WaltLogger.logDouble(IntakeK.kLogTab, "targetIntakeRollersRPS");
-
-    // Sims
+    /* SIM OBJECTS */
     private final DCMotorSim m_intakeArmSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX60Foc(1),
@@ -57,6 +52,14 @@ public class Intake extends SubsystemBase {
         DCMotor.getKrakenX44Foc(1) // returns gearbox
     );
 
+    /* LOGGERS */
+    DoubleLogger log_intakeArmRots = WaltLogger.logDouble(IntakeK.kLogTab, "intakeArmRots");
+    DoubleLogger log_targetIntakeArmRots = WaltLogger.logDouble(IntakeK.kLogTab, "targetIntakeArmRots");
+
+    DoubleLogger log_intakeRollersRPS = WaltLogger.logDouble(IntakeK.kLogTab, "intakeRollersRPS");
+    DoubleLogger log_targetIntakeRollersRPS = WaltLogger.logDouble(IntakeK.kLogTab, "targetIntakeRollersRPS");
+
+    /* CONSTRUCTOR */
     public Intake() {
         m_intakeArm.getConfigurator().apply(IntakeK.kIntakeArmConfiguration);
         m_intakeRollers.getConfigurator().apply(IntakeK.kIntakeRollersConfiguration);
@@ -93,6 +96,7 @@ public class Intake extends SubsystemBase {
         return m_intakeRollers;
     }
 
+    /* PERIODICS */
     @Override
     public void periodic() {
         log_targetIntakeArmRots.accept(m_MMVReq.Position);
@@ -107,6 +111,7 @@ public class Intake extends SubsystemBase {
         MotorSim.updateSimFX(m_intakeRollers, m_intakeRollersSim);
     }
 
+    /* ENUMS */
     public enum IntakeArmPosition{
         RETRACTED(0),
         SAFE(72),

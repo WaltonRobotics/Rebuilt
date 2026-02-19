@@ -13,20 +13,21 @@ import frc.robot.Constants;
 /** Motor simulation methods */
 public class MotorSim {
     /**
-     * Initializes a motor simulation. 
-     * @param motor The motor to simulate.
-     * @param chassisReference The orientation of the motor.
-     * @param motorType The simulated motor type (X44 or X60)
+     * Initialize the sim for a CTRE TalonFX motor
+     * @param motor is the CTRE motor
+     * @param chassisReference is the orientation of the device relative to the robot chassis
+     * @param motorType is the type of motor (ex. Kraken X60)
      */
     public static void initSimFX(TalonFX motor, ChassisReference chassisReference, TalonFXSimState.MotorType motorType) {
         var motorFXSim = motor.getSimState();
         motorFXSim.Orientation = chassisReference;
         motorFXSim.setMotorType(motorType);
     }
+
     /**
-     * Updates a DC motor simulation
-     * @param motor The motor to simulate.
-     * @param motorSim A DC motor simulation.
+     * Update the DCMotorSim for a CTRE TalonFX motor
+     * @param motor is the CTRE motor
+     * @param motorSim is the corresponding DCMotorSim object for the CTRE motor
      */
     public static void updateSimFX(TalonFX motor, DCMotorSim motorSim) {
         var motorFXSimState = motor.getSimState();
@@ -38,10 +39,11 @@ public class MotorSim {
         motorFXSimState.setRotorVelocity(motorSim.getAngularVelocity().times(motorSim.getGearing()));
         motorFXSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
+
     /**
-     * Updates a Flywheel motor simulation.
-     * @param motor The motor to simulate.
-     * @param motorSim A simulated flywheel.
+     * Update the FlywheelSim for a CTRE TalonFX motor
+     * @param motor is the CTRE motor
+     * @param motorSim is the corresponding FlywheelSim object for the CTRE motor
      */
     public static void updateSimFX(TalonFX motor, FlywheelSim motorSim) {
         var motorFXSimState = motor.getSimState();
@@ -53,11 +55,12 @@ public class MotorSim {
         motorFXSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 
-   /**
-     * Updates a servo motor simulation.
-     * This is designed for the hood servo, but it can be used by other servos.
-     * @param servo The servo to simulate.
-     * @param motorSim A DC motor simulation.
+    /**
+     * Update the DCMotorSim for a servo
+     * 
+     * Designed for the hood servo, but can be used by other servos
+     * @param servo must act like a DCMotor for this to work
+     * @param motorSim is the corresponding DCMotorSim object for the DCMotor-like servo
      */
     public static void updateSimServo(Servo servo, DCMotorSim motorSim) {
         double volts = servo.get();

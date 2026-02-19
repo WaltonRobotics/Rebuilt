@@ -54,7 +54,7 @@ public class VisualSim {
         Mechanism2d shooterMech = new Mechanism2d(10, 20);
         MechanismRoot2d shooterRoot = shooterMech.getRoot("shooter", 5, 5);
 
-        //--INTAKE
+        //---INTAKE
         m_intakeArmPosition = intakeRoot.append(
             new MechanismLigament2d("intakeArmPosition", 4, 90)
         );
@@ -63,7 +63,7 @@ public class VisualSim {
         );
         m_intakeArmStartAngle = new Rotation2d(Degrees.of(90));
 
-        //--INDEXER
+        //---INDEXER
         m_spindexerVelocity = indexerRoot.append(
             new MechanismLigament2d("spindexerVelocity", 0, 0, 4, new Color8Bit(Color.kCornflowerBlue))
         );
@@ -71,7 +71,7 @@ public class VisualSim {
             new MechanismLigament2d("tunnelVelocity", 0, 90, 4, new Color8Bit(Color.kAzure))
         );
 
-        //--SHOOTER
+        //---SHOOTER
         m_shooterVelocity = shooterRoot.append(
             new MechanismLigament2d("shooterVelocity", 0, 90, 4, new Color8Bit(Color.kFirebrick))
         );
@@ -156,7 +156,7 @@ public class VisualSim {
     public Command setHoodPosition() {
         return Commands.run(
             () -> {
-                m_hoodPosition.setAngle(m_hoodStartAngle.minus(new Rotation2d(Rotations.of(m_shooter.getSimHoodEncoder().getAngularPositionRotations()))));
+                m_hoodPosition.setAngle(m_hoodStartAngle.minus(new Rotation2d(Rotations.of(m_shooter.getHoodSimEncoder().getAngularPositionRotations()))));
             }
         );
     }
