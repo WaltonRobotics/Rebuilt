@@ -259,7 +259,7 @@ public class Constants {
 
         /* MOTOR CONSTANTS */
         public static final double kIntakeArmMOI = 0.0209;
-        public static final double kIntakeArmGearing = 5/1;
+        public static final double kIntakeArmGearing = 125/1;
 
         public static final double kIntakeRollersMOI = 0.0001; // 0.00343880857
         public static final double kIntakeRollersGearing = 12.0/30;
@@ -277,10 +277,10 @@ public class Constants {
             .withSupplyCurrentLimit(20)
             .withStatorCurrentLimitEnable(true);
         private static final Slot0Configs kIntakeArmSlot0Configs = new Slot0Configs()
-            .withKS(0.04)
+            .withKS(0)
             .withKV(0)
             .withKA(0)
-            .withKP(0.8)
+            .withKP(3)
             .withKI(0)
             .withKD(0);
         public static final MotorOutputConfigs kIntakeArmMotorOutputConfigs = new MotorOutputConfigs()
