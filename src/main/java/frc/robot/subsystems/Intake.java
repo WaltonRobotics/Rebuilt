@@ -21,7 +21,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.WaltLogger.DoubleLogger;
 
 import frc.robot.Constants.IntakeK;
-import frc.util.MotorSim;
+import frc.util.WaltMotorSim;
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
@@ -67,8 +67,8 @@ public class Intake extends SubsystemBase {
     }
 
     private void initSim() {
-        MotorSim.initSimFX(m_intakeArm, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
-        MotorSim.initSimFX(m_intakeRollers, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
+        WaltMotorSim.initSimFX(m_intakeArm, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
+        WaltMotorSim.initSimFX(m_intakeRollers, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
     }
 
     /* COMMANDS */
@@ -107,8 +107,8 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        MotorSim.updateSimFX(m_intakeArm, m_intakeArmSim);
-        MotorSim.updateSimFX(m_intakeRollers, m_intakeRollersSim);
+        WaltMotorSim.updateSimFX(m_intakeArm, m_intakeArmSim);
+        WaltMotorSim.updateSimFX(m_intakeRollers, m_intakeRollersSim);
     }
 
     /* ENUMS */
