@@ -280,16 +280,16 @@ public class Constants {
 
     public static class RobotK {
         public static final String kLogTab = "Robot";
-    }
-
-    public static class SuperstructureK {
-        public static final String kLogTab = "Superstructure";
 
         //real values
         public static final Distance kRobotFullWidth = Inches.of(33.6875);
         public static final Distance kRobotFullLength = Inches.of(32.6875);
         public static final Distance kBumperHeight = Inches.of(4.5);
 
+    }
+
+    public static class SuperstructureK {
+        public static final String kLogTab = "Superstructure";
     }
 
     public static class IntakeK {

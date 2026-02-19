@@ -6,11 +6,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.RobotK.*;
-import static frc.robot.Constants.ShooterK.kRobotToTurret;
-
-import static frc.robot.Constants.IndexerK;
-import static frc.robot.Constants.ShooterK;
-import static frc.robot.Constants.RobotK.*;
 
 import java.util.HashMap;
 import java.util.Optional;
@@ -25,9 +20,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -38,20 +30,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.Constants.VisionK;
-import frc.robot.subsystems.Shooter.FlywheelVelocity;
-import frc.robot.subsystems.Shooter.HoodPosition;
-import frc.robot.subsystems.Shooter.ShootingState;
-import frc.robot.subsystems.Shooter.TurretGoal;
-import frc.robot.subsystems.Shooter.TurretPosition;
 import frc.robot.subsystems.shooter.FuelSim;
-import frc.robot.subsystems.shooter.ShotCalculator;
-import frc.robot.subsystems.shooter.TurretVisualizer;
-import frc.robot.Constants.IntakeK;
 import frc.robot.Constants.ShooterK;
-import frc.robot.Constants.VisionK;
 import frc.robot.autons.AutonChooser;
 import frc.robot.autons.WaltAutonFactory;
 import frc.robot.generated.TunerConstants;
@@ -99,12 +81,12 @@ public class Robot extends TimedRobot {
     //---INIT SUBSYSTEMS
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
 
-    private final Shooter m_shooter = new Shooter();
+    private final Shooter m_shooter;
     private final Intake m_intake = new Intake();
     private final Indexer m_indexer = new Indexer();
 
-    private final WaltVisualSim m_visualSim = new WaltVisualSim(m_intake, m_indexer, m_shooter);
-    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
+    private final WaltVisualSim m_visualSim;
+    private final Superstructure m_superstructure;
 
     //---AUTONS
     private Command m_autonomousCommand;
@@ -173,13 +155,9 @@ public class Robot extends TimedRobot {
 
     /* CONSTRUCTOR */
     public Robot() {
-        
-      = new Shooter(m_drivetrain, () -> m_drivetrain.getState().Pose, () -> m_drivetrain.getChassisSpeeds());
-        shotCalculator = new ShotCalculator(m_drivetrain);
-
-        m_turretVisualizer = new TurretVisualizer(
-                () -> new Pose3d(RobotState.getInstance().getEstimatedPose()),
-                () -> RobotState.getInstance().getRobotVelocity());
+        m_shooter = new Shooter(() -> m_drivetrain.getState().Pose, () -> m_drivetrain.getChassisSpeeds());
+        m_visualSim = new WaltVisualSim(m_intake, m_indexer, m_shooter);
+        m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
 
         // m_shooter.setDefaultCommand(m_shooter.shooterDefaultCommands());
         m_shooter.zeroHoodCommand();
