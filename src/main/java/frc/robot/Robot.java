@@ -430,6 +430,8 @@ public class Robot extends TimedRobot {
         // periodics
         m_shooter.periodic();
         m_indexer.periodic();
+        m_intake.periodic();
+
         log_povUp.accept(m_driver.povUp());
         log_povDown.accept(m_driver.povDown());
         log_povLeft.accept(m_driver.povLeft());
@@ -526,6 +528,7 @@ public class Robot extends TimedRobot {
     public void simulationPeriodic() {
         SwerveDriveState robotState = m_drivetrain.getState();
         Pose2d robotPose = robotState.Pose;
+
         m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();
         m_shooter.simulationPeriodic();
