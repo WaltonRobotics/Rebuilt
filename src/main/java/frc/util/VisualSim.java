@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
@@ -51,8 +52,10 @@ public class VisualSim {
         Mechanism2d indexerMech = new Mechanism2d(7, 15);
         MechanismRoot2d indexerRoot = indexerMech.getRoot("indexer", 3.5, 0.15);
 
+        Mechanism2d turretMech = new Mechanism2d(10, 20);
+        MechanismRoot2d turretRoot = turretMech.getRoot("turret", 5, 0.5);
         Mechanism2d shooterMech = new Mechanism2d(10, 20);
-        MechanismRoot2d shooterRoot = shooterMech.getRoot("shooter", 5, 5);
+        MechanismRoot2d shooterRoot = shooterMech.getRoot("shooter", 5, 0.5);
 
         //---INTAKE
         m_intakeArmPosition = intakeRoot.append(
@@ -72,21 +75,23 @@ public class VisualSim {
         );
 
         //---SHOOTER
-        m_shooterVelocity = shooterRoot.append(
-            new MechanismLigament2d("shooterVelocity", 0, 90, 4, new Color8Bit(Color.kFirebrick))
+        m_turretPosition = turretRoot.append(
+            new MechanismLigament2d("turretPosition", .4, 180, 2, new Color8Bit(Color.kTomato))
         );
         m_hoodPosition = shooterRoot.append(
-            new MechanismLigament2d("hoodPosition", 4, 180, 4, new Color8Bit(Color.kDarkSalmon))
+            new MechanismLigament2d("hoodPosition", .4, 0, 2, new Color8Bit(Color.kDarkSalmon))
         );
-        m_turretPosition = shooterRoot.append(
-            new MechanismLigament2d("turretPosition", 4, 0, 4, new Color8Bit(Color.kTomato))
+        m_shooterVelocity = m_hoodPosition.append(
+            new MechanismLigament2d("shooterVelocity", 0, 0, 2, new Color8Bit(Color.kFirebrick))
         );
-        m_hoodStartAngle = new Rotation2d(Degrees.of(180));
-        m_turretStartAngle = new Rotation2d(Degrees.of(0));
+        
+        m_hoodStartAngle = new Rotation2d(Degrees.of(0));
+        m_turretStartAngle = new Rotation2d(Degrees.of(180));
 
         SmartDashboard.putData("IntakeMech2d", intakeMech);
         SmartDashboard.putData("IndexerMech2d", indexerMech);
         SmartDashboard.putData("ShooterMech2d", shooterMech);
+        SmartDashboard.putData("TurretMech2d", turretMech);
     } 
 
     private Command setVelocity(MechanismLigament2d simPart, TalonFX subsystemMotor, double divisor) {
@@ -121,13 +126,13 @@ public class VisualSim {
 
     //---SHOOTER
     public Command setShooterVelocity() {
-        return setVelocity(m_shooterVelocity, m_shooter.getShooter(), 10);
+        return setVelocity(m_shooterVelocity, m_shooter.getShooter(), 100);
     }
 
     public Command setHoodPosition() {
         return Commands.run(
             () -> {
-                m_hoodPosition.setAngle(m_hoodStartAngle.minus(new Rotation2d(Rotations.of(m_shooter.getHoodSimEncoder().getAngularPositionRotations()))));
+                m_hoodPosition.setAngle(m_hoodStartAngle.plus(new Rotation2d(Rotations.of(m_shooter.getHoodSimEncoder().getAngularPositionRotations()))));
             }
         );
     }
@@ -135,7 +140,7 @@ public class VisualSim {
     public Command setTurretPosition() {
         return Commands.run(
             () -> {
-                m_turretPosition.setAngle(new Rotation2d(m_shooter.getTurret().getPosition().getValue()).plus(m_turretStartAngle));
+                m_turretPosition.setAngle(m_turretStartAngle.minus(new Rotation2d(m_shooter.getTurret().getPosition().getValue())));
             }
         );
     }
