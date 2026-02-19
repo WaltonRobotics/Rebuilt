@@ -36,7 +36,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.IntakeK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.VisionK;
-import frc.robot.autons.AutonChooser;
+import frc.robot.autons.WaltDashboard.AutonChooser;
+import frc.robot.autons.WaltDashboard.TestingDashboard;
 import frc.robot.autons.WaltAutonFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
@@ -157,8 +158,9 @@ public class Robot extends TimedRobot {
 
     /* CONSTRUCTOR */
     public Robot() {
-        configureBindings();
-        //configureTestBindings();    //this should be commented out during competition matches
+        // configureBindings();
+        // configureTestBindings();    //this should be commented out during competition matches
+        configureTestingDashboard();
     }
 
     /* COMMANDS */
@@ -256,7 +258,7 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
-        // Test sequences
+        /* TEST SEQUENCES/BINDS */
         trg_activateIntake.onTrue(
             Commands.parallel(
                 m_superstructure.activateIntake(),
@@ -403,6 +405,11 @@ public class Robot extends TimedRobot {
 
     }
 
+    private void configureTestingDashboard() {
+        /* INITIALIZE DASHBOARD */
+        TestingDashboard.initialize();
+    }
+
     /* PERIODICS */
     @Override
     public void robotPeriodic() {
@@ -432,12 +439,12 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledInit() {
+        AutonChooser.initialize();
+
         m_waltAutonFactory.setAlliance(
             DriverStation.getAlliance().isPresent() && 
             DriverStation.getAlliance().get().equals(Alliance.Red)
         );
-
-        AutonChooser.initialize();
 
         m_autonList.putIfAbsent("oneNeutralPickup", m_waltAutonFactory.oneNeutralPickup());
         m_autonList.putIfAbsent("twoNeutralPickup", m_waltAutonFactory.twoNeutralPickup());
