@@ -9,6 +9,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
@@ -45,7 +46,7 @@ public class VisualSim {
         m_shooter = shooter;
 
         Mechanism2d intakeMech = new Mechanism2d(10,10);
-        MechanismRoot2d intakeRoot = intakeMech.getRoot("intake", 4, 3);
+        MechanismRoot2d intakeRoot = intakeMech.getRoot("intake", 4.55, 0.1);
 
         Mechanism2d indexerMech = new Mechanism2d(7, 15);
         MechanismRoot2d indexerRoot = indexerMech.getRoot("indexer", 3.5, 3.5);
@@ -55,10 +56,10 @@ public class VisualSim {
 
         //---INTAKE
         m_intakeArmPosition = intakeRoot.append(
-            new MechanismLigament2d("intakeArmPosition", 4, 90)
+            new MechanismLigament2d("intakeArmPosition", .4, 90, 2, new Color8Bit(Color.kOrange))
         );
-        m_intakeRollerVelocity = intakeRoot.append(
-            new MechanismLigament2d("intakeRollerVelocity", 0, 0, 4, new Color8Bit(Color.kPeachPuff))
+        m_intakeRollerVelocity = m_intakeArmPosition.append(
+            new MechanismLigament2d("intakeRollerVelocity", 0, 0, 2, new Color8Bit(Color.kPeachPuff))
         );
         m_intakeArmStartAngle = new Rotation2d(Degrees.of(90));
 
@@ -88,10 +89,10 @@ public class VisualSim {
         SmartDashboard.putData("ShooterMech2d", shooterMech);
     } 
 
-    private Command setVelocity(MechanismLigament2d simPart, TalonFX subsystemMotor) {
+    private Command setVelocity(MechanismLigament2d simPart, TalonFX subsystemMotor, double divisor) {
         return Commands.run(
             () -> {
-               simPart.setLength(subsystemMotor.getVelocity().getValueAsDouble()/10);
+               simPart.setLength(subsystemMotor.getVelocity().getValueAsDouble()/divisor);
             }
         );
     }
@@ -106,21 +107,21 @@ public class VisualSim {
     }
 
     public Command setIntakeRollerVelocity() {
-        return setVelocity(m_intakeRollerVelocity, m_intake.getIntakeRollers());
+        return setVelocity(m_intakeRollerVelocity, m_intake.getIntakeRollers(), 100);
     }
 
     //---INDEXER
     public Command setSpindexerVelocity() {
-        return setVelocity(m_spindexerVelocity, m_indexer.getSpindexer());
+        return setVelocity(m_spindexerVelocity, m_indexer.getSpindexer(), 10);
     }
 
     public Command setTunnelVelocity() {
-        return setVelocity(m_tunnelVelocity, m_indexer.getTunnel());
+        return setVelocity(m_tunnelVelocity, m_indexer.getTunnel(), 10);
     }
 
     //---SHOOTER
     public Command setShooterVelocity() {
-        return setVelocity(m_shooterVelocity, m_shooter.getShooter());
+        return setVelocity(m_shooterVelocity, m_shooter.getShooter(), 10);
     }
 
     public Command setHoodPosition() {
