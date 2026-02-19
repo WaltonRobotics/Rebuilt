@@ -246,11 +246,19 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> m_shooterLeader.setControl(m_velocityRequest.withVelocity(RPS)));
     }
 
+    public void setShooterVelocity(AngularVelocity RPS) {
+       m_shooterLeader.setControl(m_velocityRequest.withVelocity(RPS));
+    }
+
     //---HOOD (Basic Position Control)
     public Command setHoodPositionCmd(Angle degs) {  
         return runOnce(
             () -> m_hoodSetpoint = degs
         );
+    }
+
+    public void setHoodPosition(Angle degs) {
+        m_hoodSetpoint = degs;
     }
 
     // The PIDOutput needed to get to the setpoint from the current point
@@ -272,8 +280,12 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> m_turret.setControl(m_MMVRequest.withPosition(rots)));
     }
 
-    public void setTurretPositionCmd(Angle azimuthAngle, AngularVelocity azimuthVelocity) {
+    public void setTurretPosition(Angle azimuthAngle, AngularVelocity azimuthVelocity) {
         //TODO: work out how to get the feedforward speed
+        m_turret.setControl(m_MMVRequest.withPosition(azimuthAngle));
+    }
+
+    public void setTurretPosition(Angle azimuthAngle) {
         m_turret.setControl(m_MMVRequest.withPosition(azimuthAngle));
     }
 
@@ -334,9 +346,9 @@ public class Shooter extends SubsystemBase {
         ShotData calculatedShot = TurretCalculator.iterativeMovingShotFromInterpolationMap(robot, fieldSpeeds, currentTarget, 3);
         Angle azimuthAngle = TurretCalculator.calculateAzimuthAngle(robot, calculatedShot.getTarget(), m_turret.getPosition().getValue());
         AngularVelocity azimuthVelocity = RadiansPerSecond.of(-fieldSpeeds.omegaRadiansPerSecond);
-        setTurretPositionCmd(azimuthAngle, azimuthVelocity);
-        setHoodPositionCmd(calculatedShot.getHoodAngle());
-        setShooterVelocityCmd(TurretCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));
+        setTurretPosition(azimuthAngle, azimuthVelocity);
+        setHoodPosition(calculatedShot.getHoodAngle());
+        setShooterVelocity(TurretCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));
     }
 
     /**
@@ -348,7 +360,7 @@ public class Shooter extends SubsystemBase {
 
         ShotData calculatedShot = TurretCalculator.iterativeMovingShotFromInterpolationMap(robot, fieldSpeeds, currentTarget, 3);
         Angle azimuthAngle = TurretCalculator.calculateAzimuthAngle(robot, calculatedShot.getTarget(), m_turret.getPosition().getValue());
-        setTurretPositionCmd(azimuthAngle);
+        setTurretPosition(azimuthAngle);
     }
 
     /* FUEL SIM METHODS */

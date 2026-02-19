@@ -38,6 +38,7 @@ import frc.robot.autons.AutonChooser;
 import frc.robot.autons.WaltAutonFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Shooter.TurretGoal;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
@@ -118,10 +119,17 @@ public class Robot extends TimedRobot {
     private Trigger trg_prepIntake = m_manipulator.x().and(trg_manipOverride.negate());
     private Trigger trg_retractIntake = m_manipulator.y().and(trg_manipOverride.negate());
 
-    private Trigger trg_shoot = m_driver.rightTrigger().and(trg_manipOverride.negate());
+    private Trigger trg_shoot = m_driver.rightTrigger();
     private Trigger trg_emergencyBarf = m_driver.leftTrigger().and(trg_manipOverride.negate());
 
     private Trigger trg_pass = m_driver.rightBumper().and(trg_manipOverride.negate());
+
+    //COMMENT OUT WHEN NOT SIMULATION
+    private Trigger trg_simShoot = m_driver.a();
+    private Trigger trg_simClearFuel = m_driver.povDown();
+    private Trigger trg_simSetTest = m_driver.povUp();
+    private Trigger trg_simSetOff = m_driver.povRight();
+    private Trigger trg_simSetShooting = m_driver.povLeft();
 
     //---OVERRIDE TRIGGERS
     private Trigger trg_maxShooterOverride = trg_manipOverride.and(m_manipulator.povLeft());
@@ -163,6 +171,7 @@ public class Robot extends TimedRobot {
         m_shooter.zeroHoodCommand();
         m_shooter.zeroTurretCommmand();
         configureBindings();
+        // configureTestBindings();
 
         if(Robot.isSimulation()) {
             configureFuelSim();
@@ -283,6 +292,34 @@ public class Robot extends TimedRobot {
         trg_shoot.and(trg_pass.negate()).onTrue(m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)).onFalse(m_superstructure.deactivateOuttake());
         trg_shoot.and(trg_pass).onTrue(m_superstructure.startPassing()).onFalse(m_superstructure.stopPassing());
         trg_emergencyBarf.onTrue(m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)).onFalse(m_superstructure.deactivateOuttake());
+
+        trg_simShoot.whileTrue(
+            Commands.repeatingSequence(
+                Commands.runOnce(m_shooter::launchFuel),
+                Commands.waitSeconds(0.1)
+            )
+        );
+
+        trg_simClearFuel.onTrue(
+            Commands.runOnce(
+                () -> {
+                    FuelSim.getInstance().clearFuel();
+                    // FuelSim.getInstance().spawnStartingFuel();
+                }
+            )
+        );
+
+        trg_simSetTest.onTrue(
+            m_shooter.setGoal(TurretGoal.TEST)
+        );
+
+        trg_simSetOff.onTrue(
+            m_shooter.setGoal(TurretGoal.OFF)
+        );
+
+        trg_simSetShooting.onTrue(
+            m_shooter.setGoal(TurretGoal.SCORING)
+        );
 
         // Override commands
         trg_maxShooterOverride.onTrue(m_superstructure.maxShooter()).onFalse(m_superstructure.stopShooter());
