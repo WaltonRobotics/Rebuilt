@@ -119,7 +119,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_prepIntake = m_manipulator.x().and(trg_manipOverride.negate());
     private Trigger trg_retractIntake = m_manipulator.y().and(trg_manipOverride.negate());
 
-    private Trigger trg_shoot = m_driver.rightTrigger();
+    private Trigger trg_shoot = m_driver.rightTrigger().and(trg_manipOverride.negate());
     private Trigger trg_emergencyBarf = m_driver.leftTrigger().and(trg_manipOverride.negate());
 
     private Trigger trg_pass = m_driver.rightBumper().and(trg_manipOverride.negate());
