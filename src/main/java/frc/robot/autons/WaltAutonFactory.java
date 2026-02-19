@@ -49,7 +49,6 @@ public class WaltAutonFactory {
         m_autoFactory = autoFactory;
         m_drivetrain = drivetrain;  
 
-        neutralCycle = new String[3];
         setAutonSide(AutonSide.RIGHT);
     }
 
@@ -93,9 +92,6 @@ public class WaltAutonFactory {
      * @return A command group containing a sequence of commands to execute the auton
      */
     private Command createAutonSequence(int pickupTimes) {
-        // neutralCycle = isRight ? new String[]{"RightToNeutral", "RightNeutralToShoot", "RightShootToNeutral"} : 
-        //                          new String[]{"LeftToNeutral", "LeftNeutralToShoot", "LeftShootToNeutral"};
-
         if (pickupTimes == 1) { // Base case when pickupTimes = 1 in the recursive loop
             return Commands.sequence(
                 runTrajCmd(neutralCycle[0]), //right to neutral
