@@ -117,7 +117,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_swerveToObject = m_driver.x();
 
     private Trigger trg_activateIntake = m_manipulator.a().and(trg_manipOverride.negate());
-    private Trigger trg_prepIntake = m_manipulator.x().and(trg_manipOverride.negate());
+    private Trigger trg_safeIntake = m_manipulator.x().and(trg_manipOverride.negate());
     private Trigger trg_retractIntake = m_manipulator.y().and(trg_manipOverride.negate());
 
     private Trigger trg_shoot = m_driver.rightTrigger().and(trg_manipOverride.negate());
@@ -236,7 +236,7 @@ public class Robot extends TimedRobot {
         trg_activateIntake.onTrue(
             m_superstructure.activateIntake()
         );
-        trg_prepIntake.onTrue(
+        trg_safeIntake.onTrue(
             m_superstructure.deactivateIntake(IntakeArmPosition.SAFE)
         );
         trg_retractIntake.onTrue(
@@ -302,53 +302,75 @@ public class Robot extends TimedRobot {
         trg_activateIntake.onTrue(
             Commands.parallel(
                 m_superstructure.activateIntake(),
-                m_visualSim.setIntakeArmPosition()
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity(),
+                m_visualSim.setSpindexerVelocity()
             )
         );
-        trg_prepIntake.onTrue(
+        trg_safeIntake.onTrue(
             Commands.parallel(
                 m_superstructure.deactivateIntake(IntakeArmPosition.SAFE),
-                m_visualSim.setIntakeArmPosition()
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity(),
+                m_visualSim.setSpindexerVelocity()
             )
         );
         trg_retractIntake.onTrue(
             Commands.parallel(    
                 m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED),
-                m_visualSim.setIntakeArmPosition()
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity(),
+                m_visualSim.setSpindexerVelocity()
             )
         );
 
         trg_shoot.and(trg_pass.negate()).onTrue(
             Commands.parallel(
                 m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity()
             )
         ).onFalse(
             Commands.parallel(
                 m_superstructure.deactivateOuttake(),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity()
             )
         );
         trg_emergencyBarf.onTrue(
             Commands.parallel(
                 m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity()
             )
         ).onFalse(
             Commands.parallel(
                 m_superstructure.deactivateOuttake(),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity()
             )
         );
         trg_shoot.and(trg_pass).onTrue(
             Commands.parallel(
                 m_superstructure.startPassing(),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity(),
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity()
             )
         ).onFalse(
             Commands.parallel(
                 m_superstructure.stopPassing(),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity(),
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity()
             )
         );
 
