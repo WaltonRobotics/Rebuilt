@@ -342,37 +342,42 @@ public class Robot extends TimedRobot {
     @Override
     public void disabledPeriodic() {
         if (!AutonChooser.m_chooser.getSelected().equals(m_autonChosen)) {
+            boolean autonSelected = true;
             switch (AutonChooser.m_chooser.getSelected()) {
                 case "oneRightNeutralPickup":
                     AutonChooser.pub_autonName.set("One Right Neutral Pickup");
                     m_autonChosen = "oneRightNeutralPickup";
-                    AutonChooser.pub_autonMade.set(false);
+                    autonSelected = false;
                     break;
                 case "twoRightNeutralPickup":
                     AutonChooser.pub_autonName.set("Two Right Neutral Pickup");
                     m_autonChosen = "twoRightNeutralPickup";
-                    AutonChooser.pub_autonMade.set(false);
+                    autonSelected = false;
                     break;
                 case "threeRightNeutralPickup":
                     AutonChooser.pub_autonName.set("Three Right Neutral Pickup");
                     m_autonChosen = "threeRightNeutralPickup";
-                    AutonChooser.pub_autonMade.set(false);
+                    autonSelected = false;
                     break;
                 case "oneLeftNeutralPickup":
                     AutonChooser.pub_autonName.set("One Left Neutral Pickup");
                     m_autonChosen = "oneLeftNeutralPickup";
-                    AutonChooser.pub_autonMade.set(false);
+                    autonSelected = false;
                     break;
                 case "twoLeftNeutralPickup":
                     AutonChooser.pub_autonName.set("Two Left Neutral Pickup");
                     m_autonChosen = "twoLeftNeutralPickup";
-                    AutonChooser.pub_autonMade.set(false);
+                    autonSelected = false;
                     break;
                 case "threeLeftNeutralPickup":
                     AutonChooser.pub_autonName.set("Three Left Neutral Pickup");
                     m_autonChosen = "threeLeftNeutralPickup";
-                    AutonChooser.pub_autonMade.set(false);
+                    autonSelected = false;
                     break;
+            }
+
+            if (!autonSelected) {
+                AutonChooser.pub_autonMade.set(false);
             }
         }
 
