@@ -276,7 +276,7 @@ public class Robot extends TimedRobot {
         );
 
         // Reset the field-centric heading on left bumper press.
-        m_manipulator.leftBumper().onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
+        m_manipulator.leftBumper().and(trg_manipOverride.negate()).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
 
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
