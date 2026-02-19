@@ -128,9 +128,9 @@ public class Robot extends TimedRobot {
     //---OVERRIDE TRIGGERS
     private Trigger trg_maxShooterOverride = trg_manipOverride.and(m_manipulator.povLeft());
 
-    private Trigger trg_turret180Override = trg_manipOverride.and(m_manipulator.povRight());
+    private Trigger trg_turretOverride = trg_manipOverride.and(m_manipulator.povRight());
 
-    private Trigger trg_hood30Override = trg_manipOverride.and(m_manipulator.povUp());
+    private Trigger trg_hoodOverride = trg_manipOverride.and(m_manipulator.povUp());
 
     private Trigger trg_startSpindexerOverride = trg_manipOverride.and(m_manipulator.rightBumper());
 
@@ -229,7 +229,7 @@ public class Robot extends TimedRobot {
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
         trg_swerveToObject.whileTrue(m_drivetrain.swerveToObject());
 
-        // Test sequences
+        // Normal sequences
         trg_activateIntake.onTrue(m_superstructure.activateIntake());
         trg_prepIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.SAFE));
         trg_retractIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED));
@@ -240,10 +240,6 @@ public class Robot extends TimedRobot {
 
         // Override commands
         trg_maxShooterOverride.onTrue(m_superstructure.maxShooter()).onFalse(m_superstructure.stopShooter());
-
-        trg_turret180Override.onTrue(m_superstructure.turretTo(Degrees.of(180))).onFalse(m_superstructure.turretTo(Degrees.of(0)));
-
-        trg_hood30Override.onTrue(m_superstructure.hoodTo(Degrees.of(30))).onFalse(m_superstructure.hoodTo(Degrees.of(0)));
 
         trg_startSpindexerOverride.onTrue(m_superstructure.startSpindexer()).onFalse(m_superstructure.stopSpindexer());
 
@@ -310,7 +306,7 @@ public class Robot extends TimedRobot {
             )
         );
 
-        // Override commands
+        // Test commands
         trg_maxShooterOverride.onTrue(
             Commands.parallel(
                 m_superstructure.maxShooter(),
@@ -323,7 +319,7 @@ public class Robot extends TimedRobot {
             )
         );
 
-        trg_turret180Override.onTrue(
+        trg_turretOverride.onTrue(
             Commands.parallel(
                 m_superstructure.turretTo(Degrees.of(180)),
                 m_visualSim.setTurretPosition()
@@ -335,7 +331,7 @@ public class Robot extends TimedRobot {
             )
         );
 
-        trg_hood30Override.onTrue(
+        trg_hoodOverride.onTrue(
             Commands.parallel(
                 m_superstructure.hoodTo(Degrees.of(30)),
                 m_visualSim.setHoodPosition()
