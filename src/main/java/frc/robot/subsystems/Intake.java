@@ -38,7 +38,7 @@ public class Intake extends SubsystemBase {
             kIntakeArmMOI,
             kIntakeArmGearing
         ),
-        DCMotor.getKrakenX60Foc(1)
+        DCMotor.getKrakenX44Foc(1)
     );
 
     private final DCMotorSim m_intakeRollersSim = new DCMotorSim(
@@ -65,7 +65,7 @@ public class Intake extends SubsystemBase {
     }
 
     private void initSim() {
-        MotorSim.initSimFX(m_intakeArm, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
+        MotorSim.initSimFX(m_intakeArm, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
         MotorSim.initSimFX(m_intakeRollers, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
     }
 

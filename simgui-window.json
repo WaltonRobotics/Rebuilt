@@ -1,0 +1,115 @@
+{
+  "Docking": {
+    "Data": []
+  },
+  "MainWindow": {
+    "GLOBAL": {
+      "font": "Proggy Dotted",
+      "fps": "120",
+      "height": "900",
+      "maximized": "0",
+      "style": "0",
+      "userScale": "2",
+      "width": "1600",
+      "xpos": "171",
+      "ypos": "52"
+    }
+  },
+  "Window": {
+    "###/FMSInfo": {
+      "Collapsed": "0",
+      "Pos": "5,644",
+      "Size": "202,194"
+    },
+    "###/Pose": {
+      "Collapsed": "0",
+      "Pos": "507,193",
+      "Size": "400,200"
+    },
+    "###/SmartDashboard/Choreo Alerts": {
+      "Collapsed": "0",
+      "Pos": "60,60",
+      "Size": "305,150"
+    },
+    "###/SmartDashboard/IndexerMech2d": {
+      "Collapsed": "0",
+      "Pos": "1403,17",
+      "Size": "191,428"
+    },
+    "###/SmartDashboard/IntakeMech2d": {
+      "Collapsed": "0",
+      "Pos": "1149,616",
+      "Size": "241,268"
+    },
+    "###/SmartDashboard/SendableChooser[0]": {
+      "Collapsed": "0",
+      "Pos": "60,60",
+      "Size": "343,60"
+    },
+    "###/SmartDashboard/ShooterMech2d": {
+      "Collapsed": "0",
+      "Pos": "1398,449",
+      "Size": "195,388"
+    },
+    "###/SmartDashboard/VisionSystemSim-main/Sim Field": {
+      "Collapsed": "0",
+      "Pos": "240,28",
+      "Size": "1149,581"
+    },
+    "###FMS": {
+      "Collapsed": "0",
+      "Pos": "806,704",
+      "Size": "336,158"
+    },
+    "###Joysticks": {
+      "Collapsed": "0",
+      "Pos": "241,616",
+      "Size": "976,278"
+    },
+    "###Keyboard 0 Settings": {
+      "Collapsed": "0",
+      "Pos": "10,50",
+      "Size": "300,560"
+    },
+    "###NetworkTables": {
+      "Collapsed": "0",
+      "Pos": "502,193",
+      "Size": "937,231"
+    },
+    "###NetworkTables Info": {
+      "Collapsed": "0",
+      "Pos": "501,112",
+      "Size": "937,181"
+    },
+    "###Other Devices": {
+      "Collapsed": "0",
+      "Pos": "1612,21",
+      "Size": "312,868"
+    },
+    "###Plot <0>": {
+      "Collapsed": "0",
+      "Pos": "60,60",
+      "Size": "700,400"
+    },
+    "###System Joysticks": {
+      "Collapsed": "0",
+      "Pos": "4,384",
+      "Size": "232,254"
+    },
+    "###Timing": {
+      "Collapsed": "0",
+      "Pos": "5,158",
+      "Size": "162,220"
+    },
+    "Debug##Default": {
+      "Collapsed": "0",
+      "Pos": "60,60",
+      "Size": "400,400"
+    },
+    "Robot State": {
+      "Collapsed": "0",
+      "Pos": "5,20",
+      "Size": "118,134"
+    }
+  }
+}
