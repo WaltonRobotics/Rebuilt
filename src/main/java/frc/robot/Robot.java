@@ -262,9 +262,9 @@ public class Robot extends TimedRobot {
         m_drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             m_drivetrain.applyRequest(() ->
-                drive.withVelocityX(-m_driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-m_driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-m_driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-m_manipulator.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-m_manipulator.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-m_manipulator.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
 
@@ -274,58 +274,85 @@ public class Robot extends TimedRobot {
         RobotModeTriggers.disabled().whileTrue(
             m_drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
-        
+
+        // Reset the field-centric heading on left bumper press.
+        m_manipulator.leftBumper().onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
+
+        m_drivetrain.registerTelemetry(logger::telemeterize);
+
         // Test sequences
         trg_activateIntake.onTrue(
             Commands.parallel(
                 m_superstructure.activateIntake(),
-                m_visualSim.setIntakeArmPosition()
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity(),
+                m_visualSim.setSpindexerVelocity()
             )
         );
         trg_prepIntake.onTrue(
             Commands.parallel(
                 m_superstructure.deactivateIntake(IntakeArmPosition.SAFE),
-                m_visualSim.setIntakeArmPosition()
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity(),
+                m_visualSim.setSpindexerVelocity()
             )
         );
         trg_retractIntake.onTrue(
             Commands.parallel(    
                 m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED),
-                m_visualSim.setIntakeArmPosition()
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity(),
+                m_visualSim.setSpindexerVelocity()
             )
         );
 
         trg_shoot.and(trg_pass.negate()).onTrue(
             Commands.parallel(
                 m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity()
             )
         ).onFalse(
             Commands.parallel(
                 m_superstructure.deactivateOuttake(),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity()
             )
         );
         trg_emergencyBarf.onTrue(
             Commands.parallel(
                 m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity()
             )
         ).onFalse(
             Commands.parallel(
                 m_superstructure.deactivateOuttake(),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity()
             )
         );
         trg_shoot.and(trg_pass).onTrue(
             Commands.parallel(
                 m_superstructure.startPassing(),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity(),
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity()
             )
         ).onFalse(
             Commands.parallel(
                 m_superstructure.stopPassing(),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity(),
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity()
             )
         );
 
