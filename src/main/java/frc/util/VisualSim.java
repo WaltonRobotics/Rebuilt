@@ -30,11 +30,11 @@ public class VisualSim {
     private final MechanismLigament2d m_tunnelVelocity;
 
     private final MechanismLigament2d m_shooterVelocity;
-    private final MechanismLigament2d m_hoodPosition;
+    // private final MechanismLigament2d m_hoodPosition;
     // private final MechanismLigament2d m_turretPosition;
 
     private final Rotation2d m_intakeArmStartAngle;
-    private final Rotation2d m_hoodStartAngle;
+    // private final Rotation2d m_hoodStartAngle;
     // private final Rotation2d m_turretStartAngle;
 
     public VisualSim(Intake intake, Indexer indexer, Shooter shooter) {
@@ -74,14 +74,14 @@ public class VisualSim {
         // m_turretPosition = turretRoot.append(
         //     new MechanismLigament2d("turretPosition", .4, 180, 2, new Color8Bit(Color.kTomato))
         // );
-        m_hoodPosition = shooterRoot.append(
-            new MechanismLigament2d("hoodPosition", .4, 0, 2, new Color8Bit(Color.kDarkSalmon))
-        );
-        m_shooterVelocity = m_hoodPosition.append(
-            new MechanismLigament2d("shooterVelocity", 0, 0, 2, new Color8Bit(Color.kFirebrick))
+        // m_hoodPosition = shooterRoot.append(
+        //     new MechanismLigament2d("hoodPosition", .4, 0, 2, new Color8Bit(Color.kDarkSalmon))
+        // );
+        m_shooterVelocity = shooterRoot.append(
+            new MechanismLigament2d("shooterVelocity", 0, 90, 2, new Color8Bit(Color.kFirebrick))
         );
         
-        m_hoodStartAngle = new Rotation2d(Degrees.of(0));
+        // m_hoodStartAngle = new Rotation2d(Degrees.of(0));
         // m_turretStartAngle = new Rotation2d(Degrees.of(180));
 
         SmartDashboard.putData("IntakeMech2d", intakeMech);
@@ -125,13 +125,13 @@ public class VisualSim {
         return setVelocity(m_shooterVelocity, m_shooter.getShooter(), 100);
     }
 
-    public Command setHoodPosition() {
-        return Commands.run(
-            () -> {
-                m_hoodPosition.setAngle(m_hoodStartAngle.plus(new Rotation2d(Rotations.of(m_shooter.getHoodSimEncoder().getAngularPositionRotations()))));
-            }
-        );
-    }
+    // public Command setHoodPosition() {
+    //     return Commands.run(
+    //         () -> {
+    //             m_hoodPosition.setAngle(m_hoodStartAngle.plus(new Rotation2d(Rotations.of(m_shooter.getHoodSimEncoder().getAngularPositionRotations()))));
+    //         }
+    //     );
+    // }
 
     // public Command setTurretPosition() {
     //     return Commands.run(

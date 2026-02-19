@@ -154,7 +154,7 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
 
     // for testing only
-    private final Pose3dLogger log_turretDirection = WaltLogger.logPose3d(kLogTab, "Turret Direction");
+    private final Pose3dLogger log_shooterDirection = WaltLogger.logPose3d(kLogTab, "Shooter Direction");
 
     // log and replay timestamp and joystick data
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -389,13 +389,13 @@ public class Robot extends TimedRobot {
 
         trg_hood30Override.onTrue(
             Commands.parallel(
-                m_superstructure.hoodTo(Degrees.of(30)),
-                m_visualSim.setHoodPosition()
+                m_superstructure.hoodTo(Degrees.of(30))
+                // m_visualSim.setHoodPosition()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.hoodTo(Degrees.of(0)),
-                m_visualSim.setHoodPosition()
+                m_superstructure.hoodTo(Degrees.of(0))
+                // m_visualSim.setHoodPosition()
             )
         );
 
@@ -480,7 +480,7 @@ public class Robot extends TimedRobot {
         log_povLeft.accept(m_driver.povLeft());
         log_povRight.accept(m_driver.povRight());
         log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
-        log_turretDirection.accept(
+        log_shooterDirection.accept(
             new Pose3d(
                 m_drivetrain.getState().Pose
             ).plus(
@@ -488,14 +488,13 @@ public class Robot extends TimedRobot {
             ).plus(
                 new Transform3d(
                     new Translation3d(), new Rotation3d(
-                        Radians.of(0),
-                        Radians.of(0),
+                        Rotations.of(0),
+                        Rotations.of(-m_shooter.getHoodSimEncoder().getAngularPositionRotations()),
                         m_shooter.getTurret().getPosition().getValue()
                     )
                 )
             )
         );
-        
     }
 
     @Override
