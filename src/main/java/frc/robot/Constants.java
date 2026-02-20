@@ -9,6 +9,8 @@ import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.VoltageConfigs;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -35,6 +37,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.vision.Camera;
 import frc.util.AllianceFlipUtil;
 
@@ -102,7 +105,7 @@ public class Constants {
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kShooterLeaderOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
-            .withNeutralMode(NeutralModeValue.Brake)
+            .withNeutralMode(NeutralModeValue.Coast)
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);
         private static final FeedbackConfigs kShooterFeedbackConfigs = new FeedbackConfigs()
@@ -118,7 +121,7 @@ public class Constants {
             .withMotorOutput(
                 new MotorOutputConfigs()
                     .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
-                    .withNeutralMode(NeutralModeValue.Brake));
+                    .withNeutralMode(NeutralModeValue.Coast));
 
         // TODO: I assume we would want the Hood and Turret to move at a constant high velocity
         //       so we should probably configure that here?
@@ -138,7 +141,7 @@ public class Constants {
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kHoodOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
-            .withNeutralMode(NeutralModeValue.Brake)
+            .withNeutralMode(NeutralModeValue.Coast)
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);
         private static final FeedbackConfigs kHoodFeedbackConfigs = new FeedbackConfigs()
@@ -162,7 +165,7 @@ public class Constants {
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kTurretOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
-            .withNeutralMode(NeutralModeValue.Brake)
+            .withNeutralMode(NeutralModeValue.Coast)
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);
         private static final MotionMagicConfigs kTurretMotionMagicConfigs = new MotionMagicConfigs()
@@ -176,13 +179,17 @@ public class Constants {
             .withReverseSoftLimitThreshold(0.02);
         private static final FeedbackConfigs kTurretFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kTurretGearing);
+        private static final VoltageConfigs kTurretVoltageConfigs = new VoltageConfigs()
+            .withPeakForwardVoltage(1.2)
+            .withPeakReverseVoltage(-1.2);
         public static final TalonFXConfiguration kTurretTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kTurretSlot0Configs)
             .withCurrentLimits(kTurretCurrentLimitConfigs)
             .withMotorOutput(kTurretOutputConfigs)
             .withMotionMagic(kTurretMotionMagicConfigs)
             .withSoftwareLimitSwitch(kTurretSoftwareLimitSwitchConfigs)
-            .withFeedback(kTurretFeedbackConfigs);
+            .withFeedback(kTurretFeedbackConfigs)
+            .withVoltage(kTurretVoltageConfigs);
 
         public static final CanandmagSettings kHoodEncoderSettings = new CanandmagSettings()
             .setInvertDirection(false);
@@ -293,7 +300,7 @@ public class Constants {
             .withKI(0)
             .withKD(0);
         public static final MotorOutputConfigs kIntakeArmMotorOutputConfigs = new MotorOutputConfigs()
-            .withNeutralMode(NeutralModeValue.Brake)
+            .withNeutralMode(NeutralModeValue.Coast)
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);
         private static final MotionMagicConfigs kIntakeArmMotionMagicConfigs = new MotionMagicConfigs()
@@ -323,7 +330,7 @@ public class Constants {
             .withKD(0);
         public static final MotorOutputConfigs kIntakeRollersMotorOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.Clockwise_Positive) // TODO: CW or CCW?
-            .withNeutralMode(NeutralModeValue.Brake)
+            .withNeutralMode(NeutralModeValue.Coast)
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);
         public static final FeedbackConfigs kIntakeRollersFeedbackConfigs = new FeedbackConfigs()
@@ -368,16 +375,20 @@ public class Constants {
             .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kSpindexerMotorOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: CW or CCW?
-            .withNeutralMode(NeutralModeValue.Brake)
+            .withNeutralMode(NeutralModeValue.Coast)
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);
         private static final FeedbackConfigs kSpindexerFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kSpindexerGearing);
+        private static final VoltageConfigs kSpindexerVoltageConfigs = new VoltageConfigs()
+            .withPeakForwardVoltage(1.2)
+            .withPeakReverseVoltage(-1.2);
         public static final TalonFXConfiguration kSpindexerTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kSpindexerSlot0Configs)
             .withCurrentLimits(kSpindexerCurrentLimitConfigs)
             .withMotorOutput(kSpindexerMotorOutputConfigs)
-            .withFeedback(kSpindexerFeedbackConfigs);
+            .withFeedback(kSpindexerFeedbackConfigs)
+            .withVoltage(kSpindexerVoltageConfigs);
 
         private static final Slot0Configs kTunnelSlot0Configs = new Slot0Configs()
             .withKS(0.1124)
@@ -392,17 +403,21 @@ public class Constants {
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kTunnelMotorOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: CW or CCW?
-            .withNeutralMode(NeutralModeValue.Brake)
+            .withInverted(InvertedValue.Clockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Coast)
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);
         private static final FeedbackConfigs kTunnelFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kTunnelGearing);
+        private static final VoltageConfigs kTunnelVoltageConfigs = new VoltageConfigs()
+            .withPeakForwardVoltage(1.2)
+            .withPeakReverseVoltage(-1.2);
         public static final TalonFXConfiguration kTunnelTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kTunnelSlot0Configs)
             .withCurrentLimits(kTunnelCurrentLimitConfigs)
             .withMotorOutput(kTunnelMotorOutputConfigs)
-            .withFeedback(kTunnelFeedbackConfigs);
+            .withFeedback(kTunnelFeedbackConfigs)
+            .withVoltage(kTunnelVoltageConfigs);
     }
 
     public static class AutonK {
