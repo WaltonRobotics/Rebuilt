@@ -264,7 +264,7 @@ public class Constants {
         public static final double kIntakeRollersMOI = 0.0001; // 0.00343880857
         public static final double kIntakeRollersGearing = 12.0/30;
 
-        public static final AngularVelocity kRollersMaxRPS = RotationsPerSecond.of((7368 / 60) / kIntakeRollersGearing);  //100% RPS
+        public static final AngularVelocity kIntakeRollersMaxRPS = RotationsPerSecond.of((7368 / 60) / kIntakeRollersGearing);  //100% RPS
 
         /* IDS */
         public static final int kIntakeArmCANID = 40;
