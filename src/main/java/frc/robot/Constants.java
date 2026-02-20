@@ -54,7 +54,7 @@ public class Constants {
         public static final double kShooterGearing = 1/1;
         public static final double kTurretGearing = 41.66666666/1;
 
-        public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.75); //0.75 rots in each direction from home
+        public static final Angle kTurretMaxRotsFromHome = Rotations.of(1.5); //1.5 rots in each direction from home
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.magnitude());
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.magnitude());
 
