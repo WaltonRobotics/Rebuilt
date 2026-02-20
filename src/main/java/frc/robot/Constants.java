@@ -27,6 +27,9 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
@@ -248,6 +251,8 @@ public class Constants {
 
     public static class RobotK {
         public static final String kLogTab = "Robot";
+        public static final Transform3d kTurretTransform = new Transform3d(new Translation3d(0, 0, 0.7), new Rotation3d());
+
     }
 
     public static class SuperstructureK {
@@ -264,7 +269,7 @@ public class Constants {
         public static final double kIntakeRollersMOI = 0.0001; // 0.00343880857
         public static final double kIntakeRollersGearing = 12.0/30;
 
-        public static final AngularVelocity kRollersMaxRPS = RotationsPerSecond.of((7368 / 60) / kIntakeRollersGearing);  //100% RPS
+        public static final AngularVelocity kIntakeRollersMaxRPS = RotationsPerSecond.of((7368 / 60) / kIntakeRollersGearing);  //100% RPS
 
         /* IDS */
         public static final int kIntakeArmCANID = 40;
@@ -389,9 +394,13 @@ public class Constants {
     }
 
     public static class AutonK {
-        public static final Pose2d neutralPose = new Pose2d(Distance.ofRelativeUnits(6.924767017364502, Meter), 
-            Distance.ofRelativeUnits(2.251265048980713, Meter), new Rotation2d(Math.PI));
-        public static final Pose2d depotPose = new Pose2d(Distance.ofRelativeUnits(1.1576627492904663, Meter), 
-            Distance.ofRelativeUnits(5.958622932434082, Meter), new Rotation2d(0));
+        public static final Pose2d rightNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
+            Meters.of(2.251265048980713), new Rotation2d(0));
+        public static final Pose2d rightDepotPose = new Pose2d(Meters.of(1.1576627492904663), 
+            Meters.of(5.958622932434082), new Rotation2d(Math.PI));
+
+        public static final Pose2d leftNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
+            Meters.of(5.437880039215088), new Rotation2d(0));
+
     }
 }
