@@ -32,7 +32,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.Constants.ShooterK.*;
 
 import frc.robot.Constants;
-import frc.util.MotorSim;
+import frc.util.WaltMotorSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -123,8 +123,8 @@ public class Shooter extends SubsystemBase {
 
     //TODO: update orientation values (if needed)
     private void initSim() {
-        MotorSim.initSimFX(m_shooterLeader, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
-        MotorSim.initSimFX(m_turret, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
+        WaltMotorSim.initSimFX(m_shooterLeader, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
+        WaltMotorSim.initSimFX(m_turret, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
     }
 
     /* COMMANDS */
@@ -191,9 +191,9 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        MotorSim.updateSimFX(m_shooterLeader, m_shooterSim);
-        MotorSim.updateSimFX(m_turret, m_turretSim);
-        MotorSim.updateSimServo(m_hood, m_hoodSim);
+        WaltMotorSim.updateSimFX(m_shooterLeader, m_shooterSim);
+        WaltMotorSim.updateSimFX(m_turret, m_turretSim);
+        WaltMotorSim.updateSimServo(m_hood, m_hoodSim);
     }
 
 }
