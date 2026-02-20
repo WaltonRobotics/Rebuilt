@@ -569,8 +569,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledInit() {
-        AutonChooser.initialize();
-
         m_waltAutonFactory.setAlliance(
             DriverStation.getAlliance().isPresent() && 
             DriverStation.getAlliance().get().equals(Alliance.Red)
