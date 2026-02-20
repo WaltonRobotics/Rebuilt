@@ -10,6 +10,7 @@ import com.ctre.phoenix6.swerve.*;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.*;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.*;
@@ -169,6 +170,12 @@ public class TunerConstants {
     private static final Distance kBackRightXPos = Inches.of(-9.375);
     private static final Distance kBackRightYPos = Inches.of(-11.375);
 
+    public static final Translation2d[] moduleTranslations = {
+        new Translation2d(kFrontRightXPos, kFrontRightYPos),
+        new Translation2d(kFrontLeftXPos, kFrontLeftYPos),
+        new Translation2d(kBackRightXPos, kBackRightYPos),
+        new Translation2d(kBackLeftXPos, kBackLeftYPos)
+    };
 
     public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontLeft =
         ConstantCreator.createModuleConstants(

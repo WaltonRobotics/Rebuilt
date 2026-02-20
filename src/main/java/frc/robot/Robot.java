@@ -5,9 +5,8 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.Constants.IndexerK;
-import static frc.robot.Constants.ShooterK;
 import static frc.robot.Constants.RobotK.*;
+import static frc.robot.Constants.ShooterK.kRobotToTurret;
 
 import java.util.HashMap;
 import java.util.Optional;
@@ -29,18 +28,22 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.ShooterK;
+
 import frc.robot.Constants.VisionK;
+import frc.robot.subsystems.shooter.FuelSim;
+import frc.robot.Constants.ShooterK;
 import frc.robot.autons.AutonChooser;
 import frc.robot.autons.WaltAutonFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Shooter.TurretGoal;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
@@ -84,12 +87,12 @@ public class Robot extends TimedRobot {
     //---INIT SUBSYSTEMS
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
 
-    private final Shooter m_shooter = new Shooter();
+    private final Shooter m_shooter;
     private final Intake m_intake = new Intake();
     private final Indexer m_indexer = new Indexer();
 
-    private final WaltVisualSim m_visualSim = new WaltVisualSim(m_intake, m_indexer, m_shooter);
-    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
+    private final WaltVisualSim m_visualSim;
+    private final Superstructure m_superstructure;
 
     //---AUTONS
     private Command m_autonomousCommand;
@@ -121,10 +124,17 @@ public class Robot extends TimedRobot {
     private Trigger trg_safeIntake = m_manipulator.x().and(trg_manipOverride.negate());
     private Trigger trg_retractIntake = m_manipulator.y().and(trg_manipOverride.negate());
 
-    private Trigger trg_shoot = m_driver.rightTrigger().and(trg_manipOverride.negate());
-    private Trigger trg_emergencyBarf = m_driver.leftTrigger().and(trg_manipOverride.negate());
+    private Trigger trg_shoot = m_driver.rightTrigger().and(trg_driverOverride.negate());
+    private Trigger trg_emergencyBarf = m_driver.leftTrigger().and(trg_driverOverride.negate());
 
     private Trigger trg_pass = m_driver.rightBumper().and(trg_manipOverride.negate());
+
+    //COMMENT OUT WHEN NOT SIMULATION
+    private Trigger trg_simShoot = m_driver.a();
+    private Trigger trg_simClearFuel = m_driver.povDown();
+    private Trigger trg_simSetTest = m_driver.povUp();
+    private Trigger trg_simSetOff = m_driver.povRight();
+    private Trigger trg_simSetShooting = m_driver.povLeft();
 
     //---OVERRIDE TRIGGERS
     private Trigger trg_maxShooterOverride = trg_manipOverride.and(m_manipulator.povLeft());
@@ -161,8 +171,20 @@ public class Robot extends TimedRobot {
 
     /* CONSTRUCTOR */
     public Robot() {
+        m_shooter = new Shooter(() -> m_drivetrain.getState().Pose, () -> m_drivetrain.getChassisSpeeds());
+        m_visualSim = new WaltVisualSim(m_intake, m_indexer, m_shooter);
+        m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
+
+        // m_shooter.setDefaultCommand(m_shooter.shooterDefaultCommands());
+        m_shooter.zeroHoodCommand();
+        m_shooter.zeroTurretCommmand();
         configureBindings();
-        //configureTestBindings();    //this should be commented out during competition matches
+        // configureTestBindings();
+
+        if(Robot.isSimulation()) {
+            configureFuelSim();
+            FuelSim.getInstance().enableAirResistance();
+        }
     }
 
     /* COMMANDS */
@@ -188,6 +210,43 @@ public class Robot extends TimedRobot {
             .withRotationalRate(driverYawRate); // Drive counterclockwise with negative X (left)
             }
         );
+    }
+
+    //(nonsotm (just for simulating entire robot)) BLARGHHHHHH get intake dude (alex?) to give me his code (idk if he finished it yet)
+    private void configureFuelSim() {
+        FuelSim instance = FuelSim.getInstance();
+        // instance.spawnStartingFuel();
+        
+
+        instance.registerRobot(
+                kRobotFullWidth.in(Meters),
+                kRobotFullLength.in(Meters),
+                kBumperHeight.in(Meters),
+                () -> m_drivetrain.getState().Pose,
+                () -> m_drivetrain.getChassisSpeeds());
+        // instance.registerIntake(
+        //         -kRobotFullLength.div(2).in(Meters),
+        //         kRobotFullLength.div(2).in(Meters),
+        //         -kRobotFullWidth.div(2).plus(Inches.of(7)).in(Meters),
+        //         -kRobotFullWidth.div(2).in(Meters),
+        //         () -> intake.isRightDeployed() && m_shooter.simAbleToIntake(),
+        //         m_shooter::simIntake);
+        // instance.registerIntake(
+        //         -kRobotFullLength.div(2).in(Meters),
+        //         kRobotFullLength.div(2).in(Meters),
+        //         kRobotFullWidth.div(2).in(Meters),
+        //         kRobotFullWidth.div(2).plus(Inches.of(7)).in(Meters),
+        //         () -> intake.isLeftDeployed() && m_shooter.simAbleToIntake(),
+        //         m_shooter::simIntake);
+
+        instance.start();
+        instance.logFuels();
+        SmartDashboard.putData(Commands.runOnce(() -> {
+                    FuelSim.getInstance().clearFuel();
+                    FuelSim.getInstance().spawnStartingFuel();
+                })
+                .withName("Reset Fuel")
+                .ignoringDisable(true));
     }
 
     //---BINDINGS
@@ -247,6 +306,36 @@ public class Robot extends TimedRobot {
             m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
         );
 
+        trg_simShoot.whileTrue(
+            Commands.repeatingSequence(
+                Commands.runOnce(m_shooter::launchFuel),
+                Commands.waitSeconds(0.1)
+            )
+        );
+
+        trg_simClearFuel.onTrue(
+            Commands.runOnce(
+                () -> {
+                    FuelSim.getInstance().clearFuel();
+                    // FuelSim.getInstance().spawnStartingFuel();
+                }
+            )
+        );
+
+        trg_simSetTest.onTrue(
+            m_shooter.setGoal(TurretGoal.TEST)
+        );
+
+        trg_simSetOff.onTrue(
+            m_shooter.setGoal(TurretGoal.OFF)
+        );
+
+        trg_simSetShooting.onTrue(
+            m_shooter.setGoal(TurretGoal.SCORING)
+        );
+
+        // Override commands
+        trg_maxShooterOverride.onTrue(m_superstructure.maxShooter()).onFalse(m_superstructure.stopShooter());
         //Shooting
         trg_shoot.and(trg_pass.negate()).onTrue(
             m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)
@@ -511,7 +600,6 @@ public class Robot extends TimedRobot {
                 m_visionSeenLastSec = ctreTime;
             }
         }
-
         // periodics
         m_shooter.periodic();
         m_indexer.periodic();
@@ -524,7 +612,7 @@ public class Robot extends TimedRobot {
             new Pose3d(
                 m_drivetrain.getState().Pose
             ).plus(
-                kTurretTransform
+                kRobotToTurret
             ).plus(
                 new Transform3d(
                     new Translation3d(), new Rotation3d(
@@ -625,6 +713,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
+        m_shooter.zeroShooterCommand();
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().cancel(m_autonomousCommand);
         }
@@ -648,7 +737,15 @@ public class Robot extends TimedRobot {
     public void testExit() {}
 
     @Override
+    public void simulationInit() {
+        FuelSim.getInstance().start();
+    }
+
+    @Override
     public void simulationPeriodic() {
+        FuelSim instance = FuelSim.getInstance();
+        instance.logFuels();
+        instance.updateSim();
         SwerveDriveState robotState = m_drivetrain.getState();
         Pose2d robotPose = robotState.Pose;
         m_visionSim.simulationPeriodic(robotPose);

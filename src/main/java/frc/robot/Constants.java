@@ -1,5 +1,9 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Feet;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Rotations;
+
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.CANBus;
@@ -25,16 +29,22 @@ import com.reduxrobotics.sensors.canandmag.CanandmagSettings;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.DistanceUnit;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
 import frc.robot.vision.Camera;
 import frc.util.AllianceFlipUtil;
 
@@ -46,6 +56,22 @@ public class Constants {
 
     public static class ShooterK {
         public static final String kLogTab = "Shooter";
+        //cant really think of any other name but is where the turret is relative to the robot
+        public static final Transform3d kRobotToTurret = new Transform3d(new Translation3d(Inches.zero(), Inches.zero(), Inches.of(18)), Rotation3d.kZero); //DUMMY VALS
+        public static final Distance kDistanceAboveFunnel = Inches.of(20); //distance above the hub funnel
+
+        public static final double kHoodMinAngle = Units.degreesToRadians(19);
+        public static final double kHoodMaxAngle = Units.degreesToRadians(51);
+
+        public static final Distance kFlywheelRadius = Inches.of(1.5); //fake
+
+        public static final int kHopperCapacity = 55; //TODO: find true max
+
+        //TODO: work out where our passing spots should be..?
+        public static final Translation3d kPassingSpotLeft = new Translation3d(
+                Inches.of(90), FieldConstants.fieldWidthIn.div(2).plus(Inches.of(85)), Inches.zero());
+        public static final Translation3d kPassingSpotCenter = new Translation3d(
+                Inches.of(90), FieldConstants.fieldWidthIn.div(2), Inches.zero());
 
         /* MOTOR CONSTANTS */
         public static final double kShooterMoI = 0.000349 * 2.5;  //J for 5 3" 0.53lb flywheels
@@ -54,7 +80,7 @@ public class Constants {
         public static final double kShooterGearing = 1/1;
         public static final double kTurretGearing = 41.66666666/1;
 
-        public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.75); //0.75 rots in each direction from home
+        public static final Angle kTurretMaxRotsFromHome = Rotations.of(1.75); //0.75 rots in each direction from home
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.magnitude());
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.magnitude());
 
@@ -251,7 +277,11 @@ public class Constants {
 
     public static class RobotK {
         public static final String kLogTab = "Robot";
-        public static final Transform3d kTurretTransform = new Transform3d(new Translation3d(0, 0, 0.7), new Rotation3d());
+
+        //real values
+        public static final Distance kRobotFullWidth = Inches.of(33.6875);
+        public static final Distance kRobotFullLength = Inches.of(32.6875);
+        public static final Distance kBumperHeight = Inches.of(4.5);
 
     }
 
