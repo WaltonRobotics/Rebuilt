@@ -22,7 +22,10 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -32,8 +35,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.Constants.IntakeK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.VisionK;
 import frc.robot.autons.AutonChooser;
@@ -52,6 +53,7 @@ import frc.util.WaltVisualSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.Pose3dLogger;
 
 public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
@@ -149,6 +151,9 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
     private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
 
+    // for testing only
+    private final Pose3dLogger log_shooterDirection = WaltLogger.logPose3d(kLogTab, "Shooter Direction");
+
     // log and replay timestamp and joystick data
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
         .withTimestampReplay()
@@ -156,8 +161,8 @@ public class Robot extends TimedRobot {
 
     /* CONSTRUCTOR */
     public Robot() {
-        //configureBindings();
-        configureTestBindings();    //this should be commented out during competition matches
+        configureBindings();
+        //configureTestBindings();    //this should be commented out during competition matches
     }
 
     /* COMMANDS */
@@ -297,6 +302,30 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
+        /* GENERATED SWERVE BINDS */
+        // Note that X is defined as forward according to WPILib convention,
+        // and Y is defined as to the left according to WPILib convention.
+        m_drivetrain.setDefaultCommand(
+            // Drivetrain will execute this command periodically
+            m_drivetrain.applyRequest(() ->
+                drive.withVelocityX(-m_manipulator.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-m_manipulator.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-m_manipulator.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+            )
+        );
+
+        // Idle while the robot is disabled. This ensures the configured
+        // neutral mode is applied to the drive motors while disabled.
+        final var idle = new SwerveRequest.Idle();
+        RobotModeTriggers.disabled().whileTrue(
+            m_drivetrain.applyRequest(() -> idle).ignoringDisable(true)
+        );
+
+        // Reset the field-centric heading on left bumper press.
+        m_manipulator.leftBumper().and(trg_manipOverride.negate()).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
+
+        m_drivetrain.registerTelemetry(logger::telemeterize);
+
         //---TEST SEQUENCES
         trg_activateIntake.onTrue(
             Commands.parallel(
@@ -388,25 +417,25 @@ public class Robot extends TimedRobot {
 
         trg_turretOverride.onTrue(
             Commands.parallel(
-                m_superstructure.turretTo(Degrees.of(180)),
-                m_visualSim.setTurretPosition()
+                m_superstructure.turretTo(Degrees.of(180))
+                // m_visualSim.setTurretPosition()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.turretTo(Degrees.of(0)),
-                m_visualSim.setTurretPosition()
+                m_superstructure.turretTo(Degrees.of(0))
+                // m_visualSim.setTurretPosition()
             )
         );
 
         trg_hoodOverride.onTrue(
             Commands.parallel(
-                m_superstructure.hoodTo(Degrees.of(30)),
-                m_visualSim.setHoodPosition()
+                m_superstructure.hoodTo(Degrees.of(30))
+                // m_visualSim.setHoodPosition()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.hoodTo(Degrees.of(0)),
-                m_visualSim.setHoodPosition()
+                m_superstructure.hoodTo(Degrees.of(0))
+                // m_visualSim.setHoodPosition()
             )
         );
 
@@ -491,6 +520,24 @@ public class Robot extends TimedRobot {
         log_povLeft.accept(m_driver.povLeft());
         log_povRight.accept(m_driver.povRight());
         log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
+        log_shooterDirection.accept(
+            new Pose3d(
+                m_drivetrain.getState().Pose
+            ).plus(
+                kTurretTransform
+            ).plus(
+                new Transform3d(
+                    new Translation3d(), new Rotation3d(
+                        Rotations.of(0),
+                        Rotations.of(-m_shooter.getHoodSimEncoder().getAngularPositionRotations()),
+                        m_shooter.getTurret().getPosition().getValue()
+                    )
+                )
+            )
+        );
+
+        /* for the mechanism2d in 3d, drag all 3 mechanisms2ds onto the robot pose
+        and also log the shooter position pose */ 
     }
 
     @Override
