@@ -389,9 +389,13 @@ public class Constants {
     }
 
     public static class AutonK {
-        public static final Pose2d neutralPose = new Pose2d(Distance.ofRelativeUnits(6.924767017364502, Meter), 
-            Distance.ofRelativeUnits(2.251265048980713, Meter), new Rotation2d(Math.PI));
-        public static final Pose2d depotPose = new Pose2d(Distance.ofRelativeUnits(1.1576627492904663, Meter), 
-            Distance.ofRelativeUnits(5.958622932434082, Meter), new Rotation2d(0));
+        public static final Pose2d rightNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
+            Meters.of(2.251265048980713), new Rotation2d(0));
+        public static final Pose2d rightDepotPose = new Pose2d(Meters.of(1.1576627492904663), 
+            Meters.of(5.958622932434082), new Rotation2d(Math.PI));
+
+        public static final Pose2d leftNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
+            Meters.of(5.437880039215088), new Rotation2d(0));
+
     }
 }
