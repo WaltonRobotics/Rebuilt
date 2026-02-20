@@ -103,7 +103,8 @@ public class Constants {
         private static final MotorOutputConfigs kShooterLeaderOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
             .withNeutralMode(NeutralModeValue.Brake)
-            .withPeakForwardDutyCycle(0.1);
+            .withPeakForwardDutyCycle(0.1)
+            .withPeakReverseDutyCycle(0.1);
         private static final FeedbackConfigs kShooterFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kShooterGearing);
         public static final TalonFXConfiguration kShooterLeaderTalonFXConfiguration = new TalonFXConfiguration()
@@ -138,7 +139,8 @@ public class Constants {
         private static final MotorOutputConfigs kHoodOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
             .withNeutralMode(NeutralModeValue.Brake)
-            .withPeakForwardDutyCycle(0.1);
+            .withPeakForwardDutyCycle(0.1)
+            .withPeakReverseDutyCycle(0.1);
         private static final FeedbackConfigs kHoodFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kHoodGearing);
         public static final TalonFXConfiguration kHoodTalonFXConfiguration = new TalonFXConfiguration()
@@ -292,7 +294,8 @@ public class Constants {
             .withKD(0);
         public static final MotorOutputConfigs kIntakeArmMotorOutputConfigs = new MotorOutputConfigs()
             .withNeutralMode(NeutralModeValue.Brake)
-            .withPeakForwardDutyCycle(0.1);
+            .withPeakForwardDutyCycle(0.1)
+            .withPeakReverseDutyCycle(0.1);
         private static final MotionMagicConfigs kIntakeArmMotionMagicConfigs = new MotionMagicConfigs()
             .withMotionMagicCruiseVelocity(20)
             .withMotionMagicAcceleration(100)
@@ -321,7 +324,8 @@ public class Constants {
         public static final MotorOutputConfigs kIntakeRollersMotorOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.Clockwise_Positive) // TODO: CW or CCW?
             .withNeutralMode(NeutralModeValue.Brake)
-            .withPeakForwardDutyCycle(0.1);
+            .withPeakForwardDutyCycle(0.1)
+            .withPeakReverseDutyCycle(0.1);
         public static final FeedbackConfigs kIntakeRollersFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(1 / kIntakeRollersGearing);
         public static final TalonFXConfiguration kIntakeRollersConfiguration = new TalonFXConfiguration()
@@ -365,7 +369,8 @@ public class Constants {
         private static final MotorOutputConfigs kSpindexerMotorOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: CW or CCW?
             .withNeutralMode(NeutralModeValue.Brake)
-            .withPeakForwardDutyCycle(0.1);
+            .withPeakForwardDutyCycle(0.1)
+            .withPeakReverseDutyCycle(0.1);
         private static final FeedbackConfigs kSpindexerFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kSpindexerGearing);
         public static final TalonFXConfiguration kSpindexerTalonFXConfiguration = new TalonFXConfiguration()
@@ -389,7 +394,8 @@ public class Constants {
         private static final MotorOutputConfigs kTunnelMotorOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: CW or CCW?
             .withNeutralMode(NeutralModeValue.Brake)
-            .withPeakForwardDutyCycle(0.1);
+            .withPeakForwardDutyCycle(0.1)
+            .withPeakReverseDutyCycle(0.1);
         private static final FeedbackConfigs kTunnelFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kTunnelGearing);
         public static final TalonFXConfiguration kTunnelTalonFXConfiguration = new TalonFXConfiguration()
