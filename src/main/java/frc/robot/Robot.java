@@ -408,6 +408,16 @@ public class Robot extends TimedRobot {
     private void configureTestingDashboard() {
         /* INITIALIZE DASHBOARD */
         TestingDashboard.initialize();
+
+        TestingDashboard.trg_letShooterVelocityRPSChange.onTrue(m_shooter.setShooterVelocityCmd(TestingDashboard.sub_shooterVelocityRPS));
+        TestingDashboard.trg_letTurretPositionRotsChange.onTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
+        TestingDashboard.trg_letHoodPositionDegsChange.onTrue(m_shooter.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
+
+        TestingDashboard.trg_letSpindexerVelocityRPSChange.onTrue(m_indexer.setSpindexerVelocityCmd(TestingDashboard.sub_spindexerVelocityRPS));
+        TestingDashboard.trg_letTunnelVelocityRPSChange.onTrue(m_indexer.setTunnelVelocityCmd(TestingDashboard.sub_tunnelVelocityRPS));
+
+        TestingDashboard.trg_letIntakeArmPositionRotsChange.onTrue(m_intake.setIntakeArmPos(TestingDashboard.sub_intakeArmPositionRots));
+        TestingDashboard.trg_letIntakeRollersVelocityRPSChange.onTrue(m_intake.setIntakeRollersSpeed(TestingDashboard.sub_intakeRollersVelocityRPS));
     }
 
     /* PERIODICS */
