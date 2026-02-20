@@ -20,20 +20,14 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.WaltLogger.DoubleLogger;
-
-<<<<<<< restructure-superstructure-and-robot-code
-import frc.util.MotorSim;
-=======
-import frc.robot.Constants.IntakeK;
 import frc.util.WaltMotorSim;
->>>>>>> main
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
     /* CLASS VARIABLES */
     //---MOTORS + CONTROL REQUESTS
-    private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID);
-    private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID);
+    private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID); //x44Foc
+    private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID); //x44Foc
 
     private MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0).withEnableFOC(true);
     private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
@@ -41,7 +35,7 @@ public class Intake extends SubsystemBase {
     /* SIM OBJECTS */
     private final DCMotorSim m_intakeArmSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX60Foc(1),
+            DCMotor.getKrakenX44Foc(1),
             kIntakeArmMOI,
             kIntakeArmGearing
         ),
