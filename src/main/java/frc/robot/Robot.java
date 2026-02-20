@@ -6,6 +6,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.RobotK.*;
+import static frc.robot.Constants.ShooterK.kRobotToTurret;
 
 import java.util.HashMap;
 import java.util.Optional;
@@ -611,7 +612,7 @@ public class Robot extends TimedRobot {
             new Pose3d(
                 m_drivetrain.getState().Pose
             ).plus(
-                kTurretTransform
+                kRobotToTurret
             ).plus(
                 new Transform3d(
                     new Translation3d(), new Rotation3d(
