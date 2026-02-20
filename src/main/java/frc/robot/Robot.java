@@ -261,7 +261,7 @@ public class Robot extends TimedRobot {
             m_superstructure.stopPassing()
         );
         trg_emergencyBarf.onTrue(
-            m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)
+            m_superstructure.activateOuttake(ShooterK.kShooterBarfRPS)
         ).onFalse(
             m_superstructure.deactivateOuttake()
         );
@@ -371,7 +371,7 @@ public class Robot extends TimedRobot {
         );
         trg_emergencyBarf.onTrue(
             Commands.parallel(
-                m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS),
+                m_superstructure.activateOuttake(ShooterK.kShooterBarfRPS),
                 m_visualSim.setShooterVelocity(),
                 m_visualSim.setSpindexerVelocity(),
                 m_visualSim.setTunnelVelocity()
