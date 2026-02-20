@@ -12,7 +12,6 @@ import edu.wpi.first.math.geometry.struct.*;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.util.datalog.*;
 import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 
 public class WaltLogger {

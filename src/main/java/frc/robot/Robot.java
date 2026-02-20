@@ -20,6 +20,10 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -43,7 +47,6 @@ import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
-import frc.robot.subsystems.Intake.IntakeRollersVelocity;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
@@ -52,6 +55,7 @@ import frc.util.WaltVisualSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.Pose3dLogger;
 
 public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
@@ -116,7 +120,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_swerveToObject = m_driver.x();
 
     private Trigger trg_activateIntake = m_manipulator.a().and(trg_manipOverride.negate());
-    private Trigger trg_prepIntake = m_manipulator.x().and(trg_manipOverride.negate());
+    private Trigger trg_safeIntake = m_manipulator.x().and(trg_manipOverride.negate());
     private Trigger trg_retractIntake = m_manipulator.y().and(trg_manipOverride.negate());
 
     private Trigger trg_shoot = m_driver.rightTrigger().and(trg_driverOverride.negate());
@@ -134,9 +138,9 @@ public class Robot extends TimedRobot {
     //---OVERRIDE TRIGGERS
     private Trigger trg_maxShooterOverride = trg_manipOverride.and(m_manipulator.povLeft());
 
-    private Trigger trg_turret180Override = trg_manipOverride.and(m_manipulator.povRight());
+    private Trigger trg_turretOverride = trg_manipOverride.and(m_manipulator.povRight());
 
-    private Trigger trg_hood30Override = trg_manipOverride.and(m_manipulator.povUp());
+    private Trigger trg_hoodOverride = trg_manipOverride.and(m_manipulator.povUp());
 
     private Trigger trg_startSpindexerOverride = trg_manipOverride.and(m_manipulator.rightBumper());
 
@@ -155,6 +159,9 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_povRight = WaltLogger.logBoolean(kLogTab, "Pov Right");
     private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
     private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
+
+    // for testing only
+    private final Pose3dLogger log_shooterDirection = WaltLogger.logPose3d(kLogTab, "Shooter Direction");
 
     // log and replay timestamp and joystick data
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -282,16 +289,21 @@ public class Robot extends TimedRobot {
         /* CUSTOM BINDS */
 
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
-        trg_swerveToObject.whileTrue(m_drivetrain.swerveToObject());
+        trg_swerveToObject.whileTrue(
+            m_drivetrain.swerveToObject()
+        );
 
-        // Test sequences
-        trg_activateIntake.onTrue(m_superstructure.activateIntake());
-        trg_prepIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.SAFE));
-        trg_retractIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED));
-
-        trg_shoot.and(trg_pass.negate()).onTrue(m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)).onFalse(m_superstructure.deactivateOuttake());
-        trg_shoot.and(trg_pass).onTrue(m_superstructure.startPassing()).onFalse(m_superstructure.stopPassing());
-        trg_emergencyBarf.onTrue(m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)).onFalse(m_superstructure.deactivateOuttake());
+        //---NORMAL SEQUENCES
+        //Intake
+        trg_activateIntake.onTrue(
+            m_superstructure.activateIntake()
+        );
+        trg_safeIntake.onTrue(
+            m_superstructure.deactivateIntake(IntakeArmPosition.SAFE)
+        );
+        trg_retractIntake.onTrue(
+            m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
+        );
 
         trg_simShoot.whileTrue(
             Commands.repeatingSequence(
@@ -323,77 +335,162 @@ public class Robot extends TimedRobot {
 
         // Override commands
         trg_maxShooterOverride.onTrue(m_superstructure.maxShooter()).onFalse(m_superstructure.stopShooter());
+        //Shooting
+        trg_shoot.and(trg_pass.negate()).onTrue(
+            m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)
+        ).onFalse(
+            m_superstructure.deactivateOuttake()
+        );
+        trg_shoot.and(trg_pass).onTrue(
+            m_superstructure.startPassing()
+        ).onFalse(
+            m_superstructure.stopPassing()
+        );
+        trg_emergencyBarf.onTrue(
+            m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)
+        ).onFalse(
+            m_superstructure.deactivateOuttake()
+        );
 
-        trg_turret180Override.onTrue(m_superstructure.turretTo(Degrees.of(180))).onFalse(m_superstructure.turretTo(Degrees.of(0)));
+        //---OVERRIDE COMMANDS
+        trg_maxShooterOverride.onTrue(
+            m_superstructure.maxShooter()
+        ).onFalse(
+            m_superstructure.stopShooter()
+        );
 
-        trg_hood30Override.onTrue(m_superstructure.hoodTo(Degrees.of(30))).onFalse(m_superstructure.hoodTo(Degrees.of(0)));
+        trg_startSpindexerOverride.onTrue(
+            m_superstructure.startSpindexer()
+        ).onFalse(
+            m_superstructure.stopSpindexer()
+        );
 
-        trg_startSpindexerOverride.onTrue(m_superstructure.startSpindexer()).onFalse(m_superstructure.stopSpindexer());
+        trg_startTunnelOverride.onTrue(
+            m_superstructure.startTunnel()
+        ).onFalse(
+            m_superstructure.stopTunnel()
+        );
 
-        trg_startTunnelOverride.onTrue(m_superstructure.startTunnel()).onFalse(m_superstructure.stopTunnel());
+        trg_maxRollersOverride.onTrue(
+            m_superstructure.startIntakeRollers()
+        ).onFalse(
+            m_superstructure.stopIntakeRollers()
+        );
 
-        trg_maxRollersOverride.onTrue(m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.MAX)).onFalse(m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.STOP));
+        trg_deployIntakeOverride.onTrue(
+            m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)
+        ).onFalse(
+            m_superstructure.intakeTo(IntakeArmPosition.SAFE)
+        );
+        trg_intakeUpOverride.onTrue(
+            m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
+        );
 
-        trg_deployIntakeOverride.onTrue(m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)).onFalse(m_superstructure.intakeTo(IntakeArmPosition.SAFE));
-        trg_intakeUpOverride.onTrue(m_superstructure.intakeTo(IntakeArmPosition.RETRACTED));
+        // TODO: add shooter overrides for drivet but waiting for sohan's calculate method
     }
 
     private void configureTestBindings() {
-        // Test sequences
+        /* GENERATED SWERVE BINDS */
+        // Note that X is defined as forward according to WPILib convention,
+        // and Y is defined as to the left according to WPILib convention.
+        m_drivetrain.setDefaultCommand(
+            // Drivetrain will execute this command periodically
+            m_drivetrain.applyRequest(() ->
+                drive.withVelocityX(-m_manipulator.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-m_manipulator.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-m_manipulator.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+            )
+        );
+
+        // Idle while the robot is disabled. This ensures the configured
+        // neutral mode is applied to the drive motors while disabled.
+        final var idle = new SwerveRequest.Idle();
+        RobotModeTriggers.disabled().whileTrue(
+            m_drivetrain.applyRequest(() -> idle).ignoringDisable(true)
+        );
+
+        // Reset the field-centric heading on left bumper press.
+        m_manipulator.leftBumper().and(trg_manipOverride.negate()).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
+
+        m_drivetrain.registerTelemetry(logger::telemeterize);
+
+        //---TEST SEQUENCES
         trg_activateIntake.onTrue(
             Commands.parallel(
                 m_superstructure.activateIntake(),
-                m_visualSim.setIntakeArmPosition()
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity(),
+                m_visualSim.setSpindexerVelocity()
             )
         );
-        trg_prepIntake.onTrue(
+        trg_safeIntake.onTrue(
             Commands.parallel(
                 m_superstructure.deactivateIntake(IntakeArmPosition.SAFE),
-                m_visualSim.setIntakeArmPosition()
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity(),
+                m_visualSim.setSpindexerVelocity()
             )
         );
         trg_retractIntake.onTrue(
             Commands.parallel(    
                 m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED),
-                m_visualSim.setIntakeArmPosition()
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity(),
+                m_visualSim.setSpindexerVelocity()
             )
         );
 
         trg_shoot.and(trg_pass.negate()).onTrue(
             Commands.parallel(
                 m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity()
             )
         ).onFalse(
             Commands.parallel(
                 m_superstructure.deactivateOuttake(),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity()
             )
         );
         trg_emergencyBarf.onTrue(
             Commands.parallel(
                 m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity()
             )
         ).onFalse(
             Commands.parallel(
                 m_superstructure.deactivateOuttake(),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity()
             )
         );
         trg_shoot.and(trg_pass).onTrue(
             Commands.parallel(
                 m_superstructure.startPassing(),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity(),
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity()
             )
         ).onFalse(
             Commands.parallel(
                 m_superstructure.stopPassing(),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity(),
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity()
             )
         );
 
-        // Override commands
+        //---TEST COMMANDS (for singular subsystem testing)
         trg_maxShooterOverride.onTrue(
             Commands.parallel(
                 m_superstructure.maxShooter(),
@@ -406,27 +503,27 @@ public class Robot extends TimedRobot {
             )
         );
 
-        trg_turret180Override.onTrue(
+        trg_turretOverride.onTrue(
             Commands.parallel(
-                m_superstructure.turretTo(Degrees.of(180)),
-                m_visualSim.setTurretPosition()
+                m_superstructure.turretTo(Degrees.of(180))
+                // m_visualSim.setTurretPosition()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.turretTo(Degrees.of(0)),
-                m_visualSim.setTurretPosition()
+                m_superstructure.turretTo(Degrees.of(0))
+                // m_visualSim.setTurretPosition()
             )
         );
 
-        trg_hood30Override.onTrue(
+        trg_hoodOverride.onTrue(
             Commands.parallel(
-                m_superstructure.hoodTo(Degrees.of(30)),
-                m_visualSim.setHoodPosition()
+                m_superstructure.hoodTo(Degrees.of(30))
+                // m_visualSim.setHoodPosition()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.hoodTo(Degrees.of(0)),
-                m_visualSim.setHoodPosition()
+                m_superstructure.hoodTo(Degrees.of(0))
+                // m_visualSim.setHoodPosition()
             )
         );
 
@@ -456,12 +553,12 @@ public class Robot extends TimedRobot {
 
         trg_maxRollersOverride.onTrue(
             Commands.parallel(
-                m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.MAX),
+                m_superstructure.startIntakeRollers(),
                 m_visualSim.setIntakeRollerVelocity()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.STOP),
+                m_superstructure.stopIntakeRollers(),
                 m_visualSim.setIntakeRollerVelocity()
             )
         );
@@ -510,6 +607,24 @@ public class Robot extends TimedRobot {
         log_povLeft.accept(m_driver.povLeft());
         log_povRight.accept(m_driver.povRight());
         log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
+        log_shooterDirection.accept(
+            new Pose3d(
+                m_drivetrain.getState().Pose
+            ).plus(
+                kTurretTransform
+            ).plus(
+                new Transform3d(
+                    new Translation3d(), new Rotation3d(
+                        Rotations.of(0),
+                        Rotations.of(-m_shooter.getHoodSimEncoder().getAngularPositionRotations()),
+                        m_shooter.getTurret().getPosition().getValue()
+                    )
+                )
+            )
+        );
+
+        /* for the mechanism2d in 3d, drag all 3 mechanisms2ds onto the robot pose
+        and also log the shooter position pose */ 
     }
 
     @Override
