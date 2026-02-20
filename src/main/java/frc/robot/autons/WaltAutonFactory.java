@@ -15,18 +15,41 @@ public class WaltAutonFactory {
     private final AutoFactory m_autoFactory;
     private final Swerve m_drivetrain;
 
-    private Pose2d m_postPickupNeutral;     //desired pose to go to after fuel pickup
-    private Pose2d m_postPickupDepot;    //desired pose to go to after depot pickup
+    //desired pose to go to after right fuel pickup
+    private Pose2d m_postRightPickupNeutral;
+    //desired pose to go to after left fuel pickup
+    private Pose2d m_postLeftPickupNeutral;
+
+    //desired pose to go to after right depot pickup
+    //note: this name might change if a left depot path is created
+    private Pose2d m_postPickupDepot;
+
+    private String[] neutralCycle;
+    private AutonSide m_side;
+
+    public void setAutonSide(AutonSide side) {
+        if (m_side != side) {
+            m_side = side;
+
+            neutralCycle = m_side.equals(AutonSide.RIGHT)
+                                        ? new String[]{"RightToNeutral", "RightNeutralToShoot", "RightShootToNeutral"}
+                                        : new String[]{"LeftToNeutral", "LeftNeutralToShoot", "LeftShootToNeutral"};
+        }
+    }
+
+    public void setAlliance(boolean isRed) {
+        m_postRightPickupNeutral = isRed ? AllianceFlipUtil.flip(AutonK.rightNeutralPose) : AutonK.rightNeutralPose;
+        m_postPickupDepot = isRed ? AllianceFlipUtil.flip(AutonK.rightDepotPose) : AutonK.rightDepotPose;
+
+        m_postLeftPickupNeutral = isRed ? AllianceFlipUtil.flip(AutonK.leftNeutralPose) : AutonK.leftNeutralPose;
+    }
 
     /* CONSTRUCTOR */
     public WaltAutonFactory(AutoFactory autoFactory, Swerve drivetrain) {
         m_autoFactory = autoFactory;
         m_drivetrain = drivetrain;  
-    }
 
-    public void setAlliance(boolean isRed) {
-        m_postPickupNeutral = isRed ? AllianceFlipUtil.flip(AutonK.neutralPose) : AutonK.neutralPose;
-        m_postPickupDepot = isRed ? AllianceFlipUtil.flip(AutonK.depotPose) : AutonK.depotPose;
+        setAutonSide(AutonSide.RIGHT);
     }
 
     /* AUTON COMMANDS */
@@ -38,12 +61,25 @@ public class WaltAutonFactory {
         );
     }
 
-    public Command pickupCmd(boolean isNeutral) {
-        Pose2d postPickupPose = isNeutral ? m_postPickupNeutral : m_postPickupDepot;
+    public Command pickupCmd(PickupLocation location) {
+        Pose2d postPickupPose;
+
+        switch (location) {
+            case LEFT:
+                postPickupPose = m_postLeftPickupNeutral;
+                break;
+            case RIGHT:
+                postPickupPose = m_postRightPickupNeutral;
+                break;
+            case DEPOT:
+                postPickupPose = m_postPickupDepot;
+                break;
+            default:
+                postPickupPose = m_postRightPickupNeutral;
+                break;
+        }
 
         return Commands.sequence(
-            Commands.print("-------------------------POST: " + postPickupPose.toString() + "------------------------------"),
-            Commands.print("------------------------------NEUTRAL: " + m_postPickupNeutral.toString() + "--------------------------------"),
             m_drivetrain.swerveToObject().withTimeout(1),
             m_drivetrain.toPose(postPickupPose).withTimeout(1)
         );
@@ -58,9 +94,9 @@ public class WaltAutonFactory {
     private Command createAutonSequence(int pickupTimes) {
         if (pickupTimes == 1) { // Base case when pickupTimes = 1 in the recursive loop
             return Commands.sequence(
-                runTrajCmd("ToNeutral"),
-                pickupCmd(true),
-                runTrajCmd("NeutralToShoot")
+                runTrajCmd(neutralCycle[0]), //right to neutral
+                pickupCmd(m_side.equals(AutonSide.RIGHT) ? PickupLocation.RIGHT : PickupLocation.LEFT),
+                runTrajCmd(neutralCycle[1]) //neutral to shoot
             );
         }
 
@@ -73,64 +109,105 @@ public class WaltAutonFactory {
         commandSequence.add(createAutonSequence(pickupTimes - 1)); // Loop back recursively until it reaches the base case
 
         if (pickupTimes != 2) { // Code that is needed for pickupTimes >= 3 but not == 2
-            commandSequence.add(runTrajCmd("NeutralToShoot"));
+            commandSequence.add(runTrajCmd(neutralCycle[1])); //neutral to shoot
         }
 
-        commandSequence.add(runTrajCmd("ShootToNeutral")); // Code required for both pickupTimes == 2 and != 2 
-        commandSequence.add(pickupCmd(true));
+        // Code required for both pickupTimes == 2 and != 2 
+        commandSequence.add(runTrajCmd(neutralCycle[2])); //shoot to neutral
+        commandSequence.add(pickupCmd(m_side.equals(AutonSide.RIGHT) ? PickupLocation.RIGHT : PickupLocation.LEFT));
+
 
         return Commands.sequence(commandSequence.toArray(new Command[commandSequence.size()]));// Return final command
     }
 
     //---AUTON OPTIONS
     /**
-     * pickup and shoot one time
+     * right pickup and shoot one time
      */
-    public Command oneNeutralPickup() {
+    public Command oneRightNeutralPickup() {
+        setAutonSide(AutonSide.RIGHT);
         return createAutonSequence(1);
     }
 
     /**
-     * pick up two times and shoot once
+     * right pick up two times and shoot once
      */
-    public Command twoNeutralPickup() {
+    public Command twoRightNeutralPickup() {
+        setAutonSide(AutonSide.RIGHT);
         return createAutonSequence(2);
     }
 
     /**
-     * pick up three times and shoot twice
+     * right pick up three times and shoot twice
      */
-    public Command threeNeutralPickup() {
+    public Command threeRightNeutralPickup() {
+        setAutonSide(AutonSide.RIGHT);
         return createAutonSequence(3);
     }
 
     /**
-     * pick up four times and shoot thrice
+     * right pick up four times and shoot thrice
      */
-    public Command fourNeutralPickup() {
+    public Command fourRightNeutralPickup() {
+        setAutonSide(AutonSide.RIGHT);
         return createAutonSequence(4);
+    }
+
+    /**
+     * left pickup and shoot one time
+     */
+    public Command oneLeftNeutralPickup() {
+        setAutonSide(AutonSide.LEFT);
+        return createAutonSequence(1);
+    }
+
+    /**
+     * left pick up two times and shoot once
+     */
+    public Command twoLeftNeutralPickup() {
+        setAutonSide(AutonSide.LEFT);
+        return createAutonSequence(2);
+    }
+
+    /**
+     * left pick up three times and shoot twice
+     */
+    public Command threeLeftNeutralPickup() {
+        setAutonSide(AutonSide.LEFT);
+        return createAutonSequence(3);
     }
 
     /**
      * goes to depot once and shoots
      */
-    public Command oneDepotPickup() {
+    public Command oneRightDepotPickup() {
         return Commands.sequence(
-            runTrajCmd("ToDepot"),
+            runTrajCmd("RightToDepot"),
             
-            pickupCmd(false),
+            pickupCmd(PickupLocation.DEPOT),
 
-            runTrajCmd("DepotToShoot")
+            runTrajCmd("RightDepotToShoot")
         );
     }
 
     /**
      * goes to outpost once, shoots, then goes to neutral to pickup
      */
-    public Command oneOutpostPickup() {
+    public Command oneRightOutpostPickup() {
         return Commands.sequence(
-            runTrajCmd("ToOutpost"),
-            runTrajCmd("OutpostToNeutral")
+            runTrajCmd("RightToOutpost"),
+            runTrajCmd("RightOutpostToNeutral")
         );
     }
+
+    private enum PickupLocation {
+        LEFT,
+        RIGHT,
+        DEPOT
+    };
+
+    private enum AutonSide {
+        LEFT,
+        RIGHT
+    };
 }

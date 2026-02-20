@@ -185,16 +185,21 @@ public class WaltDashboard {
     }
 
     public class AutonChooser {
-        /* CLASS VARIABLES */
         public static SendableChooser<String> m_chooser = new SendableChooser<>();
-        public static NetworkTable nte_autonChooser = nte_inst.getTable("AutonChooser");
 
+        /* CLASS VARIABLES */
         //---AUTON PATH NAMES
-        public static final String oneRightNeutralPickup = "oneNeutralPickup";
-        public static final String twoRightNeutralPickup = "twoNeutralPickup";
-        public static final String threeRightNeutralPickup = "threeNeutralPickup";
+        public static final String oneRightNeutralPickup = "oneRightNeutralPickup";
+        public static final String twoRightNeutralPickup = "twoRightNeutralPickup";
+        public static final String threeRightNeutralPickup = "threeRightNeutralPickup";
+        public static final String oneLeftNeutralPickup = "oneLeftNeutralPickup";
+        public static final String twoLeftNeutralPickup = "twoLeftNeutralPickup";
+        public static final String threeLeftNeutralPickup = "threeLeftNeutralPickup";
 
         /* TOPICS */
+        public static NetworkTableInstance nte_inst = NetworkTableInstance.getDefault();
+        public static NetworkTable nte_autonChooser = nte_inst.getTable("AutonChooser");
+
         public static StringTopic ST_autonName = nte_inst.getStringTopic("/AutonChooser/autonName");
         public static BooleanTopic BT_autonMade = nte_inst.getBooleanTopic("/AutonChooser/autonMade");
         public static BooleanTopic BT_makeAuton = nte_inst.getBooleanTopic("/AutonChooser/makeAuton");
@@ -223,7 +228,10 @@ public class WaltDashboard {
 
             m_chooser.setDefaultOption("One Right Neutral Pickup", oneRightNeutralPickup);
             m_chooser.addOption("Two Right Neutral Pickup", twoRightNeutralPickup);
-            m_chooser.addOption("Three Right Neutral Pickup ", threeRightNeutralPickup);
+            m_chooser.addOption("Three Right Neutral Pickup", threeRightNeutralPickup);
+            m_chooser.addOption("One Left Neutral Pickup", oneLeftNeutralPickup);
+            m_chooser.addOption("Two Left Neutral Pickup", twoLeftNeutralPickup);
+            m_chooser.addOption("Three Left Neutral Pickup", threeLeftNeutralPickup);
 
             SmartDashboard.putData(m_chooser);
         }
