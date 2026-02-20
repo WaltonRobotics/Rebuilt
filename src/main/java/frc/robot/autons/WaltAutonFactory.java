@@ -25,8 +25,8 @@ public class WaltAutonFactory {
     }
 
     public void setAlliance(boolean isRed) {
-        m_postPickupNeutral = isRed ? AllianceFlipUtil.flip(AutonK.neutralPose) : AutonK.neutralPose;
-        m_postPickupDepot = isRed ? AllianceFlipUtil.flip(AutonK.depotPose) : AutonK.depotPose;
+        m_postPickupNeutral = isRed ? AllianceFlipUtil.apply(AutonK.neutralPose) : AutonK.neutralPose;
+        m_postPickupDepot = isRed ? AllianceFlipUtil.apply(AutonK.depotPose) : AutonK.depotPose;
     }
 
     /* AUTON COMMANDS */
