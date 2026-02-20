@@ -18,7 +18,7 @@ import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 
-public class VisualSim {
+public class WaltVisualSim {
     private final Intake m_intake;
     private final Indexer m_indexer;
     private final Shooter m_shooter;
@@ -37,7 +37,7 @@ public class VisualSim {
     // private final Rotation2d m_hoodStartAngle;
     // private final Rotation2d m_turretStartAngle;
 
-    public VisualSim(Intake intake, Indexer indexer, Shooter shooter) {
+    public WaltVisualSim(Intake intake, Indexer indexer, Shooter shooter) {
         m_intake = intake;
         m_indexer = indexer;
         m_shooter = shooter;
