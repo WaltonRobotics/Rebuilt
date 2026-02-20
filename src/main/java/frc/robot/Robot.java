@@ -410,15 +410,22 @@ public class Robot extends TimedRobot {
         TestingDashboard.initialize();
 
         /* ELASTIC WIDGET BINDINGS */
-        TestingDashboard.trg_letShooterVelocityRPSChange.onTrue(m_shooter.setShooterVelocityCmd(TestingDashboard.sub_shooterVelocityRPS));
-        TestingDashboard.trg_letTurretPositionRotsChange.onTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
-        TestingDashboard.trg_letHoodPositionDegsChange.onTrue(m_shooter.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
+        TestingDashboard.trg_letShooterVelocityRPSChange
+            .whileTrue(m_shooter.setShooterVelocityCmd(TestingDashboard.sub_shooterVelocityRPS));
+        TestingDashboard.trg_letTurretPositionRotsChange
+            .whileTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
+        TestingDashboard.trg_letHoodPositionDegsChange
+            .whileTrue(m_shooter.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
 
-        TestingDashboard.trg_letSpindexerVelocityRPSChange.onTrue(m_indexer.setSpindexerVelocityCmd(TestingDashboard.sub_spindexerVelocityRPS));
-        TestingDashboard.trg_letTunnelVelocityRPSChange.onTrue(m_indexer.setTunnelVelocityCmd(TestingDashboard.sub_tunnelVelocityRPS));
+        TestingDashboard.trg_letSpindexerVelocityRPSChange
+            .whileTrue(m_indexer.setSpindexerVelocityCmd(TestingDashboard.sub_spindexerVelocityRPS));
+        TestingDashboard.trg_letTunnelVelocityRPSChange
+            .whileTrue(m_indexer.setTunnelVelocityCmd(TestingDashboard.sub_tunnelVelocityRPS));
 
-        TestingDashboard.trg_letIntakeArmPositionRotsChange.onTrue(m_intake.setIntakeArmPos(TestingDashboard.sub_intakeArmPositionRots));
-        TestingDashboard.trg_letIntakeRollersVelocityRPSChange.onTrue(m_intake.setIntakeRollersSpeed(TestingDashboard.sub_intakeRollersVelocityRPS));
+        TestingDashboard.trg_letIntakeArmPositionRotsChange
+            .whileTrue(m_intake.setIntakeArmPos(TestingDashboard.sub_intakeArmPositionRots));
+        TestingDashboard.trg_letIntakeRollersVelocityRPSChange
+            .whileTrue(m_intake.setIntakeRollersSpeed(TestingDashboard.sub_intakeRollersVelocityRPS));
     }
 
     /* PERIODICS */
