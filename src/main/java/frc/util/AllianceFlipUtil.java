@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 /** Utility functions for flipping from the blue to red alliance. */
 public class AllianceFlipUtil {
-
   /**
    * Flips the x-coordinate from blue alliance to red alliance.
    * Calculates the new x-coordinate when flipping from the blue side to the red side on a field with a given length.

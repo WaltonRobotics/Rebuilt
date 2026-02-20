@@ -20,7 +20,6 @@ import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 
-
 public class VisualSim {
     private final Intake m_intake;
     private final Indexer m_indexer;
@@ -39,7 +38,6 @@ public class VisualSim {
     private final Rotation2d m_intakeArmStartAngle;
     private final Rotation2d m_hoodStartAngle;
     private final Rotation2d m_turretStartAngle;
-    
     public VisualSim(Intake intake, Indexer indexer, Shooter shooter) {
         m_intake = intake;
         m_indexer = indexer;
@@ -88,6 +86,7 @@ public class VisualSim {
         SmartDashboard.putData("IndexerMech2d", indexerMech);
         SmartDashboard.putData("ShooterMech2d", shooterMech);
     } 
+
     /**
      * Sets the length of the simPart based on the velocity
      * @param simPart A part of the simulated robot
@@ -102,7 +101,7 @@ public class VisualSim {
         );
     }
 
-    //--INTAKE
+    //---INTAKE
     /**
      * Sets the angle of the intake arm sim object.
      * @return A command that sets the angle of the intake arm to the current position plus the start angle.
@@ -123,7 +122,7 @@ public class VisualSim {
         return setVelocity(m_intakeRollerVelocity, m_intake.getIntakeRollers());
     }
 
-    //--INDEXER
+    //---INDEXER
     /**
      * Sets the spindexer sim object velocity.
      * @return A call to setVelocity that takes spindexerVelocity and the spindexer.
@@ -140,7 +139,7 @@ public class VisualSim {
         return setVelocity(m_tunnelVelocity, m_indexer.getTunnel());
     }
 
-    //--SHOOTER
+    //---SHOOTER
     /**
      * Sets the shooter sim object velocity.
      * @return A call to setVelocity that takes shooterVelocity and the shooter.
