@@ -17,8 +17,8 @@ import static edu.wpi.first.units.Units.Seconds;
 import static frc.robot.Constants.ShooterK.kDistanceAboveFunnel;
 import static frc.robot.Constants.ShooterK.kFlywheelRadius;
 import static frc.robot.Constants.ShooterK.kRobotToTurret;
-import static frc.robot.Constants.ShooterK.kTurretMaxAngle;
-import static frc.robot.Constants.ShooterK.kTurretMinAngle;
+import static frc.robot.Constants.ShooterK.kTurretMaxRots;
+import static frc.robot.Constants.ShooterK.kTurretMinRots;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -145,12 +145,12 @@ public class TurretCalculator {
         Translation2d direction = target.toTranslation2d().minus(turretTranslation);
 
         double angle = MathUtil.inputModulus(
-                direction.getAngle().minus(robot.getRotation()).getRotations(), -0.75, 0.75);
+                direction.getAngle().minus(robot.getRotation()).getRotations(), kTurretMinRots.magnitude(), kTurretMaxRots.magnitude());
         double current = currentAngle.in(Rotations);
 
-        if (current > 0 && angle + 1 <= kTurretMaxAngle.in(Rotations))
+        if (current > 0 && angle + 1 <= kTurretMaxRots.in(Rotations))
             angle += 1;
-        if (current < 0 && angle - 1 >= kTurretMinAngle.in(Rotations))
+        if (current < 0 && angle - 1 >= kTurretMinRots.in(Rotations))
             angle -= 1;
 
         return Rotations.of(angle);
