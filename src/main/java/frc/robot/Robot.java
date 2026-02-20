@@ -44,7 +44,6 @@ import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
-import frc.robot.subsystems.Intake.IntakeRollersVelocity;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
@@ -117,7 +116,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_swerveToObject = m_driver.x();
 
     private Trigger trg_activateIntake = m_manipulator.a().and(trg_manipOverride.negate());
-    private Trigger trg_prepIntake = m_manipulator.x().and(trg_manipOverride.negate());
+    private Trigger trg_safeIntake = m_manipulator.x().and(trg_manipOverride.negate());
     private Trigger trg_retractIntake = m_manipulator.y().and(trg_manipOverride.negate());
 
     private Trigger trg_shoot = m_driver.rightTrigger().and(trg_manipOverride.negate());
@@ -128,9 +127,9 @@ public class Robot extends TimedRobot {
     //---OVERRIDE TRIGGERS
     private Trigger trg_maxShooterOverride = trg_manipOverride.and(m_manipulator.povLeft());
 
-    private Trigger trg_turret180Override = trg_manipOverride.and(m_manipulator.povRight());
+    private Trigger trg_turretOverride = trg_manipOverride.and(m_manipulator.povRight());
 
-    private Trigger trg_hood30Override = trg_manipOverride.and(m_manipulator.povUp());
+    private Trigger trg_hoodOverride = trg_manipOverride.and(m_manipulator.povUp());
 
     private Trigger trg_startSpindexerOverride = trg_manipOverride.and(m_manipulator.rightBumper());
 
@@ -157,8 +156,8 @@ public class Robot extends TimedRobot {
 
     /* CONSTRUCTOR */
     public Robot() {
-        configureBindings();
-        //configureTestBindings();    //this should be commented out during competition matches
+        //configureBindings();
+        configureTestBindings();    //this should be commented out during competition matches
     }
 
     /* COMMANDS */
@@ -227,90 +226,154 @@ public class Robot extends TimedRobot {
         /* CUSTOM BINDS */
 
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
-        trg_swerveToObject.whileTrue(m_drivetrain.swerveToObject());
+        trg_swerveToObject.whileTrue(
+            m_drivetrain.swerveToObject()
+        );
 
-        // Test sequences
-        trg_activateIntake.onTrue(m_superstructure.activateIntake());
-        trg_prepIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.SAFE));
-        trg_retractIntake.onTrue(m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED));
+        //---NORMAL SEQUENCES
+        //Intake
+        trg_activateIntake.onTrue(
+            m_superstructure.activateIntake()
+        );
+        trg_safeIntake.onTrue(
+            m_superstructure.deactivateIntake(IntakeArmPosition.SAFE)
+        );
+        trg_retractIntake.onTrue(
+            m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
+        );
 
-        trg_shoot.and(trg_pass.negate()).onTrue(m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)).onFalse(m_superstructure.deactivateOuttake());
-        trg_shoot.and(trg_pass).onTrue(m_superstructure.startPassing()).onFalse(m_superstructure.stopPassing());
-        trg_emergencyBarf.onTrue(m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)).onFalse(m_superstructure.deactivateOuttake());
+        //Shooting
+        trg_shoot.and(trg_pass.negate()).onTrue(
+            m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)
+        ).onFalse(
+            m_superstructure.deactivateOuttake()
+        );
+        trg_shoot.and(trg_pass).onTrue(
+            m_superstructure.startPassing()
+        ).onFalse(
+            m_superstructure.stopPassing()
+        );
+        trg_emergencyBarf.onTrue(
+            m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)
+        ).onFalse(
+            m_superstructure.deactivateOuttake()
+        );
 
-        // Override commands
-        trg_maxShooterOverride.onTrue(m_superstructure.maxShooter()).onFalse(m_superstructure.stopShooter());
+        //---OVERRIDE COMMANDS
+        trg_maxShooterOverride.onTrue(
+            m_superstructure.maxShooter()
+        ).onFalse(
+            m_superstructure.stopShooter()
+        );
 
-        trg_turret180Override.onTrue(m_superstructure.turretTo(Degrees.of(180))).onFalse(m_superstructure.turretTo(Degrees.of(0)));
+        trg_startSpindexerOverride.onTrue(
+            m_superstructure.startSpindexer()
+        ).onFalse(
+            m_superstructure.stopSpindexer()
+        );
 
-        trg_hood30Override.onTrue(m_superstructure.hoodTo(Degrees.of(30))).onFalse(m_superstructure.hoodTo(Degrees.of(0)));
+        trg_startTunnelOverride.onTrue(
+            m_superstructure.startTunnel()
+        ).onFalse(
+            m_superstructure.stopTunnel()
+        );
 
-        trg_startSpindexerOverride.onTrue(m_superstructure.startSpindexer()).onFalse(m_superstructure.stopSpindexer());
+        trg_maxRollersOverride.onTrue(
+            m_superstructure.startIntakeRollers()
+        ).onFalse(
+            m_superstructure.stopIntakeRollers()
+        );
 
-        trg_startTunnelOverride.onTrue(m_superstructure.startTunnel()).onFalse(m_superstructure.stopTunnel());
+        trg_deployIntakeOverride.onTrue(
+            m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)
+        ).onFalse(
+            m_superstructure.intakeTo(IntakeArmPosition.SAFE)
+        );
+        trg_intakeUpOverride.onTrue(
+            m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
+        );
 
-        trg_maxRollersOverride.onTrue(m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.MAX)).onFalse(m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.STOP));
-
-        trg_deployIntakeOverride.onTrue(m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)).onFalse(m_superstructure.intakeTo(IntakeArmPosition.SAFE));
-        trg_intakeUpOverride.onTrue(m_superstructure.intakeTo(IntakeArmPosition.RETRACTED));
+        // TODO: add shooter overrides for drivet but waiting for sohan's calculate method
     }
 
     private void configureTestBindings() {
-        // Test sequences
+        //---TEST SEQUENCES
         trg_activateIntake.onTrue(
             Commands.parallel(
                 m_superstructure.activateIntake(),
-                m_visualSim.setIntakeArmPosition()
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity(),
+                m_visualSim.setSpindexerVelocity()
             )
         );
-        trg_prepIntake.onTrue(
+        trg_safeIntake.onTrue(
             Commands.parallel(
                 m_superstructure.deactivateIntake(IntakeArmPosition.SAFE),
-                m_visualSim.setIntakeArmPosition()
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity(),
+                m_visualSim.setSpindexerVelocity()
             )
         );
         trg_retractIntake.onTrue(
             Commands.parallel(    
                 m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED),
-                m_visualSim.setIntakeArmPosition()
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity(),
+                m_visualSim.setSpindexerVelocity()
             )
         );
 
         trg_shoot.and(trg_pass.negate()).onTrue(
             Commands.parallel(
                 m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity()
             )
         ).onFalse(
             Commands.parallel(
                 m_superstructure.deactivateOuttake(),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity()
             )
         );
         trg_emergencyBarf.onTrue(
             Commands.parallel(
                 m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity()
             )
         ).onFalse(
             Commands.parallel(
                 m_superstructure.deactivateOuttake(),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity()
             )
         );
         trg_shoot.and(trg_pass).onTrue(
             Commands.parallel(
                 m_superstructure.startPassing(),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity(),
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity()
             )
         ).onFalse(
             Commands.parallel(
                 m_superstructure.stopPassing(),
-                m_visualSim.setShooterVelocity()
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity(),
+                m_visualSim.setIntakeArmPosition(),
+                m_visualSim.setIntakeRollerVelocity()
             )
         );
 
-        // Override commands
+        //---TEST COMMANDS (for singular subsystem testing)
         trg_maxShooterOverride.onTrue(
             Commands.parallel(
                 m_superstructure.maxShooter(),
@@ -323,7 +386,7 @@ public class Robot extends TimedRobot {
             )
         );
 
-        trg_turret180Override.onTrue(
+        trg_turretOverride.onTrue(
             Commands.parallel(
                 m_superstructure.turretTo(Degrees.of(180)),
                 m_visualSim.setTurretPosition()
@@ -335,7 +398,7 @@ public class Robot extends TimedRobot {
             )
         );
 
-        trg_hood30Override.onTrue(
+        trg_hoodOverride.onTrue(
             Commands.parallel(
                 m_superstructure.hoodTo(Degrees.of(30)),
                 m_visualSim.setHoodPosition()
@@ -373,12 +436,12 @@ public class Robot extends TimedRobot {
 
         trg_maxRollersOverride.onTrue(
             Commands.parallel(
-                m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.MAX),
+                m_superstructure.startIntakeRollers(),
                 m_visualSim.setIntakeRollerVelocity()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.setIntakeRollersSpeed(IntakeRollersVelocity.STOP),
+                m_superstructure.stopIntakeRollers(),
                 m_visualSim.setIntakeRollerVelocity()
             )
         );
