@@ -20,7 +20,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IndexerK.*;
 
 import frc.robot.Constants;
-import frc.util.MotorSim;
+import frc.util.WaltMotorSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
@@ -66,8 +66,8 @@ public class Indexer extends SubsystemBase {
 
     //TODO: Change orientation if necessary
     private void initSim() {
-        MotorSim.initSimFX(m_spindexer, ChassisReference.CounterClockwise_Positive, MotorType.KrakenX60);
-        MotorSim.initSimFX(m_tunnel, ChassisReference.CounterClockwise_Positive, MotorType.KrakenX60);
+        WaltMotorSim.initSimFX(m_spindexer, ChassisReference.CounterClockwise_Positive, MotorType.KrakenX60);
+        WaltMotorSim.initSimFX(m_tunnel, ChassisReference.CounterClockwise_Positive, MotorType.KrakenX60);
     }
 
     /* COMMANDS */
@@ -122,7 +122,7 @@ public class Indexer extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        MotorSim.updateSimFX(m_tunnel, m_tunnelSim);
-        MotorSim.updateSimFX(m_spindexer, m_spindexerSim);
+        WaltMotorSim.updateSimFX(m_tunnel, m_tunnelSim);
+        WaltMotorSim.updateSimFX(m_spindexer, m_spindexerSim);
     }
 }
