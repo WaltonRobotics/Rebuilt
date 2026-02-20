@@ -39,6 +39,19 @@
             }
           },
           {
+            "title": "makeAuton",
+            "x": 625.0,
+            "y": 375.0,
+            "width": 250.0,
+            "height": 125.0,
+            "type": "Toggle Button",
+            "properties": {
+              "topic": "/AutonChooser/makeAuton",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
             "title": "SendableChooser[0]",
             "x": 0.0,
             "y": 375.0,
@@ -50,16 +63,221 @@
               "period": 0.06,
               "sort_options": false
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "TestingDashboard",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "hoodPositionDegs",
+            "x": 0.0,
+            "y": 500.0,
+            "width": 375.0,
+            "height": 250.0,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/TestingDashboard/hoodPositionDegs",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 40.0,
+              "divisions": 5,
+              "update_continuously": true
+            }
           },
           {
-            "title": "makeAuton",
-            "x": 625.0,
-            "y": 375.0,
-            "width": 250.0,
-            "height": 125.0,
-            "type": "Toggle Button",
+            "title": "shooterVelocityRPS",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 375.0,
+            "height": 250.0,
+            "type": "Number Slider",
             "properties": {
-              "topic": "/AutonChooser/makeAuton",
+              "topic": "/TestingDashboard/shooterVelocityRPS",
+              "period": 0.033,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 86.775,
+              "divisions": 5,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "turretPositionRots",
+            "x": 0.0,
+            "y": 250.0,
+            "width": 375.0,
+            "height": 250.0,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/TestingDashboard/turretPositionRots",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": -1.5,
+              "max_value": 1.5,
+              "divisions": 7,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "letShooterVelocityRPSChange",
+            "x": 375.0,
+            "y": 0.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/TestingDashboard/letShooterVelocityRPSChange",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "letHoodPositionDegsChange",
+            "x": 375.0,
+            "y": 500.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/TestingDashboard/letHoodPositionDegsChange",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "intakeArmPositionRots",
+            "x": 500.0,
+            "y": 0.0,
+            "width": 375.0,
+            "height": 250.0,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/TestingDashboard/intakeArmPositionRots",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 0.243014,
+              "divisions": 5,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "letIntakeArmPositionRotsChange",
+            "x": 875.0,
+            "y": 0.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/TestingDashboard/letIntakeArmPositionRotsChange",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "intakeRollersVelocityRPS",
+            "x": 500.0,
+            "y": 250.0,
+            "width": 375.0,
+            "height": 250.0,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/TestingDashboard/intakeRollersVelocityRPS",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 307.0,
+              "divisions": 5,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "letIntakeRollersVelocityRPSChange",
+            "x": 875.0,
+            "y": 250.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/TestingDashboard/letIntakeRollersVelocityRPSChange",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "letSpindexerVelocityRPSChange",
+            "x": 875.0,
+            "y": 500.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/TestingDashboard/letSpindexerVelocityRPSChange",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "spindexerVelocityRPS",
+            "x": 500.0,
+            "y": 500.0,
+            "width": 375.0,
+            "height": 250.0,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/TestingDashboard/spindexerVelocityRPS",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 28.925,
+              "divisions": 5,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "tunnelVelocityRPS",
+            "x": 1000.0,
+            "y": 0.0,
+            "width": 375.0,
+            "height": 250.0,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/TestingDashboard/tunnelVelocityRPS",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 104.13,
+              "divisions": 5,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "letTunnelVelocityRPSChange",
+            "x": 1375.0,
+            "y": 0.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/TestingDashboard/letTunnelVelocityRPSChange",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "letTurretPositionRotsChange",
+            "x": 375.0,
+            "y": 250.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/TestingDashboard/letTurretPositionRotsChange",
               "period": 0.06,
               "data_type": "boolean"
             }
