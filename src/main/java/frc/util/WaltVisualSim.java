@@ -90,11 +90,15 @@ public class WaltVisualSim {
     } 
 
     private Command setVelocity(MechanismLigament2d simPart, TalonFX subsystemMotor, double divisor) {
-        return Commands.run(
-            () -> {
-               simPart.setLength(subsystemMotor.getVelocity().getValueAsDouble()/divisor);
-            }
-        );
+        if (divisor != 0) {
+            return Commands.run(
+                () -> {
+                    simPart.setLength(subsystemMotor.getVelocity().getValueAsDouble()/divisor);
+                }
+            );
+        } else {
+            return Commands.none();
+        }
     }
 
     //---INTAKE
