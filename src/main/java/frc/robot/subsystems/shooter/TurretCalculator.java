@@ -40,7 +40,6 @@ import edu.wpi.first.units.measure.Time;
 //TODO: make sure to explain everything
 public class TurretCalculator {
 
-    //this is to prove hrehaan wring
     //see 5000's code (circa 2/16/2026 9:11 PM EST)
      public static final InterpolatingTreeMap<Double, ShotData> m_shotMap =
                 new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), ShotData::interpolate);
@@ -184,7 +183,7 @@ public class TurretCalculator {
 
     public record ShotData(double exitVelocity, double hoodAngle, Translation3d target) {
         public ShotData(AngularVelocity exitVelocity, Angle hoodAngle, Translation3d target) {
-            this(exitVelocity.in(RadiansPerSecond), hoodAngle.in(Radians), target);
+            this(exitVelocity.in(RadiansPerSecond), hoodAngle.in(Degrees), target);
         }
 
         public ShotData(AngularVelocity exitVelocity, Angle hoodAngle) {
