@@ -6,7 +6,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
-import frc.robot.subsystems.Intake.IntakeRollersVelocity;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.StringArrayLogger;
 
@@ -14,6 +13,7 @@ import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.Constants.SuperstructureK.*;
 import static frc.robot.Constants.ShooterK;
+import static frc.robot.Constants.IntakeK.kIntakeRollersMaxRPS;
 
 import java.util.HashSet;
 
@@ -60,7 +60,7 @@ public class Superstructure {
         return Commands.sequence(
             m_indexer.stopSpindexer(),
             m_intake.setIntakeArmPos(pos),
-            m_intake.setIntakeRollersSpeed(IntakeRollersVelocity.STOP),
+            m_intake.stopIntakeRollers(),
             logCommand
         );
     }
@@ -70,7 +70,7 @@ public class Superstructure {
      */
     public Command activateIntake() {
         return Commands.sequence(
-            m_intake.setIntakeRollersSpeed(IntakeRollersVelocity.MAX),
+            m_intake.startIntakeRollers(),
             m_indexer.startSpindexer(),
             m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED),
             logActiveCommands("activateIntake", "safeIntake", "retractIntake")
@@ -258,23 +258,22 @@ public class Superstructure {
     }
 
     /**
-     * Sets the intake rollers speed to the given RPS
-     * @param RPS RPS to set speed to.
-     * @return
+     * Starts the intake rollers.
      */
-    public Command setIntakeRollersSpeed(IntakeRollersVelocity RPS) {
-        Command logCommand;
-        switch (RPS) {
-            case MAX:
-                logCommand = logActiveOverrideCommands("maxRollers", "stopRollers");
-                break;
-            default:
-                logCommand = logActiveOverrideCommands("stopRollers", "maxRollers");
-                break;
-        }
+    public Command startIntakeRollers() {
         return Commands.sequence(
-            m_intake.setIntakeRollersSpeed(RPS),
-            logCommand
+            m_intake.startIntakeRollers(),
+            logActiveOverrideCommands("startIntakeRollers", "stopIntakeRollers")
+        );
+    }
+
+    /**
+     * Stops the intake rollers.
+     */
+    public Command stopIntakeRollers() {
+        return Commands.sequence(
+            m_intake.stopIntakeRollers(),
+            logActiveOverrideCommands("stopIntakeRollers", "startIntakeRollers")
         );
     }
 
