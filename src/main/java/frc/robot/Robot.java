@@ -162,9 +162,9 @@ public class Robot extends TimedRobot {
 
     /* CONSTRUCTOR */
     public Robot() {
-        // configureBindings();
+        configureBindings();
         // configureTestBindings();    //this should be commented out during competition matches
-        configureTestingDashboard();
+        // configureTestingDashboard();
     }
 
     /* COMMANDS */
