@@ -409,6 +409,7 @@ public class Robot extends TimedRobot {
         /* INITIALIZE DASHBOARD */
         TestingDashboard.initialize();
 
+        /* ELASTIC WIDGET BINDINGS */
         TestingDashboard.trg_letShooterVelocityRPSChange.onTrue(m_shooter.setShooterVelocityCmd(TestingDashboard.sub_shooterVelocityRPS));
         TestingDashboard.trg_letTurretPositionRotsChange.onTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
         TestingDashboard.trg_letHoodPositionDegsChange.onTrue(m_shooter.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
