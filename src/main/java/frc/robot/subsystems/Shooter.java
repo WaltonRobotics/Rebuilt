@@ -17,6 +17,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Servo;
@@ -157,6 +158,10 @@ public class Shooter extends SubsystemBase {
     //---TURRET (Motionmagic Angle Control)
     public Command setTurretPositionCmd(Angle rots) {
         return runOnce(() -> m_turret.setControl(m_MMVRequest.withPosition(rots)));
+    }
+
+    public Command setTurretPositionCmd(DoubleSubscriber sub_rots) {
+        return run(() -> m_turret.setControl(m_MMVRequest.withPosition(Rotations.of(sub_rots.get()))));
     }
 
     /* GETTERS */

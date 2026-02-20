@@ -37,7 +37,8 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.VisionK;
-import frc.robot.autons.AutonChooser;
+import frc.robot.autons.WaltDashboard.AutonChooser;
+import frc.robot.autons.WaltDashboard.TestingDashboard;
 import frc.robot.autons.WaltAutonFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
@@ -495,6 +496,29 @@ public class Robot extends TimedRobot {
 
     }
 
+    private void configureTestingDashboard() {
+        /* INITIALIZE DASHBOARD */
+        TestingDashboard.initialize();
+
+        /* ELASTIC WIDGET BINDINGS */
+        // TestingDashboard.trg_letShooterVelocityRPSChange
+        //     .whileTrue(m_shooter.setShooterVelocityCmd(TestingDashboard.sub_shooterVelocityRPS));
+        TestingDashboard.trg_letTurretPositionRotsChange
+            .whileTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
+        // TestingDashboard.trg_letHoodPositionDegsChange
+        //     .whileTrue(m_shooter.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
+
+        TestingDashboard.trg_letSpindexerVelocityRPSChange
+            .whileTrue(m_indexer.setSpindexerVelocityCmd(TestingDashboard.sub_spindexerVelocityRPS));
+        TestingDashboard.trg_letTunnelVelocityRPSChange
+            .whileTrue(m_indexer.setTunnelVelocityCmd(TestingDashboard.sub_tunnelVelocityRPS));
+
+        // TestingDashboard.trg_letIntakeArmPositionRotsChange
+        //     .whileTrue(m_intake.setIntakeArmPos(TestingDashboard.sub_intakeArmPositionRots));
+        // TestingDashboard.trg_letIntakeRollersVelocityRPSChange
+        //     .whileTrue(m_intake.setIntakeRollersSpeed(TestingDashboard.sub_intakeRollersVelocityRPS));
+    }
+    
     /* PERIODICS */
     @Override
     public void robotPeriodic() {
