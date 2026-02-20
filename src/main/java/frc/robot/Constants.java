@@ -381,8 +381,8 @@ public class Constants {
         private static final FeedbackConfigs kSpindexerFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kSpindexerGearing);
         private static final VoltageConfigs kSpindexerVoltageConfigs = new VoltageConfigs()
-            .withPeakForwardVoltage(1.2)
-            .withPeakReverseVoltage(-1.2);
+            .withPeakForwardVoltage(6)    //1.2
+            .withPeakReverseVoltage(-6);  //-1.2
         public static final TalonFXConfiguration kSpindexerTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kSpindexerSlot0Configs)
             .withCurrentLimits(kSpindexerCurrentLimitConfigs)
@@ -410,8 +410,8 @@ public class Constants {
         private static final FeedbackConfigs kTunnelFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kTunnelGearing);
         private static final VoltageConfigs kTunnelVoltageConfigs = new VoltageConfigs()
-            .withPeakForwardVoltage(1.2)
-            .withPeakReverseVoltage(-1.2);
+            .withPeakForwardVoltage(6)  //1.2
+            .withPeakReverseVoltage(-6);    //-1.2
         public static final TalonFXConfiguration kTunnelTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kTunnelSlot0Configs)
             .withCurrentLimits(kTunnelCurrentLimitConfigs)
