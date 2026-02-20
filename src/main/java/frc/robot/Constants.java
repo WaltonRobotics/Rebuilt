@@ -60,7 +60,7 @@ public class Constants {
 
         public static final AngularVelocity kShooterMaxRPS = RotationsPerSecond.of((5785/60) * (0.9) / kShooterGearing);   //Kraken X60Foc Max (RPM: 5785)
         public static final AngularVelocity kShooterBarfRPS = RotationsPerSecond.of((5785/60) * (0.2) / kShooterGearing);
-        public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.of(/* 0/60 * (0.9) */ 0 / kShooterGearing);
+        public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.of(/* 0/60 * (0.9) / kShooterGearing */ 0);
 
         //---HOOD CONSTANTS
         public static final double kHoodMoI = 0.00027505;
