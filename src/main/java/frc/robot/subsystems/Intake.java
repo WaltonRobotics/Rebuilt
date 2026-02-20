@@ -13,6 +13,7 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -80,12 +81,22 @@ public class Intake extends SubsystemBase {
         return runOnce(() -> m_intakeArm.setControl(m_MMVReq.withPosition(rots)));
     }
 
+    //for TestingDashboard
+    public Command setIntakeArmPos(DoubleSubscriber sub_rots) {
+        return run(() -> m_intakeArm.setControl(m_MMVReq.withPosition(Rotations.of(sub_rots.get()))));
+    }
+
     public Command setIntakeRollersSpeed(IntakeRollersVelocity RPS) {
         return setIntakeRollersSpeed(RPS.RPS);
     }
 
     public Command setIntakeRollersSpeed(AngularVelocity RPS) {
         return runOnce(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RPS)));
+    }
+
+    //for TestingDashboard
+    public Command setIntakeRollersSpeed(DoubleSubscriber sub_RPS) {
+        return run(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
     }
 
     public TalonFX getIntakeArmMotor() {

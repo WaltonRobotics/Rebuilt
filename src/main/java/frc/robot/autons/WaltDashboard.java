@@ -11,8 +11,10 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.networktables.StringTopic;
+import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class WaltDashboard {
     public static NetworkTableInstance nte_inst = NetworkTableInstance.getDefault();
@@ -35,7 +37,7 @@ public class WaltDashboard {
         public static DoubleTopic DT_tunnelVelocityRPS = nte_inst.getDoubleTopic("/TestingDashboard/tunnelVelocityRPS");
 
         //---INTAKE
-        public static DoubleTopic DT_intakeArmPositionDegs = nte_inst.getDoubleTopic("/TestingDashboard/intakeArmPositionDegs");
+        public static DoubleTopic DT_intakeArmPositionRots = nte_inst.getDoubleTopic("/TestingDashboard/intakeArmPositionRots");
         public static DoubleTopic DT_intakeRollersVelocityRPS = nte_inst.getDoubleTopic("/TestingDashboard/intakeRollersVelocityRPS");
 
         //---"ALLOW CHANGES" SWITCHES
@@ -46,7 +48,7 @@ public class WaltDashboard {
         public static BooleanTopic BT_letSpindexerVelocityRPSChange = nte_inst.getBooleanTopic("/TestingDashboard/letSpindexerVelocityRPSChange");
         public static BooleanTopic BT_letTunnelVelocityRPSChange = nte_inst.getBooleanTopic("/TestingDashboard/letTunnelVelocityRPSChange");
 
-        public static BooleanTopic BT_letIntakeArmPositionDegsChange = nte_inst.getBooleanTopic("/TestingDashboard/letIntakeArmPositionDegsChange");
+        public static BooleanTopic BT_letIntakeArmPositionRotsChange = nte_inst.getBooleanTopic("/TestingDashboard/letIntakeArmPositionRotsChange");
         public static BooleanTopic BT_letIntakeRollersVelocityRPSChange = nte_inst.getBooleanTopic("/TestingDashboard/letIntakeRollersVelocityRPSChange");
 
         /* PUBLISHERS */
@@ -60,7 +62,7 @@ public class WaltDashboard {
         public static DoublePublisher pub_tunnelVelocityRPS;
 
         //---INTAKE
-        public static DoublePublisher pub_intakeArmPositionDegs;
+        public static DoublePublisher pub_intakeArmPositionRots;
         public static DoublePublisher pub_intakeRollersVelocityRPS;
 
         //---"ALLOW CHANGES" SWITCHES
@@ -71,7 +73,7 @@ public class WaltDashboard {
         public static BooleanPublisher pub_letSpindexerVelocityRPSChange;
         public static BooleanPublisher pub_letTunnelVelocityRPSChange;
 
-        public static BooleanPublisher pub_letIntakeArmPositionDegsChange;
+        public static BooleanPublisher pub_letIntakeArmPositionRotsChange;
         public static BooleanPublisher pub_letIntakeRollersVelocityRPSChange;
 
         /* SUBSCRIBERS */
@@ -85,7 +87,7 @@ public class WaltDashboard {
         public static DoubleSubscriber sub_tunnelVelocityRPS;
 
         //---INTAKE
-        public static DoubleSubscriber sub_intakeArmPositionDegs;
+        public static DoubleSubscriber sub_intakeArmPositionRots;
         public static DoubleSubscriber sub_intakeRollersVelocityRPS;
 
         //---"ALLOW CHANGES" SWITCHES
@@ -96,8 +98,19 @@ public class WaltDashboard {
         public static BooleanSubscriber sub_letSpindexerVelocityRPSChange;
         public static BooleanSubscriber sub_letTunnelVelocityRPSChange;
 
-        public static BooleanSubscriber sub_letIntakeArmPositionDegsChange;
+        public static BooleanSubscriber sub_letIntakeArmPositionRotsChange;
         public static BooleanSubscriber sub_letIntakeRollersVelocityRPSChange;
+
+        /* TRIGGERS */
+        public static Trigger trg_letShooterVelocityRPSChange;
+        public static Trigger trg_letTurretPositionRotsChange;
+        public static Trigger trg_letHoodPositionDegsChange;
+
+        public static Trigger trg_letSpindexerVelocityRPSChange;
+        public static Trigger trg_letTunnelVelocityRPSChange;
+
+        public static Trigger trg_letIntakeArmPositionRotsChange;
+        public static Trigger trg_letIntakeRollersVelocityRPSChange;
 
         public static void initialize() {
             //---SHOOTER
@@ -124,13 +137,13 @@ public class WaltDashboard {
             sub_tunnelVelocityRPS = DT_tunnelVelocityRPS.subscribe(0);
 
             //---INTAKE
-            pub_intakeArmPositionDegs = DT_intakeArmPositionDegs.publish();
+            pub_intakeArmPositionRots = DT_intakeArmPositionRots.publish();
             pub_intakeRollersVelocityRPS = DT_intakeRollersVelocityRPS.publish();
 
-            pub_intakeArmPositionDegs.setDefault(0);
+            pub_intakeArmPositionRots.setDefault(0);
             pub_intakeRollersVelocityRPS.setDefault(0);
 
-            sub_intakeArmPositionDegs = DT_intakeArmPositionDegs.subscribe(0);
+            sub_intakeArmPositionRots = DT_intakeArmPositionRots.subscribe(0);
             sub_intakeRollersVelocityRPS = DT_intakeRollersVelocityRPS.subscribe(0);
 
             //---"ALLOW CHANGES" SWITCHES
@@ -139,7 +152,7 @@ public class WaltDashboard {
             pub_letHoodPositionDegsChange = BT_letHoodPositionDegsChange.publish();
             pub_letSpindexerVelocityRPSChange = BT_letSpindexerVelocityRPSChange.publish();
             pub_letTunnelVelocityRPSChange = BT_letTunnelVelocityRPSChange.publish();
-            pub_letIntakeArmPositionDegsChange = BT_letIntakeArmPositionDegsChange.publish();
+            pub_letIntakeArmPositionRotsChange = BT_letIntakeArmPositionRotsChange.publish();
             pub_letIntakeRollersVelocityRPSChange = BT_letIntakeRollersVelocityRPSChange.publish();
 
             pub_letShooterVelocityRPSChange.setDefault(false);
@@ -147,7 +160,7 @@ public class WaltDashboard {
             pub_letHoodPositionDegsChange.setDefault(false);
             pub_letSpindexerVelocityRPSChange.setDefault(false);
             pub_letTunnelVelocityRPSChange.setDefault(false);
-            pub_letIntakeArmPositionDegsChange.setDefault(false);
+            pub_letIntakeArmPositionRotsChange.setDefault(false);
             pub_letIntakeRollersVelocityRPSChange.setDefault(false);
 
             sub_letShooterVelocityRPSChange = BT_letShooterVelocityRPSChange.subscribe(false);
@@ -155,8 +168,18 @@ public class WaltDashboard {
             sub_letHoodPositionDegsChange = BT_letHoodPositionDegsChange.subscribe(false);
             sub_letSpindexerVelocityRPSChange = BT_letSpindexerVelocityRPSChange.subscribe(false);
             sub_letTunnelVelocityRPSChange = BT_letTunnelVelocityRPSChange.subscribe(false);
-            sub_letIntakeArmPositionDegsChange = BT_letIntakeArmPositionDegsChange.subscribe(false);
+            sub_letIntakeArmPositionRotsChange = BT_letIntakeArmPositionRotsChange.subscribe(false);
             sub_letIntakeRollersVelocityRPSChange = BT_letIntakeRollersVelocityRPSChange.subscribe(false);
+
+            trg_letShooterVelocityRPSChange = new Trigger(() -> sub_letShooterVelocityRPSChange.get());
+            trg_letTurretPositionRotsChange = new Trigger(() -> sub_letTurretPositionRotsChange.get());
+            trg_letHoodPositionDegsChange = new Trigger(() -> sub_letHoodPositionDegsChange.get());
+
+            trg_letSpindexerVelocityRPSChange = new Trigger(() -> sub_letSpindexerVelocityRPSChange.get());
+            trg_letTunnelVelocityRPSChange = new Trigger(() -> sub_letTunnelVelocityRPSChange.get());
+
+            trg_letIntakeArmPositionRotsChange = new Trigger(() -> sub_letIntakeArmPositionRotsChange.get());
+            trg_letIntakeRollersVelocityRPSChange = new Trigger(() -> sub_letIntakeRollersVelocityRPSChange.get());
         }
     }
 
