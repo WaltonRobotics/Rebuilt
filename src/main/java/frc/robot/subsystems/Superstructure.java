@@ -4,7 +4,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.subsystems.Intake.IntakeArmPosition;
+// import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.StringArrayLogger;
 
@@ -17,7 +17,7 @@ import java.util.HashSet;
 
 public class Superstructure {
     /* SUBSYSTEMS */
-    private final Intake m_intake;
+    // private final Intake m_intake;
     private final Indexer m_indexer;
     private final Shooter m_shooter;
 
@@ -29,8 +29,8 @@ public class Superstructure {
     private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
     
     /* CONSTRUCTOR */
-    public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
-        m_intake = intake;
+    public Superstructure(Indexer indexer, Shooter shooter) {
+        // m_intake = intake;
         m_indexer = indexer;
         m_shooter = shooter;
     }
@@ -41,36 +41,36 @@ public class Superstructure {
      * Turns off rollers and spinner and moves deploy to given pos.
      * @param pos the position to move deploy to.
      */
-    public Command deactivateIntake(IntakeArmPosition pos) {
-        Command logCommand;
-        switch (pos) {
-            case SAFE:
-                if (m_intake.getIntakeArmMotor().getStatorCurrent().getValueAsDouble() < 40) {
-                    logCommand = logActiveCommands("safeIntake", "activateIntake", "retractIntake");
-                } else {
-                    return Commands.none();
-                }
-                break;
-            default:
-                logCommand = logActiveCommands("retractIntake", "activateIntake", "safeIntake");
-                break;
-        }
-        return Commands.sequence(
-            m_indexer.stopSpindexer(),
-            m_intake.setIntakeArmPos(pos),
-            m_intake.stopIntakeRollers(),
-            logCommand
-        );
-    }
+    // public Command deactivateIntake(IntakeArmPosition pos) {
+    //     Command logCommand;
+    //     switch (pos) {
+    //         case SAFE:
+    //             if (m_intake.getIntakeArmMotor().getStatorCurrent().getValueAsDouble() < 40) {
+    //                 logCommand = logActiveCommands("safeIntake", "activateIntake", "retractIntake");
+    //             } else {
+    //                 return Commands.none();
+    //             }
+    //             break;
+    //         default:
+    //             logCommand = logActiveCommands("retractIntake", "activateIntake", "safeIntake");
+    //             break;
+    //     }
+    //     return Commands.sequence(
+    //         m_indexer.stopSpindexer(),
+    //         m_intake.setIntakeArmPos(pos),
+    //         // m_intake.stopIntakeRollers(),
+    //         logCommand
+    //     );
+    // }
 
     /**
      * Turns on rollers and spinner moves deploy to deployed positon.
      */
     public Command activateIntake() {
         return Commands.sequence(
-            m_intake.startIntakeRollers(),
+            // m_intake.startIntakeRollers(),
             m_indexer.startSpindexer(),
-            m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED),
+            // m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED),
             logActiveCommands("activateIntake", "safeIntake", "retractIntake")
         );
     }
@@ -91,7 +91,7 @@ public class Superstructure {
         return Commands.sequence(
             m_indexer.startSpindexer(),
             m_indexer.startTunnel(),
-            m_shooter.setShooterVelocityCmd(RPS),
+            // m_shooter.setShooterVelocityCmd(RPS),
             logCommand
         );
     }
@@ -105,7 +105,7 @@ public class Superstructure {
         return Commands.sequence(
             m_indexer.stopSpindexer(),
             m_indexer.stopTunnel(),
-            m_shooter.setShooterVelocityCmd(ShooterK.kShooterZeroRPS),
+            // m_shooter.setShooterVelocityCmd(ShooterK.kShooterZeroRPS),
             logActiveCommands("deactivateOuttake", "shooting", "emergencyDump")
         );
     }
@@ -124,13 +124,13 @@ public class Superstructure {
     /**
      * Exits passing mode by deactivating intake with deploy to SAFE and deactivating outtake.
      */
-    public Command stopPassing() {
-        return Commands.sequence(
-            deactivateIntake(IntakeArmPosition.SAFE),
-            deactivateOuttake(),
-            logActiveCommands("stopPassing", "startPassing")
-        );
-    }
+    // public Command stopPassing() {
+    //     return Commands.sequence(
+    //         deactivateIntake(IntakeArmPosition.SAFE),
+    //         deactivateOuttake(),
+    //         logActiveCommands("stopPassing", "startPassing")
+    //     );
+    // }
 
     /**
      * Adds and removes specified Command names from the ActiveCommands ArrayList, then logs the ArrayList.
@@ -165,7 +165,7 @@ public class Superstructure {
      */
     public Command maxShooter() {
         return Commands.sequence(
-            m_shooter.setShooterVelocityCmd(ShooterK.kShooterMaxRPS),
+            // m_shooter.setShooterVelocityCmd(ShooterK.kShooterMaxRPS),
             logActiveOverrideCommands("maxShooter", "stopShooter")
         );
     }
@@ -175,7 +175,7 @@ public class Superstructure {
      */
     public Command stopShooter() {
         return Commands.sequence(
-            m_shooter.setShooterVelocityCmd(ShooterK.kShooterZeroRPS),
+            // m_shooter.setShooterVelocityCmd(ShooterK.kShooterZeroRPS),
             logActiveOverrideCommands("stopShooter", "maxShooter")
         );
     }
@@ -210,7 +210,7 @@ public class Superstructure {
             logCommand = logActiveOverrideCommands("hood0", "hood30");
         }
         return Commands.sequence(
-            m_shooter.setHoodPositionCmd(degs),
+            // m_shooter.setHoodPositionCmd(degs),
             logCommand
         );
     }
@@ -260,7 +260,7 @@ public class Superstructure {
      */
     public Command startIntakeRollers() {
         return Commands.sequence(
-            m_intake.startIntakeRollers(),
+            // m_intake.startIntakeRollers(),
             logActiveOverrideCommands("startIntakeRollers", "stopIntakeRollers")
         );
     }
@@ -270,7 +270,7 @@ public class Superstructure {
      */
     public Command stopIntakeRollers() {
         return Commands.sequence(
-            m_intake.stopIntakeRollers(),
+            // m_intake.stopIntakeRollers(),
             logActiveOverrideCommands("stopIntakeRollers", "startIntakeRollers")
         );
     }
@@ -280,29 +280,29 @@ public class Superstructure {
      * @param pos position to deploy to.
      * @return
      */
-    public Command intakeTo(IntakeArmPosition pos) {
-        Command logCommand;
-        switch (pos) {
-            case DEPLOYED:
-                logCommand = logActiveOverrideCommands("deployIntake", "safeIntake", "intakeUp");
-                break;
-            case SAFE:
-                logCommand = logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp");
-                break;
-            default:
-                if (m_intake.getIntakeArmMotor().getStatorCurrent().getValueAsDouble() < 40) {
-                    logCommand = logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake");
-                }
-                else {
-                   return Commands.none();
-                }
-                break;
-        }
-        return logCommand = Commands.sequence(
-            m_intake.setIntakeArmPos(pos),
-            logCommand
-        );
-    }
+    // public Command intakeTo(IntakeArmPosition pos) {
+    //     Command logCommand;
+    //     switch (pos) {
+    //         case DEPLOYED:
+    //             logCommand = logActiveOverrideCommands("deployIntake", "safeIntake", "intakeUp");
+    //             break;
+    //         case SAFE:
+    //             logCommand = logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp");
+    //             break;
+    //         default:
+    //             if (m_intake.getIntakeArmMotor().getStatorCurrent().getValueAsDouble() < 40) {
+    //                 logCommand = logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake");
+    //             }
+    //             else {
+    //                return Commands.none();
+    //             }
+    //             break;
+    //     }
+    //     return logCommand = Commands.sequence(
+    //         m_intake.setIntakeArmPos(pos),
+    //         logCommand
+    //     );
+    // }
 
     /**
      * Adds and removes specified override Command names from the activeOverridesCommands ArrayList, then logs the ArrayList.

@@ -42,14 +42,14 @@ import frc.robot.autons.WaltAutonFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Superstructure;
-import frc.robot.subsystems.Intake;
+// import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
-import frc.robot.subsystems.Intake.IntakeArmPosition;
+// import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
 import frc.util.Telemetry;
-import frc.util.WaltVisualSim;
+// import frc.util.WaltVisualSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -85,11 +85,11 @@ public class Robot extends TimedRobot {
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
 
     private final Shooter m_shooter = new Shooter();
-    private final Intake m_intake = new Intake();
+    // private final Intake m_intake = new Intake();
     private final Indexer m_indexer = new Indexer();
 
-    private final WaltVisualSim m_visualSim = new WaltVisualSim(m_intake, m_indexer, m_shooter);
-    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
+    // private final WaltVisualSim m_visualSim = new WaltVisualSim(m_intake, m_indexer, m_shooter);
+    private final Superstructure m_superstructure = new Superstructure(m_indexer, m_shooter);
 
     //---AUTONS
     private Command m_autonomousCommand;
@@ -103,12 +103,12 @@ public class Robot extends TimedRobot {
     private final VisionSim m_visionSim = new VisionSim();
 
     // this should be updated with all of our cameras
-    private final Vision[] m_cameras = {
-        new Vision(VisionK.kCameras[0], m_visionSim),
-        new Vision(VisionK.kCameras[1], m_visionSim),
-        new Vision(VisionK.kCameras[2], m_visionSim),
-        new Vision(VisionK.kCameras[3], m_visionSim),
-    };
+    // private final Vision[] m_cameras = {
+    //     new Vision(VisionK.kCameras[0], m_visionSim),
+    //     new Vision(VisionK.kCameras[1], m_visionSim),
+    //     new Vision(VisionK.kCameras[2], m_visionSim),
+    //     new Vision(VisionK.kCameras[3], m_visionSim),
+    // };
 
     /* TRIGGERS */
     private Trigger trg_driverOverride = m_driver.b();
@@ -162,7 +162,7 @@ public class Robot extends TimedRobot {
     /* CONSTRUCTOR */
     public Robot() {
         configureBindings();
-        //configureTestBindings();    //this should be commented out during competition matches
+        // configureTestBindings();    //this should be commented out during competition matches
     }
 
     /* COMMANDS */
@@ -231,21 +231,21 @@ public class Robot extends TimedRobot {
         /* CUSTOM BINDS */
 
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
-        trg_swerveToObject.whileTrue(
-            m_drivetrain.swerveToObject()
-        );
+        // trg_swerveToObject.whileTrue(
+        //     m_drivetrain.swerveToObject()
+        // );
 
         //---NORMAL SEQUENCES
         //Intake
         trg_activateIntake.onTrue(
             m_superstructure.activateIntake()
         );
-        trg_safeIntake.onTrue(
-            m_superstructure.deactivateIntake(IntakeArmPosition.SAFE)
-        );
-        trg_retractIntake.onTrue(
-            m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
-        );
+        // trg_safeIntake.onTrue(
+        //     m_superstructure.deactivateIntake(IntakeArmPosition.SAFE)
+        // );
+        // trg_retractIntake.onTrue(
+        //     m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
+        // );
 
         //Shooting
         trg_shoot.and(trg_pass.negate()).onTrue(
@@ -253,11 +253,11 @@ public class Robot extends TimedRobot {
         ).onFalse(
             m_superstructure.deactivateOuttake()
         );
-        trg_shoot.and(trg_pass).onTrue(
-            m_superstructure.startPassing()
-        ).onFalse(
-            m_superstructure.stopPassing()
-        );
+        // trg_shoot.and(trg_pass).onTrue(
+        //     m_superstructure.startPassing()
+        // ).onFalse(
+        //     m_superstructure.stopPassing()
+        // );
         trg_emergencyBarf.onTrue(
             m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)
         ).onFalse(
@@ -289,14 +289,14 @@ public class Robot extends TimedRobot {
             m_superstructure.stopIntakeRollers()
         );
 
-        trg_deployIntakeOverride.onTrue(
-            m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)
-        ).onFalse(
-            m_superstructure.intakeTo(IntakeArmPosition.SAFE)
-        );
-        trg_intakeUpOverride.onTrue(
-            m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
-        );
+        // trg_deployIntakeOverride.onTrue(
+        //     m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)
+        // ).onFalse(
+        //     m_superstructure.intakeTo(IntakeArmPosition.SAFE)
+        // );
+        // trg_intakeUpOverride.onTrue(
+        //     m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
+        // );
 
         // TODO: add shooter overrides for drivet but waiting for sohan's calculate method
     }
@@ -327,91 +327,91 @@ public class Robot extends TimedRobot {
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
         //---TEST SEQUENCES
-        trg_activateIntake.onTrue(
-            Commands.parallel(
-                m_superstructure.activateIntake(),
-                m_visualSim.setIntakeArmPosition(),
-                m_visualSim.setIntakeRollerVelocity(),
-                m_visualSim.setSpindexerVelocity()
-            )
-        );
-        trg_safeIntake.onTrue(
-            Commands.parallel(
-                m_superstructure.deactivateIntake(IntakeArmPosition.SAFE),
-                m_visualSim.setIntakeArmPosition(),
-                m_visualSim.setIntakeRollerVelocity(),
-                m_visualSim.setSpindexerVelocity()
-            )
-        );
-        trg_retractIntake.onTrue(
-            Commands.parallel(    
-                m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED),
-                m_visualSim.setIntakeArmPosition(),
-                m_visualSim.setIntakeRollerVelocity(),
-                m_visualSim.setSpindexerVelocity()
-            )
-        );
+        // trg_activateIntake.onTrue(
+        //     Commands.parallel(
+        //         m_superstructure.activateIntake()
+        //         // m_visualSim.setIntakeArmPosition(),
+        //         // m_visualSim.setIntakeRollerVelocity(),
+        //         // m_visualSim.setSpindexerVelocity()
+        //     )
+        // );
+        // trg_safeIntake.onTrue(
+        //     Commands.parallel(
+        //         m_superstructure.deactivateIntake(IntakeArmPosition.SAFE)
+        //         // m_visualSim.setIntakeArmPosition(),
+        //         // m_visualSim.setIntakeRollerVelocity(),
+        //         // m_visualSim.setSpindexerVelocity()
+        //     )
+        // );
+        // trg_retractIntake.onTrue(
+        //     Commands.parallel(    
+        //         m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
+        //         // m_visualSim.setIntakeArmPosition(),
+        //         // m_visualSim.setIntakeRollerVelocity(),
+        //         // m_visualSim.setSpindexerVelocity()
+        //     )
+        // );
 
-        trg_shoot.and(trg_pass.negate()).onTrue(
-            Commands.parallel(
-                m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS),
-                m_visualSim.setShooterVelocity(),
-                m_visualSim.setSpindexerVelocity(),
-                m_visualSim.setTunnelVelocity()
-            )
-        ).onFalse(
-            Commands.parallel(
-                m_superstructure.deactivateOuttake(),
-                m_visualSim.setShooterVelocity(),
-                m_visualSim.setSpindexerVelocity(),
-                m_visualSim.setTunnelVelocity()
-            )
-        );
-        trg_emergencyBarf.onTrue(
-            Commands.parallel(
-                m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS),
-                m_visualSim.setShooterVelocity(),
-                m_visualSim.setSpindexerVelocity(),
-                m_visualSim.setTunnelVelocity()
-            )
-        ).onFalse(
-            Commands.parallel(
-                m_superstructure.deactivateOuttake(),
-                m_visualSim.setShooterVelocity(),
-                m_visualSim.setSpindexerVelocity(),
-                m_visualSim.setTunnelVelocity()
-            )
-        );
-        trg_shoot.and(trg_pass).onTrue(
-            Commands.parallel(
-                m_superstructure.startPassing(),
-                m_visualSim.setShooterVelocity(),
-                m_visualSim.setSpindexerVelocity(),
-                m_visualSim.setTunnelVelocity(),
-                m_visualSim.setIntakeArmPosition(),
-                m_visualSim.setIntakeRollerVelocity()
-            )
-        ).onFalse(
-            Commands.parallel(
-                m_superstructure.stopPassing(),
-                m_visualSim.setShooterVelocity(),
-                m_visualSim.setSpindexerVelocity(),
-                m_visualSim.setTunnelVelocity(),
-                m_visualSim.setIntakeArmPosition(),
-                m_visualSim.setIntakeRollerVelocity()
-            )
-        );
+        // trg_shoot.and(trg_pass.negate()).onTrue(
+        //     Commands.parallel(
+        //         m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)
+        //         // m_visualSim.setShooterVelocity(),
+        //         // m_visualSim.setSpindexerVelocity(),
+        //         // m_visualSim.setTunnelVelocity()
+        //     )
+        // ).onFalse(
+        //     Commands.parallel(
+        //         m_superstructure.deactivateOuttake()
+        //         // m_visualSim.setShooterVelocity(),
+        //         // m_visualSim.setSpindexerVelocity(),
+        //         // m_visualSim.setTunnelVelocity()
+        //     )
+        // );
+        // trg_emergencyBarf.onTrue(
+        //     Commands.parallel(
+        //         m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)
+        //         // m_visualSim.setShooterVelocity(),
+        //         // m_visualSim.setSpindexerVelocity(),
+        //         // m_visualSim.setTunnelVelocity()
+        //     )
+        // ).onFalse(
+        //     Commands.parallel(
+        //         m_superstructure.deactivateOuttake()
+        //         // m_visualSim.setShooterVelocity(),
+        //         // m_visualSim.setSpindexerVelocity(),
+        //         // m_visualSim.setTunnelVelocity()
+        //     )
+        // );
+        // trg_shoot.and(trg_pass).onTrue(
+        //     Commands.parallel(
+        //         m_superstructure.startPassing()
+        //         // m_visualSim.setShooterVelocity(),
+        //         // m_visualSim.setSpindexerVelocity(),
+        //         // m_visualSim.setTunnelVelocity(),
+        //         // m_visualSim.setIntakeArmPosition(),
+        //         // m_visualSim.setIntakeRollerVelocity()
+        //     )
+        // ).onFalse(
+        //     Commands.parallel(
+        //         m_superstructure.stopPassing()
+        //         // m_visualSim.setShooterVelocity(),
+        //         // m_visualSim.setSpindexerVelocity(),
+        //         // m_visualSim.setTunnelVelocity(),
+        //         // m_visualSim.setIntakeArmPosition(),
+        //         // m_visualSim.setIntakeRollerVelocity()
+        //     )
+        // );
 
         //---TEST COMMANDS (for singular subsystem testing)
         trg_maxShooterOverride.onTrue(
             Commands.parallel(
-                m_superstructure.maxShooter(),
-                m_visualSim.setShooterVelocity()
+                m_superstructure.maxShooter()
+                // m_visualSim.setShooterVelocity()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.stopShooter(),
-                m_visualSim.setShooterVelocity()
+                m_superstructure.stopShooter()
+                // m_visualSim.setShooterVelocity()
             )
         );
 
@@ -441,55 +441,55 @@ public class Robot extends TimedRobot {
 
         trg_startSpindexerOverride.onTrue(
             Commands.parallel(
-                m_superstructure.startSpindexer(),
-                m_visualSim.setSpindexerVelocity()
+                m_superstructure.startSpindexer()
+                // m_visualSim.setSpindexerVelocity()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.stopSpindexer(),
-                m_visualSim.setSpindexerVelocity()
+                m_superstructure.stopSpindexer()
+                // m_visualSim.setSpindexerVelocity()
             )
         );
 
         trg_startTunnelOverride.onTrue(
             Commands.parallel(
-                m_superstructure.startTunnel(),
-                m_visualSim.setTunnelVelocity()
+                m_superstructure.startTunnel()
+                // m_visualSim.setTunnelVelocity()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.stopTunnel(),
-                m_visualSim.setTunnelVelocity()
+                m_superstructure.stopTunnel()
+                // m_visualSim.setTunnelVelocity()
             )
         );
 
         trg_maxRollersOverride.onTrue(
             Commands.parallel(
-                m_superstructure.startIntakeRollers(),
-                m_visualSim.setIntakeRollerVelocity()
+                m_superstructure.startIntakeRollers()
+                // m_visualSim.setIntakeRollerVelocity()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.stopIntakeRollers(),
-                m_visualSim.setIntakeRollerVelocity()
+                m_superstructure.stopIntakeRollers()
+                // m_visualSim.setIntakeRollerVelocity()
             )
         );
 
         trg_deployIntakeOverride.onTrue(
             Commands.parallel(
-                m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED),
-                m_visualSim.setIntakeArmPosition()
+                // m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)
+                // m_visualSim.setIntakeArmPosition()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.intakeTo(IntakeArmPosition.SAFE),
-                m_visualSim.setIntakeArmPosition()
+                // m_superstructure.intakeTo(IntakeArmPosition.SAFE)
+                // m_visualSim.setIntakeArmPosition()
             )
         );
         trg_intakeUpOverride.onTrue(
             Commands.parallel(
-                m_superstructure.intakeTo(IntakeArmPosition.RETRACTED),
-                m_visualSim.setIntakeArmPosition()
+                // m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
+                // m_visualSim.setIntakeArmPosition()
             )
         );
 
@@ -501,40 +501,40 @@ public class Robot extends TimedRobot {
         m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run(); 
 
-        for (Vision camera : m_cameras) {
-            Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
-            if (estimatedPoseOptional.isPresent()) {
-                EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
-                Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
-                var ctreTime = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
-                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());                
-                m_visionSeenLastSec = ctreTime;
-            }
-        }
+        // for (Vision camera : m_cameras) {
+        //     Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
+        //     if (estimatedPoseOptional.isPresent()) {
+        //         EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
+        //         Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
+        //         var ctreTime = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
+        //         m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());                
+        //         m_visionSeenLastSec = ctreTime;
+        //     }
+        // }
 
         // periodics
-        m_shooter.periodic();
+        // m_shooter.periodic();
         m_indexer.periodic();
         log_povUp.accept(m_driver.povUp());
         log_povDown.accept(m_driver.povDown());
         log_povLeft.accept(m_driver.povLeft());
         log_povRight.accept(m_driver.povRight());
         log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
-        log_shooterDirection.accept(
-            new Pose3d(
-                m_drivetrain.getState().Pose
-            ).plus(
-                kTurretTransform
-            ).plus(
-                new Transform3d(
-                    new Translation3d(), new Rotation3d(
-                        Rotations.of(0),
-                        Rotations.of(-m_shooter.getHoodSimEncoder().getAngularPositionRotations()),
-                        m_shooter.getTurret().getPosition().getValue()
-                    )
-                )
-            )
-        );
+        // log_shooterDirection.accept(
+        //     new Pose3d(
+        //         m_drivetrain.getState().Pose
+        //     ).plus(
+        //         kTurretTransform
+        //     ).plus(
+        //         new Transform3d(
+        //             new Translation3d(), new Rotation3d(
+        //                 Rotations.of(0),
+        //                 Rotations.of(-m_shooter.getHoodSimEncoder().getAngularPositionRotations()),
+        //                 m_shooter.getTurret().getPosition().getValue()
+        //             )
+        //         )
+        //     )
+        // );
 
         /* for the mechanism2d in 3d, drag all 3 mechanisms2ds onto the robot pose
         and also log the shooter position pose */ 
@@ -542,69 +542,69 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledInit() {
-        m_waltAutonFactory.setAlliance(
-            DriverStation.getAlliance().isPresent() && 
-            DriverStation.getAlliance().get().equals(Alliance.Red)
-        );
+        // m_waltAutonFactory.setAlliance(
+        //     DriverStation.getAlliance().isPresent() && 
+        //     DriverStation.getAlliance().get().equals(Alliance.Red)
+        // );
 
-        AutonChooser.initialize();
+        // AutonChooser.initialize();
 
-        m_autonList.putIfAbsent("oneRightNeutralPickup", m_waltAutonFactory.oneRightNeutralPickup());
-        m_autonList.putIfAbsent("twoRightNeutralPickup", m_waltAutonFactory.twoRightNeutralPickup());
-        m_autonList.putIfAbsent("threeRightNeutralPickup", m_waltAutonFactory.threeRightNeutralPickup());
-        m_autonList.putIfAbsent("oneLeftNeutralPickup", m_waltAutonFactory.oneLeftNeutralPickup());
-        m_autonList.putIfAbsent("twoLeftNeutralPickup", m_waltAutonFactory.twoLeftNeutralPickup());
-        m_autonList.putIfAbsent("threeLeftNeutralPickup", m_waltAutonFactory.threeLeftNeutralPickup());
+        // m_autonList.putIfAbsent("oneRightNeutralPickup", m_waltAutonFactory.oneRightNeutralPickup());
+        // m_autonList.putIfAbsent("twoRightNeutralPickup", m_waltAutonFactory.twoRightNeutralPickup());
+        // m_autonList.putIfAbsent("threeRightNeutralPickup", m_waltAutonFactory.threeRightNeutralPickup());
+        // m_autonList.putIfAbsent("oneLeftNeutralPickup", m_waltAutonFactory.oneLeftNeutralPickup());
+        // m_autonList.putIfAbsent("twoLeftNeutralPickup", m_waltAutonFactory.twoLeftNeutralPickup());
+        // m_autonList.putIfAbsent("threeLeftNeutralPickup", m_waltAutonFactory.threeLeftNeutralPickup());
 
-        if (m_autonChosen.equals("noAutonSelected")) {
-            m_autonomousCommand = m_autonList.get("threeRightNeutralPickup");
-        }
+        // if (m_autonChosen.equals("noAutonSelected")) {
+        //     m_autonomousCommand = m_autonList.get("threeRightNeutralPickup");
+        // }
     }
 
     @Override
     public void disabledPeriodic() {
-        if (!AutonChooser.m_chooser.getSelected().equals(m_autonChosen)) {
-            boolean autonSelected = true;
-            switch (AutonChooser.m_chooser.getSelected()) {
-                case "oneRightNeutralPickup":
-                    AutonChooser.pub_autonName.set("One Right Neutral Pickup");
-                    m_autonChosen = "oneRightNeutralPickup";
-                    break;
-                case "twoRightNeutralPickup":
-                    AutonChooser.pub_autonName.set("Two Right Neutral Pickup");
-                    m_autonChosen = "twoRightNeutralPickup";
-                    break;
-                case "threeRightNeutralPickup":
-                    AutonChooser.pub_autonName.set("Three Right Neutral Pickup");
-                    m_autonChosen = "threeRightNeutralPickup";
-                    break;
-                case "oneLeftNeutralPickup":
-                    AutonChooser.pub_autonName.set("One Left Neutral Pickup");
-                    m_autonChosen = "oneLeftNeutralPickup";
-                    break;
-                case "twoLeftNeutralPickup":
-                    AutonChooser.pub_autonName.set("Two Left Neutral Pickup");
-                    m_autonChosen = "twoLeftNeutralPickup";
-                    break;
-                case "threeLeftNeutralPickup":
-                    AutonChooser.pub_autonName.set("Three Left Neutral Pickup");
-                    m_autonChosen = "threeLeftNeutralPickup";
-                    break;
-                default:
-                    autonSelected = false;
-                    break;
-            }
+        // if (!AutonChooser.m_chooser.getSelected().equals(m_autonChosen)) {
+        //     boolean autonSelected = true;
+        //     switch (AutonChooser.m_chooser.getSelected()) {
+        //         case "oneRightNeutralPickup":
+        //             AutonChooser.pub_autonName.set("One Right Neutral Pickup");
+        //             m_autonChosen = "oneRightNeutralPickup";
+        //             break;
+        //         case "twoRightNeutralPickup":
+        //             AutonChooser.pub_autonName.set("Two Right Neutral Pickup");
+        //             m_autonChosen = "twoRightNeutralPickup";
+        //             break;
+        //         case "threeRightNeutralPickup":
+        //             AutonChooser.pub_autonName.set("Three Right Neutral Pickup");
+        //             m_autonChosen = "threeRightNeutralPickup";
+        //             break;
+        //         case "oneLeftNeutralPickup":
+        //             AutonChooser.pub_autonName.set("One Left Neutral Pickup");
+        //             m_autonChosen = "oneLeftNeutralPickup";
+        //             break;
+        //         case "twoLeftNeutralPickup":
+        //             AutonChooser.pub_autonName.set("Two Left Neutral Pickup");
+        //             m_autonChosen = "twoLeftNeutralPickup";
+        //             break;
+        //         case "threeLeftNeutralPickup":
+        //             AutonChooser.pub_autonName.set("Three Left Neutral Pickup");
+        //             m_autonChosen = "threeLeftNeutralPickup";
+        //             break;
+        //         default:
+        //             autonSelected = false;
+        //             break;
+        //     }
 
-            if (autonSelected) {
-                AutonChooser.pub_autonMade.set(false);
-            }
-        }
+        //     if (autonSelected) {
+        //         AutonChooser.pub_autonMade.set(false);
+        //     }
+        // }
 
-        if (AutonChooser.sub_makeAuton.get()) {
-            m_autonomousCommand = m_autonList.get(m_autonChosen);
-            AutonChooser.pub_autonMade.set(true);
-            AutonChooser.pub_makeAuton.set(false);
-        }
+        // if (AutonChooser.sub_makeAuton.get()) {
+        //     m_autonomousCommand = m_autonList.get(m_autonChosen);
+        //     AutonChooser.pub_autonMade.set(true);
+        //     AutonChooser.pub_makeAuton.set(false);
+        // }
     }
 
     @Override
@@ -653,8 +653,8 @@ public class Robot extends TimedRobot {
         Pose2d robotPose = robotState.Pose;
         m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();
-        m_shooter.simulationPeriodic();
-        m_intake.simulationPeriodic();
+        // m_shooter.simulationPeriodic();
+        // m_intake.simulationPeriodic();
         m_indexer.simulationPeriodic();
     }
 }
