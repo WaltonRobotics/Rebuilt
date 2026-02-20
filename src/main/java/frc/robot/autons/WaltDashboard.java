@@ -171,6 +171,7 @@ public class WaltDashboard {
             sub_letIntakeArmPositionRotsChange = BT_letIntakeArmPositionRotsChange.subscribe(false);
             sub_letIntakeRollersVelocityRPSChange = BT_letIntakeRollersVelocityRPSChange.subscribe(false);
 
+            //---TRIGGERS
             trg_letShooterVelocityRPSChange = new Trigger(() -> sub_letShooterVelocityRPSChange.get());
             trg_letTurretPositionRotsChange = new Trigger(() -> sub_letTurretPositionRotsChange.get());
             trg_letHoodPositionDegsChange = new Trigger(() -> sub_letHoodPositionDegsChange.get());
