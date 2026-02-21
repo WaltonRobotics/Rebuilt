@@ -485,6 +485,21 @@ public class Robot extends TimedRobot {
                         )
                     )
                 )
+            ),
+            // hood
+            new Pose3d(drivePose).plus(
+                new Transform3d(
+                    new Translation3d(),
+                    new Rotation3d(
+                        Rotations.of(0),
+                        Rotations.of(
+                            -m_shooter.getHoodSimEncoder().getAngularPositionRotations()
+                        ),
+                        Rotations.of(
+                            m_shooter.getTurret().getPosition().getValueAsDouble()
+                        )
+                    )
+                )
             )
         });
     }
