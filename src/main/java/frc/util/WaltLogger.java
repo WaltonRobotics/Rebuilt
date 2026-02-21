@@ -96,6 +96,38 @@ public class WaltLogger {
         return new Pose3dLogger(name, table, options);
     }
 
+    public static final class Pose3dArrayLogger implements Consumer<Pose3d[]> {
+        public final StructArrayPublisher<Pose3d> ntPub;
+        public final StructArrayLogEntry<Pose3d> logEntry;
+
+        public Pose3dArrayLogger(String subTable, String name, PubSubOption... options) {
+            StructArrayTopic<Pose3d> topic = logTable.getSubTable(subTable).getStructArrayTopic(name, new Pose3dStruct());
+            ntPub = topic.publish(options);
+            logEntry = StructArrayLogEntry.create(DataLogManager.getLog(), "Robot/" + subTable + "/" + name, new Pose3dStruct());
+        }
+
+        @Override
+        public void accept(Pose3d[] value) {
+            if (shouldPublishNt()) {
+                ntPub.set(value);
+            } else {
+                logEntry.append(value);
+            }
+        }
+
+        public void accept(Translation3d[] value) {
+            Pose3d[] poses = new Pose3d[value.length];
+            for (int i = 0; i < value.length; i++) {
+                poses[i] = new Pose3d(value[i].getX(), value[i].getY(), value[i].getZ(), new Rotation3d());
+            }
+            accept(poses);
+        }
+    }
+
+    public static Pose3dArrayLogger logPose3dArray(String name, String table, PubSubOption... options) {
+        return new Pose3dArrayLogger(name, table, options);
+    }
+
     public static final class Transform3dLogger implements Consumer<Transform3d> {
         public final StructPublisher<Transform3d> ntPub;
         public final StructLogEntry<Transform3d> logEntry;
