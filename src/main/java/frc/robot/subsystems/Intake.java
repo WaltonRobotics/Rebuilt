@@ -78,7 +78,7 @@ public class Intake extends SubsystemBase {
         m_intakeArm.getConfigurator().apply(kIntakeArmConfiguration);
         m_intakeRollers.getConfigurator().apply(kIntakeRollersConfiguration);
 
-        currentSenseHoming();
+        setDefaultCommand(currentSenseHoming());
 
         initSim();
     }
@@ -127,6 +127,7 @@ public class Intake extends SubsystemBase {
         Consumer<Boolean> onEnd = (Boolean interrupted) -> {
             m_intakeArm.setPosition(0);
             m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(0));
+            removeDefaultCommand();
             setIntakeArmPos(IntakeArmPosition.RETRACTED);
         };
 
