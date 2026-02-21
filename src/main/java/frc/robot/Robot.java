@@ -355,6 +355,12 @@ public class Robot extends TimedRobot {
             )
         );
 
+        //TODO: implement a better shooting command sequence/parallel
+        /**
+         * on start, everything other than shooter is running, and when shooter is at target RPS or within a threshold, then everything else starts running
+         * if shooter RPS falls below, everything stops until we get back up
+         * on stop, everything stops.
+         */
         trg_shoot.and(trg_pass.negate()).onTrue(
             Commands.parallel(
                 m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)
