@@ -104,6 +104,10 @@ public class Intake extends SubsystemBase {
         return runOnce(() -> m_intakeArm.setControl(m_MMVReq.withPosition(rots).withAcceleration(RPSPS)));
     }
 
+    public boolean intakeArmAtPos(IntakeArmPosition pos) {
+        return m_intakeArm.getPosition().isNear(pos.rots, Rotations.of(0.015)); //TODO: find better tolerance
+    }
+
     //for TestingDashboard
     public Command setIntakeArmPos(DoubleSubscriber sub_rots) {
         return run(() -> m_intakeArm.setControl(m_MMVReq.withPosition(Rotations.of(sub_rots.get()))));

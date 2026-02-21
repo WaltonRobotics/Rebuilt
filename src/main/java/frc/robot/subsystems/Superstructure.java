@@ -104,8 +104,11 @@ public class Superstructure {
     public Command shimmy() {
         return Commands.run(
             () -> Commands.sequence(
+                m_intake.setIntakeRollersVelocityCmd(RotationsPerSecond.of(IntakeK.kIntakeRollersMaxRPS.magnitude() * (0.25))),
                 m_intake.setIntakeArmPos(IntakeArmPosition.RETRACTED),
-                m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED)
+                Commands.waitUntil(() -> m_intake.intakeArmAtPos(IntakeArmPosition.RETRACTED)),
+                m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED),
+                Commands.waitUntil(() -> m_intake.intakeArmAtPos(IntakeArmPosition.DEPLOYED))
             )
         );
     }

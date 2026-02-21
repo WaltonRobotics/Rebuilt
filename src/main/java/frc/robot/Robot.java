@@ -162,8 +162,8 @@ public class Robot extends TimedRobot {
 
     /* CONSTRUCTOR */
     public Robot() {
-        // configureBindings();
-        configureTestBindings();    //this should be commented out during competition matches
+        configureBindings();
+        // configureTestBindings();    //this should be commented out during competition matches
         // configureTestingDashboard();
     }
 
@@ -242,12 +242,12 @@ public class Robot extends TimedRobot {
         trg_activateIntake.onTrue(
             m_superstructure.activateIntake()
         );
-        // trg_safeIntake.onTrue(
-        //     m_superstructure.deactivateIntake(IntakeArmPosition.SAFE)
-        // );
-        // trg_retractIntake.onTrue(
-        //     m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
-        // );
+        trg_safeIntake.onTrue(
+            m_superstructure.deactivateIntake(IntakeArmPosition.SAFE)
+        );
+        trg_retractIntake.onTrue(
+            m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
+        );
 
         //Shooting
         trg_shoot.and(trg_pass.negate()).onTrue(
@@ -255,11 +255,11 @@ public class Robot extends TimedRobot {
         ).onFalse(
             m_superstructure.deactivateOuttake()
         );
-        // trg_shoot.and(trg_pass).onTrue(
-        //     m_superstructure.startPassing()
-        // ).onFalse(
-        //     m_superstructure.stopPassing()
-        // );
+        trg_shoot.and(trg_pass).onTrue(
+            m_superstructure.startPassing()
+        ).onFalse(
+            m_superstructure.stopPassing()
+        );
         trg_emergencyBarf.onTrue(
             m_superstructure.activateOuttake(ShooterK.kShooterBarfRPS)
         ).onFalse(
@@ -267,6 +267,9 @@ public class Robot extends TimedRobot {
         );
 
         //---OVERRIDE COMMANDS
+        m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.currentSenseHoming());
+        m_driver.a().and(trg_driverOverride).whileTrue(m_superstructure.shimmy());
+
         trg_maxShooterOverride.onTrue(
             m_superstructure.maxShooter()
         ).onFalse(
@@ -291,14 +294,14 @@ public class Robot extends TimedRobot {
             m_superstructure.stopIntakeRollers()
         );
 
-        // trg_deployIntakeOverride.onTrue(
-        //     m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)
-        // ).onFalse(
-        //     m_superstructure.intakeTo(IntakeArmPosition.SAFE)
-        // );
-        // trg_intakeUpOverride.onTrue(
-        //     m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
-        // );
+        trg_deployIntakeOverride.onTrue(
+            m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)
+        ).onFalse(
+            m_superstructure.intakeTo(IntakeArmPosition.SAFE)
+        );
+        trg_intakeUpOverride.onTrue(
+            m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
+        );
 
         // TODO: add shooter overrides for drivet but waiting for sohan's calculate method
     }
@@ -434,17 +437,17 @@ public class Robot extends TimedRobot {
             )
         );
 
-        trg_turretOverride.onTrue(
-            Commands.parallel(
-                m_superstructure.turretTo(Degrees.of(180))
-                // m_visualSim.setTurretPosition()
-            )
-        ).onFalse(
-            Commands.parallel(
-                m_superstructure.turretTo(Degrees.of(0))
-                // m_visualSim.setTurretPosition()
-            )
-        );
+        // trg_turretOverride.onTrue(
+        //     Commands.parallel(
+        //         m_superstructure.turretTo(Degrees.of(180))
+        //         // m_visualSim.setTurretPosition()
+        //     )
+        // ).onFalse(
+        //     Commands.parallel(
+        //         m_superstructure.turretTo(Degrees.of(0))
+        //         // m_visualSim.setTurretPosition()
+        //     )
+        // );
 
         trg_hoodOverride.onTrue(
             Commands.parallel(
