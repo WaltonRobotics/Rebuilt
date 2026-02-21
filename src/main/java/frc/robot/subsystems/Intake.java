@@ -5,6 +5,7 @@ import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.sim.ChassisReference;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IntakeK.*;
@@ -48,7 +49,7 @@ public class Intake extends SubsystemBase {
 
     private VoltageOut m_intakeArmZeroingReq = new VoltageOut(0);
 
-    private Debouncer m_currentDebouncer = new Debouncer(0.25, DebounceType.kRising);
+    private Debouncer m_currentDebouncer = new Debouncer(0.100, DebounceType.kRising);
     private Debouncer m_velocityDebouncer = new Debouncer(0.125, DebounceType.kRising);
 
     /* SIM OBJECTS */
@@ -141,8 +142,8 @@ public class Intake extends SubsystemBase {
         Runnable execute = () -> {};
 
         Consumer<Boolean> onEnd = (Boolean interrupted) -> {
-            m_intakeArm.setPosition(0);
             m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(0));
+            m_intakeArm.setPosition(0);
             removeDefaultCommand();
             setIntakeArmPos(IntakeArmPosition.RETRACTED);
         };
@@ -151,7 +152,7 @@ public class Intake extends SubsystemBase {
             m_currentDebouncer.calculate(m_currentSpike.getAsBoolean()) &&
             m_velocityDebouncer.calculate(m_veloIsNearZero.getAsBoolean());
 
-        return new FunctionalCommand(init, execute, onEnd, isFinished, this);
+        return new FunctionalCommand(init, execute, onEnd, isFinished, this).withTimeout(3).withName("intakeArm homing");
     }
 
     /* PERIODICS */
@@ -172,9 +173,9 @@ public class Intake extends SubsystemBase {
 
     /* ENUMS */
     public enum IntakeArmPosition{
-        RETRACTED(0),
-        SAFE(72),
-        DEPLOYED(87.485);
+        RETRACTED(Rotations.of(0.088).in(Degrees)),
+        SAFE(Rotation.of(0.268066).in(Degrees)),
+        DEPLOYED(Rotations.of(0.320312).in(Degrees));
 
         public Angle degs;
         public Angle rots;

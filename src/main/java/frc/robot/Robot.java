@@ -414,6 +414,8 @@ public class Robot extends TimedRobot {
 
         m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.setHoodMax()).onFalse(m_shooter.setHoodStop());
         m_manipulator.y().and(trg_manipOverride).whileTrue(m_shooter.setHoodMin()).onFalse(m_shooter.setHoodStop());
+
+        m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.currentSenseHoming());
         // m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.set(180));
 
         // m_manipulator.x().and(trg_manipOverride).whileTrue(m_shooter.setHoodMin());
