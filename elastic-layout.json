@@ -137,19 +137,6 @@
             }
           },
           {
-            "title": "shooterBrake",
-            "x": 375.0,
-            "y": 125.0,
-            "width": 125.0,
-            "height": 125.0,
-            "type": "Toggle Switch",
-            "properties": {
-              "topic": "/TestingDashboard/shooterBrake",
-              "period": 0.06,
-              "data_type": "boolean"
-            }
-          },
-          {
             "title": "letHoodPositionDegsChange",
             "x": 375.0,
             "y": 500.0,
@@ -291,6 +278,97 @@
             "type": "Toggle Switch",
             "properties": {
               "topic": "/TestingDashboard/letTurretPositionRotsChange",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "shooterBrake",
+            "x": 375.0,
+            "y": 125.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/TestingDashboard/shooterBrake",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "turretBrake",
+            "x": 375.0,
+            "y": 375.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/TestingDashboard/turretBrake",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "hoodPositionBrake",
+            "x": 375.0,
+            "y": 625.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/TestingDashboard/hoodPositionBrake",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "intakeArmPositionBrake",
+            "x": 875.0,
+            "y": 125.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/TestingDashboard/intakeArmPositionBrake",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "intakeRollersBrake",
+            "x": 875.0,
+            "y": 375.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/TestingDashboard/intakeRollersBrake",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "spindexerBrake",
+            "x": 875.0,
+            "y": 625.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/TestingDashboard/spindexerBrake",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "tunnelBrake",
+            "x": 1375.0,
+            "y": 125.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/TestingDashboard/tunnelBrake",
               "period": 0.06,
               "data_type": "boolean"
             }
