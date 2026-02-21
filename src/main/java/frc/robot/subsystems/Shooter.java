@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -50,7 +51,7 @@ public class Shooter extends SubsystemBase {
     private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true);
 
     private final GobildaServo m_hood = new GobildaServo(kHoodChannel);
-    // private final Canandmag m_hoodEncoder = new Canandmag(kHoodEncoderChannel);
+    private final CANcoder m_hoodEncoder = new CANcoder(kHoodEncoderChannel, Constants.kCanivoreBus);
     private final PIDController m_hoodPID = new PIDController(1, 0, 0);
 
     private Angle m_hoodSetpoint = Degrees.of(0);
@@ -105,8 +106,7 @@ public class Shooter extends SubsystemBase {
     // private final BooleanLogger log_exitBeamBreak = WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
     private final BooleanLogger log_spunUp = WaltLogger.logBoolean(kLogTab, "spunUp");
 
-    // private final BooleanLogger log_hoodEncoderMagnetInRange = WaltLogger.logBoolean(kLogTab, "hoodEncoderMagnetInRange");
-    // private final BooleanLogger log_hoodEncoderPresent = WaltLogger.logBoolean(kLogTab, "hoodEncoderPresent");
+    private final BooleanLogger log_hoodEncoderPresent = WaltLogger.logBoolean(kLogTab, "hoodEncoderPresent");
 
     private final DoubleLogger log_hoodPIDOutput = WaltLogger.logDouble(kLogTab, "hoodPIDOutput");
 
@@ -114,8 +114,8 @@ public class Shooter extends SubsystemBase {
     public Shooter() {
         m_shooterLeader.getConfigurator().apply(kShooterLeaderTalonFXConfiguration);
         m_shooterFollower.getConfigurator().apply(kShooterFollowerTalonFXConfiguration);
-        m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
-        // m_hoodEncoder.setSettings(kHoodEncoderSettings);    //if needed, we can add a position offset
+        m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);    
+        m_hoodEncoder.getConfigurator().apply(kHoodEncoderConfiguration);    //if needed, we can add a position offset
 
         m_shooterFollower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed)); //TODO: check if MotorAlignmentValue is Opposed or Aligned
 
@@ -175,20 +175,20 @@ public class Shooter extends SubsystemBase {
         return false;
     }
 
-    // // The PIDOutput needed to get to the setpoint from the current point
-    // public void updateHood() {
-    //     // can't read from hardware in Sim, so we read from the hoodSim object
-    //     m_currentHoodPos = m_inSim ? Rotations.of(m_hoodSim.getAngularPositionRotations()) : Rotations.of(m_hoodEncoder.getPosition());
+    // The PIDOutput needed to get to the setpoint from the current point
+    public void updateHood() {
+        // can't read from hardware in Sim, so we read from the hoodSim object
+        m_currentHoodPos = m_inSim ? Rotations.of(m_hoodSim.getAngularPositionRotations()) : Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble());
 
-    //     double hoodPIDOutput = m_hoodPID.calculate(m_currentHoodPos.magnitude(), m_hoodSetpoint.in(Rotations)) * 8;
+        double hoodPIDOutput = m_hoodPID.calculate(m_currentHoodPos.magnitude(), m_hoodSetpoint.in(Rotations)) * 8;
         
-    //     hoodPIDOutput = MathUtil.clamp(hoodPIDOutput, -1.0, 1.0);
-    //     hoodPIDOutput = (hoodPIDOutput + 1) / 2;
-    //     m_hood.set(hoodPIDOutput);
+        hoodPIDOutput = MathUtil.clamp(hoodPIDOutput, -1.0, 1.0);
+        hoodPIDOutput = (hoodPIDOutput + 1) / 2;
+        m_hood.set(hoodPIDOutput);
 
-    //     log_hoodPIDOutput.accept(hoodPIDOutput);
+        log_hoodPIDOutput.accept(hoodPIDOutput);
 
-    // }
+    }
 
     //---TURRET (Motionmagic Angle Control)
     public Command setTurretPositionCmd(Angle rots) {
@@ -205,9 +205,9 @@ public class Shooter extends SubsystemBase {
         return m_shooterLeader;
     }
 
-    // public DCMotorSim getHoodSimEncoder() {
-    //     return m_hoodSim;
-    // }
+    public DCMotorSim getHoodSimEncoder() {
+        return m_hoodSim;
+    }
 
     public TalonFX getTurret() {
         return m_turret;
@@ -217,7 +217,7 @@ public class Shooter extends SubsystemBase {
     @Override
     public void periodic() {
         //---Hood
-        // updateHood();
+        updateHood();
 
         //---Loggers
         log_shooterVelocityRPS.accept(m_shooterLeader.getVelocity().getValueAsDouble());
@@ -227,8 +227,7 @@ public class Shooter extends SubsystemBase {
 
         // log_exitBeamBreak.accept(trg_exitBeamBreak);
         log_spunUp.accept(m_spunUp);
-        // log_hoodEncoderMagnetInRange.accept(m_hoodEncoder.magnetInRange());
-        // log_hoodEncoderPresent.accept(m_hoodEncoder.isConnected());
+        log_hoodEncoderPresent.accept(m_hoodEncoder.isConnected());
     }
 
     @Override

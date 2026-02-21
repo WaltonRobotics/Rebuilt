@@ -3,8 +3,10 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
+import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -21,7 +23,7 @@ import org.photonvision.simulation.SimCameraProperties;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.reduxrobotics.sensors.canandmag.CanandmagSettings;
 
 import edu.wpi.first.apriltag.AprilTag;
@@ -127,35 +129,15 @@ public class Constants {
                     .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
                     .withNeutralMode(NeutralModeValue.Coast));
 
-        // TODO: I assume we would want the Hood and Turret to move at a constant high velocity
-        //       so we should probably configure that here?
-        //
-        //       that's not exactly how it works - i'm not sure either but kV is more like a boost to velo than velo itself
-        //       so in cases like the turret there's no kV
-        private static final Slot0Configs kHoodSlot0Configs = new Slot0Configs()
-            .withKS(0)
-            .withKV(1)
-            .withKA(0)
-            .withKP(0.85)
-            .withKI(0.1)
-            .withKD(0); // kP was too low making the slope less steep, kS and kA were adding weird behavior, added kI to account for kP overshooting
-        private static final CurrentLimitsConfigs kHoodCurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(110)
-            .withSupplyCurrentLimit(40)
-            .withStatorCurrentLimitEnable(true);
-        private static final MotorOutputConfigs kHoodOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
-            .withNeutralMode(NeutralModeValue.Coast)
-            .withPeakForwardDutyCycle(0.1)
-            .withPeakReverseDutyCycle(0.1);
-        private static final FeedbackConfigs kHoodFeedbackConfigs = new FeedbackConfigs()
-            .withSensorToMechanismRatio(kHoodGearing);
-        public static final TalonFXConfiguration kHoodTalonFXConfiguration = new TalonFXConfiguration()
-            .withSlot0(kHoodSlot0Configs)
-            .withCurrentLimits(kHoodCurrentLimitConfigs)
-            .withMotorOutput(kHoodOutputConfigs)
-            .withFeedback(kHoodFeedbackConfigs);
-        
+        //---HOOD
+        private static final MagnetSensorConfigs kHoodEncoderMagnetSensorConfigs = new MagnetSensorConfigs()
+            .withMagnetOffset(Rotations.of(0))
+            .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
+            .withAbsoluteSensorDiscontinuityPoint(Rotations.of(0));
+        public static final CANcoderConfiguration kHoodEncoderConfiguration = new CANcoderConfiguration()
+            .withMagnetSensor(kHoodEncoderMagnetSensorConfigs);
+
+        //---TURRET
         private static final Slot0Configs kTurretSlot0Configs = new Slot0Configs()
             .withKS(0)
             .withKV(4.07)
