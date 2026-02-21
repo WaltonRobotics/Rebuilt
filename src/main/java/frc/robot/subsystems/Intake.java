@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltMotorSim;
+import frc.robot.Robot;
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
@@ -79,7 +80,9 @@ public class Intake extends SubsystemBase {
         m_intakeArm.getConfigurator().apply(kIntakeArmConfiguration);
         m_intakeRollers.getConfigurator().apply(kIntakeRollersConfiguration);
 
-        setDefaultCommand(currentSenseHoming());
+        if(Robot.isReal()) {
+            setDefaultCommand(currentSenseHoming());
+        }
 
         initSim();
     }
