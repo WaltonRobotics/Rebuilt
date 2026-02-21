@@ -295,7 +295,7 @@ public class Constants {
             .withMotionMagicAcceleration(100)
             .withMotionMagicJerk(0);
         public static final FeedbackConfigs kIntakeArmFeedbackConfigs = new FeedbackConfigs()
-            .withSensorToMechanismRatio(1 / kIntakeArmGearing);
+            .withSensorToMechanismRatio(kIntakeArmGearing);
         public static final TalonFXConfiguration kIntakeArmConfiguration = new TalonFXConfiguration()
             .withCurrentLimits(kIntakeArmCurrentLimitConfigs)
             .withSlot0(kIntakeArmSlot0Configs)
@@ -319,7 +319,7 @@ public class Constants {
             .withInverted(InvertedValue.Clockwise_Positive) // TODO: CW or CCW?
             .withNeutralMode(NeutralModeValue.Brake);
         public static final FeedbackConfigs kIntakeRollersFeedbackConfigs = new FeedbackConfigs()
-            .withSensorToMechanismRatio(1 / kIntakeRollersGearing);
+            .withSensorToMechanismRatio(kIntakeRollersGearing);
         public static final TalonFXConfiguration kIntakeRollersConfiguration = new TalonFXConfiguration()
             .withCurrentLimits(kIntakeRollersCurrentLimitConfigs)
             .withSlot0(kIntakeRollersSlot0Configs)
