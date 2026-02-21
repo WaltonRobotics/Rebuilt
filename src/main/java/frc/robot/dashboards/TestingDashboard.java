@@ -39,12 +39,14 @@ public class TestingDashboard {
     public static BooleanTopic BT_letIntakeArmPositionRotsChange = nte_inst.getBooleanTopic("/TestingDashboard/letIntakeArmPositionRotsChange");
     public static BooleanTopic BT_letIntakeRollersVelocityRPSChange = nte_inst.getBooleanTopic("/TestingDashboard/letIntakeRollersVelocityRPSChange");
 
-    //---Brake SWITCHES
+    //---BRAKE SWITCHES
     public static BooleanTopic BT_shooterBrake = nte_inst.getBooleanTopic("/TestingDashboard/shooterBrake");
     public static BooleanTopic BT_turretBrake = nte_inst.getBooleanTopic("/TestingDashboard/turretBrake");
-    public static BooleanPublisher pub_shooterBrake;
-    public static BooleanSubscriber sub_shooterBrake;
-    public static Trigger trg_shooterBrake;
+    public static BooleanTopic BT_hoodPositionBrake = nte_inst.getBooleanTopic("/TestingDashboard/hoodPositionBrake");
+    public static BooleanTopic BT_intakeArmPositionBrake = nte_inst.getBooleanTopic("/TestingDashboard/intakeArmPositionBrake");
+    public static BooleanTopic BT_intakeRollersBrake = nte_inst.getBooleanTopic("/TestingDashboard/intakeRollersBrake");
+    public static BooleanTopic BT_spindexerBrake = nte_inst.getBooleanTopic("/TestingDashboard/spindexerBrake");    
+    public static BooleanTopic BT_tunnelBrake = nte_inst.getBooleanTopic("/TestingDashboard/tunnelBrake");
 
     /* PUBLISHERS */
     //---SHOOTER
@@ -71,6 +73,15 @@ public class TestingDashboard {
     public static BooleanPublisher pub_letIntakeArmPositionRotsChange;
     public static BooleanPublisher pub_letIntakeRollersVelocityRPSChange;
 
+    //---BRAKE SWITCHES
+    public static BooleanPublisher pub_shooterBrake;
+    public static BooleanPublisher pub_turretBrake;
+    public static BooleanPublisher pub_hoodPositionBrake;
+    public static BooleanPublisher pub_intakeArmPositionBrake;
+    public static BooleanPublisher pub_intakeRollersBrake;
+    public static BooleanPublisher pub_spindexerBrake;
+    public static BooleanPublisher pub_tunnelBrake;
+
     /* SUBSCRIBERS */
     //---SHOOTER
     public static DoubleSubscriber sub_shooterVelocityRPS;
@@ -96,6 +107,15 @@ public class TestingDashboard {
     public static BooleanSubscriber sub_letIntakeArmPositionRotsChange;
     public static BooleanSubscriber sub_letIntakeRollersVelocityRPSChange;
 
+    //---BRAKE SWITCHES
+    public static BooleanSubscriber sub_shooterBrake;
+    public static BooleanSubscriber sub_turretBrake;
+    public static BooleanSubscriber sub_hoodPositionBrake;
+    public static BooleanSubscriber sub_intakeArmPositionBrake;
+    public static BooleanSubscriber sub_intakeRollersBrake;
+    public static BooleanSubscriber sub_spindexerBrake;
+    public static BooleanSubscriber sub_tunnelBrake;
+
     /* TRIGGERS */
     public static Trigger trg_letShooterVelocityRPSChange;
     public static Trigger trg_letTurretPositionRotsChange;
@@ -106,6 +126,15 @@ public class TestingDashboard {
 
     public static Trigger trg_letIntakeArmPositionRotsChange;
     public static Trigger trg_letIntakeRollersVelocityRPSChange;
+
+    //---BRAKE SWITCHES
+    public static Trigger trg_shooterBrake;
+    public static Trigger trg_turrentBrake;
+    public static Trigger trg_hoodPositionBrake;
+    public static Trigger trg_intakeArmPositionBrake;
+    public static Trigger trg_intakeRollersBrake;
+    public static Trigger trg_spindexerBrake;
+    public static Trigger trg_tunnelBrake;
 
     public static void initialize() {
         //---SHOOTER
@@ -150,11 +179,6 @@ public class TestingDashboard {
         pub_letIntakeArmPositionRotsChange = BT_letIntakeArmPositionRotsChange.publish();
         pub_letIntakeRollersVelocityRPSChange = BT_letIntakeRollersVelocityRPSChange.publish();
 
-        pub_shooterBrake = BT_shooterBrake.publish();
-        pub_shooterBrake.setDefault(false);
-        sub_shooterBrake = BT_shooterBrake.subscribe(false);
-        trg_shooterBrake = new Trigger(() -> sub_shooterBrake.get());
-
         pub_letShooterVelocityRPSChange.setDefault(false);
         pub_letTurretPositionRotsChange.setDefault(false);
         pub_letHoodPositionDegsChange.setDefault(false);
@@ -171,6 +195,31 @@ public class TestingDashboard {
         sub_letIntakeArmPositionRotsChange = BT_letIntakeArmPositionRotsChange.subscribe(false);
         sub_letIntakeRollersVelocityRPSChange = BT_letIntakeRollersVelocityRPSChange.subscribe(false);
 
+        //---BRAKE SWITCHES
+        pub_shooterBrake = BT_shooterBrake.publish();
+        pub_turretBrake = BT_turretBrake.publish();
+        pub_hoodPositionBrake = BT_hoodPositionBrake.publish();
+        pub_intakeArmPositionBrake = BT_intakeArmPositionBrake.publish();
+        pub_intakeRollersBrake = BT_intakeRollersBrake.publish();
+        pub_spindexerBrake = BT_spindexerBrake.publish();
+        pub_tunnelBrake = BT_tunnelBrake.publish();
+
+        pub_shooterBrake.setDefault(false);
+        pub_turretBrake.setDefault(false);
+        pub_hoodPositionBrake.setDefault(false);
+        pub_intakeArmPositionBrake.setDefault(false);
+        pub_intakeRollersBrake.setDefault(false);
+        pub_spindexerBrake.setDefault(false);
+        pub_tunnelBrake.setDefault(false);
+
+        sub_shooterBrake = BT_shooterBrake.subscribe(false);
+        sub_turretBrake = BT_turretBrake.subscribe(false);
+        sub_hoodPositionBrake = BT_hoodPositionBrake.subscribe(false);
+        sub_intakeArmPositionBrake = BT_intakeArmPositionBrake.subscribe(false);
+        sub_intakeRollersBrake = BT_intakeRollersBrake.subscribe(false);
+        sub_spindexerBrake = BT_spindexerBrake.subscribe(false);
+        sub_tunnelBrake = BT_tunnelBrake.subscribe(false);
+
         //---TRIGGERS
         trg_letShooterVelocityRPSChange = new Trigger(() -> sub_letShooterVelocityRPSChange.get());
         trg_letTurretPositionRotsChange = new Trigger(() -> sub_letTurretPositionRotsChange.get());
@@ -181,5 +230,14 @@ public class TestingDashboard {
 
         trg_letIntakeArmPositionRotsChange = new Trigger(() -> sub_letIntakeArmPositionRotsChange.get());
         trg_letIntakeRollersVelocityRPSChange = new Trigger(() -> sub_letIntakeRollersVelocityRPSChange.get());
+
+        //---BRAKE SWITCHES
+        trg_shooterBrake = new Trigger(() -> sub_shooterBrake.get());
+        trg_turrentBrake = new Trigger(() -> sub_turretBrake.get());
+        trg_hoodPositionBrake = new Trigger(() -> sub_hoodPositionBrake.get());
+        trg_intakeArmPositionBrake = new Trigger(() -> sub_intakeArmPositionBrake.get());
+        trg_intakeRollersBrake = new Trigger(() -> sub_intakeRollersBrake.get());
+        trg_spindexerBrake = new Trigger(() -> sub_spindexerBrake.get());
+        trg_tunnelBrake = new Trigger(() -> sub_tunnelBrake.get());
     }
 }
