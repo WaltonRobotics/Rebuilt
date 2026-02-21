@@ -162,6 +162,7 @@ public class Constants {
         private static final CurrentLimitsConfigs kTurretCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(60)
             .withSupplyCurrentLimit(20)
+            .withSupplyCurrentLowerLimit(10)
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kTurretOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
