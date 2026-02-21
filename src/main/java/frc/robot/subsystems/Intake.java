@@ -12,7 +12,7 @@ import static frc.robot.Constants.IntakeK.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 
@@ -37,7 +37,7 @@ public class Intake extends SubsystemBase {
     private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID); //x44Foc
     private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID); //x44Foc
 
-    private MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0).withEnableFOC(true);
+    private DynamicMotionMagicVoltage m_MMVReq = new DynamicMotionMagicVoltage(0, 1, 1).withEnableFOC(true);
     private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
 
     private BooleanSupplier m_currentSpike = () -> m_intakeArm.getStatorCurrent().getValueAsDouble() > 5.0; //TODO: update value (5.0)
@@ -91,11 +91,11 @@ public class Intake extends SubsystemBase {
 
     /* COMMANDS */
     public Command setIntakeArmPos(IntakeArmPosition rots) {
-        return setIntakeArmPos(rots.rots);
+        return setIntakeArmPos(rots.rots, rots == IntakeArmPosition.RETRACTED ? 3 : 1);
     }
 
-    public Command setIntakeArmPos(Angle rots) {
-        return runOnce(() -> m_intakeArm.setControl(m_MMVReq.withPosition(rots)));
+    public Command setIntakeArmPos(Angle rots, double RPSPS) {
+        return runOnce(() -> m_intakeArm.setControl(m_MMVReq.withPosition(rots).withAcceleration(RPSPS)));
     }
 
     //for TestingDashboard
