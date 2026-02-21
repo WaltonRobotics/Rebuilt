@@ -447,6 +447,8 @@ public class Robot extends TimedRobot {
         log_povLeft.accept(m_driver.povLeft());
         log_povRight.accept(m_driver.povRight());
         log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
+
+        Pose2d drivePose = m_drivetrain.getState().Pose;
         log_zeroedComponentPoses.accept(new Pose3d[] {
             new Pose3d(), // intake
             new Pose3d(), // spindexer
@@ -454,9 +456,8 @@ public class Robot extends TimedRobot {
             new Pose3d()  // hood
         });
         log_realComponentPoses.accept(new Pose3d[] {
-            new Pose3d( // intake
-                m_drivetrain.getState().Pose
-            ).plus(
+            // intake
+            new Pose3d(drivePose).plus(
                 new Transform3d(
                     new Translation3d(),
                     new Rotation3d(
@@ -470,8 +471,20 @@ public class Robot extends TimedRobot {
                     )
                 )
             ),
-            new Pose3d( // spindexer
-                m_drivetrain.getState().Pose
+            // spindexer
+            new Pose3d(drivePose),
+            // turret
+            new Pose3d(drivePose).plus(
+                new Transform3d(
+                    new Translation3d(),
+                    new Rotation3d(
+                        Rotations.of(0),
+                        Rotations.of(0),
+                        Rotations.of(
+                            m_shooter.getTurret().getPosition().getValueAsDouble()
+                        )
+                    )
+                )
             )
         });
     }
