@@ -4,11 +4,13 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants.IntakeK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.StringArrayLogger;
 
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.SuperstructureK.*;
 import static frc.robot.Constants.ShooterK;
 import static frc.robot.Constants.IntakeK.kIntakeRollersMaxRPS;
@@ -88,11 +90,23 @@ public class Superstructure {
         } else {
             logCommand = logActiveCommands("emergencyDump", "shooting", "deactivateOuttake");
         }
+
         return Commands.sequence(
-            m_indexer.startSpindexer(),
+            m_shooter.setShooterVelocityCmd(RPS),
+            Commands.waitUntil(() -> m_shooter.checkIfSpunUp(RPS.magnitude())),
             m_indexer.startTunnel(),
-            // m_shooter.setShooterVelocityCmd(RPS),
+            m_indexer.startSpindexer(),
+            // m_intake.setIntakeRollersVelocityCmd(RotationsPerSecond.of((0.25) * IntakeK.kIntakeRollersMaxRPS.magnitude())),
             logCommand
+        );
+    }
+
+    public Command shimmy() {
+        return Commands.run(
+            () -> Commands.sequence(
+                m_intake.setIntakeArmPos(IntakeArmPosition.RETRACTED),
+                m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED)
+            )
         );
     }
 
@@ -105,7 +119,7 @@ public class Superstructure {
         return Commands.sequence(
             m_indexer.stopSpindexer(),
             m_indexer.stopTunnel(),
-            // m_shooter.setShooterVelocityCmd(ShooterK.kShooterZeroRPS),
+            m_shooter.setShooterVelocityCmd(ShooterK.kShooterZeroRPS),
             logActiveCommands("deactivateOuttake", "shooting", "emergencyDump")
         );
     }
@@ -124,13 +138,13 @@ public class Superstructure {
     /**
      * Exits passing mode by deactivating intake with deploy to SAFE and deactivating outtake.
      */
-    // public Command stopPassing() {
-    //     return Commands.sequence(
-    //         deactivateIntake(IntakeArmPosition.SAFE),
-    //         deactivateOuttake(),
-    //         logActiveCommands("stopPassing", "startPassing")
-    //     );
-    // }
+    public Command stopPassing() {
+        return Commands.sequence(
+            deactivateIntake(IntakeArmPosition.SAFE),
+            deactivateOuttake(),
+            logActiveCommands("stopPassing", "startPassing")
+        );
+    }
 
     /**
      * Adds and removes specified Command names from the ActiveCommands ArrayList, then logs the ArrayList.
@@ -165,7 +179,8 @@ public class Superstructure {
      */
     public Command maxShooter() {
         return Commands.sequence(
-            // m_shooter.setShooterVelocityCmd(ShooterK.kShooterMaxRPS),
+            m_shooter.setShooterVelocityCmd(ShooterK.kShooterMaxRPS),
+            // m_shooter.setShooterVelocityCmd(RotationsPerSecond.of(50)),
             logActiveOverrideCommands("maxShooter", "stopShooter")
         );
     }
@@ -175,7 +190,7 @@ public class Superstructure {
      */
     public Command stopShooter() {
         return Commands.sequence(
-            // m_shooter.setShooterVelocityCmd(ShooterK.kShooterZeroRPS),
+            m_shooter.setShooterVelocityCmd(ShooterK.kShooterZeroRPS),
             logActiveOverrideCommands("stopShooter", "maxShooter")
         );
     }

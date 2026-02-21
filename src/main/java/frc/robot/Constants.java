@@ -86,8 +86,8 @@ public class Constants {
         public static final int kFollowerCANID = 21;
         public static final int kTurretCANID = 12;
 
-        public static final int kExitBeamBreakChannel = 0; //TODO: Update channel number
-        public static final int kHoodChannel = 1;
+        public static final int kExitBeamBreakChannel = 1; //TODO: Update channel number
+        public static final int kHoodChannel = 0;
         public static final int kHoodEncoderChannel = 2;
 
         /* CONFIGS */
@@ -100,21 +100,25 @@ public class Constants {
             .withKI(0)
             .withKD(0); // kP was causing the werid sinusoid behavior, kS and kA were adding inconsistency with the destination values
         private static final CurrentLimitsConfigs kShooterLeaderCurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(120)
+            .withStatorCurrentLimit(80)
             .withSupplyCurrentLimit(50)
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kShooterLeaderOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
+            .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
             .withNeutralMode(NeutralModeValue.Coast)
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);
-        private static final FeedbackConfigs kShooterFeedbackConfigs = new FeedbackConfigs()
+        private static final FeedbackConfigs kShooterLeaderFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kShooterGearing);
+        private static final VoltageConfigs kShooterLeaderVoltageConfigs = new VoltageConfigs()
+            .withPeakForwardVoltage(12)
+            .withPeakReverseVoltage(-12);
         public static final TalonFXConfiguration kShooterLeaderTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kShooterLeaderSlot0Configs)
             .withCurrentLimits(kShooterLeaderCurrentLimitConfigs)
             .withMotorOutput(kShooterLeaderOutputConfigs)
-            .withFeedback(kShooterFeedbackConfigs);
+            .withFeedback(kShooterLeaderFeedbackConfigs)
+            .withVoltage(kShooterLeaderVoltageConfigs);
         
         // TODO: mimics the leader, so it doesn't need its own configs - right?
         public static final TalonFXConfiguration kShooterFollowerTalonFXConfiguration = new TalonFXConfiguration()
@@ -181,8 +185,8 @@ public class Constants {
         private static final FeedbackConfigs kTurretFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kTurretGearing);
         private static final VoltageConfigs kTurretVoltageConfigs = new VoltageConfigs()
-            .withPeakForwardVoltage(12)
-            .withPeakReverseVoltage(-12);
+            .withPeakForwardVoltage(0.5)
+            .withPeakReverseVoltage(-0.5);
         public static final TalonFXConfiguration kTurretTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kTurretSlot0Configs)
             .withCurrentLimits(kTurretCurrentLimitConfigs)
@@ -294,26 +298,26 @@ public class Constants {
             .withSupplyCurrentLimit(20)
             .withStatorCurrentLimitEnable(true);
         private static final Slot0Configs kIntakeArmSlot0Configs = new Slot0Configs()
-            .withKS(0)
+            .withKS(1.5)
             .withKV(0)
             .withKA(0)
-            .withKP(3)
+            .withKP(50)
             .withKI(0)
             .withKD(0);
         public static final MotorOutputConfigs kIntakeArmMotorOutputConfigs = new MotorOutputConfigs()
             .withNeutralMode(NeutralModeValue.Coast)
-            .withInverted(InvertedValue.Clockwise_Positive) // TODO: CW or CCW?
+            .withInverted(InvertedValue.Clockwise_Positive)
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);
         private static final MotionMagicConfigs kIntakeArmMotionMagicConfigs = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(20)
-            .withMotionMagicAcceleration(100)
+            .withMotionMagicCruiseVelocity(0.75)
+            .withMotionMagicAcceleration(10)
             .withMotionMagicJerk(0);
         public static final FeedbackConfigs kIntakeArmFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kIntakeArmGearing);
         private static final VoltageConfigs kIntakeArmVoltageConfigs = new VoltageConfigs()
-            .withPeakForwardVoltage(6)    //1.2
-            .withPeakReverseVoltage(-6);  //-1.2
+            .withPeakForwardVoltage(12)
+            .withPeakReverseVoltage(-12);
         public static final TalonFXConfiguration kIntakeArmConfiguration = new TalonFXConfiguration()
             .withCurrentLimits(kIntakeArmCurrentLimitConfigs)
             .withSlot0(kIntakeArmSlot0Configs)
@@ -342,15 +346,15 @@ public class Constants {
             .withPeakReverseDutyCycle(0.1);
         public static final FeedbackConfigs kIntakeRollersFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kIntakeRollersGearing);
-        // private static final VoltageConfigs kIntakeRollersVoltageConfigs = new VoltageConfigs()
-        //     .withPeakForwardVoltage(6)    //1.2
-        //     .withPeakReverseVoltage(-6);  //-1.2
+        private static final VoltageConfigs kIntakeRollersVoltageConfigs = new VoltageConfigs()
+            .withPeakForwardVoltage(12)    //1.2
+            .withPeakReverseVoltage(-12);  //-1.2
         public static final TalonFXConfiguration kIntakeRollersConfiguration = new TalonFXConfiguration()
             .withCurrentLimits(kIntakeRollersCurrentLimitConfigs)
             .withSlot0(kIntakeRollersSlot0Configs)
             .withMotorOutput(kIntakeRollersMotorOutputConfigs)
-            .withFeedback(kIntakeRollersFeedbackConfigs);
-            // .withVoltage(kIntakeRollersVoltageConfigs);
+            .withFeedback(kIntakeRollersFeedbackConfigs)
+            .withVoltage(kIntakeRollersVoltageConfigs);
     }
 
     public static class IndexerK {

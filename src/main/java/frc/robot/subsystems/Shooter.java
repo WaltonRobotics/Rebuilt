@@ -20,7 +20,6 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
@@ -30,10 +29,12 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
 
 import frc.robot.Constants;
 import frc.util.WaltMotorSim;
+import frc.util.GobildaServo;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -41,14 +42,14 @@ import frc.util.WaltLogger.DoubleLogger;
 public class Shooter extends SubsystemBase {
     /* CLASS VARIABLES */
     //---MOTORS + CONTROL REQUESTS
-    // private final TalonFX m_shooterLeader = new TalonFX(kLeaderCANID, Constants.kCanivoreBus); //X60Foc
-    // private final TalonFX m_shooterFollower = new TalonFX(kFollowerCANID, Constants.kCanivoreBus); //X60Foc
+    private final TalonFX m_shooterLeader = new TalonFX(kLeaderCANID, Constants.kCanivoreBus); //X60Foc
+    private final TalonFX m_shooterFollower = new TalonFX(kFollowerCANID, Constants.kCanivoreBus); //X60Foc
     private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(true);
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); //X44Foc
     private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true);
 
-    // private final Servo m_hood = new Servo(kHoodChannel);
+    private final GobildaServo m_hood = new GobildaServo(kHoodChannel);
     // private final Canandmag m_hoodEncoder = new Canandmag(kHoodEncoderChannel);
     private final PIDController m_hoodPID = new PIDController(1, 0, 0);
 
@@ -97,8 +98,8 @@ public class Shooter extends SubsystemBase {
     );
 
     /* LOGGERS */
-    // private final DoubleLogger log_shooterVelocityRPS = WaltLogger.logDouble(kLogTab, "shooterVelocityRPS");
-    // private final DoubleLogger log_hoodPositionDegs = WaltLogger.logDouble(kLogTab, "hoodPositionDegs");
+    private final DoubleLogger log_shooterVelocityRPS = WaltLogger.logDouble(kLogTab, "shooterVelocityRPS");
+    private final DoubleLogger log_hoodPositionDegs = WaltLogger.logDouble(kLogTab, "hoodPositionDegs");
     private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble(kLogTab, "turretPositionRots");
 
     // private final BooleanLogger log_exitBeamBreak = WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
@@ -111,35 +112,61 @@ public class Shooter extends SubsystemBase {
 
     /* CONSTRUCTOR */
     public Shooter() {
-        // m_shooterLeader.getConfigurator().apply(kShooterLeaderTalonFXConfiguration);
-        // m_shooterFollower.getConfigurator().apply(kShooterFollowerTalonFXConfiguration);
+        m_shooterLeader.getConfigurator().apply(kShooterLeaderTalonFXConfiguration);
+        m_shooterFollower.getConfigurator().apply(kShooterFollowerTalonFXConfiguration);
         m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
-
         // m_hoodEncoder.setSettings(kHoodEncoderSettings);    //if needed, we can add a position offset
 
-        // m_shooterFollower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed)); //TODO: check if MotorAlignmentValue is Opposed or Aligned
+        m_shooterFollower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed)); //TODO: check if MotorAlignmentValue is Opposed or Aligned
 
         initSim();
     }
 
     //TODO: update orientation values (if needed)
     private void initSim() {
-        // WaltMotorSim.initSimFX(m_shooterLeader, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
+        WaltMotorSim.initSimFX(m_shooterLeader, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
         WaltMotorSim.initSimFX(m_turret, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
     }
 
     /* COMMANDS */
-    //---SHOOTER (Veloity Control)
-    // public Command setShooterVelocityCmd(AngularVelocity RPS) {
-    //     return runOnce(() -> m_shooterLeader.setControl(m_velocityRequest.withVelocity(RPS)));
-    // }
+    // ---SHOOTER (Veloity Control)
+    public Command setShooterVelocityCmd(AngularVelocity RPS) {
+        return runOnce(() -> m_shooterLeader.setControl(m_velocityRequest.withVelocity(RPS)));
+    }
+
+    //for TestingDashboard
+    public Command setShooterVelocityCmd(DoubleSubscriber sub_RPS) {
+        return run(() -> m_shooterLeader.setControl(m_velocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
+    }
 
     // //---HOOD (Basic Position Control)
-    // public Command setHoodPositionCmd(Angle degs) {  
-    //     return runOnce(
-    //         () -> m_hoodSetpoint = degs
-    //     );
-    // }
+    public Command setHoodPositionCmd(Angle degs) {  
+        return runOnce(
+            () -> m_hoodSetpoint = degs
+        );
+    }
+
+    public Command setHoodMax() {
+        return runEnd(
+            () -> m_hood.set(1),
+            () -> m_hood.set(0.5)
+        );
+    }
+
+    public Command setHoodStop() {
+        return runOnce(() -> m_hood.set(0.5));
+    }
+
+    public Command setHoodMin() {
+        return runOnce(() -> m_hood.set(0));
+    }
+
+    public boolean checkIfSpunUp(Double RPS) {
+        if (m_shooterLeader.getVelocity().getValueAsDouble() > RPS - (RPS * 0.05)) {
+            return true;
+        }
+        return false;
+    }
 
     // // The PIDOutput needed to get to the setpoint from the current point
     // public void updateHood() {
@@ -153,6 +180,7 @@ public class Shooter extends SubsystemBase {
     //     m_hood.set(hoodPIDOutput);
 
     //     log_hoodPIDOutput.accept(hoodPIDOutput);
+
     // }
 
     //---TURRET (Motionmagic Angle Control)
@@ -165,9 +193,9 @@ public class Shooter extends SubsystemBase {
     }
 
     /* GETTERS */
-    // public TalonFX getShooter() {
-    //     return m_shooterLeader;
-    // }
+    public TalonFX getShooter() {
+        return m_shooterLeader;
+    }
 
     // public DCMotorSim getHoodSimEncoder() {
     //     return m_hoodSim;
@@ -183,9 +211,10 @@ public class Shooter extends SubsystemBase {
         //---Hood
         // updateHood();
 
-        // //---Loggers
-        // log_shooterVelocityRPS.accept(m_shooterLeader.getVelocity().getValueAsDouble());
-        // log_hoodPositionDegs.accept(m_currentHoodPos.in(Degrees));
+        //---Loggers
+        log_shooterVelocityRPS.accept(m_shooterLeader.getVelocity().getValueAsDouble());
+        log_hoodPositionDegs.accept(m_currentHoodPos.in(Degrees));
+        log_hoodPositionDegs.accept(m_hood.get());
         log_turretPositionRots.accept(m_turret.getPosition().getValueAsDouble());
 
         // log_exitBeamBreak.accept(trg_exitBeamBreak);
@@ -196,9 +225,9 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        // WaltMotorSim.updateSimFX(m_shooterLeader, m_shooterSim);
+        WaltMotorSim.updateSimFX(m_shooterLeader, m_shooterSim);
         WaltMotorSim.updateSimFX(m_turret, m_turretSim);
-        // WaltMotorSim.updateSimServo(m_hood, m_hoodSim);
+        WaltMotorSim.updateSimServo(m_hood, m_hoodSim);
     }
 
 }

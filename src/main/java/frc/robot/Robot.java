@@ -122,7 +122,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_safeIntake = m_manipulator.x().and(trg_manipOverride.negate());
     private Trigger trg_retractIntake = m_manipulator.y().and(trg_manipOverride.negate());
 
-    private Trigger trg_shoot = m_manipulator.rightTrigger().and(trg_manipOverride.negate());
+    private Trigger trg_shoot = m_driver.rightTrigger().and(trg_manipOverride.negate());
     private Trigger trg_emergencyBarf = m_manipulator.leftTrigger().and(trg_manipOverride.negate());
 
     private Trigger trg_pass = m_manipulator.rightBumper().and(trg_manipOverride.negate());
@@ -164,6 +164,7 @@ public class Robot extends TimedRobot {
     public Robot() {
         // configureBindings();
         configureTestBindings();    //this should be commented out during competition matches
+        configureTestingDashboard();
     }
 
     /* COMMANDS */
@@ -309,9 +310,9 @@ public class Robot extends TimedRobot {
         m_drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             m_drivetrain.applyRequest(() ->
-                drive.withVelocityX(-m_manipulator.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-m_manipulator.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-m_manipulator.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-m_driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-m_driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-m_driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
 
@@ -323,85 +324,94 @@ public class Robot extends TimedRobot {
         );
 
         // Reset the field-centric heading on left bumper press.
-        m_manipulator.leftBumper().and(trg_manipOverride.negate()).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
+        m_driver.leftBumper().and(trg_manipOverride.negate()).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
 
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
         //---TEST SEQUENCES
-        // trg_activateIntake.onTrue(
-        //     Commands.parallel(
-        //         m_superstructure.activateIntake()
-        //         // m_visualSim.setIntakeArmPosition(),
-        //         // m_visualSim.setIntakeRollerVelocity(),
-        //         // m_visualSim.setSpindexerVelocity()
-        //     )
-        // );
-        // trg_safeIntake.onTrue(
-        //     Commands.parallel(
-        //         m_superstructure.deactivateIntake(IntakeArmPosition.SAFE)
-        //         // m_visualSim.setIntakeArmPosition(),
-        //         // m_visualSim.setIntakeRollerVelocity(),
-        //         // m_visualSim.setSpindexerVelocity()
-        //     )
-        // );
-        // trg_retractIntake.onTrue(
-        //     Commands.parallel(    
-        //         m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
-        //         // m_visualSim.setIntakeArmPosition(),
-        //         // m_visualSim.setIntakeRollerVelocity(),
-        //         // m_visualSim.setSpindexerVelocity()
-        //     )
-        // );
+        trg_activateIntake.onTrue(
+            Commands.parallel(
+                m_superstructure.activateIntake()
+                // m_visualSim.setIntakeArmPosition(),
+                // m_visualSim.setIntakeRollerVelocity(),
+                // m_visualSim.setSpindexerVelocity()
+            )
+        );
 
-        // trg_shoot.and(trg_pass.negate()).onTrue(
-        //     Commands.parallel(
-        //         m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)
-        //         // m_visualSim.setShooterVelocity(),
-        //         // m_visualSim.setSpindexerVelocity(),
-        //         // m_visualSim.setTunnelVelocity()
-        //     )
-        // ).onFalse(
-        //     Commands.parallel(
-        //         m_superstructure.deactivateOuttake()
-        //         // m_visualSim.setShooterVelocity(),
-        //         // m_visualSim.setSpindexerVelocity(),
-        //         // m_visualSim.setTunnelVelocity()
-        //     )
-        // );
-        // trg_emergencyBarf.onTrue(
-        //     Commands.parallel(
-        //         m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)
-        //         // m_visualSim.setShooterVelocity(),
-        //         // m_visualSim.setSpindexerVelocity(),
-        //         // m_visualSim.setTunnelVelocity()
-        //     )
-        // ).onFalse(
-        //     Commands.parallel(
-        //         m_superstructure.deactivateOuttake()
-        //         // m_visualSim.setShooterVelocity(),
-        //         // m_visualSim.setSpindexerVelocity(),
-        //         // m_visualSim.setTunnelVelocity()
-        //     )
-        // );
-        // trg_shoot.and(trg_pass).onTrue(
-        //     Commands.parallel(
-        //         m_superstructure.startPassing()
-        //         // m_visualSim.setShooterVelocity(),
-        //         // m_visualSim.setSpindexerVelocity(),
-        //         // m_visualSim.setTunnelVelocity(),
-        //         // m_visualSim.setIntakeArmPosition(),
-        //         // m_visualSim.setIntakeRollerVelocity()
-        //     )
-        // ).onFalse(
-        //     Commands.parallel(
-        //         m_superstructure.stopPassing()
-        //         // m_visualSim.setShooterVelocity(),
-        //         // m_visualSim.setSpindexerVelocity(),
-        //         // m_visualSim.setTunnelVelocity(),
-        //         // m_visualSim.setIntakeArmPosition(),
-        //         // m_visualSim.setIntakeRollerVelocity()
-        //     )
-        // );
+        trg_safeIntake.onTrue(
+            Commands.parallel(
+                m_superstructure.deactivateIntake(IntakeArmPosition.SAFE)
+                // m_visualSim.setIntakeArmPosition(),
+                // m_visualSim.setIntakeRollerVelocity(),
+                // m_visualSim.setSpindexerVelocity()
+            )
+        );
+        trg_retractIntake.onTrue(
+            Commands.parallel(    
+                m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
+                // m_visualSim.setIntakeArmPosition(),
+                // m_visualSim.setIntakeRollerVelocity(),
+                // m_visualSim.setSpindexerVelocity()
+            )
+        );
+
+        trg_shoot.and(trg_pass.negate()).onTrue(
+            Commands.parallel(
+                m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)
+                // m_visualSim.setShooterVelocity(),
+                // m_visualSim.setSpindexerVelocity(),
+                // m_visualSim.setTunnelVelocity()
+            )
+        ).whileFalse(
+            Commands.parallel(
+                m_superstructure.deactivateOuttake()
+                // m_visualSim.setShooterVelocity(),
+                // m_visualSim.setSpindexerVelocity(),
+                // m_visualSim.setTunnelVelocity()
+            )
+        );
+
+        trg_emergencyBarf.onTrue(
+            Commands.parallel(
+                m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)
+                // m_visualSim.setShooterVelocity(),
+                // m_visualSim.setSpindexerVelocity(),
+                // m_visualSim.setTunnelVelocity()
+            )
+        ).onFalse(
+            Commands.parallel(
+                m_superstructure.deactivateOuttake()
+                // m_visualSim.setShooterVelocity(),
+                // m_visualSim.setSpindexerVelocity(),
+                // m_visualSim.setTunnelVelocity()
+            )
+        );
+        trg_shoot.and(trg_pass).onTrue(
+            Commands.parallel(
+                m_superstructure.startPassing()
+                // m_visualSim.setShooterVelocity(),
+                // m_visualSim.setSpindexerVelocity(),
+                // m_visualSim.setTunnelVelocity(),
+                // m_visualSim.setIntakeArmPosition(),
+                // m_visualSim.setIntakeRollerVelocity()
+            )
+        ).onFalse(
+            Commands.parallel(
+                m_superstructure.stopPassing()
+                // m_visualSim.setShooterVelocity(),
+                // m_visualSim.setSpindexerVelocity(),
+                // m_visualSim.setTunnelVelocity(),
+                // m_visualSim.setIntakeArmPosition(),
+                // m_visualSim.setIntakeRollerVelocity()
+            )
+        );
+
+        m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.setHoodMax()).onFalse(m_shooter.setHoodStop());
+        m_manipulator.y().and(trg_manipOverride).whileTrue(m_shooter.setHoodMin()).onFalse(m_shooter.setHoodStop());
+        // m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.set(180));
+
+        // m_manipulator.x().and(trg_manipOverride).whileTrue(m_shooter.setHoodMin());
+        // m_manipulator.y().and(trg_manipOverride).whileTrue(m_shooter.setHoodStop());
 
         //---TEST COMMANDS (for singular subsystem testing)
         trg_maxShooterOverride.onTrue(
@@ -501,8 +511,8 @@ public class Robot extends TimedRobot {
         TestingDashboard.initialize();
 
         /* ELASTIC WIDGET BINDINGS */
-        // TestingDashboard.trg_letShooterVelocityRPSChange
-        //     .whileTrue(m_shooter.setShooterVelocityCmd(TestingDashboard.sub_shooterVelocityRPS));
+        TestingDashboard.trg_letShooterVelocityRPSChange
+            .whileTrue(m_shooter.setShooterVelocityCmd(TestingDashboard.sub_shooterVelocityRPS));
         TestingDashboard.trg_letTurretPositionRotsChange
             .whileTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
         // TestingDashboard.trg_letHoodPositionDegsChange
@@ -513,10 +523,10 @@ public class Robot extends TimedRobot {
         TestingDashboard.trg_letTunnelVelocityRPSChange
             .whileTrue(m_indexer.setTunnelVelocityCmd(TestingDashboard.sub_tunnelVelocityRPS));
 
-        // TestingDashboard.trg_letIntakeArmPositionRotsChange
-        //     .whileTrue(m_intake.setIntakeArmPos(TestingDashboard.sub_intakeArmPositionRots));
-        // TestingDashboard.trg_letIntakeRollersVelocityRPSChange
-        //     .whileTrue(m_intake.setIntakeRollersSpeed(TestingDashboard.sub_intakeRollersVelocityRPS));
+        TestingDashboard.trg_letIntakeArmPositionRotsChange
+            .whileTrue(m_intake.setIntakeArmPos(TestingDashboard.sub_intakeArmPositionRots));
+        TestingDashboard.trg_letIntakeRollersVelocityRPSChange
+            .whileTrue(m_intake.setIntakeRollersSpeed(TestingDashboard.sub_intakeRollersVelocityRPS));
     }
     
     /* PERIODICS */

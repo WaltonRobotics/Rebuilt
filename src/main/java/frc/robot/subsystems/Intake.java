@@ -11,9 +11,11 @@ import static frc.robot.Constants.IntakeK.*;
 
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -30,6 +32,7 @@ public class Intake extends SubsystemBase {
     private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID); //x44Foc
 
     private MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0).withEnableFOC(true);
+    // private PositionVoltage m_PVReq = new PositionVoltage(0).withEnableFOC(true);
     private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
 
     /* SIM OBJECTS */
@@ -77,6 +80,13 @@ public class Intake extends SubsystemBase {
 
     public Command setIntakeArmPos(Angle rots) {
         return runOnce(() -> m_intakeArm.setControl(m_MMVReq.withPosition(rots)));
+        // return runOnce(() -> m_intakeArm.setControl(m_PVReq.withPosition(rots)));
+    }
+
+    //for TestingDashboard
+    public Command setIntakeArmPos(DoubleSubscriber sub_rots) {
+        return run(() -> m_intakeArm.setControl(m_MMVReq.withPosition(Rotations.of(sub_rots.get()))));
+        // return run(() -> m_intakeArm.setControl(m_PVReq.withPosition(Rotations.of(sub_rots.get()))));
     }
 
     public Command startIntakeRollers() {
@@ -91,6 +101,11 @@ public class Intake extends SubsystemBase {
         return runOnce(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RPS)));
     }
 
+    //for TestingDashboard
+    public Command setIntakeRollersSpeed(DoubleSubscriber sub_RPS) {
+        return run(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
+    }
+
     public TalonFX getIntakeArmMotor() {
         return m_intakeArm;
     }
@@ -103,6 +118,7 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic() {
         log_targetIntakeArmRots.accept(m_MMVReq.Position);
+        // log_targetIntakeArmRots.accept(m_PVReq.Position);
         log_targetIntakeRollersRPS.accept(m_VVReq.Velocity);
         log_intakeRollersRPS.accept(m_intakeRollers.getVelocity().getValueAsDouble());
         log_intakeArmRots.accept(m_intakeArm.getPosition().getValueAsDouble());
