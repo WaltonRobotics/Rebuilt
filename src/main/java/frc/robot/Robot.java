@@ -43,9 +43,9 @@ import frc.robot.autons.WaltAutonFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Superstructure;
-// import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
-// import frc.robot.subsystems.Intake.IntakeArmPosition;
+import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
@@ -86,11 +86,11 @@ public class Robot extends TimedRobot {
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
 
     private final Shooter m_shooter = new Shooter();
-    // private final Intake m_intake = new Intake();
+    private final Intake m_intake = new Intake();
     private final Indexer m_indexer = new Indexer();
 
     // private final WaltVisualSim m_visualSim = new WaltVisualSim(m_intake, m_indexer, m_shooter);
-    private final Superstructure m_superstructure = new Superstructure(m_indexer, m_shooter);
+    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
 
     //---AUTONS
     private Command m_autonomousCommand;
@@ -122,10 +122,10 @@ public class Robot extends TimedRobot {
     private Trigger trg_safeIntake = m_manipulator.x().and(trg_manipOverride.negate());
     private Trigger trg_retractIntake = m_manipulator.y().and(trg_manipOverride.negate());
 
-    private Trigger trg_shoot = m_driver.rightTrigger().and(trg_manipOverride.negate());
-    private Trigger trg_emergencyBarf = m_driver.leftTrigger().and(trg_manipOverride.negate());
+    private Trigger trg_shoot = m_manipulator.rightTrigger().and(trg_manipOverride.negate());
+    private Trigger trg_emergencyBarf = m_manipulator.leftTrigger().and(trg_manipOverride.negate());
 
-    private Trigger trg_pass = m_driver.rightBumper().and(trg_manipOverride.negate());
+    private Trigger trg_pass = m_manipulator.rightBumper().and(trg_manipOverride.negate());
 
     //---OVERRIDE TRIGGERS
     private Trigger trg_maxShooterOverride = trg_manipOverride.and(m_manipulator.povLeft());
@@ -478,18 +478,18 @@ public class Robot extends TimedRobot {
 
         trg_deployIntakeOverride.onTrue(
             Commands.parallel(
-                // m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)
+                m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)
                 // m_visualSim.setIntakeArmPosition()
             )
         ).onFalse(
             Commands.parallel(
-                // m_superstructure.intakeTo(IntakeArmPosition.SAFE)
+                m_superstructure.intakeTo(IntakeArmPosition.SAFE)
                 // m_visualSim.setIntakeArmPosition()
             )
         );
         trg_intakeUpOverride.onTrue(
             Commands.parallel(
-                // m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
+                m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
                 // m_visualSim.setIntakeArmPosition()
             )
         );

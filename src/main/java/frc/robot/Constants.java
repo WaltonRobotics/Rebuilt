@@ -180,8 +180,8 @@ public class Constants {
         private static final FeedbackConfigs kTurretFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kTurretGearing);
         private static final VoltageConfigs kTurretVoltageConfigs = new VoltageConfigs()
-            .withPeakForwardVoltage(1.2)
-            .withPeakReverseVoltage(-1.2);
+            .withPeakForwardVoltage(12)
+            .withPeakReverseVoltage(-12);
         public static final TalonFXConfiguration kTurretTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kTurretSlot0Configs)
             .withCurrentLimits(kTurretCurrentLimitConfigs)
@@ -301,6 +301,7 @@ public class Constants {
             .withKD(0);
         public static final MotorOutputConfigs kIntakeArmMotorOutputConfigs = new MotorOutputConfigs()
             .withNeutralMode(NeutralModeValue.Coast)
+            .withInverted(InvertedValue.Clockwise_Positive) // TODO: CW or CCW?
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);
         private static final MotionMagicConfigs kIntakeArmMotionMagicConfigs = new MotionMagicConfigs()
@@ -308,12 +309,17 @@ public class Constants {
             .withMotionMagicAcceleration(100)
             .withMotionMagicJerk(0);
         public static final FeedbackConfigs kIntakeArmFeedbackConfigs = new FeedbackConfigs()
-            .withSensorToMechanismRatio(1 / kIntakeArmGearing);
+            .withSensorToMechanismRatio(kIntakeArmGearing);
+        private static final VoltageConfigs kIntakeArmVoltageConfigs = new VoltageConfigs()
+            .withPeakForwardVoltage(6)    //1.2
+            .withPeakReverseVoltage(-6);  //-1.2
         public static final TalonFXConfiguration kIntakeArmConfiguration = new TalonFXConfiguration()
             .withCurrentLimits(kIntakeArmCurrentLimitConfigs)
             .withSlot0(kIntakeArmSlot0Configs)
             .withMotorOutput(kIntakeArmMotorOutputConfigs)
-            .withMotionMagic(kIntakeArmMotionMagicConfigs);
+            .withMotionMagic(kIntakeArmMotionMagicConfigs)
+            .withVoltage(kIntakeArmVoltageConfigs)
+            .withFeedback(kIntakeArmFeedbackConfigs);
 
         //Intake Rollers Motor
         private static final CurrentLimitsConfigs kIntakeRollersCurrentLimitConfigs = new CurrentLimitsConfigs()
@@ -334,12 +340,16 @@ public class Constants {
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);
         public static final FeedbackConfigs kIntakeRollersFeedbackConfigs = new FeedbackConfigs()
-            .withSensorToMechanismRatio(1 / kIntakeRollersGearing);
+            .withSensorToMechanismRatio(kIntakeRollersGearing);
+        // private static final VoltageConfigs kIntakeRollersVoltageConfigs = new VoltageConfigs()
+        //     .withPeakForwardVoltage(6)    //1.2
+        //     .withPeakReverseVoltage(-6);  //-1.2
         public static final TalonFXConfiguration kIntakeRollersConfiguration = new TalonFXConfiguration()
             .withCurrentLimits(kIntakeRollersCurrentLimitConfigs)
             .withSlot0(kIntakeRollersSlot0Configs)
             .withMotorOutput(kIntakeRollersMotorOutputConfigs)
             .withFeedback(kIntakeRollersFeedbackConfigs);
+            // .withVoltage(kIntakeRollersVoltageConfigs);
     }
 
     public static class IndexerK {
