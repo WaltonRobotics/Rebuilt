@@ -14,6 +14,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
+import static frc.robot.Constants.IndexerK.kLogTab;
 import static frc.robot.Constants.ShooterK.kDistanceAboveFunnel;
 import static frc.robot.Constants.ShooterK.kFlywheelRadius;
 import static frc.robot.Constants.ShooterK.kRobotToTurret;
@@ -23,6 +24,7 @@ import static frc.robot.Constants.ShooterK.kTurretMinAngle;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
@@ -34,17 +36,19 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.FieldConstants;
-
+import frc.util.WaltLogger.DoubleLogger;
 import edu.wpi.first.units.measure.Time;
 
 //TODO: make sure to explain everything
-public class TurretCalculator {
+public class ShotCalculator {
+    
+    private final DoubleLogger log_desiredTurretRot = new DoubleLogger(kLogTab, "desiredTurretRotations"); 
 
     //see 5000's code (circa 2/16/2026 9:11 PM EST)
-     public static final InterpolatingTreeMap<Double, ShotData> m_shotMap =
+    public static final InterpolatingTreeMap<Double, ShotData> m_shotMap =
                 new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), ShotData::interpolate);
 
-        public static final InterpolatingDoubleTreeMap m_timeOfFlightMap = new InterpolatingDoubleTreeMap();
+    public static final InterpolatingDoubleTreeMap m_timeOfFlightMap = new InterpolatingDoubleTreeMap();
 
         static {
             m_shotMap.put(5.34, new ShotData(RotationsPerSecond.of(2900 / 60), Degrees.of(27)));
@@ -116,21 +120,34 @@ public class TurretCalculator {
      * IF the turret is near a limit, snaps 360 degrees in the opposite direction to reach the same angle
      * without hitting the hardstop.
      * @param robot used to calculate where on the robot the turret will be
-     * @param target target position
+     * @param target target attempting to hit
      * @param currentAngle current measured position of the turret
      * @return safe rotation setpoint that is accurate to the target within bounds of kTurretMaxAngle
      * and kTurretMinAngle
      */
     public static Angle calculateAzimuthAngle(Pose2d robot, Translation3d target, Angle currentAngle) {
         Translation2d turretTranslation = new Pose3d(robot)
-            .transformBy(kRobotToTurret)
-            .toPose2d()
-            .getTranslation();
+                .transformBy(kRobotToTurret)
+                .toPose2d()
+                .getTranslation();
 
         Translation2d direction = target.toTranslation2d().minus(turretTranslation);
+        return calculateAzimuthAngle(robot, direction.getAngle().getMeasure(), currentAngle);
+    }
 
+    /**
+     * Calculates the turret's *TARGET* angle while ensuring it stays within physical limits.
+     * IF the turret is near a limit, snaps 360 degrees in the opposite direction to reach the same angle
+     * without hitting the hardstop.
+     * @param robot used to calculate where on the robot the turret will be
+     * @param fieldRelativeAngle angle attempting to hit.
+     * @param currentAngle current measured position of the turret
+     * @return safe rotation setpoint that is accurate to the target within bounds of kTurretMaxAngle
+     * and kTurretMinAngle
+     */
+    public static Angle calculateAzimuthAngle(Pose2d robot, Angle fieldRelativeAngle, Angle currentAngle) {
         double angle = MathUtil.inputModulus(
-                direction.getAngle().minus(robot.getRotation()).getRotations(), kTurretMinAngle.magnitude(), kTurretMaxAngle.magnitude());
+                new Rotation2d(fieldRelativeAngle).minus(robot.getRotation()).getRotations(), kTurretMinAngle.magnitude(), kTurretMaxAngle.magnitude());
         double current = currentAngle.in(Rotations);
 
         if (current > 0 && angle + 1 <= kTurretMaxAngle.in(Rotations))
@@ -183,7 +200,7 @@ public class TurretCalculator {
 
     public record ShotData(double exitVelocity, double hoodAngle, Translation3d target) {
         public ShotData(AngularVelocity exitVelocity, Angle hoodAngle, Translation3d target) {
-            this(exitVelocity.in(RadiansPerSecond), hoodAngle.in(Degrees), target);
+            this(exitVelocity.in(RadiansPerSecond), hoodAngle.in(Radians), target);
         }
 
         public ShotData(AngularVelocity exitVelocity, Angle hoodAngle) {

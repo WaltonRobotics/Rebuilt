@@ -32,7 +32,6 @@ public class TurretVisualizer {
     private final Pose3dLogger log_turretPose = new Pose3dLogger(kLogTab, "turretPose"); 
     private final Pose3dLogger log_hoodPose = new Pose3dLogger(kLogTab, "hoodPose");
 
-
     public Shooter m_shooter;
 
     public TurretVisualizer(Supplier<Pose3d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {

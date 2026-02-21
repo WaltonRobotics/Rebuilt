@@ -56,9 +56,9 @@ import java.util.function.Supplier;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.shooter.FuelSim;
-import frc.robot.subsystems.shooter.TurretCalculator;
+import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.shooter.TurretVisualizer;
-import frc.robot.subsystems.shooter.TurretCalculator.ShotData;
+import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
 import frc.util.AllianceFlipUtil;
 import frc.util.WaltMotorSim;
 import frc.util.WaltLogger;
@@ -320,7 +320,7 @@ public class Shooter extends SubsystemBase {
         AngularVelocity flywheelVelocity = getShooterVelocity();
         Angle hoodAngle = Degrees.of(90).minus(getHoodAngle());
         Angle turretPosition = getTurretPosition();
-        LinearVelocity flywheelLinearVelocity = TurretCalculator.angularToLinearVelocity(flywheelVelocity,
+        LinearVelocity flywheelLinearVelocity = ShotCalculator.angularToLinearVelocity(flywheelVelocity,
                 kFlywheelRadius);
 
         m_fuelSim.launchFuel(
@@ -387,14 +387,14 @@ public class Shooter extends SubsystemBase {
     private void calculateShot(Pose2d robot) {
         ChassisSpeeds fieldSpeeds = m_fieldSpeedsSupplier.get();
 
-        ShotData calculatedShot = TurretCalculator.iterativeMovingShotFromInterpolationMap(robot, fieldSpeeds,
+        ShotData calculatedShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(robot, fieldSpeeds,
                 currentTarget, 3);
-        Angle azimuthAngle = TurretCalculator.calculateAzimuthAngle(robot, calculatedShot.getTarget(),
+        Angle azimuthAngle = ShotCalculator.calculateAzimuthAngle(robot, calculatedShot.getTarget(),
                 m_turret.getPosition().getValue());
         setTurretPosition(azimuthAngle);
         setHoodPosition(calculatedShot.getHoodAngle());
         setShooterVelocity(
-                TurretCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));
+                ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));
     }
 
     /**
@@ -406,9 +406,9 @@ public class Shooter extends SubsystemBase {
     private void calculateTurretAngle(Pose2d robot) {
         ChassisSpeeds fieldSpeeds = m_fieldSpeedsSupplier.get();
 
-        ShotData calculatedShot = TurretCalculator.iterativeMovingShotFromInterpolationMap(robot, fieldSpeeds,
+        ShotData calculatedShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(robot, fieldSpeeds,
                 currentTarget, 3);
-        Angle azimuthAngle = TurretCalculator.calculateAzimuthAngle(robot, calculatedShot.getTarget(),
+        Angle azimuthAngle = ShotCalculator.calculateAzimuthAngle(robot, calculatedShot.getTarget(),
                 m_turret.getPosition().getValue());
         setTurretPosition(azimuthAngle);
     }
@@ -416,7 +416,7 @@ public class Shooter extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        // TODO: how on earth are we going to zero the turret? JIG RAHHHHHHh
+        // TODO: how on earth are we going to zero the turret? JIG RAHHHHHH
         Pose2d pose = m_poseSupplier.get();
 
         log_calculateShotCurrPose.accept(pose);
@@ -455,7 +455,7 @@ public class Shooter extends SubsystemBase {
     @Override
     public void simulationPeriodic() {
         m_turretVisualizer.updateFuel(
-            TurretCalculator.angularToLinearVelocity(m_flywheelVelocity, kFlywheelRadius), m_currentHoodPos);
+            ShotCalculator.angularToLinearVelocity(m_flywheelVelocity, kFlywheelRadius), m_currentHoodPos);
             
         WaltMotorSim.updateSimFX(m_shooterLeader, m_shooterSim);
         WaltMotorSim.updateSimFX(m_turret, m_turretSim);
