@@ -39,8 +39,8 @@ public class Intake extends SubsystemBase {
     private MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0).withEnableFOC(true);
     private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
 
-    private BooleanSupplier m_currentSpike = () -> m_intakeArm.getStatorCurrent().getValueAsDouble() > 5.0;
-    private BooleanSupplier m_veloIsNearZero = () -> Math.abs(m_intakeArm.getVelocity().getValueAsDouble()) < 0.005;
+    private BooleanSupplier m_currentSpike = () -> m_intakeArm.getStatorCurrent().getValueAsDouble() > 5.0; //TODO: update value (5.0)
+    private BooleanSupplier m_veloIsNearZero = () -> Math.abs(m_intakeArm.getVelocity().getValueAsDouble()) < 0.005; //TODO: update value (0.005)
 
     private VoltageOut m_intakeArmZeroingReq = new VoltageOut(0);
 
@@ -119,7 +119,7 @@ public class Intake extends SubsystemBase {
 
     public Command currentSenseHoming() {
         Runnable init = () -> {
-            m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(3));
+            m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(-2));
         };
 
         Runnable execute = () -> {};
@@ -127,7 +127,6 @@ public class Intake extends SubsystemBase {
         Consumer<Boolean> onEnd = (Boolean interrupted) -> {
             m_intakeArm.setPosition(0);
             m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(0));
-            removeDefaultCommand();
             setIntakeArmPos(IntakeArmPosition.RETRACTED);
         };
 
