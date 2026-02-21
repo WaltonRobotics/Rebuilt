@@ -14,10 +14,6 @@ public class TestingDashboard {
     public static NetworkTableInstance nte_inst = NetworkTableInstance.getDefault();
     public static NetworkTable nte_testingDashboard = nte_inst.getTable("TestingDashboard");
 
-    public static NetworkTable nte_shooter = nte_inst.getTable("Shooter");
-    public static NetworkTable nte_indexer = nte_inst.getTable("Indexer");
-    public static NetworkTable nte_intake = nte_inst.getTable("Intake");
-
     /* TOPICS */
     //---SHOOTER
     public static DoubleTopic DT_shooterVelocityRPS = nte_inst.getDoubleTopic("/TestingDashboard/shooterVelocityRPS");

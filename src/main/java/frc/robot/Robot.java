@@ -162,9 +162,9 @@ public class Robot extends TimedRobot {
 
     /* CONSTRUCTOR */
     public Robot() {
-        // configureBindings();
-        configureTestBindings();    //this should be commented out during competition matches
-        configureTestingDashboard();
+        configureBindings();
+        // configureTestBindings();    //this should be commented out during competition matches
+        // configureTestingDashboard();
     }
 
     /* COMMANDS */
@@ -261,7 +261,7 @@ public class Robot extends TimedRobot {
         //     m_superstructure.stopPassing()
         // );
         trg_emergencyBarf.onTrue(
-            m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)
+            m_superstructure.activateOuttake(ShooterK.kShooterBarfRPS)
         ).onFalse(
             m_superstructure.deactivateOuttake()
         );
@@ -328,7 +328,7 @@ public class Robot extends TimedRobot {
 
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
-        //---TEST SEQUENCES
+        /* TEST SEQUENCES/BINDS */
         trg_activateIntake.onTrue(
             Commands.parallel(
                 m_superstructure.activateIntake()
@@ -373,10 +373,10 @@ public class Robot extends TimedRobot {
 
         trg_emergencyBarf.onTrue(
             Commands.parallel(
-                m_superstructure.activateOuttake(ShooterK.kShooterEmergencyRPS)
-                // m_visualSim.setShooterVelocity(),
-                // m_visualSim.setSpindexerVelocity(),
-                // m_visualSim.setTunnelVelocity()
+                m_superstructure.activateOuttake(ShooterK.kShooterBarfRPS),
+                m_visualSim.setShooterVelocity(),
+                m_visualSim.setSpindexerVelocity(),
+                m_visualSim.setTunnelVelocity()
             )
         ).onFalse(
             Commands.parallel(
@@ -515,8 +515,8 @@ public class Robot extends TimedRobot {
             .whileTrue(m_shooter.setShooterVelocityCmd(TestingDashboard.sub_shooterVelocityRPS));
         TestingDashboard.trg_letTurretPositionRotsChange
             .whileTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
-        // TestingDashboard.trg_letHoodPositionDegsChange
-        //     .whileTrue(m_shooter.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
+        TestingDashboard.trg_letHoodPositionDegsChange
+            .whileTrue(m_shooter.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
 
         TestingDashboard.trg_letSpindexerVelocityRPSChange
             .whileTrue(m_indexer.setSpindexerVelocityCmd(TestingDashboard.sub_spindexerVelocityRPS));
@@ -528,7 +528,7 @@ public class Robot extends TimedRobot {
         TestingDashboard.trg_letIntakeRollersVelocityRPSChange
             .whileTrue(m_intake.setIntakeRollersSpeed(TestingDashboard.sub_intakeRollersVelocityRPS));
     }
-    
+
     /* PERIODICS */
     @Override
     public void robotPeriodic() {
@@ -549,6 +549,8 @@ public class Robot extends TimedRobot {
         // periodics
         // m_shooter.periodic();
         m_indexer.periodic();
+        m_intake.periodic();
+
         log_povUp.accept(m_driver.povUp());
         log_povDown.accept(m_driver.povDown());
         log_povLeft.accept(m_driver.povLeft());
@@ -685,6 +687,7 @@ public class Robot extends TimedRobot {
     public void simulationPeriodic() {
         SwerveDriveState robotState = m_drivetrain.getState();
         Pose2d robotPose = robotState.Pose;
+
         m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();
         // m_shooter.simulationPeriodic();

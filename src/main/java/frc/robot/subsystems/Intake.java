@@ -9,10 +9,16 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IntakeK.*;
 
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+
+import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.networktables.DoubleSubscriber;
@@ -20,9 +26,11 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltMotorSim;
+import frc.robot.Robot;
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
@@ -31,9 +39,17 @@ public class Intake extends SubsystemBase {
     private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID); //x44Foc
     private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID); //x44Foc
 
-    private MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0).withEnableFOC(true);
+    private DynamicMotionMagicVoltage m_MMVReq = new DynamicMotionMagicVoltage(0, 1, 1).withEnableFOC(true);
     // private PositionVoltage m_PVReq = new PositionVoltage(0).withEnableFOC(true);
     private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
+
+    private BooleanSupplier m_currentSpike = () -> m_intakeArm.getStatorCurrent().getValueAsDouble() > 5.0; //TODO: update value (5.0)
+    private BooleanSupplier m_veloIsNearZero = () -> Math.abs(m_intakeArm.getVelocity().getValueAsDouble()) < 0.005; //TODO: update value (0.005)
+
+    private VoltageOut m_intakeArmZeroingReq = new VoltageOut(0);
+
+    private Debouncer m_currentDebouncer = new Debouncer(0.25, DebounceType.kRising);
+    private Debouncer m_velocityDebouncer = new Debouncer(0.125, DebounceType.kRising);
 
     /* SIM OBJECTS */
     private final DCMotorSim m_intakeArmSim = new DCMotorSim(
@@ -65,6 +81,11 @@ public class Intake extends SubsystemBase {
     public Intake() {
         m_intakeArm.getConfigurator().apply(kIntakeArmConfiguration);
         m_intakeRollers.getConfigurator().apply(kIntakeRollersConfiguration);
+
+        if(Robot.isReal()) {
+            setDefaultCommand(currentSenseHoming());
+        }
+
         initSim();
     }
 
@@ -75,18 +96,16 @@ public class Intake extends SubsystemBase {
 
     /* COMMANDS */
     public Command setIntakeArmPos(IntakeArmPosition rots) {
-        return setIntakeArmPos(rots.rots);
+        return setIntakeArmPos(rots.rots, rots == IntakeArmPosition.RETRACTED ? 3 : 1);
     }
 
-    public Command setIntakeArmPos(Angle rots) {
-        return runOnce(() -> m_intakeArm.setControl(m_MMVReq.withPosition(rots)));
-        // return runOnce(() -> m_intakeArm.setControl(m_PVReq.withPosition(rots)));
+    public Command setIntakeArmPos(Angle rots, double RPSPS) {
+        return runOnce(() -> m_intakeArm.setControl(m_MMVReq.withPosition(rots).withAcceleration(RPSPS)));
     }
 
     //for TestingDashboard
     public Command setIntakeArmPos(DoubleSubscriber sub_rots) {
         return run(() -> m_intakeArm.setControl(m_MMVReq.withPosition(Rotations.of(sub_rots.get()))));
-        // return run(() -> m_intakeArm.setControl(m_PVReq.withPosition(Rotations.of(sub_rots.get()))));
     }
 
     public Command startIntakeRollers() {
@@ -112,6 +131,27 @@ public class Intake extends SubsystemBase {
 
     public TalonFX getIntakeRollers() {
         return m_intakeRollers;
+    }
+
+    public Command currentSenseHoming() {
+        Runnable init = () -> {
+            m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(-2));
+        };
+
+        Runnable execute = () -> {};
+
+        Consumer<Boolean> onEnd = (Boolean interrupted) -> {
+            m_intakeArm.setPosition(0);
+            m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(0));
+            removeDefaultCommand();
+            setIntakeArmPos(IntakeArmPosition.RETRACTED);
+        };
+
+        BooleanSupplier isFinished = () -> 
+            m_currentDebouncer.calculate(m_currentSpike.getAsBoolean()) &&
+            m_velocityDebouncer.calculate(m_veloIsNearZero.getAsBoolean());
+
+        return new FunctionalCommand(init, execute, onEnd, isFinished, this);
     }
 
     /* PERIODICS */

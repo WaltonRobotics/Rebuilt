@@ -79,7 +79,7 @@
 //         m_shooterVelocity = shooterRoot.append(
 //             new MechanismLigament2d("shooterVelocity", 0, 90, 2, new Color8Bit(Color.kFirebrick))
 //         );
-        
+       
 //         // m_hoodStartAngle = new Rotation2d(Degrees.of(0));
 //         // m_turretStartAngle = new Rotation2d(Degrees.of(180));
 
@@ -89,11 +89,18 @@
 //         // SmartDashboard.putData("TurretMech2d", turretMech);
 //     } 
 
+//     /**
+//      * Sets the length of the simPart based on the velocity
+//      * @param simPart A part of the simulated robot
+//      * @param subsystemMotor The motor for the part.
+//      * @param divisor Scales down to be proportional to the robot
+//      * @return A command that sets the length of the simPart to the motor velocity / 10.
+//      */
 //     private Command setVelocity(MechanismLigament2d simPart, TalonFX subsystemMotor, double divisor) {
 //         if (divisor != 0) {
 //             return Commands.run(
 //                 () -> {
-//                     simPart.setLength(subsystemMotor.getVelocity().getValueAsDouble()/divisor);
+//                     simPart.setLength(subsystemMotor.getVelocity().getValueAsDouble() / divisor);
 //                 }
 //             );
 //         } else {
@@ -102,6 +109,10 @@
 //     }
 
 //     //---INTAKE
+//     /**
+//      * Sets the angle of the intake arm sim object.
+//      * @return A command that sets the angle of the intake arm to the current position plus the start angle.
+//      */
 //     public Command setIntakeArmPosition() {
 //         return Commands.run(
 //             () -> {
@@ -109,37 +120,63 @@
 //             }
 //         );
 //     }
-
+    
+//     /**
+//      * Sets the intake roller sim object velocity.
+//      * 
+//      * @return A call to setVelocity that takes the intakeRollerVelocity and the intake rollers.
+//      */
 //     public Command setIntakeRollerVelocity() {
 //         return setVelocity(m_intakeRollerVelocity, m_intake.getIntakeRollers(), 100);
 //     }
 
 //     //---INDEXER
+//     /**
+//      * Sets the spindexer sim object velocity.
+//      * @return A call to setVelocity that takes spindexerVelocity and the spindexer.
+//      */
 //     public Command setSpindexerVelocity() {
 //         return setVelocity(m_spindexerVelocity, m_indexer.getSpindexer(), 100);
 //     }
 
+//     /**
+//      * Sets the tunnel sim object velocity.
+//      * @return A call to setVelocity that takes tunnelVelocity and the tunnel.
+//      */
 //     public Command setTunnelVelocity() {
 //         return setVelocity(m_tunnelVelocity, m_indexer.getTunnel(), 200);
 //     }
 
 //     //---SHOOTER
+//     /**
+//      * Sets the shooter sim object velocity.
+//      * @return A call to setVelocity that takes shooterVelocity and the shooter.
+//      */
 //     public Command setShooterVelocity() {
 //         return setVelocity(m_shooterVelocity, m_shooter.getShooter(), 100);
 //     }
 
+//     //NOTE: Made turret in3D based on a robot pose commented out old turret code in case we want it as some point
+//     /**
+//      * Sets the hood sim object position.
+//      * @return A command that sets the angle to the start angle minus the current position of the shooter.
+//      */
 //     // public Command setHoodPosition() {
 //     //     return Commands.run(
 //     //         () -> {
-//     //             m_hoodPosition.setAngle(m_hoodStartAngle.plus(new Rotation2d(Rotations.of(m_shooter.getHoodSimEncoder().getAngularPositionRotations()))));
+//     //             m_hoodPosition.setAngle(m_hoodStartAngle.minus(new Rotation2d(Rotations.of(m_shooter.getHoodSimEncoder().getAngularPositionRotations()))));
 //     //         }
 //     //     );
 //     // }
 
+//     /**
+//      * Sets the turret position.
+//      * @return A command that sets the angle to the position of the turret plus the start angle.
+//      */
 //     // public Command setTurretPosition() {
 //     //     return Commands.run(
 //     //         () -> {
-//     //             m_turretPosition.setAngle(m_turretStartAngle.minus(new Rotation2d(m_shooter.getTurret().getPosition().getValue())));
+//     //             m_turretPosition.setAngle(new Rotation2d(m_shooter.getTurret().getPosition().getValue()).plus(m_turretStartAngle));
 //     //         }
 //     //     );
 //     // }

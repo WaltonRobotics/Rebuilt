@@ -139,10 +139,17 @@ public class Shooter extends SubsystemBase {
         return run(() -> m_shooterLeader.setControl(m_velocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
     }
 
-    // //---HOOD (Basic Position Control)
+    //---HOOD (Basic Position Control)
     public Command setHoodPositionCmd(Angle degs) {  
         return runOnce(
             () -> m_hoodSetpoint = degs
+        );
+    }
+  
+    //for TestingDashboard
+    public Command setHoodPositionCmd(DoubleSubscriber sub_degs) {
+        return run(
+            () -> m_hoodSetpoint = Degrees.of(sub_degs.get())
         );
     }
 
@@ -188,6 +195,7 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> m_turret.setControl(m_MMVRequest.withPosition(rots)));
     }
 
+    //for TestingDashboard
     public Command setTurretPositionCmd(DoubleSubscriber sub_rots) {
         return run(() -> m_turret.setControl(m_MMVRequest.withPosition(Rotations.of(sub_rots.get()))));
     }

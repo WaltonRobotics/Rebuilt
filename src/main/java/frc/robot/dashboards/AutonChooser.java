@@ -24,19 +24,19 @@ public class AutonChooser {
     public static final String twoLeftNeutralPickup = "twoLeftNeutralPickup";
     public static final String threeLeftNeutralPickup = "threeLeftNeutralPickup";
 
-    //---TOPICS
+    /* TOPICS */
     public static NetworkTable nte_autonChooser = nte_inst.getTable("AutonChooser");
 
     public static StringTopic ST_autonName = nte_inst.getStringTopic("/AutonChooser/autonName");
     public static BooleanTopic BT_autonMade = nte_inst.getBooleanTopic("/AutonChooser/autonMade");
     public static BooleanTopic BT_makeAuton = nte_inst.getBooleanTopic("/AutonChooser/makeAuton");
 
-    //---PUBLISHERS
+    /* PUBLISHERS */
     public static StringPublisher pub_autonName;
     public static BooleanPublisher pub_autonMade;
     public static BooleanPublisher pub_makeAuton;
 
-    //---SUBSCRIBERS
+    /* SUBSCRIBERS */
     public static StringSubscriber sub_autonName;
     public static BooleanSubscriber sub_autonMade;
     public static BooleanSubscriber sub_makeAuton;
