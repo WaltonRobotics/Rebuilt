@@ -386,17 +386,20 @@ public class Shooter extends SubsystemBase {
     }
 
     private void calculateShot(Pose2d robot) {
+        // LinearVelocity subtractionFactor = ShotCalculator.angularToLinearVelocity(RadiansPerSecond.of(60), kFlywheelRadius);
+        
         ChassisSpeeds fieldSpeeds = m_fieldSpeedsSupplier.get();
 
-        ShotData calculatedShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(robot, fieldSpeeds,
+        ShotData calculatedShot = ShotCalculator.iterativeMovingShotFromFunnelClearance(robot, fieldSpeeds,
                 currentTarget, 3);
         Angle azimuthAngle = ShotCalculator.calculateAzimuthAngle(robot, calculatedShot.getTarget(),
                 m_turret.getPosition().getValue());
         setTurretPosition(azimuthAngle);
-        // setHoodPosition(Degrees.of(36).in(Radians));
         setHoodPosition(calculatedShot.getHoodAngle());
-        // setShooterVelocity(ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));
         setShooterVelocity(ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));
+
+        // setHoodPosition(Degrees.of(20).plus(calculatedShot.getHoodAngle()));
+        // setShooterVelocity(ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity().minus(subtractionFactor), kFlywheelRadius));
     }
 
     /**
@@ -408,7 +411,7 @@ public class Shooter extends SubsystemBase {
     private void calculateTurretAngle(Pose2d robot) {
         ChassisSpeeds fieldSpeeds = m_fieldSpeedsSupplier.get();
 
-        ShotData calculatedShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(robot, fieldSpeeds,
+        ShotData calculatedShot = ShotCalculator.iterativeMovingShotFromFunnelClearance(robot, fieldSpeeds,
                 currentTarget, 3);
         Angle azimuthAngle = ShotCalculator.calculateAzimuthAngle(robot, calculatedShot.getTarget(),
                 m_turret.getPosition().getValue());

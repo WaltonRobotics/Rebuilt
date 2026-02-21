@@ -1,9 +1,5 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Feet;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Rotations;
-
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.CANBus;
@@ -55,6 +51,8 @@ public class Constants {
         public static final String kLogTab = "Shooter";
         //cant really think of any other name but is where the turret is relative to the robot
         public static final Transform3d kRobotToTurret = new Transform3d(new Translation3d(Inches.zero(), Inches.zero(), Inches.of(18)), Rotation3d.kZero); //DUMMY VALS
+        public static final Distance kDistanceAboveFunnel = Inches.of(20); //distance above the hub funnel
+
 
         public static final double kHoodMinAngle = Units.degreesToRadians(19);
         public static final double kHoodMaxAngle = Units.degreesToRadians(51);

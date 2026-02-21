@@ -182,7 +182,7 @@ public class Robot extends TimedRobot {
         // configureTestBindings(); //this should be commented out during competition matches
         if(Robot.isSimulation()) {
             configureFuelSim();
-            FuelSim.getInstance().enableAirResistance();
+            // FuelSim.getInstance().enableAirResistance();
         }
     }
 
