@@ -15,12 +15,12 @@
 // import edu.wpi.first.wpilibj2.command.Commands;
 // import frc.robot.subsystems.Indexer;
 // import frc.robot.subsystems.Intake;
-// // import frc.robot.subsystems.Shooter;
+// import frc.robot.subsystems.Shooter;
 
 // public class WaltVisualSim {
 //     private final Intake m_intake;
 //     private final Indexer m_indexer;
-//     // private final Shooter m_shooter;
+//     private final Shooter m_shooter;
 
 //     private final MechanismLigament2d m_intakeArmPosition;
 //     private final MechanismLigament2d m_intakeRollerVelocity;

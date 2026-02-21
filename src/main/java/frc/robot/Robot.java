@@ -162,8 +162,8 @@ public class Robot extends TimedRobot {
 
     /* CONSTRUCTOR */
     public Robot() {
-        configureBindings();
-        // configureTestBindings();    //this should be commented out during competition matches
+        // configureBindings();
+        configureTestBindings();    //this should be commented out during competition matches
         // configureTestingDashboard();
     }
 
@@ -373,10 +373,10 @@ public class Robot extends TimedRobot {
 
         trg_emergencyBarf.onTrue(
             Commands.parallel(
-                m_superstructure.activateOuttake(ShooterK.kShooterBarfRPS),
-                m_visualSim.setShooterVelocity(),
-                m_visualSim.setSpindexerVelocity(),
-                m_visualSim.setTunnelVelocity()
+                m_superstructure.activateOuttake(ShooterK.kShooterBarfRPS)
+                // m_visualSim.setShooterVelocity(),
+                // m_visualSim.setSpindexerVelocity(),
+                // m_visualSim.setTunnelVelocity()
             )
         ).onFalse(
             Commands.parallel(
