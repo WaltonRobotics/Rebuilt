@@ -1,0 +1,100 @@
+{
+  "HALProvider": {
+    "Other Devices": {
+      "window": {
+        "visible": false
+      }
+    }
+  },
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/Pose": "Field2d",
+      "/SmartDashboard/Choreo Alerts": "Alerts",
+      "/SmartDashboard/IndexerMech2d": "Mechanism2d",
+      "/SmartDashboard/IntakeMech2d": "Mechanism2d",
+      "/SmartDashboard/Module 0": "Mechanism2d",
+      "/SmartDashboard/Module 1": "Mechanism2d",
+      "/SmartDashboard/Module 2": "Mechanism2d",
+      "/SmartDashboard/Module 3": "Mechanism2d",
+      "/SmartDashboard/PhotonAlerts": "Alerts",
+      "/SmartDashboard/SendableChooser[0]": "String Chooser",
+      "/SmartDashboard/ShooterMech2d": "Mechanism2d",
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d",
+      "/SmartDashboard/myIndexer": "Mechanism2d"
+    },
+    "windows": {
+      "/FMSInfo": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/Pose": {
+        "bottom": 1914,
+        "height": 8.069275856018066,
+        "left": 245,
+        "right": 3942,
+        "top": 118,
+        "width": 16.54119300842285
+      },
+      "/SmartDashboard/IndexerMech2d": {
+        "window": {
+          "name": "IndexerMech2d",
+          "visible": true
+        }
+      },
+      "/SmartDashboard/IntakeMech2d": {
+        "window": {
+          "name": "IntakeMech2d",
+          "visible": true
+        }
+      },
+      "/SmartDashboard/ShooterMech2d": {
+        "window": {
+          "name": "ShooterMech2d",
+          "visible": true
+        }
+      },
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": {
+        "Robot": {
+          "color": [
+            0.0,
+            255.0,
+            103.29110717773438,
+            255.0
+          ]
+        },
+        "bottom": 1914,
+        "height": 8.069275856018066,
+        "left": 245,
+        "right": 3942,
+        "top": 118,
+        "width": 16.54119300842285,
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables View": {
+    "visible": false
+  },
+  "Plot": {
+    "Plot <0>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 332
+        }
+      ],
+      "window": {
+        "visible": false
+      }
+    }
+  }
+}

@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import frc.robot.Constants;
 
 /** Motor simulation methods */
-public class MotorSim {
+public class WaltMotorSim {
     /**
      * Initialize the sim for a CTRE TalonFX motor
      * @param motor is the CTRE motor

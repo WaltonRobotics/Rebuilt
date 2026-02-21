@@ -3,22 +3,22 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
-import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IndexerK.*;
 
 import frc.robot.Constants;
-import frc.util.MotorSim;
+import frc.util.WaltMotorSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
@@ -64,8 +64,8 @@ public class Indexer extends SubsystemBase {
 
     //TODO: Change orientation if necessary
     private void initSim() {
-        MotorSim.initSimFX(m_spindexer, ChassisReference.CounterClockwise_Positive, MotorType.KrakenX60);
-        MotorSim.initSimFX(m_tunnel, ChassisReference.CounterClockwise_Positive, MotorType.KrakenX60);
+        WaltMotorSim.initSimFX(m_spindexer, ChassisReference.CounterClockwise_Positive, MotorType.KrakenX60);
+        WaltMotorSim.initSimFX(m_tunnel, ChassisReference.CounterClockwise_Positive, MotorType.KrakenX60);
     }
 
     /* COMMANDS */
@@ -89,8 +89,18 @@ public class Indexer extends SubsystemBase {
         return runOnce(() -> m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RPS)));
     }
 
+    //for TestingDashboard
+    public Command setSpindexerVelocityCmd(DoubleSubscriber sub_RPS) {
+        return run(() -> m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
+    }
+
     public Command setTunnelVelocityCmd(AngularVelocity RPS) {
         return runOnce(() -> m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS)));
+    }
+
+    //for TestingDashboard
+    public Command setTunnelVelocityCmd(DoubleSubscriber sub_RPS) {
+        return run(() -> m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
     }
 
     public TalonFX getSpindexer() {
@@ -110,7 +120,7 @@ public class Indexer extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        MotorSim.updateSimFX(m_tunnel, m_tunnelSim);
-        MotorSim.updateSimFX(m_spindexer, m_spindexerSim);
+        WaltMotorSim.updateSimFX(m_tunnel, m_tunnelSim);
+        WaltMotorSim.updateSimFX(m_spindexer, m_spindexerSim);
     }
 }

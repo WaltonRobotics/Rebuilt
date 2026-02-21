@@ -17,6 +17,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Servo;
@@ -29,10 +30,11 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
 
 import frc.robot.Constants;
-import frc.util.MotorSim;
+import frc.util.WaltMotorSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -123,8 +125,8 @@ public class Shooter extends SubsystemBase {
 
     //TODO: update orientation values (if needed)
     private void initSim() {
-        MotorSim.initSimFX(m_shooterLeader, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
-        MotorSim.initSimFX(m_turret, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
+        WaltMotorSim.initSimFX(m_shooterLeader, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
+        WaltMotorSim.initSimFX(m_turret, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
     }
 
     /* COMMANDS */
@@ -133,10 +135,22 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> m_shooterLeader.setControl(m_velocityRequest.withVelocity(RPS)));
     }
 
+    //for TestingDashboard
+    public Command setShooterVelocityCmd(DoubleSubscriber sub_RPS) {
+        return run(() -> m_shooterLeader.setControl(m_velocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
+    }
+
     //---HOOD (Basic Position Control)
     public Command setHoodPositionCmd(Angle degs) {  
         return runOnce(
             () -> m_hoodSetpoint = degs
+        );
+    }
+
+    //for TestingDashboard
+    public Command setHoodPositionCmd(DoubleSubscriber sub_degs) {
+        return run(
+            () -> m_hoodSetpoint = Degrees.of(sub_degs.get())
         );
     }
 
@@ -157,6 +171,11 @@ public class Shooter extends SubsystemBase {
     //---TURRET (Motionmagic Angle Control)
     public Command setTurretPositionCmd(Angle rots) {
         return runOnce(() -> m_turret.setControl(m_MMVRequest.withPosition(rots)));
+    }
+
+    //for TestingDashboard
+    public Command setTurretPositionCmd(DoubleSubscriber sub_rots) {
+        return run(() -> m_turret.setControl(m_MMVRequest.withPosition(Rotations.of(sub_rots.get()))));
     }
 
     /* GETTERS */
@@ -191,9 +210,9 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        MotorSim.updateSimFX(m_shooterLeader, m_shooterSim);
-        MotorSim.updateSimFX(m_turret, m_turretSim);
-        MotorSim.updateSimServo(m_hood, m_hoodSim);
+        WaltMotorSim.updateSimFX(m_shooterLeader, m_shooterSim);
+        WaltMotorSim.updateSimFX(m_turret, m_turretSim);
+        WaltMotorSim.updateSimServo(m_hood, m_hoodSim);
     }
 
 }
