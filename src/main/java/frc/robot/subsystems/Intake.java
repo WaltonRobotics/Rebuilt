@@ -91,12 +91,7 @@ public class Intake extends SubsystemBase {
 
     /* COMMANDS */
     public Command setIntakeArmPos(IntakeArmPosition rots) {
-        switch (rots) {
-            case RETRACTED:
-                return setIntakeArmPos(rots.rots, 3);
-            default:
-                return setIntakeArmPos(rots.rots, 1);
-        }
+        return setIntakeArmPos(rots.rots, rots == IntakeArmPosition.RETRACTED ? 3 : 1);
     }
 
     public Command setIntakeArmPos(Angle rots, double RPSPS) {
