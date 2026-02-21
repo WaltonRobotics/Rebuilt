@@ -17,6 +17,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Servo;
@@ -29,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
 
 import frc.robot.Constants;
@@ -133,10 +135,22 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> m_shooterLeader.setControl(m_velocityRequest.withVelocity(RPS)));
     }
 
+    //for TestingDashboard
+    public Command setShooterVelocityCmd(DoubleSubscriber sub_RPS) {
+        return run(() -> m_shooterLeader.setControl(m_velocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
+    }
+
     //---HOOD (Basic Position Control)
     public Command setHoodPositionCmd(Angle degs) {  
         return runOnce(
             () -> m_hoodSetpoint = degs
+        );
+    }
+
+    //for TestingDashboard
+    public Command setHoodPositionCmd(DoubleSubscriber sub_degs) {
+        return run(
+            () -> m_hoodSetpoint = Degrees.of(sub_degs.get())
         );
     }
 
@@ -157,6 +171,11 @@ public class Shooter extends SubsystemBase {
     //---TURRET (Motionmagic Angle Control)
     public Command setTurretPositionCmd(Angle rots) {
         return runOnce(() -> m_turret.setControl(m_MMVRequest.withPosition(rots)));
+    }
+
+    //for TestingDashboard
+    public Command setTurretPositionCmd(DoubleSubscriber sub_rots) {
+        return run(() -> m_turret.setControl(m_MMVRequest.withPosition(Rotations.of(sub_rots.get()))));
     }
 
     /* GETTERS */

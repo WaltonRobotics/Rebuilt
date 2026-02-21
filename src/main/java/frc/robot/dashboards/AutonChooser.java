@@ -1,4 +1,4 @@
-package frc.robot.autons;
+package frc.robot.dashboards;
 
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class AutonChooser {
+    public static NetworkTableInstance nte_inst = NetworkTableInstance.getDefault();
     public static SendableChooser<String> m_chooser = new SendableChooser<>();
 
     /* CLASS VARIABLES */
@@ -23,20 +24,19 @@ public class AutonChooser {
     public static final String twoLeftNeutralPickup = "twoLeftNeutralPickup";
     public static final String threeLeftNeutralPickup = "threeLeftNeutralPickup";
 
-    //---TOPICS
-    public static NetworkTableInstance nte_inst = NetworkTableInstance.getDefault();
+    /* TOPICS */
     public static NetworkTable nte_autonChooser = nte_inst.getTable("AutonChooser");
 
     public static StringTopic ST_autonName = nte_inst.getStringTopic("/AutonChooser/autonName");
     public static BooleanTopic BT_autonMade = nte_inst.getBooleanTopic("/AutonChooser/autonMade");
     public static BooleanTopic BT_makeAuton = nte_inst.getBooleanTopic("/AutonChooser/makeAuton");
 
-    //---PUBLISHERS
+    /* PUBLISHERS */
     public static StringPublisher pub_autonName;
     public static BooleanPublisher pub_autonMade;
     public static BooleanPublisher pub_makeAuton;
 
-    //---SUBSCRIBERS
+    /* SUBSCRIBERS */
     public static StringSubscriber sub_autonName;
     public static BooleanSubscriber sub_autonMade;
     public static BooleanSubscriber sub_makeAuton;
@@ -63,4 +63,3 @@ public class AutonChooser {
         SmartDashboard.putData(m_chooser);
     }
 }
-
