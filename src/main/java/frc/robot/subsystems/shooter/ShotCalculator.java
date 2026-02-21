@@ -115,12 +115,12 @@ public class ShotCalculator {
         return MetersPerSecond.of(vel.in(RadiansPerSecond) * radius.in(Meters));
     }
 
-    /**
+  /**
      * Calculates the turret's *TARGET* angle while ensuring it stays within physical limits.
      * IF the turret is near a limit, snaps 360 degrees in the opposite direction to reach the same angle
      * without hitting the hardstop.
      * @param robot used to calculate where on the robot the turret will be
-     * @param target target attempting to hit
+     * @param target target position
      * @param currentAngle current measured position of the turret
      * @return safe rotation setpoint that is accurate to the target within bounds of kTurretMaxAngle
      * and kTurretMinAngle
@@ -132,22 +132,8 @@ public class ShotCalculator {
                 .getTranslation();
 
         Translation2d direction = target.toTranslation2d().minus(turretTranslation);
-        return calculateAzimuthAngle(robot, direction.getAngle().getMeasure(), currentAngle);
-    }
-
-    /**
-     * Calculates the turret's *TARGET* angle while ensuring it stays within physical limits.
-     * IF the turret is near a limit, snaps 360 degrees in the opposite direction to reach the same angle
-     * without hitting the hardstop.
-     * @param robot used to calculate where on the robot the turret will be
-     * @param fieldRelativeAngle angle attempting to hit.
-     * @param currentAngle current measured position of the turret
-     * @return safe rotation setpoint that is accurate to the target within bounds of kTurretMaxAngle
-     * and kTurretMinAngle
-     */
-    public static Angle calculateAzimuthAngle(Pose2d robot, Angle fieldRelativeAngle, Angle currentAngle) {
         double angle = MathUtil.inputModulus(
-                new Rotation2d(fieldRelativeAngle).minus(robot.getRotation()).getRotations(), kTurretMinAngle.magnitude(), kTurretMaxAngle.magnitude());
+                direction.getAngle().minus(robot.getRotation()).getRotations(), kTurretMinAngle.magnitude(),kTurretMaxAngle.magnitude());
         double current = currentAngle.in(Rotations);
 
         if (current > 0 && angle + 1 <= kTurretMaxAngle.in(Rotations))
@@ -190,7 +176,7 @@ public class ShotCalculator {
                 predictedTarget = predictTargetPos(target, fieldSpeeds, timeOfFlight);
                 distance = getDistanceToTarget(robot, predictedTarget).in(Meters);
                 shot = m_shotMap.get(distance);
-                shot = new ShotData(shot.exitVelocity, shot.hoodAngle(), predictedTarget);
+                shot = new ShotData(shot.exitVelocity, shot.hoodAngle, predictedTarget);
                 timeOfFlight = Seconds.of(m_timeOfFlightMap.get(distance));
             }
 

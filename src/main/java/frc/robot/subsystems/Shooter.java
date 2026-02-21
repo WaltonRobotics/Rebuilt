@@ -392,7 +392,7 @@ public class Shooter extends SubsystemBase {
         Angle azimuthAngle = ShotCalculator.calculateAzimuthAngle(robot, calculatedShot.getTarget(),
                 m_turret.getPosition().getValue());
         setTurretPosition(azimuthAngle);
-        setHoodPosition(calculatedShot.getHoodAngle());
+        setHoodPosition(Degrees.of(90).minus(calculatedShot.getHoodAngle()));
         setShooterVelocity(
                 ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));
     }
