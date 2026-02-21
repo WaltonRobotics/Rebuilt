@@ -8,6 +8,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
@@ -17,6 +18,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -25,6 +27,7 @@ import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -189,6 +192,24 @@ public class Shooter extends SubsystemBase {
 
     public TalonFX getTurret() {
         return m_turret;
+    }
+
+    public Command setMode(BooleanSubscriber brake) {
+        if(brake.get()) {
+            return Commands.parallel(
+                run(() -> m_shooterLeader.setNeutralMode(NeutralModeValue.Brake)),
+                run(() -> m_shooterFollower.setNeutralMode(NeutralModeValue.Brake))
+            );
+        }
+        return Commands.parallel(
+            run(() -> m_shooterLeader.setNeutralMode(NeutralModeValue.Coast)),
+            run(() -> m_shooterFollower.setNeutralMode(NeutralModeValue.Coast))
+        );
+    }
+
+    public Command turretBrake(BooleanSubscriber brake) {
+        if(brake.get()) return run(() -> m_turret.setNeutralMode(NeutralModeValue.Brake));
+        return run(() -> m_turret.setNeutralMode(NeutralModeValue.Coast));
     }
 
     /* PERIODICS */

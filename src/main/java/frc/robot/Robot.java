@@ -162,9 +162,9 @@ public class Robot extends TimedRobot {
 
     /* CONSTRUCTOR */
     public Robot() {
-        configureBindings();
-        // configureTestBindings();    //this should be commented out during competition matches
-        // configureTestingDashboard();
+        //configureBindings();
+        configureTestBindings();    //this should be commented out during competition matches
+        configureTestingDashboard();
     }
 
     /* COMMANDS */
@@ -518,6 +518,8 @@ public class Robot extends TimedRobot {
             .whileTrue(m_intake.setIntakeArmPos(TestingDashboard.sub_intakeArmPositionRots));
         TestingDashboard.trg_letIntakeRollersVelocityRPSChange
             .whileTrue(m_intake.setIntakeRollersSpeed(TestingDashboard.sub_intakeRollersVelocityRPS));
+
+        TestingDashboard.trg_shooterBrake.whileTrue(m_shooter.setMode(TestingDashboard.sub_shooterBrake));
     }
 
     /* PERIODICS */

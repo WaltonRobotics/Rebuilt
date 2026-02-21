@@ -137,6 +137,19 @@
             }
           },
           {
+            "title": "shooterBrake",
+            "x": 375.0,
+            "y": 125.0,
+            "width": 125.0,
+            "height": 125.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/TestingDashboard/shooterBrake",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
             "title": "letHoodPositionDegsChange",
             "x": 375.0,
             "y": 500.0,

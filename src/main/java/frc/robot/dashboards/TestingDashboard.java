@@ -39,6 +39,13 @@ public class TestingDashboard {
     public static BooleanTopic BT_letIntakeArmPositionRotsChange = nte_inst.getBooleanTopic("/TestingDashboard/letIntakeArmPositionRotsChange");
     public static BooleanTopic BT_letIntakeRollersVelocityRPSChange = nte_inst.getBooleanTopic("/TestingDashboard/letIntakeRollersVelocityRPSChange");
 
+    //---Brake SWITCHES
+    public static BooleanTopic BT_shooterBrake = nte_inst.getBooleanTopic("/TestingDashboard/shooterBrake");
+    public static BooleanTopic BT_turretBrake = nte_inst.getBooleanTopic("/TestingDashboard/turretBrake");
+    public static BooleanPublisher pub_shooterBrake;
+    public static BooleanSubscriber sub_shooterBrake;
+    public static Trigger trg_shooterBrake;
+
     /* PUBLISHERS */
     //---SHOOTER
     public static DoublePublisher pub_shooterVelocityRPS;
@@ -142,6 +149,11 @@ public class TestingDashboard {
         pub_letTunnelVelocityRPSChange = BT_letTunnelVelocityRPSChange.publish();
         pub_letIntakeArmPositionRotsChange = BT_letIntakeArmPositionRotsChange.publish();
         pub_letIntakeRollersVelocityRPSChange = BT_letIntakeRollersVelocityRPSChange.publish();
+
+        pub_shooterBrake = BT_shooterBrake.publish();
+        pub_shooterBrake.setDefault(false);
+        sub_shooterBrake = BT_shooterBrake.subscribe(false);
+        trg_shooterBrake = new Trigger(() -> sub_shooterBrake.get());
 
         pub_letShooterVelocityRPSChange.setDefault(false);
         pub_letTurretPositionRotsChange.setDefault(false);
