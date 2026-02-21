@@ -156,6 +156,7 @@ public class WaltVisualSim {
         return setVelocity(m_shooterVelocity, m_shooter.getShooter(), 100);
     }
 
+    //NOTE: Made turret in3D based on a robot pose commented out old turret code in case we want it as some point
     /**
      * Sets the hood sim object position.
      * @return A command that sets the angle to the start angle minus the current position of the shooter.
