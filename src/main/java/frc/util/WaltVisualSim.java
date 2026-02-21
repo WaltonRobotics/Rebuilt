@@ -120,6 +120,7 @@ public class WaltVisualSim {
             }
         );
     }
+    
     /**
      * Sets the intake roller sim object velocity.
      * 
