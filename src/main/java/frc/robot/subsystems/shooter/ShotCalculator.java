@@ -15,11 +15,10 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static frc.robot.Constants.IndexerK.kLogTab;
-import static frc.robot.Constants.ShooterK.kDistanceAboveFunnel;
 import static frc.robot.Constants.ShooterK.kFlywheelRadius;
 import static frc.robot.Constants.ShooterK.kRobotToTurret;
-import static frc.robot.Constants.ShooterK.kTurretMaxAngle;
-import static frc.robot.Constants.ShooterK.kTurretMinAngle;
+import static frc.robot.Constants.ShooterK.kTurretMaxRots;
+import static frc.robot.Constants.ShooterK.kTurretMinRots;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -36,13 +35,13 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.FieldConstants;
-import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.*;
 import edu.wpi.first.units.measure.Time;
 
 //TODO: make sure to explain everything
 public class ShotCalculator {
     
-    private final DoubleLogger log_desiredTurretRot = new DoubleLogger(kLogTab, "desiredTurretRotations"); 
+    private static final DoubleLogger log_desiredTurretRot = new DoubleLogger(kLogTab, "desiredTurretRotations"); 
 
     //see 5000's code (circa 2/16/2026 9:11 PM EST)
     public static final InterpolatingTreeMap<Double, ShotData> m_shotMap =
@@ -133,13 +132,15 @@ public class ShotCalculator {
 
         Translation2d direction = target.toTranslation2d().minus(turretTranslation);
         double angle = MathUtil.inputModulus(
-                direction.getAngle().minus(robot.getRotation()).getRotations(), kTurretMinAngle.magnitude(),kTurretMaxAngle.magnitude());
+                direction.getAngle().minus(robot.getRotation()).getRotations(), kTurretMinRots.magnitude(),kTurretMaxRots.magnitude());
         double current = currentAngle.in(Rotations);
 
-        if (current > 0 && angle + 1 <= kTurretMaxAngle.in(Rotations))
+        if (current > 0 && angle + 1 <= kTurretMaxRots.in(Rotations))
             angle += 1;
-        if (current < 0 && angle - 1 >= kTurretMinAngle.in(Rotations))
+        if (current < 0 && angle - 1 >= kTurretMinRots.in(Rotations))
             angle -= 1;
+
+        log_desiredTurretRot.accept(angle);
 
         return Rotations.of(angle);
     }

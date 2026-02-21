@@ -47,6 +47,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.Constants.ShooterK.*;
@@ -392,9 +393,10 @@ public class Shooter extends SubsystemBase {
         Angle azimuthAngle = ShotCalculator.calculateAzimuthAngle(robot, calculatedShot.getTarget(),
                 m_turret.getPosition().getValue());
         setTurretPosition(azimuthAngle);
-        setHoodPosition(Degrees.of(90).minus(calculatedShot.getHoodAngle()));
-        setShooterVelocity(
-                ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));
+        // setHoodPosition(Degrees.of(36).in(Radians));
+        setHoodPosition(calculatedShot.getHoodAngle());
+        // setShooterVelocity(ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));
+        setShooterVelocity(ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));
     }
 
     /**

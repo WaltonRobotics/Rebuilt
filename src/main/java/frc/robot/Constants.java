@@ -55,16 +55,11 @@ public class Constants {
         public static final String kLogTab = "Shooter";
         //cant really think of any other name but is where the turret is relative to the robot
         public static final Transform3d kRobotToTurret = new Transform3d(new Translation3d(Inches.zero(), Inches.zero(), Inches.of(18)), Rotation3d.kZero); //DUMMY VALS
-        public static final Distance kDistanceAboveFunnel = Inches.of(20); //distance above the hub funnel
-
-
-        public static final Angle kTurretMinAngle = Rotations.of(-0.75);
-        public static final Angle kTurretMaxAngle = Rotations.of(0.75); 
 
         public static final double kHoodMinAngle = Units.degreesToRadians(19);
         public static final double kHoodMaxAngle = Units.degreesToRadians(51);
 
-        public static final Distance kFlywheelRadius = Inches.of(2); //fake
+        public static final Distance kFlywheelRadius = Inches.of(1.5); //fake
 
         public static final int kHopperCapacity = 55; //TODO: find true max
 
@@ -81,7 +76,7 @@ public class Constants {
         public static final double kShooterGearing = 1/1;
         public static final double kTurretGearing = 41.66666666/1;
 
-        public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.75); //0.75 rots in each direction from home
+        public static final Angle kTurretMaxRotsFromHome = Rotations.of(1.75); //0.75 rots in each direction from home
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.magnitude());
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.magnitude());
 
