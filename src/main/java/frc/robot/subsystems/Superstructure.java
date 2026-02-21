@@ -226,7 +226,7 @@ public class Superstructure {
             logCommand = logActiveOverrideCommands("hood0", "hood30");
         }
         return Commands.sequence(
-            // m_shooter.setHoodPositionCmd(degs),
+            m_shooter.setHoodPositionCmd(degs),
             logCommand
         );
     }

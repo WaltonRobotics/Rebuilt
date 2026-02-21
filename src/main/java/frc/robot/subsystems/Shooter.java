@@ -51,7 +51,7 @@ public class Shooter extends SubsystemBase {
     private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true);
 
     private final GobildaServo m_hood = new GobildaServo(kHoodChannel);
-    private final CANcoder m_hoodEncoder = new CANcoder(kHoodEncoderChannel, Constants.kCanivoreBus);
+    private final CANcoder m_hoodEncoder = new CANcoder(kHoodEncoderCANID, Constants.kCanivoreBus);
     private final PIDController m_hoodPID = new PIDController(1, 0, 0);
 
     private Angle m_hoodSetpoint = Degrees.of(0);

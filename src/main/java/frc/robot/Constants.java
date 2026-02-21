@@ -90,7 +90,7 @@ public class Constants {
 
         public static final int kExitBeamBreakChannel = 1; //TODO: Update channel number
         public static final int kHoodChannel = 0;
-        public static final int kHoodEncoderChannel = 2;
+        public static final int kHoodEncoderCANID = 25;
 
         /* CONFIGS */
         // TODO: Check what more configs would be necessary
