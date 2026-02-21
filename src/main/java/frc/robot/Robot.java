@@ -454,7 +454,7 @@ public class Robot extends TimedRobot {
             new Pose3d()  // hood
         });
         log_realComponentPoses.accept(new Pose3d[] {
-            new Pose3d(
+            new Pose3d( // intake
                 m_drivetrain.getState().Pose
             ).plus(
                 new Transform3d(
@@ -469,6 +469,9 @@ public class Robot extends TimedRobot {
                         Rotations.of(0)
                     )
                 )
+            ),
+            new Pose3d( // spindexer
+                m_drivetrain.getState().Pose
             )
         });
     }
