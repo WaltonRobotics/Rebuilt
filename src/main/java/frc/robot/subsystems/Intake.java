@@ -79,7 +79,7 @@ public class Intake extends SubsystemBase {
         m_intakeArm.getConfigurator().apply(kIntakeArmConfiguration);
         m_intakeRollers.getConfigurator().apply(kIntakeRollersConfiguration);
 
-        // setDefaultCommand(currentSenseHoming());
+        setDefaultCommand(currentSenseHoming());
 
         initSim();
     }
