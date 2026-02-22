@@ -7,38 +7,54 @@ import com.ctre.phoenix6.sim.ChassisReference;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static frc.robot.Constants.IntakeK.*;
 
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+
+import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.WaltLogger.DoubleLogger;
-
-import frc.robot.Constants.IntakeK;
 import frc.util.WaltMotorSim;
+import frc.robot.Robot;
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
     /* CLASS VARIABLES */
     //---MOTORS + CONTROL REQUESTS
-    private final TalonFX m_intakeArm = new TalonFX(IntakeK.kIntakeArmCANID);   //X44Foc
-    private final TalonFX m_intakeRollers = new TalonFX(IntakeK.kIntakeRollersCANID);   //X44Foc
+    private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID); //x44Foc
+    private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID); //x44Foc
 
-    private MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0).withEnableFOC(true);
+    private DynamicMotionMagicVoltage m_MMVReq = new DynamicMotionMagicVoltage(0, 1, 1).withEnableFOC(true);
     private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
+
+    private BooleanSupplier m_currentSpike = () -> m_intakeArm.getStatorCurrent().getValueAsDouble() > 5.0; //TODO: update value (5.0)
+    private BooleanSupplier m_veloIsNearZero = () -> Math.abs(m_intakeArm.getVelocity().getValueAsDouble()) < 0.005; //TODO: update value (0.005)
+
+    private VoltageOut m_intakeArmZeroingReq = new VoltageOut(0);
+
+    private Debouncer m_currentDebouncer = new Debouncer(0.25, DebounceType.kRising);
+    private Debouncer m_velocityDebouncer = new Debouncer(0.125, DebounceType.kRising);
 
     /* SIM OBJECTS */
     private final DCMotorSim m_intakeArmSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX44Foc(1),
-            IntakeK.kIntakeArmMOI,
-            IntakeK.kIntakeArmGearing
+            kIntakeArmMOI,
+            kIntakeArmGearing
         ),
         DCMotor.getKrakenX44Foc(1)
     );
@@ -46,23 +62,28 @@ public class Intake extends SubsystemBase {
     private final DCMotorSim m_intakeRollersSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX44Foc(1),
-            IntakeK.kIntakeRollersMOI,
-            IntakeK.kIntakeRollersGearing
+            kIntakeRollersMOI,
+            kIntakeRollersGearing
         ),
         DCMotor.getKrakenX44Foc(1) // returns gearbox
     );
 
     /* LOGGERS */
-    DoubleLogger log_intakeArmRots = WaltLogger.logDouble(IntakeK.kLogTab, "intakeArmRots");
-    DoubleLogger log_targetIntakeArmRots = WaltLogger.logDouble(IntakeK.kLogTab, "targetIntakeArmRots");
+    DoubleLogger log_intakeArmRots = WaltLogger.logDouble(kLogTab, "intakeArmRots");
+    DoubleLogger log_targetIntakeArmRots = WaltLogger.logDouble(kLogTab, "targetIntakeArmRots");
 
-    DoubleLogger log_intakeRollersRPS = WaltLogger.logDouble(IntakeK.kLogTab, "intakeRollersRPS");
-    DoubleLogger log_targetIntakeRollersRPS = WaltLogger.logDouble(IntakeK.kLogTab, "targetIntakeRollersRPS");
+    DoubleLogger log_intakeRollersRPS = WaltLogger.logDouble(kLogTab, "intakeRollersRPS");
+    DoubleLogger log_targetIntakeRollersRPS = WaltLogger.logDouble(kLogTab, "targetIntakeRollersRPS");
 
     /* CONSTRUCTOR */
     public Intake() {
-        m_intakeArm.getConfigurator().apply(IntakeK.kIntakeArmConfiguration);
-        m_intakeRollers.getConfigurator().apply(IntakeK.kIntakeRollersConfiguration);
+        m_intakeArm.getConfigurator().apply(kIntakeArmConfiguration);
+        m_intakeRollers.getConfigurator().apply(kIntakeRollersConfiguration);
+
+        if(Robot.isReal()) {
+            setDefaultCommand(currentSenseHoming());
+        }
+
         initSim();
     }
 
@@ -73,19 +94,33 @@ public class Intake extends SubsystemBase {
 
     /* COMMANDS */
     public Command setIntakeArmPos(IntakeArmPosition rots) {
-        return setIntakeArmPos(rots.rots);
+        return setIntakeArmPos(rots.rots, rots == IntakeArmPosition.RETRACTED ? 3 : 1);
     }
 
-    public Command setIntakeArmPos(Angle rots) {
-        return runOnce(() -> m_intakeArm.setControl(m_MMVReq.withPosition(rots)));
+    public Command setIntakeArmPos(Angle rots, double RPSPS) {
+        return runOnce(() -> m_intakeArm.setControl(m_MMVReq.withPosition(rots).withAcceleration(RPSPS)));
     }
 
-    public Command setIntakeRollersSpeed(IntakeRollersVelocity RPS) {
-        return setIntakeRollersSpeed(RPS.RPS);
+    //for TestingDashboard
+    public Command setIntakeArmPos(DoubleSubscriber sub_rots) {
+        return run(() -> m_intakeArm.setControl(m_MMVReq.withPosition(Rotations.of(sub_rots.get()))));
     }
 
-    public Command setIntakeRollersSpeed(AngularVelocity RPS) {
+    public Command startIntakeRollers() {
+        return setIntakeRollersVelocityCmd(kIntakeRollersMaxRPS);
+    }
+
+    public Command stopIntakeRollers() {
+        return setIntakeRollersVelocityCmd(RotationsPerSecond.of(0));
+    }
+
+    public Command setIntakeRollersVelocityCmd(AngularVelocity RPS) {
         return runOnce(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RPS)));
+    }
+
+    //for TestingDashboard
+    public Command setIntakeRollersSpeed(DoubleSubscriber sub_RPS) {
+        return run(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
     }
 
     public TalonFX getIntakeArmMotor() {
@@ -94,6 +129,27 @@ public class Intake extends SubsystemBase {
 
     public TalonFX getIntakeRollers() {
         return m_intakeRollers;
+    }
+
+    public Command currentSenseHoming() {
+        Runnable init = () -> {
+            m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(-2));
+        };
+
+        Runnable execute = () -> {};
+
+        Consumer<Boolean> onEnd = (Boolean interrupted) -> {
+            m_intakeArm.setPosition(0);
+            m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(0));
+            removeDefaultCommand();
+            setIntakeArmPos(IntakeArmPosition.RETRACTED);
+        };
+
+        BooleanSupplier isFinished = () -> 
+            m_currentDebouncer.calculate(m_currentSpike.getAsBoolean()) &&
+            m_velocityDebouncer.calculate(m_veloIsNearZero.getAsBoolean());
+
+        return new FunctionalCommand(init, execute, onEnd, isFinished, this);
     }
 
     /* PERIODICS */
@@ -126,15 +182,4 @@ public class Intake extends SubsystemBase {
         }
     }
 
-    public enum IntakeRollersVelocity{
-        MAX(50),
-        MID(33),
-        STOP(0);
-
-        private AngularVelocity RPS;
-
-        private IntakeRollersVelocity(double RPS) {
-            this.RPS = RotationsPerSecond.of(RPS);
-        }
-    }
 }

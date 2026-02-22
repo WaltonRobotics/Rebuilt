@@ -34,6 +34,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Servo;
@@ -51,6 +52,7 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.Constants.RobotK.kRobotFullWidth;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
 
 import java.util.function.Supplier;
@@ -184,7 +186,7 @@ public class Shooter extends SubsystemBase {
                 () -> new Pose3d(m_poseSupplier
                         .get()
                         .rotateAround(poseSupplier.get().getTranslation(), new Rotation2d(m_turretTurnPosition)))
-                        .transformBy(kRobotToTurret),
+                        .transformBy(kTurretTransform),
                 fieldSpeedsSupplier);
 
         m_fuelSim = FuelSim.getInstance();
@@ -240,6 +242,11 @@ public class Shooter extends SubsystemBase {
     public void setShooterVelocity(Double velocity) {
         m_shooterLeader.setControl(m_velocityRequest.withVelocity(velocity));
     }
+    
+    //for TestingDashboard
+    public Command setShooterVelocityCmd(DoubleSubscriber sub_RPS) {
+        return run(() -> m_shooterLeader.setControl(m_velocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
+    }
 
     //---HOOD (Basic Position Control)
     public Command setHoodPositionCmd(Angle degs) {  
@@ -252,6 +259,13 @@ public class Shooter extends SubsystemBase {
         m_hoodSetpoint = degrees;
     }
 
+
+    //for TestingDashboard
+    public Command setHoodPositionCmd(DoubleSubscriber sub_degs) {
+        return run(
+            () -> m_hoodSetpoint = Degrees.of(sub_degs.get())
+        );
+    }
 
     // The PIDOutput needed to get to the setpoint from the current point
     public void updateHood() {
@@ -274,6 +288,11 @@ public class Shooter extends SubsystemBase {
 
     public void setTurretPosition(Angle azimuthAngle) {
         m_turret.setControl(m_MMVRequest.withPosition(azimuthAngle));
+    }
+    
+    //for TestingDashboard
+    public Command setTurretPositionCmd(DoubleSubscriber sub_rots) {
+        return run(() -> m_turret.setControl(m_MMVRequest.withPosition(Rotations.of(sub_rots.get()))));
     }
 
     /* GETTERS */
@@ -336,7 +355,7 @@ public class Shooter extends SubsystemBase {
                 flywheelLinearVelocity,
                 hoodAngle,
                 turretPosition,
-                kRobotToTurret.getMeasureZ());
+                kTurretTransform.getMeasureZ());
     }
 
     // TODO: update orientation values (if needed)

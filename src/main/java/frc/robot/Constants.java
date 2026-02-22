@@ -51,7 +51,7 @@ public class Constants {
     public static class ShooterK {
         public static final String kLogTab = "Shooter";
         //cant really think of any other name but is where the turret is relative to the robot
-        public static final Transform3d kRobotToTurret = new Transform3d(new Translation3d(Inches.zero(), Inches.zero(), Inches.of(18)), Rotation3d.kZero); //DUMMY VALS
+        public static final Transform3d kTurretTransform = new Transform3d(new Translation3d(Inches.zero(), Inches.zero(), Inches.of(18)), Rotation3d.kZero); //DUMMY VALS
         public static final Distance kDistanceAboveFunnel = Inches.of(20); //distance above the hub funnel
 
 
@@ -77,13 +77,13 @@ public class Constants {
         public static final double kShooterGearing = 1/1;
         public static final double kTurretGearing = 41.66666666/1;
 
-        public static final Angle kTurretMaxRotsFromHome = Rotations.of(1.75); //0.75 rots in each direction from home
+        public static final Angle kTurretMaxRotsFromHome = Rotations.of(1.5); //1.5 rots in each direction from home
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.magnitude());
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.magnitude());
 
-        public static final AngularVelocity kShooterMaxRPS = RotationsPerSecond.of(5785/60 * (0.9));   //Kraken X60Foc Max (RPM: 5785)
-        public static final AngularVelocity kShooterEmergencyRPS = RotationsPerSecond.of(1500/60 * (0.9));
-        public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.of(/* 0/60 * (0.9) */ 0);
+        public static final AngularVelocity kShooterMaxRPS = RotationsPerSecond.of((5785/60) * (0.9) / kShooterGearing);   //Kraken X60Foc Max (RPM: 5785)
+        public static final AngularVelocity kShooterBarfRPS = RotationsPerSecond.of((5785/60) * (0.2) / kShooterGearing);
+        public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.of(/* 0/60 * (0.9) / kShooterGearing */ 0);
 
         //---HOOD CONSTANTS
         public static final double kHoodMoI = 0.00027505;
@@ -295,7 +295,7 @@ public class Constants {
         public static final double kIntakeRollersMOI = 0.0001; // 0.00343880857
         public static final double kIntakeRollersGearing = 12.0/30;
 
-        public static final AngularVelocity kRollersMaxRPS = RotationsPerSecond.of((7368 / 60) / kIntakeRollersGearing);  //100% RPS
+        public static final AngularVelocity kIntakeRollersMaxRPS = RotationsPerSecond.of((7368 / 60) / kIntakeRollersGearing);  //100% RPS
 
         /* IDS */
         public static final int kIntakeArmCANID = 40;
@@ -321,7 +321,7 @@ public class Constants {
             .withMotionMagicAcceleration(100)
             .withMotionMagicJerk(0);
         public static final FeedbackConfigs kIntakeArmFeedbackConfigs = new FeedbackConfigs()
-            .withSensorToMechanismRatio(1 / kIntakeArmGearing);
+            .withSensorToMechanismRatio(kIntakeArmGearing);
         public static final TalonFXConfiguration kIntakeArmConfiguration = new TalonFXConfiguration()
             .withCurrentLimits(kIntakeArmCurrentLimitConfigs)
             .withSlot0(kIntakeArmSlot0Configs)
@@ -345,7 +345,7 @@ public class Constants {
             .withInverted(InvertedValue.Clockwise_Positive) // TODO: CW or CCW?
             .withNeutralMode(NeutralModeValue.Brake);
         public static final FeedbackConfigs kIntakeRollersFeedbackConfigs = new FeedbackConfigs()
-            .withSensorToMechanismRatio(1 / kIntakeRollersGearing);
+            .withSensorToMechanismRatio(kIntakeRollersGearing);
         public static final TalonFXConfiguration kIntakeRollersConfiguration = new TalonFXConfiguration()
             .withCurrentLimits(kIntakeRollersCurrentLimitConfigs)
             .withSlot0(kIntakeRollersSlot0Configs)
@@ -420,9 +420,13 @@ public class Constants {
     }
 
     public static class AutonK {
-        public static final Pose2d neutralPose = new Pose2d(Distance.ofRelativeUnits(6.924767017364502, Meter), 
-            Distance.ofRelativeUnits(2.251265048980713, Meter), new Rotation2d(Math.PI));
-        public static final Pose2d depotPose = new Pose2d(Distance.ofRelativeUnits(1.1576627492904663, Meter), 
-            Distance.ofRelativeUnits(5.958622932434082, Meter), new Rotation2d(0));
+        public static final Pose2d rightNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
+            Meters.of(2.251265048980713), new Rotation2d(0));
+        public static final Pose2d rightDepotPose = new Pose2d(Meters.of(1.1576627492904663), 
+            Meters.of(5.958622932434082), new Rotation2d(Math.PI));
+
+        public static final Pose2d leftNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
+            Meters.of(5.437880039215088), new Rotation2d(0));
+
     }
 }
