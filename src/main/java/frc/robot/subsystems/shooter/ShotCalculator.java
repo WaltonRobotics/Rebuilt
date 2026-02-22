@@ -171,6 +171,7 @@ public class ShotCalculator {
 
     // https://www.desmos.com/calculator/ezjqolho6g
     // i lowkirkeniunely dont know what the difference between this desmos calc and the other
+    // TODO: how do i account for airResistance? do i shoot a bit off course? do i need to at all? TBD>
     public static ShotData calculateShotFromFunnelClearance(Pose2d robot, Translation3d actualTarget,
             Translation3d predictedTarget) {
         double x_dist = getDistanceToTarget(robot, predictedTarget).in(Inches);

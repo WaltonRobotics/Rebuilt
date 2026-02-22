@@ -50,6 +50,7 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
+import static frc.robot.Constants.RobotK.kRobotFullWidth;
 import static frc.robot.Constants.ShooterK.*;
 
 import java.util.function.Supplier;
@@ -104,6 +105,9 @@ public class Shooter extends SubsystemBase {
     //---LOGIC BOOLEANS
     private boolean m_spunUp = false;   // currently unused
     private final boolean m_inSim = RobotBase.isSimulation();
+
+    //---LOGIC TRIGGERS
+    private final Trigger trg_inAllianceZone = new Trigger(this::inAllianceZone);
 
     //---BEAM BREAKS (if we have one on the shooter)
     public DigitalInput m_exitBeamBreak = new DigitalInput(kExitBeamBreakChannel);
@@ -385,6 +389,22 @@ public class Shooter extends SubsystemBase {
         });
     }
 
+    private boolean inAllianceZone() {
+        Pose2d pose = m_poseSupplier.get();
+        boolean isBlue = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue;
+
+        return isBlue &&
+            pose.getMeasureX().lt(Inches.of(FieldConstants.LinesVertical.allianceZone).plus(kRobotFullWidth.div(2))) || //are we in the BLUE ALLIANCE ZONE as a BLUE ROBOT (behind the starting line effectively)
+                !isBlue
+                    && pose.getMeasureX()
+                        .gt(Inches.of(FieldConstants.LinesVertical.oppAllianceZone).plus(kRobotFullWidth.div(2)));      //are we in the RED ALLIANCE ZONE as a RED ROBOT(behind the starting line effectively)
+    }
+
+    private void updateTarget() {
+        trg_inAllianceZone.and(DriverStation::isTeleop).onTrue(setGoal(TurretGoal.SCORING));
+        trg_inAllianceZone.negate().and(DriverStation::isTeleop).onTrue(setGoal(TurretGoal.PASSING));
+    }
+
     private void calculateShot(Pose2d robot) {
         // LinearVelocity subtractionFactor = ShotCalculator.angularToLinearVelocity(RadiansPerSecond.of(60), kFlywheelRadius);
         
@@ -398,8 +418,6 @@ public class Shooter extends SubsystemBase {
         setHoodPosition(calculatedShot.getHoodAngle());
         setShooterVelocity(ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));
 
-        // setHoodPosition(Degrees.of(20).plus(calculatedShot.getHoodAngle()));
-        // setShooterVelocity(ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity().minus(subtractionFactor), kFlywheelRadius));
     }
 
     /**
@@ -421,10 +439,12 @@ public class Shooter extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        // TODO: how on earth are we going to zero the turret? JIG RAHHHHHH
         Pose2d pose = m_poseSupplier.get();
 
         log_calculateShotCurrPose.accept(pose);
+
+        //comment out when testing
+        updateTarget();
 
         if (m_goal == TurretGoal.SCORING || m_goal == TurretGoal.PASSING) {
             calculateShot(pose);
