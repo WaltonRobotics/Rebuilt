@@ -54,7 +54,7 @@ public class Constants {
         public static final double kHoodMinAngle = Units.degreesToRadians(19);
         public static final double kHoodMaxAngle = Units.degreesToRadians(51);
 
-        public static final Distance kFlywheelRadius = Inches.of(1.5); //fake
+        public static final Distance kFlywheelRadius = Inches.of(1.5); 
 
         public static final int kHopperCapacity = 55; //TODO: find true max
 
