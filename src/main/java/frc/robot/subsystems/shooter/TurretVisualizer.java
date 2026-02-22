@@ -76,7 +76,7 @@ public class TurretVisualizer {
         Pose3d hoodPose = new Pose3d(0.1, 0, 0, new Rotation3d(0, hoodAngle.in(Radians), 0));
         hoodPose = hoodPose.rotateAround(new Translation3d(), new Rotation3d(0, 0, azimuthAngle.in(Radians)));
         hoodPose = new Pose3d(
-                hoodPose.getTranslation().plus(kRobotToTurret.getTranslation()), hoodPose.getRotation());
+                hoodPose.getTranslation().plus(kTurretTransform.getTranslation()), hoodPose.getRotation());
         log_hoodPose.accept(hoodPose);
     }
 }

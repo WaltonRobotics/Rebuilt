@@ -17,7 +17,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import static frc.robot.Constants.IndexerK.kLogTab;
 import static frc.robot.Constants.ShooterK.kDistanceAboveFunnel;
 import static frc.robot.Constants.ShooterK.kFlywheelRadius;
-import static frc.robot.Constants.ShooterK.kRobotToTurret;
+import static frc.robot.Constants.ShooterK.kTurretTransform;
 import static frc.robot.Constants.ShooterK.kTurretMaxRots;
 import static frc.robot.Constants.ShooterK.kTurretMinRots;
 
@@ -104,7 +104,7 @@ public class ShotCalculator {
         double gravity = MetersPerSecondPerSecond.of(9.81).in(InchesPerSecondPerSecond);
         double vel = velocity.in(InchesPerSecond);
         double x_dist = getDistanceToTarget(robot, target).in(Inches);
-        double y_dist = target.getMeasureZ().minus(kRobotToTurret.getMeasureZ()).in(Inches);
+        double y_dist = target.getMeasureZ().minus(kTurretTransform.getMeasureZ()).in(Inches);
 
         double angle = Math.atan(
                 ((vel * vel)
@@ -142,7 +142,7 @@ public class ShotCalculator {
      */
     public static Angle calculateAzimuthAngle(Pose2d robot, Translation3d target, Angle currentAngle) {
         Translation2d turretTranslation = new Pose3d(robot)
-                .transformBy(kRobotToTurret)
+                .transformBy(kTurretTransform)
                 .toPose2d()
                 .getTranslation();
 
@@ -177,7 +177,7 @@ public class ShotCalculator {
         double x_dist = getDistanceToTarget(robot, predictedTarget).in(Inches);
         double y_dist = predictedTarget
                 .getMeasureZ()
-                .minus(kRobotToTurret.getMeasureZ())
+                .minus(kTurretTransform.getMeasureZ())
                 .in(Inches);
         double g = 386;
         double r = FieldConstants.Hub.funnelRadius.in(Inches) * x_dist
