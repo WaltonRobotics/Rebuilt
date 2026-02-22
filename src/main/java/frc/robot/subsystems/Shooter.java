@@ -188,6 +188,10 @@ public class Shooter extends SubsystemBase {
                 fieldSpeedsSupplier);
 
         m_fuelSim = FuelSim.getInstance();
+
+        trg_inAllianceZone.and(DriverStation::isTeleop).onTrue(setGoal(TurretGoal.SCORING));
+        trg_inAllianceZone.negate().and(DriverStation::isTeleop).onTrue(setGoal(TurretGoal.PASSING));
+
     }
  
     /* COMMANDS */
@@ -363,11 +367,11 @@ public class Shooter extends SubsystemBase {
     }
 
     private Translation3d getPassingTarget(Pose2d pose) {
-        Distance fieldWidth = Inches.of(FieldConstants.fieldWidth);
+        Distance fieldWidthDiv2 = Inches.of(FieldConstants.fieldWidth / 2);
         boolean isBlue = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue;
-        boolean onBlueLeftSide = m_poseSupplier.get().getMeasureY().gt(fieldWidth);
+        boolean onLeftSide = isBlue ? pose.getMeasureY().gt(fieldWidthDiv2) : pose.getMeasureY().lt(fieldWidthDiv2);
 
-        return isBlue == onBlueLeftSide ? kPassingSpotLeft : kPassingSpotCenter;
+        return onLeftSide ? AllianceFlipUtil.apply(kPassingSpotLeft) : AllianceFlipUtil.apply(kPassingSpotRight);
     }
 
     public Command setGoal(TurretGoal goal) {
@@ -400,13 +404,7 @@ public class Shooter extends SubsystemBase {
                         .gt(Inches.of(FieldConstants.LinesVertical.oppAllianceZone).plus(kRobotFullWidth.div(2)));      //are we in the RED ALLIANCE ZONE as a RED ROBOT(behind the starting line effectively)
     }
 
-    private void updateTarget() {
-        trg_inAllianceZone.and(DriverStation::isTeleop).onTrue(setGoal(TurretGoal.SCORING));
-        trg_inAllianceZone.negate().and(DriverStation::isTeleop).onTrue(setGoal(TurretGoal.PASSING));
-    }
-
     private void calculateShot(Pose2d robot) {
-        // LinearVelocity subtractionFactor = ShotCalculator.angularToLinearVelocity(RadiansPerSecond.of(60), kFlywheelRadius);
         
         ChassisSpeeds fieldSpeeds = m_fieldSpeedsSupplier.get();
 
@@ -444,7 +442,6 @@ public class Shooter extends SubsystemBase {
         log_calculateShotCurrPose.accept(pose);
 
         //comment out when testing
-        updateTarget();
 
         if (m_goal == TurretGoal.SCORING || m_goal == TurretGoal.PASSING) {
             calculateShot(pose);

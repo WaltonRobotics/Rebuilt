@@ -22,6 +22,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import com.reduxrobotics.sensors.canandmag.CanandmagSettings;
 
+import choreo.util.ChoreoAllianceFlipUtil.Flipper;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -64,8 +65,10 @@ public class Constants {
         //TODO: work out where our passing spots should be..?
         public static final Translation3d kPassingSpotLeft = new Translation3d(
                 Inches.of(90), FieldConstants.fieldWidthIn.div(2).plus(Inches.of(85)), Inches.zero());
-        public static final Translation3d kPassingSpotCenter = new Translation3d(
-                Inches.of(90), FieldConstants.fieldWidthIn.div(2), Inches.zero());
+        // public static final Translation3d kPassingSpotCenter = new Translation3d(
+        //         Inches.of(90), FieldConstants.fieldWidthIn.div(2), Inches.zero());
+        public static final Translation3d kPassingSpotRight = new Translation3d(
+            Inches.of(90), Inches.of(AllianceFlipUtil.applyY(kPassingSpotLeft.getY())), Inches.of(0));
 
         /* MOTOR CONSTANTS */
         public static final double kShooterMoI = 0.000349 * 2.5;  //J for 5 3" 0.53lb flywheels

@@ -135,7 +135,7 @@ public class Robot extends TimedRobot {
     // COMMENT OUT WHEN NOT SIMULATION
     private Trigger trg_simShoot = m_driver.a();
     private Trigger trg_simClearFuel = m_driver.povDown();
-    private Trigger trg_simSetTest = m_driver.povUp();
+    private Trigger trg_simSetPassing = m_driver.povUp();
     private Trigger trg_simSetOff = m_driver.povRight();
     private Trigger trg_simSetShooting = m_driver.povLeft();
 
@@ -314,7 +314,7 @@ public class Robot extends TimedRobot {
             )
         );
 
-        trg_simSetTest.onTrue(m_shooter.setGoal(TurretGoal.TEST));
+        trg_simSetPassing.onTrue(m_shooter.setGoal(TurretGoal.PASSING));
         trg_simSetOff.onTrue(m_shooter.setGoal(TurretGoal.OFF));
         trg_simSetShooting.onTrue(m_shooter.setGoal(TurretGoal.SCORING));
 
