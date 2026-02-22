@@ -202,7 +202,7 @@ public class Constants {
                 new SimCameraProperties(), 
                 "frontLeftCamera", 
                 kSimCameraSimVisualNames, 
-                Camera.transformToRobo(0, 0, 0, 0, 0, 0) //TODO:
+                Camera.transformToRobo(10.413, 12.394, 28.844, 0, 30, 45)
             );
             kCameras[0].setProps("ThriftyCam", 0, 0, 0, 0);
             
@@ -210,7 +210,7 @@ public class Constants {
                 new SimCameraProperties(), 
                 "frontRightCamera", 
                 kSimCameraSimVisualNames, 
-                Camera.transformToRobo(0, 0, 0, 0, 0, 0)
+                Camera.transformToRobo(10.413, -12.394, 28.844, 0, 30, 315)
             );
             kCameras[1].setProps("ThriftyCam", 0, 0, 0, 0);
 
@@ -218,7 +218,7 @@ public class Constants {
                 new SimCameraProperties(), 
                 "backLeftCamera", 
                 kSimCameraSimVisualNames, 
-                Camera.transformToRobo(0, 0, 0, 0, 0, 0)
+                Camera.transformToRobo(-11.894, 12.394, 28.844, 0, 30, 135)
             );
             kCameras[2].setProps("ThriftyCam", 0, 0, 0, 0);
 
@@ -226,7 +226,7 @@ public class Constants {
                 new SimCameraProperties(), 
                 "backRightCamera", 
                 kSimCameraSimVisualNames, 
-                Camera.transformToRobo(0, 0, 0, 0, 0, 0)
+                Camera.transformToRobo(-11.894, -12.394, 28.844, 0, 30, 225)
             );
             kCameras[3].setProps("ThriftyCam", 0, 0, 0, 0);
         }
