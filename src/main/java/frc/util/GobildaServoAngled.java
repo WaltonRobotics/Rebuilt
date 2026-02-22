@@ -33,7 +33,7 @@ public class GobildaServoAngled extends PWM {
    *     the MXP port
    */
   @SuppressWarnings("this-escape")
-  public Servo(final int channel) {
+  public GobildaServoAngled(final int channel) {
     super(channel);
     setBoundsMicroseconds(kDefaultMaxServoPWM, 0, 0, 0, kDefaultMinServoPWM);
     setPeriodMultiplier(PeriodMultiplier.k4X);
@@ -43,33 +43,7 @@ public class GobildaServoAngled extends PWM {
   }
 
   /**
-   * Set the servo position.
-   *
-   * <p>Servo values range from 0.0 to 1.0 corresponding to the range of full left to full right.
-   *
-   * @param value Position from 0.0 to 1.0.
-   */
-  public void set(double value) {
-    setPosition(value);
-  }
-
-  /**
-   * Get the servo position.
-   *
-   * <p>Servo values range from 0.0 to 1.0 corresponding to the range of full left to full right.
-   * This returns the commanded position, not the position that the servo is actually at, as the
-   * servo does not report its own position.
-   *
-   * @return Position from 0.0 to 1.0.
-   */
-  public double get() {
-    return getPosition();
-  }
-
-  /**
    * Set the servo angle.
-   *
-   * <p>The angles are based on the HS-322HD Servo, and have a range of 0 to 180 degrees.
    *
    * <p>Servo angles that are out of the supported range of the servo simply "saturate" in that
    * direction In other words, if the servo has a range of (X degrees to Y degrees) than angles of
@@ -107,6 +81,5 @@ public class GobildaServoAngled extends PWM {
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Servo");
-    builder.addDoubleProperty("Value", this::get, this::set);
   }
 }

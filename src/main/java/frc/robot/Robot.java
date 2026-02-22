@@ -415,11 +415,13 @@ public class Robot extends TimedRobot {
             )
         );
 
-        m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.setHoodMax()).onFalse(m_shooter.setHoodStop());
-        m_manipulator.y().and(trg_manipOverride).whileTrue(m_shooter.setHoodMin()).onFalse(m_shooter.setHoodStop());
+        // m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.setHoodMax()).onFalse(m_shooter.setHoodStop()); //used for continous mode hood
+        // m_manipulator.y().and(trg_manipOverride).whileTrue(m_shooter.setHoodMin()).onFalse(m_shooter.setHoodStop());
+
+        m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.setHoodPositionCmd(Degrees.of(40))).onFalse(m_shooter.setHoodPositionCmd(Degrees.of(0)));
 
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
-        m_manipulator.start().and(trg_manipOverride).onTrue(m_shooter.hoodCurrentSenseHoming());
+        m_manipulator.start().and(trg_manipOverride).onTrue(m_shooter.hoodEncoderHoming());
 
         // m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.set(180));
 
