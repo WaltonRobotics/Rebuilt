@@ -4,11 +4,13 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants.IntakeK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.StringArrayLogger;
 
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.SuperstructureK.*;
 import static frc.robot.Constants.ShooterK;
 import static frc.robot.Constants.IntakeK.kIntakeRollersMaxRPS;
@@ -88,11 +90,24 @@ public class Superstructure {
         } else {
             logCommand = logActiveCommands("emergencyDump", "shooting", "deactivateOuttake");
         }
+
         return Commands.sequence(
-            m_indexer.startSpindexer(),
-            m_indexer.startTunnel(),
             m_shooter.setShooterVelocityCmd(RPS),
+            Commands.waitUntil(() -> m_shooter.checkIfSpunUp(RPS.magnitude())),
+            m_indexer.startTunnel(),
+            m_indexer.startSpindexer(),
+            // m_intake.setIntakeRollersVelocityCmd(RotationsPerSecond.of((0.25) * IntakeK.kIntakeRollersMaxRPS.magnitude())),
             logCommand
+        );
+    }
+
+    public Command shimmy() {
+        return Commands.sequence(
+            m_intake.setIntakeRollersVelocityCmd(RotationsPerSecond.of(IntakeK.kIntakeRollersMaxRPS.magnitude() * (0.25))),
+            m_intake.setIntakeArmPos(IntakeArmPosition.RETRACTED),
+            Commands.waitUntil(() -> m_intake.intakeArmAtPos(IntakeArmPosition.RETRACTED)),
+            m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED),
+            Commands.waitUntil(() -> m_intake.intakeArmAtPos(IntakeArmPosition.DEPLOYED))
         );
     }
 
@@ -166,6 +181,7 @@ public class Superstructure {
     public Command maxShooter() {
         return Commands.sequence(
             m_shooter.setShooterVelocityCmd(ShooterK.kShooterMaxRPS),
+            // m_shooter.setShooterVelocityCmd(RotationsPerSecond.of(50)),
             logActiveOverrideCommands("maxShooter", "stopShooter")
         );
     }
@@ -203,15 +219,8 @@ public class Superstructure {
      * @return
      */
     public Command hoodTo(Angle degs) {
-        Command logCommand;
-        if (degs.magnitude() == 30) {
-            logCommand = logActiveOverrideCommands("hood30", "hood0");
-        } else {
-            logCommand = logActiveOverrideCommands("hood0", "hood30");
-        }
         return Commands.sequence(
-            m_shooter.setHoodPositionCmd(degs),
-            logCommand
+            m_shooter.setHoodPositionCmd(degs)
         );
     }
 
