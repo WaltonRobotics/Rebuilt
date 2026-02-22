@@ -96,7 +96,7 @@ public class Shooter extends SubsystemBase {
     private Angle m_currentHoodPos = Rotations.of(0);
 
     //---LOGIC BOOLEANS
-    private boolean m_spunUp = false;   // currently unused
+    private boolean m_spunUp = false; // currently unused
     private final boolean m_inSim = RobotBase.isSimulation();
 
     //---LOGIC TRIGGERS
@@ -111,46 +111,38 @@ public class Shooter extends SubsystemBase {
     }
 
     /* SIM OBJECTS */
-    private final FlywheelSim m_shooterSim = new FlywheelSim(
-        LinearSystemId.createFlywheelSystem(
-            DCMotor.getKrakenX60Foc(2), 
-            kShooterMoI,
-            kShooterGearing
-        ),
-        DCMotor.getKrakenX60Foc(2) // returns gearbox
+    private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(
+            DCMotor.getKrakenX60Foc(2), kShooterMoI, kShooterGearing), DCMotor.getKrakenX60Foc(2) // returns gearbox
     );
 
     // Since the servo acts like a DC Motor, we use DCMotorSim
     private final DCMotorSim m_hoodSim = new DCMotorSim(
-        LinearSystemId.createDCMotorSystem(
-            khoodDCMotorGearbox,
-            kHoodMoI,
-            kHoodGearing
-        ),
-        khoodDCMotorGearbox // returns gearbox
+            LinearSystemId.createDCMotorSystem(khoodDCMotorGearbox, kHoodMoI, kHoodGearing),
+            khoodDCMotorGearbox // returns gearbox
     );
 
-    private final DCMotorSim m_turretSim = new DCMotorSim(
-        LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX44Foc(1),
-            kTurretMoI,
-            kTurretGearing
-        ),
-        DCMotor.getKrakenX44Foc(1) // returns gearbox
+    private final DCMotorSim m_turretSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(
+            DCMotor.getKrakenX44Foc(1), kTurretMoI, kTurretGearing), DCMotor.getKrakenX44Foc(1) // returns gearbox
     );
 
     /* LOGGERS */
-    private final DoubleLogger log_shooterVelocityRPS = WaltLogger.logDouble(kLogTab, "shooterVelocityRPS");
-    private final DoubleLogger log_hoodPositionDegs = WaltLogger.logDouble(kLogTab, "hoodPositionDegs");
-    private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble(kLogTab, "turretPositionRots");
+    private final DoubleLogger log_shooterVelocityRPS = WaltLogger.logDouble(kLogTab,
+            "shooterVelocityRPS");
+    private final DoubleLogger log_hoodPositionDegs = WaltLogger.logDouble(kLogTab,
+            "hoodPositionDegs");
+    private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble(kLogTab,
+            "turretPositionRots");
 
     private final BooleanLogger log_exitBeamBreak = WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
     private final BooleanLogger log_spunUp = WaltLogger.logBoolean(kLogTab, "spunUp");
-    
-    private final Pose2dLogger log_calculateShotCurrPose = WaltLogger.logPose2d(kLogTab, "calculateShotCurrPose");
 
-    private final BooleanLogger log_hoodEncoderMagnetInRange = WaltLogger.logBoolean(kLogTab, "hoodEncoderMagnetInRange");
-    private final BooleanLogger log_hoodEncoderPresent = WaltLogger.logBoolean(kLogTab, "hoodEncoderPresent");
+    private final Pose2dLogger log_calculateShotCurrPose = WaltLogger.logPose2d(kLogTab,
+            "calculateShotCurrPose");
+
+    private final BooleanLogger log_hoodEncoderMagnetInRange = WaltLogger.logBoolean(kLogTab,
+            "hoodEncoderMagnetInRange");
+    private final BooleanLogger log_hoodEncoderPresent = WaltLogger.logBoolean(kLogTab,
+            "hoodEncoderPresent");
 
     private final DoubleLogger log_hoodPIDOutput = WaltLogger.logDouble(kLogTab, "hoodPIDOutput");
 
@@ -160,7 +152,7 @@ public class Shooter extends SubsystemBase {
         m_shooterFollower.getConfigurator().apply(kShooterFollowerTalonFXConfiguration);
         m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
 
-        m_hoodEncoder.setSettings(kHoodEncoderSettings);    //if needed, we can add a position offset
+        m_hoodEncoder.setSettings(kHoodEncoderSettings); //if needed, we can add a position offset
 
         m_shooterFollower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed)); //TODO: check if MotorAlignmentValue is Opposed or Aligned
 
@@ -174,19 +166,19 @@ public class Shooter extends SubsystemBase {
         initSim();
 
         m_turretVisualizer = new TurretVisualizer(
-                () -> new Pose3d(m_poseSupplier
-                        .get()
-                        .rotateAround(poseSupplier.get().getTranslation(), new Rotation2d(m_turretTurnPosition)))
-                        .transformBy(kTurretTransform),
+                () -> new Pose3d(m_poseSupplier.get().rotateAround(
+                        poseSupplier.get().getTranslation(), new Rotation2d(m_turretTurnPosition)))
+                                .transformBy(kTurretTransform),
                 fieldSpeedsSupplier);
 
         m_fuelSim = FuelSim.getInstance();
 
         trg_inAllianceZone.and(DriverStation::isTeleop).onTrue(setGoal(ShooterGoal.SCORING));
-        trg_inAllianceZone.negate().and(DriverStation::isTeleop).onTrue(setGoal(ShooterGoal.PASSING));
+        trg_inAllianceZone.negate().and(DriverStation::isTeleop)
+                .onTrue(setGoal(ShooterGoal.PASSING));
 
     }
- 
+
     /* COMMANDS */
 
     public void zeroTurret() {
@@ -215,10 +207,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command zeroShooterCmd() {
-        return Commands.sequence(
-                zeroFlywheelCmd(),
-                zeroHoodCmd(),
-                zeroTurretCmd());
+        return Commands.sequence(zeroFlywheelCmd(), zeroHoodCmd(), zeroTurretCmd());
     }
 
     //---SHOOTER (Velocity Control)
@@ -233,17 +222,16 @@ public class Shooter extends SubsystemBase {
     public void setShooterVelocity(Double velocity) {
         m_shooterLeader.setControl(m_velocityRequest.withVelocity(velocity));
     }
-    
+
     //for TestingDashboard
     public Command setShooterVelocityCmd(DoubleSubscriber sub_RPS) {
-        return run(() -> m_shooterLeader.setControl(m_velocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
+        return run(() -> m_shooterLeader
+                .setControl(m_velocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
     }
 
     //---HOOD (Basic Position Control)
-    public Command setHoodPositionCmd(Angle degs) {  
-        return runOnce(
-            () -> m_hoodSetpoint = degs
-        );
+    public Command setHoodPositionCmd(Angle degs) {
+        return runOnce(() -> m_hoodSetpoint = degs);
     }
 
     public void setHoodPosition(Angle degrees) {
@@ -252,18 +240,18 @@ public class Shooter extends SubsystemBase {
 
     //for TestingDashboard
     public Command setHoodPositionCmd(DoubleSubscriber sub_degs) {
-        return run(
-            () -> m_hoodSetpoint = Degrees.of(sub_degs.get())
-        );
+        return run(() -> m_hoodSetpoint = Degrees.of(sub_degs.get()));
     }
 
     // The PIDOutput needed to get to the setpoint from the current point
     public void updateHood() {
         // can't read from hardware in Sim, so we read from the hoodSim object
-        m_currentHoodPos = m_inSim ? Rotations.of(m_hoodSim.getAngularPositionRotations()) : Rotations.of(m_hoodEncoder.getPosition());
+        m_currentHoodPos = m_inSim ? Rotations.of(m_hoodSim.getAngularPositionRotations())
+                : Rotations.of(m_hoodEncoder.getPosition());
 
-        double hoodPIDOutput = m_hoodPID.calculate(m_currentHoodPos.magnitude(), m_hoodSetpoint.in(Rotations)) * 8;
-        
+        double hoodPIDOutput = m_hoodPID.calculate(m_currentHoodPos.magnitude(),
+                m_hoodSetpoint.in(Rotations)) * 8;
+
         hoodPIDOutput = MathUtil.clamp(hoodPIDOutput, -1.0, 1.0);
         hoodPIDOutput = (hoodPIDOutput + 1) / 2;
         m_hood.set(hoodPIDOutput);
@@ -279,10 +267,11 @@ public class Shooter extends SubsystemBase {
     public void setTurretPosition(Angle azimuthAngle) {
         m_turret.setControl(m_MMVRequest.withPosition(azimuthAngle));
     }
-    
+
     //for TestingDashboard
     public Command setTurretPositionCmd(DoubleSubscriber sub_rots) {
-        return run(() -> m_turret.setControl(m_MMVRequest.withPosition(Rotations.of(sub_rots.get()))));
+        return run(
+                () -> m_turret.setControl(m_MMVRequest.withPosition(Rotations.of(sub_rots.get()))));
     }
 
     /* GETTERS */
@@ -331,7 +320,8 @@ public class Shooter extends SubsystemBase {
     }
 
     /**
-     * Launches SIMULATION FUEL™ at the current Flywheel Velocity, current Hood Angle, and the current Turret Position.
+     * Launches SIMULATION FUEL™ at the current Flywheel Velocity, current Hood Angle, and the
+     * current Turret Position.
      */
     public void launchFuel() {
         if (m_fuelStored == 0)
@@ -341,13 +331,10 @@ public class Shooter extends SubsystemBase {
         AngularVelocity flywheelVelocity = getShooterVelocity();
         Angle hoodAngle = Degrees.of(90).minus(getHoodAngle());
         Angle turretPosition = getTurretPosition();
-        LinearVelocity flywheelLinearVelocity = ShotCalculator.angularToLinearVelocity(flywheelVelocity,
-                kFlywheelRadius);
+        LinearVelocity flywheelLinearVelocity = ShotCalculator
+                .angularToLinearVelocity(flywheelVelocity, kFlywheelRadius);
 
-        m_fuelSim.launchFuel(
-                flywheelLinearVelocity,
-                hoodAngle,
-                turretPosition,
+        m_fuelSim.launchFuel(flywheelLinearVelocity, hoodAngle, turretPosition,
                 kTurretTransform.getMeasureZ());
     }
 
@@ -361,7 +348,9 @@ public class Shooter extends SubsystemBase {
 
     /* ShootOnTheMove™ */
     /**
-     * Sets the current aiming position to the target position, relative to what Alliance you are on.
+     * Sets the current aiming position to the target position, relative to what Alliance you are
+     * on.
+     * 
      * @param target desired target position.
      */
     public void setTarget(Translation3d target) {
@@ -374,22 +363,26 @@ public class Shooter extends SubsystemBase {
 
     /**
      * Sets the current aiming position ahead of the robot distanceMeters ahead of the robot.
+     * 
      * @param distanceMeters how far ahead of the robot the target will be
      */
     private void setTargetAheadOfRobot(double distanceMeters) {
         Pose2d currentPose = m_poseSupplier.get();
 
-        Translation2d ahead = currentPose.getTranslation().plus(
-                new Translation2d(distanceMeters, currentPose.getRotation()));
+        Translation2d ahead = currentPose.getTranslation()
+                .plus(new Translation2d(distanceMeters, currentPose.getRotation()));
 
         //set target at a standard height
         setTarget(new Translation3d(ahead.getX(), ahead.getY(), 2.0));
     }
 
     /**
-     * Passing Method - Determines which passing target you will be shooting to based off of current position on the field, and which alliance you are on.
+     * Passing Method - Determines which passing target you will be shooting to based off of current
+     * position on the field, and which alliance you are on.
+     * 
      * @param robotPose curret robotPose
-     * @return kPassingSpotLeft if the robot is on the left side of the field, kPassingSpotRight if the robot is on the right side of the field. Relative of what alliance one is on.
+     * @return kPassingSpotLeft if the robot is on the left side of the field, kPassingSpotRight if
+     *         the robot is on the right side of the field. Relative of what alliance one is on.
      */
     private Translation3d getPassingTarget(Pose2d robotPose) {
         Distance fieldWidthDiv2 = Inches.of(FieldConstants.fieldWidth / 2);
@@ -409,24 +402,25 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> {
             m_goal = goal;
             switch (goal) {
-                case SCORING:
-                    setTarget(FieldConstants.Hub.innerCenterPoint);
-                    break;
-                case PASSING:
-                    setTarget(getPassingTarget(m_poseSupplier.get()));
-                    break;
-                case TEST:
-                    setTargetAheadOfRobot(3);
-                    break;
-                case OFF:
-                    zeroShooterCmd();
-                    break;
+            case SCORING:
+                setTarget(FieldConstants.Hub.innerCenterPoint);
+                break;
+            case PASSING:
+                setTarget(getPassingTarget(m_poseSupplier.get()));
+                break;
+            case TEST:
+                setTargetAheadOfRobot(3);
+                break;
+            case OFF:
+                zeroShooterCmd();
+                break;
             }
         });
     }
 
     /**
      * Determines whether the robot is within the Alliance zone of the Alliance you are on.
+     * 
      * @return true if the robot is in the AllianceZone, false otherwise.
      */
     private boolean inAllianceZone() {
@@ -443,6 +437,7 @@ public class Shooter extends SubsystemBase {
 
     /**
      * Calculates the ideal shot to put the FUEL™ into the HUB™
+     * 
      * @param robotPose current Robot position.
      */
     private void calculateShot(Pose2d robotPose) {
@@ -459,14 +454,20 @@ public class Shooter extends SubsystemBase {
 
     /**
      * Version of calculateShot where, FOR TESTING, the turret will align to the target.
+     * 
      * @param robotPose current Robot position
      */
     private void calculateTurretAngle(Pose2d robotPose) {
         ChassisSpeeds fieldSpeeds = m_fieldSpeedsSupplier.get();
 
-        ShotData calculatedShot = ShotCalculator.iterativeMovingShotFromFunnelClearance(robotPose, fieldSpeeds,
-                currentTarget, 3);
-        Angle azimuthAngle = ShotCalculator.calculateAzimuthAngle(robotPose, calculatedShot.getTarget(),
+        ShotData calculatedShot = ShotCalculator.iterativeMovingShotFromFunnelClearance(
+                robotPose,
+                fieldSpeeds,
+                currentTarget,
+                3);
+        Angle azimuthAngle = ShotCalculator.calculateAzimuthAngle(
+                robotPose,
+                calculatedShot.getTarget(),
                 m_turret.getPosition().getValue());
         setTurretPosition(azimuthAngle);
     }
@@ -477,8 +478,6 @@ public class Shooter extends SubsystemBase {
         Pose2d pose = m_poseSupplier.get();
 
         log_calculateShotCurrPose.accept(pose);
-
-        //comment out when testing
 
         if (m_goal == ShooterGoal.SCORING || m_goal == ShooterGoal.PASSING) {
             calculateShot(pose);
@@ -514,8 +513,9 @@ public class Shooter extends SubsystemBase {
     @Override
     public void simulationPeriodic() {
         m_turretVisualizer.updateFuel(
-            ShotCalculator.angularToLinearVelocity(m_flywheelVelocity, kFlywheelRadius), m_currentHoodPos);
-            
+                ShotCalculator.angularToLinearVelocity(m_flywheelVelocity, kFlywheelRadius),
+                m_currentHoodPos);
+
         WaltMotorSim.updateSimFX(m_shooterLeader, m_shooterSim);
         WaltMotorSim.updateSimFX(m_turret, m_turretSim);
         WaltMotorSim.updateSimServo(m_hood, m_hoodSim);
@@ -530,6 +530,7 @@ public class Shooter extends SubsystemBase {
         MAX(20);
 
         public double RPS;
+
         private FlywheelVelocity(double RPS) {
             this.RPS = RPS;
         }
@@ -543,6 +544,7 @@ public class Shooter extends SubsystemBase {
         MAX(40);
 
         public double rots;
+
         private HoodPosition(double rots) {
             this.rots = rots;
         }
@@ -556,6 +558,7 @@ public class Shooter extends SubsystemBase {
         MAX(40);
 
         public double rots;
+
         private TurretPosition(double rots) {
             this.rots = rots;
         }

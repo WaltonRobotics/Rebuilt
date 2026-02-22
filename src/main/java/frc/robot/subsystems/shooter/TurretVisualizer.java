@@ -26,7 +26,7 @@ public class TurretVisualizer {
     private Supplier<Pose3d> m_poseSupplier;
     private Supplier<ChassisSpeeds> m_fieldSpeedsSupplier;
     private final Translation3dArrayLogger log_trajectoryArray = new Translation3dArrayLogger(kLogTab, "fuelTrajectory");
-    private final Pose3dLogger log_turretPose = new Pose3dLogger(kLogTab, "turretPose"); 
+    private final Pose3dLogger log_turretPose = new Pose3dLogger(kLogTab, "turretPose");
     private final Pose3dLogger log_hoodPose = new Pose3dLogger(kLogTab, "hoodPose");
 
     public Shooter m_shooter;
@@ -37,8 +37,10 @@ public class TurretVisualizer {
     }
 
     /**
-     * Fuel Simulation usage -- meant to launch the FUEL™ from an accurate angle, position, and velocity.
-     * @param vel the velocity that the FUEL™ will be moving at 
+     * Fuel Simulation usage -- meant to launch the FUEL™ from an accurate angle, position, and
+     * velocity.
+     * 
+     * @param vel   the velocity that the FUEL™ will be moving at
      * @param angle the current angle the FUEL™ will be launched at
      * @return the Translation of the FUEL™ accounting for the velocity and the angle.
      */
@@ -58,8 +60,10 @@ public class TurretVisualizer {
     }
 
     /**
-     * Updates the FUEL's™ locations, accounting for the velocity and the angel the FUEL™ is going at.
-     * @param vel the current velocity the FUEL™ is moving at
+     * Updates the FUEL's™ locations, accounting for the velocity and the angel the FUEL™ is going
+     * at.
+     * 
+     * @param vel   the current velocity the FUEL™ is moving at
      * @param angle the current angle the FUEL™ will be launched at
      */
     public void updateFuel(LinearVelocity vel, Angle angle) {
@@ -68,8 +72,7 @@ public class TurretVisualizer {
             double t = i * 0.04;
             double x = trajVel.getX() * t + m_poseSupplier.get().getTranslation().getX();
             double y = trajVel.getY() * t + m_poseSupplier.get().getTranslation().getY();
-            double z = trajVel.getZ() * t
-                    - 0.5 * 9.81 * t * t
+            double z = trajVel.getZ() * t - 0.5 * 9.81 * t * t
                     + m_poseSupplier.get().getTranslation().getZ();
 
             trajectory[i] = new Translation3d(x, y, z);
@@ -80,16 +83,19 @@ public class TurretVisualizer {
 
     /**
      * Updates the pose of the Turret, and the pose of the Hood.
+     * 
      * @param azimuthAngle Current angle of the turret.
-     * @param hoodAngle Current angle of the Hood.
+     * @param hoodAngle    Current angle of the Hood.
      */
     public void update3dPose(Angle azimuthAngle, Angle hoodAngle) {
-        Pose3d turretPose = new Pose3d( m_poseSupplier.get().getX(), m_poseSupplier.get().getY(), m_poseSupplier.get().getZ(), new Rotation3d(0, 0, azimuthAngle.in(Radians)));
+        Pose3d turretPose = new Pose3d(m_poseSupplier.get().getX(), m_poseSupplier.get().getY(),
+                m_poseSupplier.get().getZ(), new Rotation3d(0, 0, azimuthAngle.in(Radians)));
         log_turretPose.accept(turretPose);
         Pose3d hoodPose = new Pose3d(0.1, 0, 0, new Rotation3d(0, hoodAngle.in(Radians), 0));
-        hoodPose = hoodPose.rotateAround(new Translation3d(), new Rotation3d(0, 0, azimuthAngle.in(Radians)));
-        hoodPose = new Pose3d(
-                hoodPose.getTranslation().plus(kTurretTransform.getTranslation()), hoodPose.getRotation());
+        hoodPose = hoodPose.rotateAround(new Translation3d(),
+                new Rotation3d(0, 0, azimuthAngle.in(Radians)));
+        hoodPose = new Pose3d(hoodPose.getTranslation().plus(kTurretTransform.getTranslation()),
+                hoodPose.getRotation());
         log_hoodPose.accept(hoodPose);
     }
 }
