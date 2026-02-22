@@ -44,8 +44,8 @@ public class Intake extends SubsystemBase {
     // private PositionVoltage m_PVReq = new PositionVoltage(0).withEnableFOC(true);
     private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
 
-    private BooleanSupplier m_currentSpike = () -> m_intakeArm.getStatorCurrent().getValueAsDouble() > 5.0; //TODO: update value (5.0)
-    private BooleanSupplier m_veloIsNearZero = () -> Math.abs(m_intakeArm.getVelocity().getValueAsDouble()) < 0.005; //TODO: update value (0.005)
+    private BooleanSupplier m_currentSpike = () -> m_intakeArm.getStatorCurrent().getValueAsDouble() > 5.0;
+    private BooleanSupplier m_veloIsNearZero = () -> Math.abs(m_intakeArm.getVelocity().getValueAsDouble()) < 0.005;
 
     private VoltageOut m_intakeArmZeroingReq = new VoltageOut(0);
 
@@ -84,7 +84,7 @@ public class Intake extends SubsystemBase {
         m_intakeRollers.getConfigurator().apply(kIntakeRollersConfiguration);
 
         if(Robot.isReal()) {
-            setDefaultCommand(currentSenseHoming());
+            setDefaultCommand(intakeArmCurrentSenseHoming());
         }
 
         initSim();
@@ -138,7 +138,7 @@ public class Intake extends SubsystemBase {
         return m_intakeRollers;
     }
 
-    public Command currentSenseHoming() {
+    public Command intakeArmCurrentSenseHoming() {
         Runnable init = () -> {
             m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(-2));
         };

@@ -162,8 +162,8 @@ public class Robot extends TimedRobot {
 
     /* CONSTRUCTOR */
     public Robot() {
-        configureBindings();
-        // configureTestBindings();    //this should be commented out during competition matches
+        // configureBindings();
+        configureTestBindings();    //this should be commented out during competition matches
         // configureTestingDashboard();
     }
 
@@ -267,7 +267,7 @@ public class Robot extends TimedRobot {
         );
 
         //---OVERRIDE COMMANDS
-        m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.currentSenseHoming());
+        m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
         m_driver.a().and(trg_driverOverride).whileTrue(m_superstructure.shimmy());
 
         trg_maxShooterOverride.onTrue(
@@ -418,7 +418,9 @@ public class Robot extends TimedRobot {
         m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.setHoodMax()).onFalse(m_shooter.setHoodStop());
         m_manipulator.y().and(trg_manipOverride).whileTrue(m_shooter.setHoodMin()).onFalse(m_shooter.setHoodStop());
 
-        m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.currentSenseHoming());
+        m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
+        m_manipulator.start().and(trg_manipOverride).onTrue(m_shooter.hoodCurrentSenseHoming());
+
         // m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.set(180));
 
         // m_manipulator.x().and(trg_manipOverride).whileTrue(m_shooter.setHoodMin());
@@ -451,12 +453,12 @@ public class Robot extends TimedRobot {
 
         trg_hoodOverride.onTrue(
             Commands.parallel(
-                m_superstructure.hoodTo(Degrees.of(30))
+                m_superstructure.hoodTo(Degrees.of(18))
                 // m_visualSim.setHoodPosition()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.hoodTo(Degrees.of(0))
+                m_superstructure.hoodTo(Degrees.of(14))
                 // m_visualSim.setHoodPosition()
             )
         );

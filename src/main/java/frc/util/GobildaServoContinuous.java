@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.PWM;
  * <p>The range parameters default to the appropriate values for the Hitec HS-322HD servo provided
  * in the FIRST Kit of Parts in 2008.
  */
-public class GobildaServo extends PWM {
+public class GobildaServoContinuous extends PWM {
 
   private static final int kDefaultMaxServoPWM = 2000;
   private static final int kDefaultMinServoPWM = 1000;
@@ -31,7 +31,7 @@ public class GobildaServo extends PWM {
    *     the MXP port
    */
   @SuppressWarnings("this-escape")
-  public GobildaServo(final int channel) {
+  public GobildaServoContinuous(final int channel) {
     super(channel);
     setBoundsMicroseconds(kDefaultMaxServoPWM, 0, 0, 0, kDefaultMinServoPWM);
     setPeriodMultiplier(PeriodMultiplier.k4X);

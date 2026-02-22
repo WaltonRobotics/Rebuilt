@@ -62,7 +62,7 @@ public class WaltMotorSim {
      * @param servo must act like a DCMotor for this to work
      * @param motorSim is the corresponding DCMotorSim object for the DCMotor-like servo
      */
-    public static void updateSimServo(GobildaServo servo, DCMotorSim motorSim) {
+    public static void updateSimServo(GobildaServoContinuous servo, DCMotorSim motorSim) {
         double volts = servo.get();
         volts -= 0.5; // sets the range from [0, 1] to be [-0.5, 0.5]
         volts *= 2; // sets the range from [-0.5, 0.5] to be [-1, 1]

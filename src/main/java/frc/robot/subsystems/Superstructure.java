@@ -219,15 +219,8 @@ public class Superstructure {
      * @return
      */
     public Command hoodTo(Angle degs) {
-        Command logCommand;
-        if (degs.magnitude() == 30) {
-            logCommand = logActiveOverrideCommands("hood30", "hood0");
-        } else {
-            logCommand = logActiveOverrideCommands("hood0", "hood30");
-        }
         return Commands.sequence(
-            m_shooter.setHoodPositionCmd(degs),
-            logCommand
+            m_shooter.setHoodPositionCmd(degs)
         );
     }
 

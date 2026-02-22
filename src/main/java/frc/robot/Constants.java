@@ -69,7 +69,7 @@ public class Constants {
 
         //---HOOD CONSTANTS
         public static final double kHoodMoI = 0.00027505;
-        public static final double kHoodGearing = 7.5;
+        public static final double kHoodGearing = 300.0/20;
 
         public static final Angle kHoodMinDegs = Degrees.of(0);
         public static final Angle kHoodMaxDegs = Degrees.of(40);
