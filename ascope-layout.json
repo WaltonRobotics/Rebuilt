@@ -1,10 +1,10 @@
 {
   "hubs": [
     {
-      "x": 203,
-      "y": 236,
-      "width": 1101,
-      "height": 656,
+      "x": 410,
+      "y": 275,
+      "width": 1100,
+      "height": 650,
       "state": {
         "sidebar": {
           "width": 300,
@@ -17,11 +17,12 @@
             "/Robot/Indexer",
             "/Robot/Superstructure",
             "/Robot/Superstructure/Active Commands",
-            "/Robot/Superstructure/Active Override Commands"
+            "/Robot/Superstructure/Active Override Commands",
+            "/Robot/FuelSim"
           ]
         },
         "tabs": {
-          "selected": 1,
+          "selected": 3,
           "tabs": [
             {
               "type": 0,
@@ -167,6 +168,15 @@
               "controller": {
                 "sources": [
                   {
+                    "type": "gamePiece",
+                    "logKey": "NT:/Robot/FuelSim/fuel",
+                    "logType": "Translation3d[]",
+                    "visible": true,
+                    "options": {
+                      "variant": "Fuel"
+                    }
+                  },
+                  {
                     "type": "robotLegacy",
                     "logKey": "NT:/Pose/robotPose",
                     "logType": "NumberArray",
@@ -175,6 +185,25 @@
                       "model": "2026 KitBot",
                       "format": "Pose2d",
                       "units": "radians"
+                    }
+                  },
+                  {
+                    "type": "trajectory",
+                    "logKey": "NT:/Robot/Shooter/fuelTrajectory",
+                    "logType": "Translation3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ff00",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "robot",
+                    "logKey": "NT:/Robot/Shooter/turretPose",
+                    "logType": "Pose3d",
+                    "visible": true,
+                    "options": {
+                      "model": "2026 KitBot"
                     }
                   }
                 ],
@@ -185,9 +214,9 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  11.846755407657712,
-                  17.15758839624855,
-                  -5.829341748874562
+                  12.287050285496518,
+                  16.75112150057451,
+                  -6.040343434800825
                 ],
                 "cameraTarget": [
                   -0.29988558515525204,

@@ -9,7 +9,6 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static frc.robot.Constants.ShooterK.*;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -17,13 +16,11 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.subsystems.Shooter;
-import frc.robot.subsystems.Swerve;
 import frc.util.WaltLogger.Pose3dLogger;
 import frc.util.WaltLogger.Translation3dArrayLogger;
 
 import java.util.function.Supplier;
 
-/** Add your docs here. */
 public class TurretVisualizer {
     private Translation3d[] trajectory = new Translation3d[50];
     private Supplier<Pose3d> m_poseSupplier;
@@ -39,6 +36,12 @@ public class TurretVisualizer {
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
     }
 
+    /**
+     * Fuel Simulation usage -- meant to launch the FUEL™ from an accurate angle, position, and velocity.
+     * @param vel the velocity that the FUEL™ will be moving at 
+     * @param angle the current angle the FUEL™ will be launched at
+     * @return the Translation of the FUEL™ accounting for the velocity and the angle.
+     */
     private Translation3d launchVel(LinearVelocity vel, Angle angle) {
         Pose3d robot = m_poseSupplier.get();
         ChassisSpeeds fieldSpeeds = m_fieldSpeedsSupplier.get();
@@ -54,6 +57,11 @@ public class TurretVisualizer {
         return new Translation3d(xVel, yVel, verticalVel);
     }
 
+    /**
+     * Updates the FUEL's™ locations, accounting for the velocity and the angel the FUEL™ is going at.
+     * @param vel the current velocity the FUEL™ is moving at
+     * @param angle the current angle the FUEL™ will be launched at
+     */
     public void updateFuel(LinearVelocity vel, Angle angle) {
         Translation3d trajVel = launchVel(vel, Degrees.of(90).minus(angle));
         for (int i = 0; i < trajectory.length; i++) {
@@ -70,6 +78,11 @@ public class TurretVisualizer {
         log_trajectoryArray.accept(trajectory);
     }
 
+    /**
+     * Updates the pose of the Turret, and the pose of the Hood.
+     * @param azimuthAngle Current angle of the turret.
+     * @param hoodAngle Current angle of the Hood.
+     */
     public void update3dPose(Angle azimuthAngle, Angle hoodAngle) {
         Pose3d turretPose = new Pose3d( m_poseSupplier.get().getX(), m_poseSupplier.get().getY(), m_poseSupplier.get().getZ(), new Rotation3d(0, 0, azimuthAngle.in(Radians)));
         log_turretPose.accept(turretPose);

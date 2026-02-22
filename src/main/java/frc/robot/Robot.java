@@ -5,8 +5,6 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.Constants.IndexerK;
-import static frc.robot.Constants.ShooterK;
 import static frc.robot.Constants.RobotK.*;
 import static frc.robot.Constants.ShooterK.kTurretTransform;
 
@@ -37,16 +35,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.Constants.VisionK;
-import static frc.robot.Constants.RobotK.*;
-import frc.robot.subsystems.Shooter.TurretGoal;
-import frc.robot.subsystems.Shooter.TurretPosition;
+import frc.robot.subsystems.Shooter.ShooterGoal;
 import frc.robot.subsystems.shooter.FuelSim;
-import frc.robot.Constants.IntakeK;
 import frc.robot.Constants.ShooterK;
-import frc.robot.Constants.VisionK;
 import frc.robot.dashboards.AutonChooser;
 import frc.robot.dashboards.TestingDashboard;
 import frc.robot.autons.WaltAutonFactory;
@@ -186,8 +179,8 @@ public class Robot extends TimedRobot {
         // m_shooter.setDefaultCommand(m_shooter.shooterDefaultCommands());
         m_shooter.zeroHoodCmd();
         m_shooter.zeroTurretCmd();
-        configureBindings();
-        // configureTestBindings();    //this should be commented out during competition matches
+        // configureBindings();
+        configureTestBindings();    //this should be commented out during competition matches
         // configureTestingDashboard();
 
         if (Robot.isSimulation()) {
@@ -377,9 +370,9 @@ public class Robot extends TimedRobot {
         m_drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             m_drivetrain.applyRequest(() ->
-                drive.withVelocityX(-m_manipulator.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-m_manipulator.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-m_manipulator.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-m_driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-m_driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-m_driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
 
@@ -574,9 +567,9 @@ public class Robot extends TimedRobot {
                             // FuelSim.getInstance().spawnStartingFuel();
                         }));
 
-        trg_simSetPassing.onTrue(m_shooter.setGoal(TurretGoal.PASSING));
-        trg_simSetTest.onTrue(m_shooter.setGoal(TurretGoal.TEST));
-        trg_simSetShooting.onTrue(m_shooter.setGoal(TurretGoal.SCORING));
+        trg_simSetPassing.onTrue(m_shooter.setGoal(ShooterGoal.PASSING));
+        trg_simSetTest.onTrue(m_shooter.setGoal(ShooterGoal.TEST));
+        trg_simSetShooting.onTrue(m_shooter.setGoal(ShooterGoal.SCORING));
 
     }
 

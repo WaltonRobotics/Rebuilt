@@ -22,7 +22,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import com.reduxrobotics.sensors.canandmag.CanandmagSettings;
 
-import choreo.util.ChoreoAllianceFlipUtil.Flipper;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -35,10 +34,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
 import frc.robot.vision.Camera;
 import frc.util.AllianceFlipUtil;
 

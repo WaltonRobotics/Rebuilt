@@ -1,14 +1,12 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.InchesPerSecond;
 import static edu.wpi.first.units.Units.InchesPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
@@ -24,7 +22,6 @@ import static frc.robot.Constants.ShooterK.kTurretMinRots;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
@@ -39,7 +36,6 @@ import frc.robot.FieldConstants;
 import frc.util.WaltLogger.*;
 import edu.wpi.first.units.measure.Time;
 
-//TODO: make sure to explain everything
 public class ShotCalculator {
     
     private static final DoubleLogger log_desiredTurretRot = new DoubleLogger(kLogTab, "desiredTurretRotations"); 
@@ -50,6 +46,7 @@ public class ShotCalculator {
 
     public static final InterpolatingDoubleTreeMap m_timeOfFlightMap = new InterpolatingDoubleTreeMap();
 
+    //note that this is not being used as of now, but we will need to make our OWN lerp that way we shoot more accurately.
         static {
             m_shotMap.put(5.34, new ShotData(RotationsPerSecond.of(2900 / 60), Degrees.of(27)));
             m_timeOfFlightMap.put(5.34, 1.30);
@@ -146,11 +143,12 @@ public class ShotCalculator {
                 .toPose2d()
                 .getTranslation();
 
-        Translation2d direction = target.toTranslation2d().minus(turretTranslation);
+        Translation2d direction = target.toTranslation2d().minus(turretTranslation);                                                    //distance from target to turret
         double angle = MathUtil.inputModulus(
-                direction.getAngle().minus(robot.getRotation()).getRotations(), kTurretMinRots.magnitude(),kTurretMaxRots.magnitude());
+                direction.getAngle().minus(robot.getRotation()).getRotations(), kTurretMinRots.magnitude(),kTurretMaxRots.magnitude()); //normalizes the angle to be fit in the range of the max rotations
         double current = currentAngle.in(Rotations);
 
+        //this is the snapback function, to make sure that you will always be tracking and you will not go over your physical limits.
         if (current > 0 && angle + 1 <= kTurretMaxRots.in(Rotations))
             angle += 1;
         if (current < 0 && angle - 1 >= kTurretMinRots.in(Rotations))
@@ -162,6 +160,7 @@ public class ShotCalculator {
     }
 
     // Move a target a set time in the future along a velocity defined by fieldSpeeds
+    // Integral for SOTM, as this is what accounts for the speed the Robot is going.
     public static Translation3d predictTargetPos(Translation3d target, ChassisSpeeds fieldSpeeds, Time timeOfFlight) {
         double predictedX = target.getX() - fieldSpeeds.vxMetersPerSecond * timeOfFlight.in(Seconds);
         double predictedY = target.getY() - fieldSpeeds.vyMetersPerSecond * timeOfFlight.in(Seconds);
@@ -170,8 +169,6 @@ public class ShotCalculator {
     }
 
     // https://www.desmos.com/calculator/ezjqolho6g
-    // i lowkirkeniunely dont know what the difference between this desmos calc and the other
-    // TODO: how do i account for airResistance? do i shoot a bit off course? do i need to at all? TBD>
     public static ShotData calculateShotFromFunnelClearance(Pose2d robot, Translation3d actualTarget,
             Translation3d predictedTarget) {
         double x_dist = getDistanceToTarget(robot, predictedTarget).in(Inches);
@@ -209,19 +206,16 @@ public class ShotCalculator {
 
     }
 
-    // use an iterative lookahead approach to determine shot parameters for a moving
-    // robot
+    // use an iterative lookahead approach to determine shot parameters for a moving robot
     public static ShotData iterativeMovingShotFromFunnelClearance(
             Pose2d robot, ChassisSpeeds fieldSpeeds, Translation3d target, int iterations) {
-        // Perform initial estimation (assuming unmoving robot) to get time of flight
-        // estimate
+        // Perform initial estimation (assuming unmoving robot) to get time of flight estimate
         ShotData shot = calculateShotFromFunnelClearance(robot, target, target);
         Distance distance = getDistanceToTarget(robot, target);
         Time timeOfFlight = calculateTimeOfFlight(shot.getExitVelocity(), shot.getHoodAngle(), distance);
         Translation3d predictedTarget = target;
 
-        // Iterate the process, getting better time of flight estimations and updating
-        // the predicted target accordingly
+        // Iterate the process, getting better time of flight estimations and updating the predicted target accordingly
         for (int i = 0; i < iterations; i++) {
             predictedTarget = predictTargetPos(target, fieldSpeeds, timeOfFlight);
             shot = calculateShotFromFunnelClearance(robot, target, predictedTarget);
@@ -234,7 +228,7 @@ public class ShotCalculator {
 
     /**
      * use an iterative interpolation approach to determine shot parameters for a moving robot 
-     * compensating for speed, the target.
+     * compensating for speed, and the target.
      * @param robot current robot pose
      * @param fieldSpeeds current robot speeds (w direction)
      * @param target target you are aiming for (either the passing point OR the HUB)

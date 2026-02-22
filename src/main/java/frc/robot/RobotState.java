@@ -18,7 +18,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Swerve;
 
 
 public class RobotState {
