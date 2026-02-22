@@ -20,8 +20,8 @@ public class GobildaServoAngled extends PWM {
   private static final double kMaxServoAngle = 300.0;
   private static final double kMinServoAngle = 0.0;
 
-  private static final int kDefaultMaxServoPWM = 2500;
-  private static final int kDefaultMinServoPWM = 500;
+  private static final int kDefaultMaxServoPWM = 500;
+  private static final int kDefaultMinServoPWM = 2500;
 
   /**
    * Constructor.

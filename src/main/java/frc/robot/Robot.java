@@ -418,7 +418,7 @@ public class Robot extends TimedRobot {
         // m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.setHoodMax()).onFalse(m_shooter.setHoodStop()); //used for continous mode hood
         // m_manipulator.y().and(trg_manipOverride).whileTrue(m_shooter.setHoodMin()).onFalse(m_shooter.setHoodStop());
 
-        m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.setHoodPositionCmd(Degrees.of(40))).onFalse(m_shooter.setHoodPositionCmd(Degrees.of(0)));
+        m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.setHoodPositionCmd(Degrees.of(37))).onFalse(m_shooter.setHoodPositionCmd(Degrees.of(1)));
 
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
         m_manipulator.start().and(trg_manipOverride).onTrue(m_shooter.hoodEncoderHoming());
@@ -453,17 +453,17 @@ public class Robot extends TimedRobot {
         //     )
         // );
 
-        trg_hoodOverride.onTrue(
-            Commands.parallel(
-                m_superstructure.hoodTo(Degrees.of(18))
-                // m_visualSim.setHoodPosition()
-            )
-        ).onFalse(
-            Commands.parallel(
-                m_superstructure.hoodTo(Degrees.of(14))
-                // m_visualSim.setHoodPosition()
-            )
-        );
+        // trg_hoodOverride.onTrue(
+        //     Commands.parallel(
+        //         m_superstructure.hoodTo(Degrees.of(18))
+        //         // m_visualSim.setHoodPosition()
+        //     )
+        // ).onFalse(
+        //     Commands.parallel(
+        //         m_superstructure.hoodTo(Degrees.of(14))
+        //         // m_visualSim.setHoodPosition()
+        //     )
+        // );
 
         trg_startSpindexerOverride.onTrue(
             Commands.parallel(
@@ -562,7 +562,7 @@ public class Robot extends TimedRobot {
         // }
 
         // periodics
-        // m_shooter.periodic();
+        m_shooter.periodic();
         m_indexer.periodic();
         m_intake.periodic();
 

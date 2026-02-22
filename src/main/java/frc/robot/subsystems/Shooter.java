@@ -26,6 +26,7 @@ import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
@@ -122,7 +123,7 @@ public class Shooter extends SubsystemBase {
     //---HOOD
     private final DoubleLogger log_hoodEncoderPositionDegs = WaltLogger.logDouble(kLogTab, "hoodEncoderPositionDegs");
     private final DoubleLogger log_hoodEncoderVelocityRPS = WaltLogger.logDouble(kLogTab, "hoodEncoderVelocityRPS");
-    private final DoubleLogger log_hoodEncoderReferencePosition = WaltLogger.logDouble(kLogTab, "hoodEncoderReferencePosition");
+    private final DoubleLogger log_hoodReferencePosition = WaltLogger.logDouble(kLogTab, "hoodReferencePosition");
     private final DoubleLogger log_hoodEncoderError = WaltLogger.logDouble(kLogTab, "hoodEncoderError");
 
     // private final BooleanLogger log_exitBeamBreak = WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
@@ -140,6 +141,7 @@ public class Shooter extends SubsystemBase {
     // private Debouncer m_currentDebouncer = new Debouncer(0.100, DebounceType.kRising);
 
     private boolean m_isHoodHoming = false;
+    private Timer m_timer = new Timer();
 
     /* CONSTRUCTOR */
     public Shooter() {
@@ -151,7 +153,6 @@ public class Shooter extends SubsystemBase {
         m_shooterFollower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed)); //TODO: check if MotorAlignmentValue is Opposed or Aligned
 
         if(Robot.isReal()) {
-            // setDefaultCommand(hoodCurrentSenseHoming());
             setDefaultCommand(hoodEncoderHoming());
         }
 
@@ -197,13 +198,24 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command hoodEncoderHoming() {
-        removeDefaultCommand();
+        Runnable init = () -> {
+            m_timer.start();
+            m_hood.setAngle(0);
+        };
 
-        return Commands.sequence(
-            Commands.runOnce(() -> m_hood.setAngle(0)),
-            Commands.waitUntil(() -> m_hoodEncoder.getVelocity().getValueAsDouble() < 0.00005),
-            Commands.runOnce(() -> m_hoodEncoder.setPosition(Rotations.of(0)))
-        );
+        Runnable execute = () -> {};
+
+        Consumer<Boolean> onEnd = (Boolean interrupted) -> {
+            m_hoodEncoder.setPosition(Rotations.of(0));
+            m_timer.stop();
+            m_timer.reset();
+            removeDefaultCommand();
+        };
+
+        BooleanSupplier isFinished = () -> 
+            ((Math.abs(m_hoodEncoder.getVelocity().getValueAsDouble()) < 0.001) && (m_timer.get() / 1000 > 350));
+
+        return new FunctionalCommand(init, execute, onEnd, isFinished, this).withTimeout(3).withName("hoodEncoder homing");
     }
 
     public Command setHoodEncoderZero() {
@@ -317,7 +329,7 @@ public class Shooter extends SubsystemBase {
         // log_hoodEncoderPositionDegs.accept(m_currentHoodPos);
         log_hoodEncoderPositionDegs.accept(Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees) / kHoodGearing);
         log_hoodEncoderVelocityRPS.accept(m_hoodEncoder.getVelocity().getValueAsDouble());
-        log_hoodEncoderReferencePosition.accept(m_hoodSetpoint.in(Degrees) / kHoodGearing);
+        log_hoodReferencePosition.accept(m_hood.getAngle() / kHoodGearing);
         log_hoodEncoderError.accept(Math.abs((m_hoodSetpoint.in(Degrees)) - (Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees))) / kHoodGearing);
         log_isHoodHoming.accept(m_isHoodHoming);
 
