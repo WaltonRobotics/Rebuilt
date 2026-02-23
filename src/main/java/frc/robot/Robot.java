@@ -40,6 +40,7 @@ import frc.robot.Constants.VisionK;
 import frc.robot.dashboards.AutonChooser;
 import frc.robot.dashboards.TestingDashboard;
 import frc.robot.autons.WaltAutonFactory;
+import frc.robot.autons.WaltSimpleAutonFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Superstructure;
@@ -98,6 +99,7 @@ public class Robot extends TimedRobot {
 
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
     private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
+    private final WaltSimpleAutonFactory m_simpleAutonFactory = new WaltSimpleAutonFactory(m_superstructure, m_shooter, m_autoFactory);
     private HashMap<String, Command> m_autonList = new HashMap<String, Command>();
 
     //---VISION
@@ -576,7 +578,8 @@ public class Robot extends TimedRobot {
 
         AutonChooser.initialize();
 
-        m_autonList.putIfAbsent("oneRightNeutralPickup", m_waltAutonFactory.oneRightNeutralPickup());
+        // m_autonList.putIfAbsent("oneRightNeutralPickup", m_waltAutonFactory.oneRightNeutralPickup());
+        m_autonList.putIfAbsent("oneRightNeutralPickup", m_simpleAutonFactory.rightOnePickup());
         m_autonList.putIfAbsent("twoRightNeutralPickup", m_waltAutonFactory.twoRightNeutralPickup());
         m_autonList.putIfAbsent("threeRightNeutralPickup", m_waltAutonFactory.threeRightNeutralPickup());
         m_autonList.putIfAbsent("oneLeftNeutralPickup", m_waltAutonFactory.oneLeftNeutralPickup());

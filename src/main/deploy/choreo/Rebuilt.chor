@@ -172,6 +172,20 @@
      "exp":"1.471127829404881 rad",
      "val":1.471127829404881
     }
+   },
+   "rightPickupOne":{
+    "x":{
+     "exp":"7.291269302368164 m",
+     "val":7.291269302368164
+    },
+    "y":{
+     "exp":"rightFuelPickup.y",
+     "val":2.6657562255859375
+    },
+    "heading":{
+     "exp":"rightFuelPickup.heading",
+     "val":0.0
+    }
    }
   }
  },
