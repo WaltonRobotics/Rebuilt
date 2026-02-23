@@ -74,6 +74,9 @@ public class Shooter extends SubsystemBase {
     private final Supplier<Pose2d> m_poseSupplier;
     private final Supplier<ChassisSpeeds> m_fieldSpeedsSupplier;
 
+    private final Distance fieldWidthDiv2 = Inches.of(FieldConstants.fieldWidth / 2);
+
+    private boolean m_isBlue;
     //need to implement the differing targets (if in neutral zone, shoot to X point (passing))
     Translation3d currentTarget = AllianceFlipUtil.apply(FieldConstants.Hub.innerCenterPoint);
 
@@ -162,6 +165,8 @@ public class Shooter extends SubsystemBase {
 
         m_poseSupplier = poseSupplier;
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
+
+        m_isBlue = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue;
 
         initSim();
 
@@ -385,9 +390,7 @@ public class Shooter extends SubsystemBase {
      *         the robot is on the right side of the field. Relative of what alliance one is on.
      */
     private Translation3d getPassingTarget(Pose2d robotPose) {
-        Distance fieldWidthDiv2 = Inches.of(FieldConstants.fieldWidth / 2);
-        boolean isBlue = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue;
-        boolean onLeftSide = isBlue ? robotPose.getMeasureY().gt(fieldWidthDiv2) : robotPose.getMeasureY().lt(fieldWidthDiv2);
+        boolean onLeftSide = m_isBlue ? robotPose.getMeasureY().gt(fieldWidthDiv2) : robotPose.getMeasureY().lt(fieldWidthDiv2);
 
         return onLeftSide ? AllianceFlipUtil.apply(kPassingSpotLeft) : AllianceFlipUtil.apply(kPassingSpotRight);
     }
@@ -428,11 +431,8 @@ public class Shooter extends SubsystemBase {
         Pose2d pose = m_poseSupplier.get();
         boolean isBlue = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue;
 
-        return isBlue &&
-            pose.getMeasureX().lt(Inches.of(FieldConstants.LinesVertical.allianceZone).plus(kRobotFullWidth.div(2))) || //are we in the BLUE ALLIANCE ZONE as a BLUE ROBOT (behind the starting line effectively)
-                !isBlue
-                    && pose.getMeasureX()
-                        .gt(Inches.of(FieldConstants.LinesVertical.oppAllianceZone).plus(kRobotFullWidth.div(2)));      //are we in the RED ALLIANCE ZONE as a RED ROBOT(behind the starting line effectively)
+        return (isBlue && pose.getMeasureX().lt(Inches.of(FieldConstants.LinesVertical.allianceZone).plus(kRobotFullWidth.div(2)))) || //are we in the BLUE ALLIANCE ZONE as a BLUE ROBOT (behind the starting line effectively)
+                    (!isBlue && pose.getMeasureX().gt(Inches.of(FieldConstants.LinesVertical.oppAllianceZone).plus(kRobotFullWidth.div(2))));      //are we in the RED ALLIANCE ZONE as a RED ROBOT(behind the starting line effectively)
     }
 
     /**
@@ -479,18 +479,20 @@ public class Shooter extends SubsystemBase {
 
         log_calculateShotCurrPose.accept(pose);
 
-        if (m_goal == ShooterGoal.SCORING || m_goal == ShooterGoal.PASSING) {
-            calculateShot(pose);
+        switch (m_goal) {
+            case SCORING:
+                calculateShot(pose);
+                break;
+            case PASSING:
+                setTarget(getPassingTarget(pose));
+                break;
+            case TEST:
+                calculateTurretAngle(pose);
+                break;
+            case OFF:
+                break;
         }
-
-        if (m_goal == ShooterGoal.TEST) {
-            calculateTurretAngle(pose);
-        }
-
-        if (m_goal == ShooterGoal.PASSING) {
-            setTarget(getPassingTarget(pose));
-        }
-
+        
         //---Hood
         updateHood();
 

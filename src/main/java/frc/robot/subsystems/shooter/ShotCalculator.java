@@ -118,6 +118,11 @@ public class ShotCalculator {
         double vel = exitVelocity.in(MetersPerSecond);
         double angle = Math.PI / 2 - hoodAngle.in(Radians);
         double dist = distance.in(Meters);
+
+        if (vel == 0 || Math.cos(angle) == 0) {
+            return null;
+        }
+
         return Seconds.of(dist / (vel * Math.cos(angle)));
     }
 
@@ -151,10 +156,12 @@ public class ShotCalculator {
         double current = currentAngle.in(Rotations);
 
         //this is the snapback function, to make sure that you will always be tracking and you will not go over your physical limits.
-        if (current > 0 && angle + 1 <= kTurretMaxRots.in(Rotations))
+        if (current > 0 && angle + 1 <= kTurretMaxRots.in(Rotations)) {
             angle += 1;
-        if (current < 0 && angle - 1 >= kTurretMinRots.in(Rotations))
+        }
+        else if (current < 0 && angle - 1 >= kTurretMinRots.in(Rotations)) {
             angle -= 1;
+        }
 
         log_desiredTurretRot.accept(angle);
 

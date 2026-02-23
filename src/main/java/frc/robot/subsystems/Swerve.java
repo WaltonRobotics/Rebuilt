@@ -266,8 +266,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 );
                 m_hasAppliedOperatorPerspective = true;
             });
-        }
-        
+        }      
     }
 
     private void startSimThread() {

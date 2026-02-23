@@ -57,6 +57,5 @@
     "edu.wpi.first.math.**.proto.*",
     "edu.wpi.first.math.**.struct.*",
   ],
-  "java.dependency.enableDependencyCheckup": false,
-  "java.format.settings.url": ".vscode/java-formatter.xml"
+  "java.dependency.enableDependencyCheckup": false
 }

@@ -218,8 +218,7 @@ public class Robot extends TimedRobot {
     private void configureFuelSim() {
         FuelSim instance = FuelSim.getInstance();
         // instance.spawnStartingFuel();
-        
-
+    
         instance.registerRobot(
                 kRobotFullWidth.in(Meters),
                 kRobotFullLength.in(Meters),
@@ -324,7 +323,6 @@ public class Robot extends TimedRobot {
         ).onFalse(
             m_superstructure.deactivateOuttake()
         );
-
 
         //---OVERRIDE COMMANDS
         trg_maxShooterOverride.onTrue(
@@ -566,7 +564,6 @@ public class Robot extends TimedRobot {
                             FuelSim.getInstance().clearFuel();
                             // FuelSim.getInstance().spawnStartingFuel();
                         }));
-
         trg_simSetPassing.onTrue(m_shooter.setGoal(ShooterGoal.PASSING));
         trg_simSetTest.onTrue(m_shooter.setGoal(ShooterGoal.TEST));
         trg_simSetShooting.onTrue(m_shooter.setGoal(ShooterGoal.SCORING));
@@ -612,6 +609,7 @@ public class Robot extends TimedRobot {
                 m_visionSeenLastSec = ctreTime;
             }
         }
+        
         // periodics
         m_shooter.periodic();
         m_indexer.periodic();
