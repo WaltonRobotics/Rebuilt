@@ -65,12 +65,8 @@ public class Shooter extends SubsystemBase {
     private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); //X44Foc
     private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true);
 
-    // private final GobildaServoContinuous m_hood = new GobildaServoContinuous(kHoodChannel);
     private final GobildaServoAngled m_hood = new GobildaServoAngled(kHoodChannel);
     private final CANcoder m_hoodEncoder = new CANcoder(kHoodEncoderCANID, Constants.kCanivoreBus);
-    // private final PIDController m_hoodPIDUp = new PIDController(2.45, 0, 0);
-    // private final SimpleMotorFeedforward m_hoodFf = new SimpleMotorFeedforward(0.06, 1.56);
-    // private final PIDController m_hoodPIDDown = new PIDController(2.3, 0, 0);
 
     private Angle m_hoodSetpoint = Degrees.of(0);
     private Angle m_currentHoodPos = Rotations.of(0);
@@ -132,15 +128,11 @@ public class Shooter extends SubsystemBase {
     private final DoubleLogger log_hoodServoVoltage = WaltLogger.logDouble(kLogTab, "hoodServoVoltage");
     private final DoubleLogger log_hoodServoCurrent = WaltLogger.logDouble(kLogTab, "hoodServoCurrent");
 
-    // private final DoubleLogger log_hoodPIDOutput = WaltLogger.logDouble(kLogTab, "hoodPIDOutput");
-    // private final DoubleLogger log_hoodFFOutput = WaltLogger.logDouble(kLogTab, "hoodFFOutput");
-    // private final DoubleLogger log_hoodEffort = WaltLogger.logDouble(kLogTab, "hoodEffort");
     private final BooleanLogger log_isHoodHoming = WaltLogger.logBoolean(kLogTab, "isHoodHoming");
 
-    // private BooleanSupplier m_currentSpike = () -> RobotController.getCurrent6V() > 3.0;
-    // private Debouncer m_currentDebouncer = new Debouncer(0.100, DebounceType.kRising);
-
     private boolean m_isHoodHoming = false;
+    private double referenceRPS = 0;
+
     private Timer m_timer = new Timer();
 
     /* CONSTRUCTOR */
@@ -170,6 +162,10 @@ public class Shooter extends SubsystemBase {
 
     /* COMMANDS */
     // ---SHOOTER (Veloity Control)
+    public void setShooterVelocity(AngularVelocity RPS) {
+        m_shooterLeader.setControl(m_velocityRequest.withVelocity(RPS));
+    }
+
     public Command setShooterVelocityCmd(AngularVelocity RPS) {
         return runOnce(() -> m_shooterLeader.setControl(m_velocityRequest.withVelocity(RPS)));
     }
@@ -180,8 +176,8 @@ public class Shooter extends SubsystemBase {
     }
 
     public boolean checkIfSpunUp(Double RPS) {
+        referenceRPS = RPS;
         if (m_shooterLeader.getVelocity().getValueAsDouble() > RPS - (RPS * 0.05)) {
-            m_spunUp = true;
             return true;
         }
         return false;
@@ -193,6 +189,12 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> m_hood.setAngle(degs.times(kHoodGearing).magnitude()));
     }
 
+    public void setHoodPosition(Angle degs) {
+        m_hoodSetpoint = degs;
+        m_hood.setAngle(degs.times(kHoodGearing).magnitude());
+    }
+
+    //for TestingDashboard
     public Command setHoodPositionCmd(DoubleSubscriber sub_degs) {
         m_hoodSetpoint = Degrees.of(sub_degs.getAsDouble());
         return run(() -> m_hood.setAngle(sub_degs.getAsDouble() * kHoodGearing));
@@ -223,77 +225,6 @@ public class Shooter extends SubsystemBase {
         return Commands.runOnce(() -> m_hoodEncoder.setPosition(0));
     }
 
-    /* HOOD CONTINUOUS MODE CODE */
-    // public Command setHoodPositionCmd(Angle degs) {  
-    //     return runOnce(
-    //         () -> m_hoodSetpoint = degs.times(kHoodGearing)
-    //     );
-    // }
-  
-    // //for TestingDashboard
-    // public Command setHoodPositionCmd(DoubleSubscriber sub_degs) {
-    //     return run(
-    //         () -> m_hoodSetpoint = Degrees.of(sub_degs.get() * kHoodGearing)
-    //     );
-    // }
-
-    // public Command hoodCurrentSenseHoming() {
-    //     Runnable init = () -> {
-    //         m_hood.set(0.3);
-    //         m_isHoodHoming = true;
-    //     };
-
-    //     Runnable execute = () -> {};
-
-    //     Consumer<Boolean> onEnd = (Boolean interrupted) -> {
-    //         m_hood.set(0.5);
-    //         m_hoodEncoder.setPosition(Rotations.of(0));
-    //         removeDefaultCommand();
-    //         m_isHoodHoming = false;
-    //     };
-
-    //     BooleanSupplier isFinished = () -> 
-    //         m_currentDebouncer.calculate(m_currentSpike.getAsBoolean());
-
-    //     return new FunctionalCommand(init, execute, onEnd, isFinished, this).withTimeout(3).withName("hoodEncoder homing");
-    // }
-
-    // public Command setHoodMax() {
-    //     return runEnd(
-    //         () -> m_hood.set(1),
-    //         () -> m_hood.set(0.5)
-    //     );
-    // }
-
-    // public Command setHoodStop() {
-    //     return runOnce(() -> m_hood.set(0.5));
-    // }
-
-    // public Command setHoodMin() {
-    //     return runOnce(() -> m_hood.set(0));
-    // }
-
-    // // The PIDOutput needed to get to the setpoint from the current point
-    // public void updateHood() {
-    //     // can't read from hardware in Sim, so we read from the hoodSim object
-    //     m_currentHoodPos = m_inSim ? Rotations.of(m_hoodSim.getAngularPositionRotations()) : Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble());
-
-    //     boolean down = (m_currentHoodPos.magnitude() < m_hoodSetpoint.in(Rotations));
-    //     // var pid = down ? m_hoodPIDDown : m_hoodPIDUp;
-    //     double hoodPIDOutput = m_hoodPIDUp.calculate(m_currentHoodPos.magnitude(), m_hoodSetpoint.in(Rotations));
-    //     log_hoodPIDOutput.accept(hoodPIDOutput);
-        
-    //     final double kS = 0.055;
-    //     double hoodFFOutput = down ? -kS : kS;
-    //     log_hoodFFOutput.accept(hoodFFOutput);
-        
-    //     double hoodEffort = hoodPIDOutput + hoodFFOutput;
-    //     hoodEffort = MathUtil.clamp(hoodEffort, -1.0, 1.0);
-    //     hoodEffort = (hoodEffort + 1) / 2;
-    //     m_hood.set(hoodEffort);
-    //     log_hoodEffort.accept(hoodEffort);
-    // }
-
     //---TURRET (Motionmagic Angle Control)
     public Command setTurretPositionCmd(Angle rots) {
         return runOnce(() -> m_turret.setControl(m_MMVRequest.withPosition(rots)));
@@ -320,14 +251,8 @@ public class Shooter extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        //---Hood (FOR CONTINUOUS MODE)
-        // if (!m_isHoodHoming) {
-        //     updateHood();
-        // }
-
         //---Loggers
         log_shooterVelocityRPS.accept(m_shooterLeader.getVelocity().getValueAsDouble());
-        // log_hoodEncoderPositionDegs.accept(m_currentHoodPos);
         log_hoodEncoderPositionDegs.accept(Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees) / kHoodGearing);
         log_hoodEncoderVelocityRPS.accept(m_hoodEncoder.getVelocity().getValueAsDouble());
         log_hoodReferencePosition.accept(m_hood.getAngle() / kHoodGearing);
@@ -337,7 +262,7 @@ public class Shooter extends SubsystemBase {
         log_turretPositionRots.accept(m_turret.getPosition().getValueAsDouble());
 
         // log_exitBeamBreak.accept(trg_exitBeamBreak);
-        log_spunUp.accept(m_spunUp);
+        log_spunUp.accept(checkIfSpunUp(referenceRPS));
         log_hoodServoVoltage.accept(RobotController.getVoltage6V());
         log_hoodServoCurrent.accept(RobotController.getCurrent6V());
     }

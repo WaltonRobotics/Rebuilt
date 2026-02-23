@@ -2,9 +2,11 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.Constants.IntakeK;
+import frc.robot.Constants.IndexerK;
+import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.StringArrayLogger;
@@ -14,7 +16,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.SuperstructureK.*;
 import static frc.robot.Constants.ShooterK;
-import static frc.robot.Constants.IntakeK.kIntakeRollersMaxRPS;
+import static frc.robot.Constants.IntakeK;
 
 import java.util.HashSet;
 
@@ -30,6 +32,8 @@ public class Superstructure {
 
     private HashSet<String> m_activeOverrideCommands = new HashSet<>();
     private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
+
+    private Timer m_timer = new Timer();
     
     /* CONSTRUCTOR */
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
@@ -72,7 +76,6 @@ public class Superstructure {
     public Command activateIntake() {
         return Commands.sequence(
             m_intake.startIntakeRollers(),
-            // m_indexer.startSpindexer(),
             m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED),
             logActiveCommands("activateIntake", "safeIntake", "retractIntake")
         );
@@ -92,19 +95,55 @@ public class Superstructure {
             logCommand = logActiveCommands("emergencyDump", "shooting", "deactivateOuttake");
         }
 
-        return Commands.sequence(
+        return Commands.repeatingSequence(
+            Commands.runOnce(() -> m_timer.start()),
             m_shooter.setShooterVelocityCmd(RPS),
             m_shooter.setHoodPositionCmd(Degrees.of(20)),
-            Commands.waitUntil(() -> m_shooter.checkIfSpunUp(RPS.magnitude())),
+            Commands.waitUntil(() -> m_shooter.checkIfSpunUp(RPS.magnitude()) || m_timer.get() / 1000 > 3000),
+            Commands.runOnce(() -> {
+                m_timer.stop();
+                m_timer.reset();
+            }),
             m_indexer.startTunnel(),
             m_indexer.startSpindexer(),
-            // m_intake.setIntakeRollersVelocityCmd(RotationsPerSecond.of((0.25) * IntakeK.kIntakeRollersMaxRPS.magnitude())),
+            Commands.waitUntil(() -> !m_shooter.checkIfSpunUp(RPS.magnitude())),
+            m_indexer.stopTunnel(),
+            m_indexer.stopSpindexer(),
             logCommand
         );
     }
 
+    public Command emergencyBarf() {
+        return Commands.startEnd(
+            () -> {
+                m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
+                m_shooter.setHoodPosition(ShooterK.kHoodMaxDegs);
+                m_indexer.setSpindexerVelocity(IndexerK.m_spindexerRPS);
+                m_indexer.setTunnelVelocity(IndexerK.m_tunnelRPS);
+                m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersMaxRPS.times(-1));
+            },
+            () -> {
+                m_shooter.setShooterVelocity(RotationsPerSecond.of(0));
+                m_shooter.setHoodPosition(ShooterK.kHoodMinDegs);
+                m_indexer.setSpindexerVelocity(RotationsPerSecond.of(0));
+                m_indexer.setTunnelVelocity(RotationsPerSecond.of(0));
+                m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));
+            }
+        );
+
+        // return Commands.sequence(
+        //     m_shooter.setShooterVelocityCmd(ShooterK.kShooterBarfRPS),
+        //     m_shooter.setHoodPositionCmd(ShooterK.kHoodMaxDegs),
+        //     m_indexer.startTunnel(),
+        //     m_indexer.startSpindexer(),
+        //     m_intake.setIntakeRollersVelocityCmd(IntakeK.kIntakeRollersMaxRPS.times(-1))
+        // );
+    }
+
     public Command shimmy() {
-        m_intake.setIntakeRollersVelocityCmd(RotationsPerSecond.of(0));
+        Commands.sequence(
+            m_intake.setIntakeRollersVelocityCmd(RotationsPerSecond.of(0))
+        );
         return Commands.repeatingSequence(
             m_intake.setIntakeArmPos(IntakeArmPosition.SHIMMY),
             Commands.waitUntil(() -> m_intake.intakeArmAtPos(IntakeArmPosition.SHIMMY)),

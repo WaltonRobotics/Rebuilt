@@ -121,12 +121,16 @@ public class Intake extends SubsystemBase {
         return setIntakeRollersVelocityCmd(RotationsPerSecond.of(0));
     }
 
+    public void setIntakeRollersVelocity(AngularVelocity RPS) {
+        m_intakeRollers.setControl(m_VVReq.withVelocity(RPS));
+    }
+
     public Command setIntakeRollersVelocityCmd(AngularVelocity RPS) {
         return runOnce(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RPS)));
     }
 
     //for TestingDashboard
-    public Command setIntakeRollersSpeed(DoubleSubscriber sub_RPS) {
+    public Command setIntakeRollersVelocity(DoubleSubscriber sub_RPS) {
         return run(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
     }
 

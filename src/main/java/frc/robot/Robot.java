@@ -123,7 +123,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_retractIntake = m_manipulator.y().and(trg_manipOverride.negate());
 
     private Trigger trg_shoot = m_driver.rightTrigger().and(trg_manipOverride.negate());
-    private Trigger trg_emergencyBarf = m_manipulator.leftTrigger().and(trg_manipOverride.negate());
+    private Trigger trg_emergencyBarf = m_driver.leftTrigger().and(trg_manipOverride.negate());
 
     private Trigger trg_pass = m_manipulator.rightBumper().and(trg_manipOverride.negate());
 
@@ -260,10 +260,8 @@ public class Robot extends TimedRobot {
         ).onFalse(
             m_superstructure.stopPassing()
         );
-        trg_emergencyBarf.onTrue(
-            m_superstructure.activateOuttake(ShooterK.kShooterBarfRPS)
-        ).onFalse(
-            m_superstructure.deactivateOuttake()
+        trg_emergencyBarf.whileTrue(
+            m_superstructure.emergencyBarf()
         );
 
         m_manipulator.leftBumper().whileTrue(m_superstructure.shimmy());    //need to make trg
@@ -543,7 +541,7 @@ public class Robot extends TimedRobot {
         TestingDashboard.trg_letIntakeArmPositionRotsChange
             .whileTrue(m_intake.setIntakeArmPos(TestingDashboard.sub_intakeArmPositionRots));
         TestingDashboard.trg_letIntakeRollersVelocityRPSChange
-            .whileTrue(m_intake.setIntakeRollersSpeed(TestingDashboard.sub_intakeRollersVelocityRPS));
+            .whileTrue(m_intake.setIntakeRollersVelocity(TestingDashboard.sub_intakeRollersVelocityRPS));
     }
 
     /* PERIODICS */
@@ -707,8 +705,8 @@ public class Robot extends TimedRobot {
 
         m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();
-        // m_shooter.simulationPeriodic();
-        // m_intake.simulationPeriodic();
+        m_shooter.simulationPeriodic();
+        m_intake.simulationPeriodic();
         m_indexer.simulationPeriodic();
     }
 }
