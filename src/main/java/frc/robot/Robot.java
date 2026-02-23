@@ -567,7 +567,6 @@ public class Robot extends TimedRobot {
         trg_simSetPassing.onTrue(m_shooter.setGoal(ShooterGoal.PASSING));
         trg_simSetTest.onTrue(m_shooter.setGoal(ShooterGoal.TEST));
         trg_simSetShooting.onTrue(m_shooter.setGoal(ShooterGoal.SCORING));
-
     }
 
     private void configureTestingDashboard() {
@@ -609,7 +608,7 @@ public class Robot extends TimedRobot {
                 m_visionSeenLastSec = ctreTime;
             }
         }
-        
+
         // periodics
         m_shooter.periodic();
         m_indexer.periodic();

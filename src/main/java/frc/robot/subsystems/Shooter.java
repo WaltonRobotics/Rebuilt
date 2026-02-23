@@ -429,10 +429,9 @@ public class Shooter extends SubsystemBase {
     private boolean inAllianceZone() {
         //UNTESTED
         Pose2d pose = m_poseSupplier.get();
-        boolean isBlue = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue;
 
-        return (isBlue && pose.getMeasureX().lt(Inches.of(FieldConstants.LinesVertical.allianceZone).plus(kRobotFullWidth.div(2)))) || //are we in the BLUE ALLIANCE ZONE as a BLUE ROBOT (behind the starting line effectively)
-                    (!isBlue && pose.getMeasureX().gt(Inches.of(FieldConstants.LinesVertical.oppAllianceZone).plus(kRobotFullWidth.div(2))));      //are we in the RED ALLIANCE ZONE as a RED ROBOT(behind the starting line effectively)
+        return (m_isBlue && pose.getMeasureX().lt(Inches.of(FieldConstants.LinesVertical.allianceZone).plus(kRobotFullWidth.div(2)))) || //are we in the BLUE ALLIANCE ZONE as a BLUE ROBOT (behind the starting line effectively)
+                    (!m_isBlue && pose.getMeasureX().gt(Inches.of(FieldConstants.LinesVertical.oppAllianceZone).plus(kRobotFullWidth.div(2))));      //are we in the RED ALLIANCE ZONE as a RED ROBOT(behind the starting line effectively)
     }
 
     /**
@@ -492,7 +491,7 @@ public class Shooter extends SubsystemBase {
             case OFF:
                 break;
         }
-        
+
         //---Hood
         updateHood();
 
