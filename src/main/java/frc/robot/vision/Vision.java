@@ -44,6 +44,7 @@ public class Vision {
 
     /* LOGGERS */
     private final StructPublisher<Pose2d> log_camPose;
+    private final StructPublisher<Transform3d> log_camTransform;
     private final DoubleArrayPublisher log_stdDevs;
 
     /* CONSTRUCTOR */
@@ -55,10 +56,15 @@ public class Vision {
         m_visionSim = visionSim;
 
         m_photonEstimator = new PhotonPoseEstimator(kTagLayout, roboToCam);
+        final String ntPrefix = "Vision/" + cameraName + "/";
         log_camPose = NetworkTableInstance.getDefault()
-            .getStructTopic("Vision/" + cameraName + "/estRobotPose", Pose2d.struct).publish();
+            .getStructTopic(ntPrefix + "estRobotPose", Pose2d.struct).publish();
+        log_camTransform = NetworkTableInstance.getDefault()
+            .getStructTopic(ntPrefix + "transform", Transform3d.struct).publish();
         log_stdDevs = NetworkTableInstance.getDefault()
-            .getDoubleArrayTopic("Vision/" + cameraName + "/stdDevs").publish(); 
+            .getDoubleArrayTopic(ntPrefix + "/stdDevs").publish();
+
+        log_camTransform.accept(roboToCam);
 
         // Simulation
         if (Robot.isSimulation()) {

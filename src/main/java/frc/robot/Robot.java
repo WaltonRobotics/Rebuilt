@@ -104,12 +104,12 @@ public class Robot extends TimedRobot {
     private final VisionSim m_visionSim = new VisionSim();
 
     // this should be updated with all of our cameras
-    // private final Vision[] m_cameras = {
-    //     new Vision(VisionK.kCameras[0], m_visionSim),
-    //     new Vision(VisionK.kCameras[1], m_visionSim),
+    private final Vision[] m_cameras = {
+        // new Vision(VisionK.kCameras[0], m_visionSim),
+        new Vision(VisionK.kCameras[1], m_visionSim),
     //     new Vision(VisionK.kCameras[2], m_visionSim),
-    //     new Vision(VisionK.kCameras[3], m_visionSim),
-    // };
+        new Vision(VisionK.kCameras[3], m_visionSim),
+    };
 
     /* TRIGGERS */
     private Trigger trg_driverOverride = m_driver.b();
@@ -162,8 +162,8 @@ public class Robot extends TimedRobot {
 
     /* CONSTRUCTOR */
     public Robot() {
-        // configureBindings();
-        configureTestBindings();    //this should be commented out during competition matches
+        configureBindings();
+        // configureTestBindings();    //this should be commented out during competition matches
         // configureTestingDashboard();
     }
 
@@ -266,9 +266,10 @@ public class Robot extends TimedRobot {
             m_superstructure.deactivateOuttake()
         );
 
+        m_manipulator.leftBumper().whileTrue(m_superstructure.shimmy());    //need to make trg
+
         //---OVERRIDE COMMANDS
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
-        m_driver.a().and(trg_driverOverride).whileTrue(m_superstructure.shimmy());
 
         trg_maxShooterOverride.onTrue(
             m_superstructure.maxShooter()
@@ -419,6 +420,7 @@ public class Robot extends TimedRobot {
         // m_manipulator.y().and(trg_manipOverride).whileTrue(m_shooter.setHoodMin()).onFalse(m_shooter.setHoodStop());
 
         m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.setHoodPositionCmd(Degrees.of(37))).onFalse(m_shooter.setHoodPositionCmd(Degrees.of(1)));
+        m_manipulator.y().and(trg_manipOverride).whileTrue(m_superstructure.shimmy()).onFalse(m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED));
 
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
         m_manipulator.start().and(trg_manipOverride).onTrue(m_shooter.hoodEncoderHoming());
@@ -550,16 +552,16 @@ public class Robot extends TimedRobot {
         m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run(); 
 
-        // for (Vision camera : m_cameras) {
-        //     Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
-        //     if (estimatedPoseOptional.isPresent()) {
-        //         EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
-        //         Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
-        //         var ctreTime = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
-        //         m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());                
-        //         m_visionSeenLastSec = ctreTime;
-        //     }
-        // }
+        for (Vision camera : m_cameras) {
+            Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
+            if (estimatedPoseOptional.isPresent()) {
+                EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
+                Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
+                var ctreTime = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
+                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());                
+                m_visionSeenLastSec = ctreTime;
+            }
+        }
 
         // periodics
         m_shooter.periodic();

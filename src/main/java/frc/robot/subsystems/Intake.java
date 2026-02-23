@@ -83,9 +83,9 @@ public class Intake extends SubsystemBase {
         m_intakeArm.getConfigurator().apply(kIntakeArmConfiguration);
         m_intakeRollers.getConfigurator().apply(kIntakeRollersConfiguration);
 
-        // if(Robot.isReal()) {
-        //     setDefaultCommand(intakeArmCurrentSenseHoming());
-        // }
+        if (Robot.isReal()) {
+            setDefaultCommand(intakeArmCurrentSenseHoming());
+        }
 
         initSim();
     }
@@ -140,7 +140,7 @@ public class Intake extends SubsystemBase {
 
     public Command intakeArmCurrentSenseHoming() {
         Runnable init = () -> {
-            m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(-2));
+            m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(-3.25));
         };
 
         Runnable execute = () -> {};
@@ -177,9 +177,10 @@ public class Intake extends SubsystemBase {
 
     /* ENUMS */
     public enum IntakeArmPosition{
-        RETRACTED(Rotations.of(0.088).in(Degrees)),
-        SAFE(Rotation.of(0.268066).in(Degrees)),
-        DEPLOYED(Rotations.of(0.320312).in(Degrees));
+        RETRACTED(Rotations.of(0.082764).in(Degrees)),
+        DEPLOYED(Rotations.of(0.295410).in(Degrees)),
+        SHIMMY(Rotations.of(0.176025).in(Degrees)),
+        SAFE((DEPLOYED.rots.minus(Rotations.of(0.06))).in(Degrees));
 
         public Angle degs;
         public Angle rots;

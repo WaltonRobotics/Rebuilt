@@ -181,6 +181,7 @@ public class Shooter extends SubsystemBase {
 
     public boolean checkIfSpunUp(Double RPS) {
         if (m_shooterLeader.getVelocity().getValueAsDouble() > RPS - (RPS * 0.05)) {
+            m_spunUp = true;
             return true;
         }
         return false;

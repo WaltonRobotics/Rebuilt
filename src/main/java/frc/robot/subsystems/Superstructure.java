@@ -9,6 +9,7 @@ import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.StringArrayLogger;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.SuperstructureK.*;
@@ -71,7 +72,7 @@ public class Superstructure {
     public Command activateIntake() {
         return Commands.sequence(
             m_intake.startIntakeRollers(),
-            m_indexer.startSpindexer(),
+            // m_indexer.startSpindexer(),
             m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED),
             logActiveCommands("activateIntake", "safeIntake", "retractIntake")
         );
@@ -93,6 +94,7 @@ public class Superstructure {
 
         return Commands.sequence(
             m_shooter.setShooterVelocityCmd(RPS),
+            m_shooter.setHoodPositionCmd(Degrees.of(20)),
             Commands.waitUntil(() -> m_shooter.checkIfSpunUp(RPS.magnitude())),
             m_indexer.startTunnel(),
             m_indexer.startSpindexer(),
@@ -102,12 +104,12 @@ public class Superstructure {
     }
 
     public Command shimmy() {
-        return Commands.sequence(
-            m_intake.setIntakeRollersVelocityCmd(RotationsPerSecond.of(IntakeK.kIntakeRollersMaxRPS.magnitude() * (0.25))),
-            m_intake.setIntakeArmPos(IntakeArmPosition.RETRACTED),
-            Commands.waitUntil(() -> m_intake.intakeArmAtPos(IntakeArmPosition.RETRACTED)),
-            m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED),
-            Commands.waitUntil(() -> m_intake.intakeArmAtPos(IntakeArmPosition.DEPLOYED))
+        m_intake.setIntakeRollersVelocityCmd(RotationsPerSecond.of(0));
+        return Commands.repeatingSequence(
+            m_intake.setIntakeArmPos(IntakeArmPosition.SHIMMY),
+            Commands.waitUntil(() -> m_intake.intakeArmAtPos(IntakeArmPosition.SHIMMY)),
+            m_intake.setIntakeArmPos(IntakeArmPosition.SAFE),
+            Commands.waitUntil(() -> m_intake.intakeArmAtPos(IntakeArmPosition.SAFE))
         );
     }
 

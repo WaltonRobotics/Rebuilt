@@ -63,7 +63,7 @@ public class Constants {
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.magnitude());
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.magnitude());
 
-        public static final AngularVelocity kShooterMaxRPS = RotationsPerSecond.of((5785/60) * (0.9) / kShooterGearing);   //Kraken X60Foc Max (RPM: 5785)
+        public static final AngularVelocity kShooterMaxRPS = RotationsPerSecond.of((5785/60) * (0.65) / kShooterGearing);   //Kraken X60Foc Max (RPM: 5785) //(0.9)
         public static final AngularVelocity kShooterBarfRPS = RotationsPerSecond.of((5785/60) * (0.2) / kShooterGearing);
         public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.of(/* 0/60 * (0.9) / kShooterGearing */ 0);
 
@@ -96,9 +96,9 @@ public class Constants {
         // TODO: Check what more configs would be necessary
         private static final Slot0Configs kShooterLeaderSlot0Configs = new Slot0Configs()   //Note to self (hrehaan) (and saarth cuz i did the same thing): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
             .withKS(0)
-            .withKV(0.1217)
+            .withKV(0.135)
             .withKA(0)
-            .withKP(0)
+            .withKP(0.1)
             .withKI(0)
             .withKD(0); // kP was causing the werid sinusoid behavior, kS and kA were adding inconsistency with the destination values
         private static final CurrentLimitsConfigs kShooterLeaderCurrentLimitConfigs = new CurrentLimitsConfigs()
@@ -152,7 +152,7 @@ public class Constants {
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kTurretOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
-            .withNeutralMode(NeutralModeValue.Coast)
+            .withNeutralMode(NeutralModeValue.Brake)
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);
         private static final MotionMagicConfigs kTurretMotionMagicConfigs = new MotionMagicConfigs()
@@ -198,33 +198,33 @@ public class Constants {
         static {
             kCameras[0] = new Camera(
                 new SimCameraProperties(), 
-                "frontLeftCamera", 
+                "FrontLeft", 
                 kSimCameraSimVisualNames, 
-                Camera.transformToRobo(10.413, 12.394, 28.844, 0, 30, 45)
+                Camera.transformToRobo(10.413, 12.394, 28.844, 0, -30, 45)
             );
             kCameras[0].setProps("ThriftyCam", 0, 0, 0, 0);
             
             kCameras[1] = new Camera(
                 new SimCameraProperties(), 
-                "frontRightCamera", 
+                "FrontRight", 
                 kSimCameraSimVisualNames, 
-                Camera.transformToRobo(10.413, -12.394, 28.844, 0, 30, 315)
+                Camera.transformToRobo(10.413, -12.394, 28.844, 0, -30, 315)
             );
             kCameras[1].setProps("ThriftyCam", 0, 0, 0, 0);
 
             kCameras[2] = new Camera(
                 new SimCameraProperties(), 
-                "backLeftCamera", 
+                "BackLeft", 
                 kSimCameraSimVisualNames, 
-                Camera.transformToRobo(-11.894, 12.394, 28.844, 0, 30, 135)
+                Camera.transformToRobo(-11.894, 12.394, 28.844, 0, -30, 135)
             );
             kCameras[2].setProps("ThriftyCam", 0, 0, 0, 0);
 
             kCameras[3] = new Camera(
                 new SimCameraProperties(), 
-                "backRightCamera", 
+                "BackRight", 
                 kSimCameraSimVisualNames, 
-                Camera.transformToRobo(-11.894, -12.394, 28.844, 0, 30, 225)
+                Camera.transformToRobo(-11.894, -12.394, 28.844, 0, -30, 225)
             );
             kCameras[3].setProps("ThriftyCam", 0, 0, 0, 0);
         }
@@ -353,8 +353,8 @@ public class Constants {
         public static final double kSpindexerMOI = 0.00166190059;
         public static final double kTunnelMOI = 0.000215968064;
       
-        public static final AngularVelocity m_spindexerRPS = RotationsPerSecond.of((5785/60) * (0.9) / kSpindexerGearing);  //Max RPM for X60Foc is 5785
-        public static final AngularVelocity m_tunnelRPS = RotationsPerSecond.of((5785/60) * (0.9) / kTunnelGearing);
+        public static final AngularVelocity m_spindexerRPS = RotationsPerSecond.of((5785/60) * (0.45) / kSpindexerGearing);  //Max RPM for X60Foc is 5785   (0.9)
+        public static final AngularVelocity m_tunnelRPS = RotationsPerSecond.of((5785/60) * (0.45) / kTunnelGearing);   //(0.9) //(0.65)
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
