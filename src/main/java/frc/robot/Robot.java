@@ -47,6 +47,7 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Indexer;
+import frc.robot.vision.Camera;
 import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
 import frc.util.Telemetry;
@@ -114,6 +115,8 @@ public class Robot extends TimedRobot {
     /* TRIGGERS */
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
+
+    private Trigger trg_limitFPS = new Trigger(() -> DriverStation.isDisabled());
 
     //---COMMAND SEQUENCE TRIGGERS
     private Trigger trg_swerveToObject = m_driver.x();
@@ -232,6 +235,7 @@ public class Robot extends TimedRobot {
 
         /* CUSTOM BINDS */
 
+        trg_limitFPS.onTrue(Camera.setFPSLimit(VisionK.kCameras, 5)).onFalse(Camera.setFPSLimit(VisionK.kCameras, -1));
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
         trg_swerveToObject.whileTrue(
             m_drivetrain.swerveToObject()

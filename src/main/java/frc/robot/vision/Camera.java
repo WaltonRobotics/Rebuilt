@@ -1,11 +1,14 @@
 package frc.robot.vision;
 
+import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.SimCameraProperties;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 public class Camera {
     /* CLASS VARIABLES */
@@ -130,5 +133,20 @@ public class Camera {
 
     public SimCameraProperties getSimCameraProperties() {
         return m_simCameraProperties;
+    }
+
+    public void setFPSLimit(int fps) {
+        PhotonCamera camera = new PhotonCamera(m_cameraName);
+        camera.setFPSLimit(fps);
+    }
+
+    public static Command setFPSLimit(Camera[] cameras, int fps) {
+        return Commands.runOnce(
+            () -> {
+                for (Camera cam : cameras) {
+                    cam.setFPSLimit(fps);
+                }
+            }
+        );
     }
 }
