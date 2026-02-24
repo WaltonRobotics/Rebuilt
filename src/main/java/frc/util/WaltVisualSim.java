@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.shooter.Shooter;
 
 public class WaltVisualSim {
     private final Intake m_intake;

@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -51,9 +51,6 @@ import java.util.function.Supplier;
 
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
-import frc.robot.subsystems.shooter.FuelSim;
-import frc.robot.subsystems.shooter.ShotCalculator;
-import frc.robot.subsystems.shooter.TurretVisualizer;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
 import frc.util.AllianceFlipUtil;
 import frc.util.WaltMotorSim;

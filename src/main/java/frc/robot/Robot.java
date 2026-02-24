@@ -37,14 +37,14 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.robot.Constants.VisionK;
-import frc.robot.subsystems.Shooter.ShooterGoal;
 import frc.robot.subsystems.shooter.FuelSim;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.Shooter.ShooterGoal;
 import frc.robot.Constants.ShooterK;
 import frc.robot.dashboards.AutonChooser;
 import frc.robot.dashboards.TestingDashboard;
 import frc.robot.autons.WaltAutonFactory;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;

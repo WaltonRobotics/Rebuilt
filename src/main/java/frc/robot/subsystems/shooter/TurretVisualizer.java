@@ -15,7 +15,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
-import frc.robot.subsystems.Shooter;
 import frc.util.WaltLogger.Pose3dLogger;
 import frc.util.WaltLogger.Translation3dArrayLogger;
 
