@@ -27,11 +27,13 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltMotorSim;
 import frc.robot.Robot;
+import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
@@ -106,6 +108,15 @@ public class Intake extends SubsystemBase {
 
     public boolean intakeArmAtPos(IntakeArmPosition pos) {
         return m_intakeArm.getPosition().isNear(pos.rots, Rotations.of(0.015)); //TODO: find better tolerance
+    }
+
+    public Command shimmy() {
+        return Commands.repeatingSequence(
+            setIntakeArmPos(IntakeArmPosition.SHIMMY),
+            Commands.waitUntil(() -> intakeArmAtPos(IntakeArmPosition.SHIMMY)),
+            setIntakeArmPos(IntakeArmPosition.SAFE),
+            Commands.waitUntil(() -> intakeArmAtPos(IntakeArmPosition.SAFE))
+        ).finallyDo(() -> setIntakeArmPos(IntakeArmPosition.SAFE));
     }
 
     //for TestingDashboard

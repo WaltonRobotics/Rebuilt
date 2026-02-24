@@ -69,19 +69,19 @@ public class Indexer extends SubsystemBase {
     }
 
     /* COMMANDS */
-    public Command startSpindexer() {
+    public Command startSpindexerCmd() {
         return setSpindexerVelocityCmd(m_spindexerRPS);
     }
 
-    public Command stopSpindexer() {
+    public Command stopSpindexerCmd() {
         return setSpindexerVelocityCmd(RotationsPerSecond.of(0));
     }
 
-    public Command startTunnel() {
+    public Command startTunnelCmd() {
         return setTunnelVelocityCmd(m_tunnelRPS);
     }
 
-    public Command stopTunnel() {
+    public Command stopTunnelCmd() {
         return setTunnelVelocityCmd(RotationsPerSecond.of(0));
     }
 

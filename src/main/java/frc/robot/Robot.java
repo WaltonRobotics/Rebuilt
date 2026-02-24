@@ -250,8 +250,8 @@ public class Robot extends TimedRobot {
         );
 
         //Shooting
-        trg_shoot.and(trg_pass.negate()).onTrue(
-            m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)
+        trg_shoot.and(trg_pass.negate()).whileTrue(
+            m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS).raceWith(m_superstructure.shimmy())
         ).onFalse(
             m_superstructure.deactivateOuttake()
         );
@@ -264,7 +264,7 @@ public class Robot extends TimedRobot {
             m_superstructure.emergencyBarf()
         );
 
-        m_manipulator.leftBumper().whileTrue(m_superstructure.shimmy());    //need to make trg
+        // m_manipulator.leftBumper().whileTrue(m_superstructure.shimmy());    //need to make trg   AUTOMATIC WHILE SHOOTING
 
         //---OVERRIDE COMMANDS
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
@@ -276,15 +276,15 @@ public class Robot extends TimedRobot {
         );
 
         trg_startSpindexerOverride.onTrue(
-            m_superstructure.startSpindexer()
+            m_superstructure.startSpindexerCmd()
         ).onFalse(
-            m_superstructure.stopSpindexer()
+            m_superstructure.stopSpindexerCmd()
         );
 
         trg_startTunnelOverride.onTrue(
-            m_superstructure.startTunnel()
+            m_superstructure.startTunnelCmd()
         ).onFalse(
-            m_superstructure.stopTunnel()
+            m_superstructure.stopTunnelCmd()
         );
 
         trg_maxRollersOverride.onTrue(
@@ -467,24 +467,24 @@ public class Robot extends TimedRobot {
 
         trg_startSpindexerOverride.onTrue(
             Commands.parallel(
-                m_superstructure.startSpindexer()
+                m_superstructure.startSpindexerCmd()
                 // m_visualSim.setSpindexerVelocity()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.stopSpindexer()
+                m_superstructure.stopSpindexerCmd()
                 // m_visualSim.setSpindexerVelocity()
             )
         );
 
         trg_startTunnelOverride.onTrue(
             Commands.parallel(
-                m_superstructure.startTunnel()
+                m_superstructure.startTunnelCmd()
                 // m_visualSim.setTunnelVelocity()
             )
         ).onFalse(
             Commands.parallel(
-                m_superstructure.stopTunnel()
+                m_superstructure.stopTunnelCmd()
                 // m_visualSim.setTunnelVelocity()
             )
         );

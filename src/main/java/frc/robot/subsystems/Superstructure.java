@@ -63,7 +63,7 @@ public class Superstructure {
                 break;
         }
         return Commands.sequence(
-            m_indexer.stopSpindexer(),
+            m_indexer.stopSpindexerCmd(),
             m_intake.setIntakeArmPos(pos),
             m_intake.stopIntakeRollers(),
             logCommand
@@ -95,20 +95,23 @@ public class Superstructure {
             logCommand = logActiveCommands("emergencyDump", "shooting", "deactivateOuttake");
         }
 
-        return Commands.repeatingSequence(
-            Commands.runOnce(() -> m_timer.start()),
-            m_shooter.setShooterVelocityCmd(RPS),
-            m_shooter.setHoodPositionCmd(Degrees.of(20)),
-            Commands.waitUntil(() -> m_shooter.checkIfSpunUp(RPS.magnitude()) || m_timer.get() / 1000 > 3000),
-            Commands.runOnce(() -> {
-                m_timer.stop();
-                m_timer.reset();
-            }),
-            m_indexer.startTunnel(),
-            m_indexer.startSpindexer(),
-            Commands.waitUntil(() -> !m_shooter.checkIfSpunUp(RPS.magnitude())),
-            m_indexer.stopTunnel(),
-            m_indexer.stopSpindexer(),
+        return Commands.parallel(
+            Commands.repeatingSequence(
+                Commands.runOnce(() -> m_timer.start()),
+                m_shooter.setShooterVelocityCmd(RPS),
+                m_shooter.setHoodPositionCmd(Degrees.of(20)),
+                Commands.waitUntil(() -> m_shooter.checkIfSpunUp() || m_timer.get() / 1000 > 3000),
+                Commands.runOnce(() -> {
+                    m_timer.stop();
+                    m_timer.reset();
+                }),
+                m_indexer.startTunnelCmd(),
+                m_indexer.startSpindexerCmd(),
+                Commands.waitUntil(() -> !m_shooter.checkIfSpunUp()),
+                m_indexer.stopTunnelCmd(),
+                m_indexer.stopSpindexerCmd()
+            ),
+            m_intake.shimmy(),
             logCommand
         );
     }
@@ -134,22 +137,14 @@ public class Superstructure {
         // return Commands.sequence(
         //     m_shooter.setShooterVelocityCmd(ShooterK.kShooterBarfRPS),
         //     m_shooter.setHoodPositionCmd(ShooterK.kHoodMaxDegs),
-        //     m_indexer.startTunnel(),
-        //     m_indexer.startSpindexer(),
+        //     m_indexer.startTunnelCmd(),
+        //     m_indexer.startSpindexerCmd(),
         //     m_intake.setIntakeRollersVelocityCmd(IntakeK.kIntakeRollersMaxRPS.times(-1))
         // );
     }
 
     public Command shimmy() {
-        Commands.sequence(
-            m_intake.setIntakeRollersVelocityCmd(RotationsPerSecond.of(0))
-        );
-        return Commands.repeatingSequence(
-            m_intake.setIntakeArmPos(IntakeArmPosition.SHIMMY),
-            Commands.waitUntil(() -> m_intake.intakeArmAtPos(IntakeArmPosition.SHIMMY)),
-            m_intake.setIntakeArmPos(IntakeArmPosition.SAFE),
-            Commands.waitUntil(() -> m_intake.intakeArmAtPos(IntakeArmPosition.SAFE))
-        );
+       return m_intake.shimmy();
     }
 
     /**
@@ -159,8 +154,8 @@ public class Superstructure {
      */
     public Command deactivateOuttake() {
         return Commands.sequence(
-            m_indexer.stopSpindexer(),
-            m_indexer.stopTunnel(),
+            m_indexer.stopSpindexerCmd(),
+            m_indexer.stopTunnelCmd(),
             m_shooter.setShooterVelocityCmd(ShooterK.kShooterZeroRPS),
             logActiveCommands("deactivateOuttake", "shooting", "emergencyDump")
         );
@@ -268,40 +263,40 @@ public class Superstructure {
     /**
      * Starts the indexer spinner.
      */
-    public Command startSpindexer() {
+    public Command startSpindexerCmd() {
         return Commands.sequence(
-            m_indexer.startSpindexer(),
-            logActiveOverrideCommands("startSpindexer", "stopSpindexer")
+            m_indexer.startSpindexerCmd(),
+            logActiveOverrideCommands("startSpindexerCmd", "stopSpindexerCmd")
         );
     }
 
     /**
      * Stops the indexer spinner.
      */
-    public Command stopSpindexer() {
+    public Command stopSpindexerCmd() {
         return Commands.sequence(
-            m_indexer.stopSpindexer(),
-            logActiveOverrideCommands("stopSpindexer", "startSpindexer")
+            m_indexer.stopSpindexerCmd(),
+            logActiveOverrideCommands("stopSpindexerCmd", "startSpindexerCmd")
         );
     }
 
     /**
      * Starts the indexer exhaust.
      */
-    public Command startTunnel() {
+    public Command startTunnelCmd() {
         return Commands.sequence(
-            m_indexer.startTunnel(),
-            logActiveOverrideCommands("startTunnel", "stopTunnel")
+            m_indexer.startTunnelCmd(),
+            logActiveOverrideCommands("startTunnelCmd", "stopTunnelCmd")
         );
     }
 
     /**
      * Stops the indexer exhaust.
      */
-    public Command stopTunnel() {
+    public Command stopTunnelCmd() {
         return Commands.sequence(
-            m_indexer.stopTunnel(),
-            logActiveOverrideCommands("stopTunnel", "startTunnel")
+            m_indexer.stopTunnelCmd(),
+            logActiveOverrideCommands("stopTunnelCmd", "startTunnelCmd")
         );
     }
 
