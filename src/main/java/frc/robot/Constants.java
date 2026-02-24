@@ -74,6 +74,10 @@ public class Constants {
         public static final Angle kHoodMinDegs = Degrees.of(0); // ABS min (1 should be the min for the rest of match, 0 only for homing)
         public static final Angle kHoodMaxDegs = Degrees.of(37);    // ABS max (40 is too much)
 
+        //300° on the servo is 0° on the hood, and 0° on the servo is 40° on the hood.
+        public static final Angle kHoodServoMaxDegs = Degrees.of(300);  
+        public static final Angle kHoodAbsoluteMaxDegs = Degrees.of(40);
+
         public static final DCMotor khoodDCMotorGearbox = new DCMotor(
             6, 
             0.047, 
@@ -287,7 +291,7 @@ public class Constants {
             .withKI(0)
             .withKD(0);
         public static final MotorOutputConfigs kIntakeArmMotorOutputConfigs = new MotorOutputConfigs()
-            .withNeutralMode(NeutralModeValue.Coast)
+            .withNeutralMode(NeutralModeValue.Brake)
             .withInverted(InvertedValue.Clockwise_Positive)
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);

@@ -74,11 +74,12 @@ public class Intake extends SubsystemBase {
     );
 
     /* LOGGERS */
-    DoubleLogger log_intakeArmRots = WaltLogger.logDouble(kLogTab, "intakeArmRots");
-    DoubleLogger log_targetIntakeArmRots = WaltLogger.logDouble(kLogTab, "targetIntakeArmRots");
-
-    DoubleLogger log_intakeRollersRPS = WaltLogger.logDouble(kLogTab, "intakeRollersRPS");
-    DoubleLogger log_targetIntakeRollersRPS = WaltLogger.logDouble(kLogTab, "targetIntakeRollersRPS");
+    private final DoubleLogger log_intakeArmRots = WaltLogger.logDouble(kLogTab, "intakeArmRots");
+    private final DoubleLogger log_targetIntakeArmRots = WaltLogger.logDouble(kLogTab, "targetIntakeArmRots");
+    private final DoubleLogger log_intakeArmClosedLoopError = WaltLogger.logDouble(kLogTab, "intakeArmClosedLoopError");
+    
+    private final DoubleLogger log_intakeRollersRPS = WaltLogger.logDouble(kLogTab, "intakeRollersRPS");
+    private final DoubleLogger log_targetIntakeRollersRPS = WaltLogger.logDouble(kLogTab, "targetIntakeRollersRPS");
 
     /* CONSTRUCTOR */
     public Intake() {
@@ -110,12 +111,21 @@ public class Intake extends SubsystemBase {
         return m_intakeArm.getPosition().isNear(pos.rots, Rotations.of(0.015)); //TODO: find better tolerance
     }
 
+    //TODO: if no worky use timer to check instead
+    public boolean checkIfAtPos() {
+        var err = m_intakeArm.getClosedLoopError();
+        log_intakeArmClosedLoopError.accept(err.getValueAsDouble());
+        boolean isNear = m_intakeArm.getClosedLoopError().isNear(0, 0.03);
+        return isNear;
+    }
+
     public Command shimmy() {
         return Commands.repeatingSequence(
+            setIntakeRollersVelocityCmd(RotationsPerSecond.of(0)),
             setIntakeArmPos(IntakeArmPosition.SHIMMY),
             Commands.waitUntil(() -> intakeArmAtPos(IntakeArmPosition.SHIMMY)),
-            setIntakeArmPos(IntakeArmPosition.SAFE),
-            Commands.waitUntil(() -> intakeArmAtPos(IntakeArmPosition.SAFE))
+            setIntakeArmPos(IntakeArmPosition.DEPLOYED),
+            Commands.waitUntil(() -> intakeArmAtPos(IntakeArmPosition.DEPLOYED))
         ).finallyDo(() -> setIntakeArmPos(IntakeArmPosition.SAFE));
     }
 

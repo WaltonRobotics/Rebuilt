@@ -268,6 +268,9 @@ public class Robot extends TimedRobot {
 
         //---OVERRIDE COMMANDS
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
+        m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.hoodEncoderHoming());
+
+        m_manipulator.y().and(trg_manipOverride).whileTrue(m_shooter.setHoodPositionCmd(Degrees.of(37))).onFalse(m_shooter.setHoodPositionCmd(Degrees.of(1)));
 
         trg_maxShooterOverride.onTrue(
             m_superstructure.maxShooter()

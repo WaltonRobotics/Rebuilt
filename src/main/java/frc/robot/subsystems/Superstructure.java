@@ -6,9 +6,11 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.IndexerK;
+import frc.robot.Constants.IntakeK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.util.WaltLogger;
+import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.StringArrayLogger;
 
 import static edu.wpi.first.units.Units.Degrees;
@@ -32,8 +34,6 @@ public class Superstructure {
 
     private HashSet<String> m_activeOverrideCommands = new HashSet<>();
     private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
-
-    private Timer m_timer = new Timer();
     
     /* CONSTRUCTOR */
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
@@ -75,8 +75,9 @@ public class Superstructure {
      */
     public Command activateIntake() {
         return Commands.sequence(
-            m_intake.startIntakeRollers(),
             m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED),
+            Commands.waitUntil(() -> m_intake.checkIfAtPos()),
+            m_intake.startIntakeRollers(),
             logActiveCommands("activateIntake", "safeIntake", "retractIntake")
         );
     }
@@ -96,20 +97,15 @@ public class Superstructure {
         }
 
         return Commands.parallel(
-            Commands.repeatingSequence(
-                Commands.runOnce(() -> m_timer.start()),
+            Commands.sequence(
                 m_shooter.setShooterVelocityCmd(RPS),
                 m_shooter.setHoodPositionCmd(Degrees.of(20)),
-                Commands.waitUntil(() -> m_shooter.checkIfSpunUp() || m_timer.get() / 1000 > 3000),
-                Commands.runOnce(() -> {
-                    m_timer.stop();
-                    m_timer.reset();
-                }),
+                Commands.waitUntil(() -> m_shooter.checkIfSpunUp()).withTimeout(3),
                 m_indexer.startTunnelCmd(),
-                m_indexer.startSpindexerCmd(),
-                Commands.waitUntil(() -> !m_shooter.checkIfSpunUp()),
-                m_indexer.stopTunnelCmd(),
-                m_indexer.stopSpindexerCmd()
+                m_indexer.startSpindexerCmd()
+                // Commands.waitUntil(() -> !m_shooter.checkIfSpunUp()),
+                // m_indexer.stopTunnelCmd(),
+                // m_indexer.stopSpindexerCmd()
             ),
             m_intake.shimmy(),
             logCommand
