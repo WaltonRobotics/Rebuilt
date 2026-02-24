@@ -28,9 +28,11 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -186,7 +188,7 @@ public class Constants {
         //Left, Center (Climb), Center (Hub), Right - Driver POV
         public static final Pose2d kShooterOverridePose[] = {
             AllianceFlipUtil.apply(new Pose2d(FieldK.kFieldLengthMeters / 6, FieldK.kFieldWidthMeters * 2 / 3, new Rotation2d(0))),
-            AllianceFlipUtil.apply(new Pose2d(Units.inchesToMeters(156.61 - 115.05 + 10), FieldK.kFieldWidthMeters / 2, new Rotation2d(0))),
+            AllianceFlipUtil.apply(new Pose2d(Units.inchesToMeters(156.61 - 115.05 + 25), FieldK.kFieldWidthMeters / 2, new Rotation2d(0))),
             AllianceFlipUtil.apply(new Pose2d(Units.inchesToMeters(156.61 - 10), FieldK.kFieldWidthMeters / 2, new Rotation2d(0))),
             AllianceFlipUtil.apply(new Pose2d(FieldK.kFieldLengthMeters / 6, FieldK.kFieldWidthMeters / 3, new Rotation2d(0))),
         };
@@ -231,7 +233,47 @@ public class Constants {
             kCameras[3].setProps("ThriftyCam", 0, 0, 0, 0);
         }
     }
+    public static class AutoAlignK {
+        //Placeholder tolerances - to be tuned
+        //Delete this comment when done tuning
+        public static final Distance kFieldTranslationTol = Meters.of(0); //meters
+        public static final Angle kFieldRotationTol = Degrees.of(0); //degrees
 
+        public static final double kFinishVelTol = 0; //meters per second
+
+        public static final double kIntermediatePoseDistance = -Units.inchesToMeters(6); // value in meters
+        public static final Transform2d kIntermediatePoseTransform 
+            = new Transform2d(kIntermediatePoseDistance, 0, Rotation2d.kZero);
+
+
+        public static double kXKP = 8;
+        public static double kYKP = 8;
+        public static double kThetaKP = 10;
+
+        // SUPER COOL AUTO ALIGN :sunglasses: - this should eventually allow you to replace all code using above constants
+
+        // TODO: these will really need tuning
+        // teleop speeds below
+        public static final double kMaxDimensionVel = 1.65; // m/s
+        public static final double kMaxDimensionAccel = 6; // m/s^2
+        public static final TrapezoidProfile.Constraints kXYConstraints = new TrapezoidProfile.Constraints(kMaxDimensionVel, kMaxDimensionAccel);
+        // Auton speeds below
+        public static final double kMaxDimensionVelEleUp = 2; // m/s
+        public static final double kMaxDimensionAccelEleUp = 3; // m/s^2
+        public static final TrapezoidProfile.Constraints kXYConstraintsAuton 
+            = new TrapezoidProfile.Constraints(kMaxDimensionVelEleUp,kMaxDimensionAccelEleUp);
+
+        public static final double kMaxThetaVel = 4; // rad/s
+        public static final double kMaxThetaAccel = 8; // rad/s^2
+        public static final TrapezoidProfile.Constraints kThetaConstraints = new TrapezoidProfile.Constraints(kMaxThetaVel, kMaxThetaAccel);
+
+        /** <p>Arbitrary number to control how much a difference in rotation should affect tag selection. Higher means more weight
+         * <p> 0 means rotation difference has no weight, negative will literally bias it against tags that have more similar rotations */
+        public static final double kRotationWeight = 0.2;
+
+        public static final double kFutureDelta = 0.3; // seconds, TODO: needs tuning
+    }
+    
     public static class FieldK {
         // take with a grain of salt - pulled from field dimensions (welded)
         public static final double kFieldLengthMeters = Units.inchesToMeters(651.22); 
