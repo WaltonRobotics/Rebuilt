@@ -164,7 +164,7 @@ public class Shooter extends SubsystemBase {
     //---HOOD (Basic Position Control)
     public Command setHoodPositionCmd(Angle degs) {
         m_hoodSetpoint = degs;
-        return runOnce(() -> m_hood.setAngle(degs.times(kHoodGearing).magnitude()));
+        return runOnce(() -> setHoodPosition(degs));
     }
 
     public void setHoodPosition(Angle degs) {
@@ -181,7 +181,7 @@ public class Shooter extends SubsystemBase {
     public Command hoodEncoderHoming() {
         Runnable init = () -> {
             m_hoodHomingTimer.start();
-            m_hood.setAngle(0);
+            setHoodPosition(Degrees.of(0));
         };
 
         Runnable execute = () -> {};
@@ -194,7 +194,7 @@ public class Shooter extends SubsystemBase {
         };
 
         BooleanSupplier isFinished = () -> 
-            ((Math.abs(m_hoodEncoder.getVelocity().getValueAsDouble()) < 0.001));
+            ((Math.abs(m_hoodEncoder.getVelocity().getValueAsDouble()) < 0.001) && (m_hoodHomingTimer.get() / 1000 > 350));
 
         return new FunctionalCommand(init, execute, onEnd, isFinished, this).withTimeout(3).withName("hoodEncoder homing");
     }
