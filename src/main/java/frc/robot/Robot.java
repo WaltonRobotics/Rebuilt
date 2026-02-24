@@ -251,7 +251,7 @@ public class Robot extends TimedRobot {
 
         //Shooting
         trg_shoot.and(trg_pass.negate()).whileTrue(
-            m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS).raceWith(m_superstructure.shimmy())
+            m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)
         ).onFalse(
             m_superstructure.deactivateOuttake()
         );
