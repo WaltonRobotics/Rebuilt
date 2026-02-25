@@ -126,9 +126,6 @@ public class Shooter extends SubsystemBase {
             setDefaultCommand(hoodEncoderHoming());
         }
 
-        // SmartDashboard.putData(m_hoodPIDUp);
-        // SmartDashboard.putData(m_hoodPIDDown);
-
         initSim();
     }
 
@@ -222,14 +219,13 @@ public class Shooter extends SubsystemBase {
         log_hoodEncoderPositionDegs.accept(Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees) / kHoodGearing);
         log_hoodEncoderVelocityRPS.accept(m_hoodEncoder.getVelocity().getValueAsDouble());
         log_hoodReferencePosition.accept(m_hoodSetpoint.magnitude());
-        // log_hoodReferencePosition.accept(m_hood.getAngle() / kHoodGearing);
-        log_hoodEncoderError.accept(Math.abs((m_hoodSetpoint.in(Degrees)) - (Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees))) / kHoodGearing);
+        log_hoodEncoderError.accept(Math.abs((m_hoodSetpoint.in(Degrees)) - (Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees))));
         log_isHoodHoming.accept(m_isHoodHoming);
 
         log_turretPositionRots.accept(m_turret.getPosition().getValueAsDouble());
 
         // log_exitBeamBreak.accept(trg_exitBeamBreak);
-        // log_spunUp.accept(checkIfSpunUp());
+        log_spunUp.accept(checkIfSpunUp());
         log_hoodServoVoltage.accept(RobotController.getVoltage6V());
         log_hoodServoCurrent.accept(RobotController.getCurrent6V());
     }
