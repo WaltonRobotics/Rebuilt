@@ -112,7 +112,7 @@ public class Intake extends SubsystemBase {
     }
 
     //TODO: if no worky use timer to check instead
-    public boolean checkIfAtPos() {
+    public boolean isIntakeArmAtPos() {
         var err = m_intakeArm.getClosedLoopError();
         log_intakeArmClosedLoopError.accept(err.getValueAsDouble());
         boolean isNear = m_intakeArm.getClosedLoopError().isNear(0, 0.03);

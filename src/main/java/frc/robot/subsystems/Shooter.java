@@ -150,10 +150,10 @@ public class Shooter extends SubsystemBase {
         return run(() -> setShooterVelocity(RotationsPerSecond.of(sub_RPS.get())));
     }
 
-    public boolean checkIfSpunUp() {
+    public boolean isShooterSpunUp() {
         var err = m_shooterLeader.getClosedLoopError();
         log_shooterClosedLoopError.accept(err.getValueAsDouble());
-        boolean isNear = m_shooterLeader.getClosedLoopError().isNear(0, 0.75);
+        boolean isNear = m_shooterLeader.getClosedLoopError().isNear(0, 3);
         log_spunUp.accept(isNear);
         return isNear;
     }
@@ -167,7 +167,11 @@ public class Shooter extends SubsystemBase {
     public void setHoodPosition(Angle degs) {
         m_hoodSetpoint = degs;
         // m_hood.setAngle(degs.times(kHoodGearing).magnitude());
-        m_hood.setAngle((1 - (degs.magnitude() / kHoodAbsoluteMaxDegs.magnitude())) * kHoodServoMaxDegs.magnitude());
+        m_hood.setAngle(findCorrespondingServoAngle(degs));
+    }
+    
+    public double findCorrespondingServoAngle(Angle degs) {
+        return (1 - (degs.magnitude() / kHoodAbsoluteMaxDegs.magnitude())) * kHoodServoMaxDegs.magnitude();
     }
 
     //for TestingDashboard
@@ -219,13 +223,13 @@ public class Shooter extends SubsystemBase {
         log_hoodEncoderPositionDegs.accept(Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees) / kHoodGearing);
         log_hoodEncoderVelocityRPS.accept(m_hoodEncoder.getVelocity().getValueAsDouble());
         log_hoodReferencePosition.accept(m_hoodSetpoint.magnitude());
-        log_hoodEncoderError.accept(Math.abs((m_hoodSetpoint.in(Degrees)) - (Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees))));
+        log_hoodEncoderError.accept(Math.abs((m_hoodSetpoint.in(Degrees)) - findCorrespondingServoAngle(Degrees.of(Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees)))));
         log_isHoodHoming.accept(m_isHoodHoming);
 
         log_turretPositionRots.accept(m_turret.getPosition().getValueAsDouble());
 
         // log_exitBeamBreak.accept(trg_exitBeamBreak);
-        log_spunUp.accept(checkIfSpunUp());
+        log_spunUp.accept(isShooterSpunUp());
         log_hoodServoVoltage.accept(RobotController.getVoltage6V());
         log_hoodServoCurrent.accept(RobotController.getCurrent6V());
     }

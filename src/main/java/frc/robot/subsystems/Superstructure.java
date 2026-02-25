@@ -76,7 +76,7 @@ public class Superstructure {
     public Command activateIntake() {
         return Commands.sequence(
             m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED),
-            Commands.waitUntil(() -> m_intake.checkIfAtPos()),
+            Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()),
             m_intake.startIntakeRollers(),
             logActiveCommands("activateIntake", "safeIntake", "retractIntake")
         );
@@ -86,7 +86,7 @@ public class Superstructure {
         return Commands.sequence(
             m_shooter.setShooterVelocityCmd(RPS),
             m_shooter.setHoodPositionCmd(hoodDegs),
-            Commands.waitUntil(() -> m_shooter.checkIfSpunUp()).withTimeout(3),
+            Commands.waitUntil(() -> m_shooter.isShooterSpunUp()).withTimeout(3),
             m_indexer.startTunnelCmd(),
             m_indexer.startSpindexerCmd()
         );
@@ -108,8 +108,8 @@ public class Superstructure {
 
         return Commands.parallel(
             startShootSequence(RPS, Degrees.of(20))
-                .onlyWhile(() -> m_shooter.checkIfSpunUp())
-                .andThen(Commands.waitUntil(() -> m_shooter.checkIfSpunUp()))
+                .onlyWhile(() -> m_shooter.isShooterSpunUp())
+                .andThen(Commands.waitUntil(() -> m_shooter.isShooterSpunUp()))
                 .repeatedly(),
             m_intake.shimmy(),
             logCommand
