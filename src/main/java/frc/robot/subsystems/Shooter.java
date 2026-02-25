@@ -166,12 +166,15 @@ public class Shooter extends SubsystemBase {
 
     public void setHoodPosition(Angle degs) {
         m_hoodSetpoint = degs;
-        // m_hood.setAngle(degs.times(kHoodGearing).magnitude());
-        m_hood.setAngle(findCorrespondingServoAngle(degs));
+        m_hood.setAngle(convertHoodAngleToServoAngle(degs));
     }
     
-    public double findCorrespondingServoAngle(Angle degs) {
-        return (1 - (degs.magnitude() / kHoodAbsoluteMaxDegs.magnitude())) * kHoodServoMaxDegs.magnitude();
+    public double convertHoodAngleToServoAngle(Angle hoodAngleDegs) {
+        return (1 - (hoodAngleDegs.magnitude() / kHoodAbsoluteMaxDegs.magnitude())) * kHoodServoMaxDegs.magnitude();
+    }
+
+    public double convertServoAngleToHoodAngle(Angle servoAngleDegs) {
+        return (1 - (servoAngleDegs.magnitude() / kHoodServoMaxDegs.magnitude())) * kHoodAbsoluteMaxDegs.magnitude();
     }
 
     //for TestingDashboard
@@ -223,7 +226,7 @@ public class Shooter extends SubsystemBase {
         log_hoodEncoderPositionDegs.accept(Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees) / kHoodGearing);
         log_hoodEncoderVelocityRPS.accept(m_hoodEncoder.getVelocity().getValueAsDouble());
         log_hoodReferencePosition.accept(m_hoodSetpoint.magnitude());
-        log_hoodEncoderError.accept(Math.abs((m_hoodSetpoint.in(Degrees)) - findCorrespondingServoAngle(Degrees.of(Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees)))));
+        log_hoodEncoderError.accept((m_hoodSetpoint.magnitude()) - (convertServoAngleToHoodAngle(Degrees.of(Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees)))));
         log_isHoodHoming.accept(m_isHoodHoming);
 
         log_turretPositionRots.accept(m_turret.getPosition().getValueAsDouble());

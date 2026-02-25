@@ -127,6 +127,7 @@ public class Superstructure {
         m_indexer.stopSpindexer();
         m_indexer.stopTunnel();
         m_shooter.setShooterVelocity(ShooterK.kShooterZeroRPS);
+        m_shooter.setHoodPosition(Degrees.of(1));
 
         Commands.sequence(logActiveCommands("deactivateOuttake", "shooting", "emergencyDump"));
     }
