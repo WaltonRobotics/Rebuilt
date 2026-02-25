@@ -174,11 +174,6 @@ public class Shooter extends SubsystemBase {
                 fieldSpeedsSupplier);
 
         m_fuelSim = FuelSim.getInstance();
-
-        trg_inAllianceZone.and(DriverStation::isTeleop).onTrue(setGoal(ShooterGoal.SCORING));
-        trg_inAllianceZone.negate().and(DriverStation::isTeleop)
-                .onTrue(setGoal(ShooterGoal.PASSING));
-
     }
 
     /* COMMANDS */
@@ -474,6 +469,10 @@ public class Shooter extends SubsystemBase {
         Pose2d pose = m_poseSupplier.get();
 
         log_calculateShotCurrPose.accept(pose);
+        
+        trg_inAllianceZone.and(DriverStation::isTeleop).onTrue(setGoal(ShooterGoal.SCORING));
+        trg_inAllianceZone.negate().and(DriverStation::isTeleop)
+                .onTrue(setGoal(ShooterGoal.PASSING));
 
         switch (m_goal) {
             case SCORING:
