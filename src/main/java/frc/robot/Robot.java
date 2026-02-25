@@ -252,14 +252,12 @@ public class Robot extends TimedRobot {
         //Shooting
         trg_shoot.and(trg_pass.negate()).whileTrue(
             m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)
-        ).onFalse(
-            m_superstructure.deactivateOuttake()
         );
-        trg_shoot.and(trg_pass).onTrue(
-            m_superstructure.startPassing()
-        ).onFalse(
-            m_superstructure.stopPassing()
-        );
+        // trg_shoot.and(trg_pass).onTrue(
+        //     m_superstructure.startPassing()
+        // ).onFalse(
+        //     m_superstructure.stopPassing()
+        // );
         trg_emergencyBarf.whileTrue(
             m_superstructure.emergencyBarf()
         );
@@ -366,56 +364,56 @@ public class Robot extends TimedRobot {
          * if shooter RPS falls below, everything stops until we get back up
          * on stop, everything stops.
          */
-        trg_shoot.and(trg_pass.negate()).onTrue(
-            Commands.parallel(
-                m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)
-                // m_visualSim.setShooterVelocity(),
-                // m_visualSim.setSpindexerVelocity(),
-                // m_visualSim.setTunnelVelocity()
-            )
-        ).whileFalse(
-            Commands.parallel(
-                m_superstructure.deactivateOuttake()
-                // m_visualSim.setShooterVelocity(),
-                // m_visualSim.setSpindexerVelocity(),
-                // m_visualSim.setTunnelVelocity()
-            )
-        );
+        // trg_shoot.and(trg_pass.negate()).onTrue(
+        //     Commands.parallel(
+        //         m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)
+        //         // m_visualSim.setShooterVelocity(),
+        //         // m_visualSim.setSpindexerVelocity(),
+        //         // m_visualSim.setTunnelVelocity()
+        //     )
+        // ).whileFalse(
+        //     Commands.parallel(
+        //         m_superstructure.deactivateOuttake()
+        //         // m_visualSim.setShooterVelocity(),
+        //         // m_visualSim.setSpindexerVelocity(),
+        //         // m_visualSim.setTunnelVelocity()
+        //     )
+        // );
 
-        trg_emergencyBarf.onTrue(
-            Commands.parallel(
-                m_superstructure.activateOuttake(ShooterK.kShooterBarfRPS)
-                // m_visualSim.setShooterVelocity(),
-                // m_visualSim.setSpindexerVelocity(),
-                // m_visualSim.setTunnelVelocity()
-            )
-        ).onFalse(
-            Commands.parallel(
-                m_superstructure.deactivateOuttake()
-                // m_visualSim.setShooterVelocity(),
-                // m_visualSim.setSpindexerVelocity(),
-                // m_visualSim.setTunnelVelocity()
-            )
-        );
-        trg_shoot.and(trg_pass).onTrue(
-            Commands.parallel(
-                m_superstructure.startPassing()
-                // m_visualSim.setShooterVelocity(),
-                // m_visualSim.setSpindexerVelocity(),
-                // m_visualSim.setTunnelVelocity(),
-                // m_visualSim.setIntakeArmPosition(),
-                // m_visualSim.setIntakeRollerVelocity()
-            )
-        ).onFalse(
-            Commands.parallel(
-                m_superstructure.stopPassing()
-                // m_visualSim.setShooterVelocity(),
-                // m_visualSim.setSpindexerVelocity(),
-                // m_visualSim.setTunnelVelocity(),
-                // m_visualSim.setIntakeArmPosition(),
-                // m_visualSim.setIntakeRollerVelocity()
-            )
-        );
+        // trg_emergencyBarf.onTrue(
+        //     Commands.parallel(
+        //         m_superstructure.activateOuttake(ShooterK.kShooterBarfRPS)
+        //         // m_visualSim.setShooterVelocity(),
+        //         // m_visualSim.setSpindexerVelocity(),
+        //         // m_visualSim.setTunnelVelocity()
+        //     )
+        // ).onFalse(
+        //     Commands.parallel(
+        //         m_superstructure.deactivateOuttake()
+        //         // m_visualSim.setShooterVelocity(),
+        //         // m_visualSim.setSpindexerVelocity(),
+        //         // m_visualSim.setTunnelVelocity()
+        //     )
+        // );
+        // trg_shoot.and(trg_pass).onTrue(
+        //     Commands.parallel(
+        //         m_superstructure.startPassing()
+        //         // m_visualSim.setShooterVelocity(),
+        //         // m_visualSim.setSpindexerVelocity(),
+        //         // m_visualSim.setTunnelVelocity(),
+        //         // m_visualSim.setIntakeArmPosition(),
+        //         // m_visualSim.setIntakeRollerVelocity()
+        //     )
+        // ).onFalse(
+        //     Commands.parallel(
+        //         m_superstructure.stopPassing()
+        //         // m_visualSim.setShooterVelocity(),
+        //         // m_visualSim.setSpindexerVelocity(),
+        //         // m_visualSim.setTunnelVelocity(),
+        //         // m_visualSim.setIntakeArmPosition(),
+        //         // m_visualSim.setIntakeRollerVelocity()
+        //     )
+        // );
 
         // m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.setHoodMax()).onFalse(m_shooter.setHoodStop()); //used for continous mode hood
         // m_manipulator.y().and(trg_manipOverride).whileTrue(m_shooter.setHoodMin()).onFalse(m_shooter.setHoodStop());

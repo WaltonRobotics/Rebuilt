@@ -69,12 +69,17 @@ public class Indexer extends SubsystemBase {
     }
 
     /* COMMANDS */
+    //---STARTS AND STOPS
     public Command startSpindexerCmd() {
         return setSpindexerVelocityCmd(m_spindexerRPS);
     }
 
     public Command stopSpindexerCmd() {
         return setSpindexerVelocityCmd(RotationsPerSecond.of(0));
+    }
+
+    public void stopSpindexer() {
+        setSpindexerVelocity(RotationsPerSecond.of(0));
     }
 
     public Command startTunnelCmd() {
@@ -85,12 +90,17 @@ public class Indexer extends SubsystemBase {
         return setTunnelVelocityCmd(RotationsPerSecond.of(0));
     }
 
+    public void stopTunnel() {
+        setTunnelVelocity(RotationsPerSecond.of(0));
+    }
+
+    //---SPINDEXER
     public void setSpindexerVelocity(AngularVelocity RPS) {
         m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RPS));
     }
 
     public Command setSpindexerVelocityCmd(AngularVelocity RPS) {
-        return runOnce(() -> m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RPS)));
+        return runOnce(() -> setSpindexerVelocity(RPS));
     }
 
     //for TestingDashboard
@@ -98,25 +108,18 @@ public class Indexer extends SubsystemBase {
         return run(() -> m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
     }
 
+    //---TUNNEL
     public void setTunnelVelocity(AngularVelocity RPS) {
         m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS));
     }
 
     public Command setTunnelVelocityCmd(AngularVelocity RPS) {
-        return runOnce(() -> m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS)));
+        return runOnce(() -> setTunnelVelocity(RPS));
     }
 
     //for TestingDashboard
     public Command setTunnelVelocityCmd(DoubleSubscriber sub_RPS) {
         return run(() -> m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
-    }
-
-    public TalonFX getSpindexer() {
-        return m_spindexer;
-    }
-
-    public TalonFX getTunnel() {
-        return m_tunnel;
     }
 
     /* PERIODICS */

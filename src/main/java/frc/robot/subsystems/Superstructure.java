@@ -82,6 +82,16 @@ public class Superstructure {
         );
     }
 
+    public Command startShootSequence(AngularVelocity RPS, Angle hoodDegs) {
+        return Commands.sequence(
+            m_shooter.setShooterVelocityCmd(RPS),
+            m_shooter.setHoodPositionCmd(hoodDegs),
+            Commands.waitUntil(() -> m_shooter.checkIfSpunUp()).withTimeout(3),
+            m_indexer.startTunnelCmd(),
+            m_indexer.startSpindexerCmd()
+        );
+    }
+
     /**
      * Turns on spinner and exhaust and sets shooter speed to RPS.
      * <p>
@@ -97,19 +107,28 @@ public class Superstructure {
         }
 
         return Commands.parallel(
-            Commands.sequence(
-                m_shooter.setShooterVelocityCmd(RPS),
-                m_shooter.setHoodPositionCmd(Degrees.of(20)),
-                Commands.waitUntil(() -> m_shooter.checkIfSpunUp()).withTimeout(3),
-                m_indexer.startTunnelCmd(),
-                m_indexer.startSpindexerCmd()
-                // Commands.waitUntil(() -> !m_shooter.checkIfSpunUp()),
-                // m_indexer.stopTunnelCmd(),
-                // m_indexer.stopSpindexerCmd()
-            ),
+            startShootSequence(RPS, Degrees.of(20))
+                .onlyWhile(() -> m_shooter.checkIfSpunUp())
+                .andThen(Commands.waitUntil(() -> m_shooter.checkIfSpunUp()))
+                .repeatedly(),
             m_intake.shimmy(),
             logCommand
+        ).finallyDo(
+            () -> deactivateOuttake()
         );
+    }
+
+    /**
+     * Turns off spinner, exhaust, and shooter.
+     * <p>
+     * Note: does not move turret or hood.
+     */
+    public void deactivateOuttake() {
+        m_indexer.stopSpindexer();
+        m_indexer.stopTunnel();
+        m_shooter.setShooterVelocity(ShooterK.kShooterZeroRPS);
+
+        Commands.sequence(logActiveCommands("deactivateOuttake", "shooting", "emergencyDump"));
     }
 
     public Command emergencyBarf() {
@@ -129,34 +148,12 @@ public class Superstructure {
                 m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));
             }
         );
-
-        // return Commands.sequence(
-        //     m_shooter.setShooterVelocityCmd(ShooterK.kShooterBarfRPS),
-        //     m_shooter.setHoodPositionCmd(ShooterK.kHoodMaxDegs),
-        //     m_indexer.startTunnelCmd(),
-        //     m_indexer.startSpindexerCmd(),
-        //     m_intake.setIntakeRollersVelocityCmd(IntakeK.kIntakeRollersMaxRPS.times(-1))
-        // );
     }
 
     public Command shimmy() {
        return m_intake.shimmy();
     }
 
-    /**
-     * Turns off spinner, exhaust, and shooter.
-     * <p>
-     * Note: does not move turret or hood.
-     */
-    public Command deactivateOuttake() {
-        return Commands.sequence(
-            m_indexer.stopSpindexerCmd(),
-            m_indexer.stopTunnelCmd(),
-            m_shooter.setShooterVelocityCmd(ShooterK.kShooterZeroRPS),
-            logActiveCommands("deactivateOuttake", "shooting", "emergencyDump")
-        );
-    }
-    
     /**
      * Initiates passing by activating intake and outtake.
      */
@@ -171,40 +168,13 @@ public class Superstructure {
     /**
      * Exits passing mode by deactivating intake with deploy to SAFE and deactivating outtake.
      */
-    public Command stopPassing() {
-        return Commands.sequence(
-            deactivateIntake(IntakeArmPosition.SAFE),
-            deactivateOuttake(),
-            logActiveCommands("stopPassing", "startPassing")
-        );
-    }
-
-    /**
-     * Adds and removes specified Command names from the ActiveCommands ArrayList, then logs the ArrayList.
-     * @param toAdd Command name to add.
-     * @param toRemove Command names to remove.
-     */
-    private Command logActiveCommands(String toAdd, String... toRemove) {
-        Command addTo = Commands.runOnce(
-            () -> m_activeCommands.add(toAdd)
-        );
-        Command removeFrom = Commands.runOnce(
-            () -> {
-                for (String s : toRemove) {
-                    m_activeCommands.remove(s);
-                }
-            }
-        );
-        Command updateLog = Commands.runOnce(
-            () -> log_activeCommands.accept(m_activeCommands.toArray(new String[m_activeCommands.size()]))
-        );
-
-        return Commands.sequence(
-            addTo,
-            removeFrom,
-            updateLog
-        );
-    }
+    // public Command stopPassing() {
+    //     return Commands.sequence(
+    //         deactivateIntake(IntakeArmPosition.SAFE),
+    //         deactivateOuttake(),
+    //         logActiveCommands("stopPassing", "startPassing")
+    //     );
+    // }
 
     // Override commands
     /**
@@ -342,6 +312,33 @@ public class Superstructure {
         return logCommand = Commands.sequence(
             m_intake.setIntakeArmPos(pos),
             logCommand
+        );
+    }
+
+    /**
+     * Adds and removes specified Command names from the ActiveCommands ArrayList, then logs the ArrayList.
+     * @param toAdd Command name to add.
+     * @param toRemove Command names to remove.
+     */
+    private Command logActiveCommands(String toAdd, String... toRemove) {
+        Command addTo = Commands.runOnce(
+            () -> m_activeCommands.add(toAdd)
+        );
+        Command removeFrom = Commands.runOnce(
+            () -> {
+                for (String s : toRemove) {
+                    m_activeCommands.remove(s);
+                }
+            }
+        );
+        Command updateLog = Commands.runOnce(
+            () -> log_activeCommands.accept(m_activeCommands.toArray(new String[m_activeCommands.size()]))
+        );
+
+        return Commands.sequence(
+            addTo,
+            removeFrom,
+            updateLog
         );
     }
 
