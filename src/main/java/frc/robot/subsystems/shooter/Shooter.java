@@ -176,7 +176,7 @@ public class Shooter extends SubsystemBase {
 
         m_fuelSim = FuelSim.getInstance();
 
-        setGoal(ShooterGoal.SCORING);
+        setDefaultCommand(setGoal(ShooterGoal.SCORING));
     }
 
     /* COMMANDS */
@@ -402,15 +402,19 @@ public class Shooter extends SubsystemBase {
             switch (goal) {
             case SCORING:
                 setTarget(FieldConstants.Hub.innerCenterPoint);
+                removeDefaultCommand();
                 break;
             case PASSING:
                 setTarget(getPassingTarget(m_poseSupplier.get()));
+                removeDefaultCommand();
                 break;
             case TEST:
                 setTargetAheadOfRobot(3);
+                removeDefaultCommand();
                 break;
             case OFF:
                 zeroShooterCmd();
+                removeDefaultCommand();
                 break;
             }
         });
@@ -424,9 +428,10 @@ public class Shooter extends SubsystemBase {
     private boolean inAllianceZone() {
         //UNTESTED
         Pose2d pose = m_poseSupplier.get();
-    
+        var blargh2 = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue;
+        var blargh = m_isBlue;
         return (m_isBlue && pose.getMeasureX().lt(Inches.of(Units.metersToInches(FieldConstants.LinesVertical.allianceZone)).plus(kRobotFullWidth.div(2)))) || //are we in the BLUE ALLIANCE ZONE as a BLUE ROBOT (behind the starting line effectively)
-                    (!m_isBlue && pose.getMeasureX().gt(Inches.of(Units.metersToInches(FieldConstants.LinesVertical.oppAllianceZone)).plus(kRobotFullWidth.div(2))));      //are we in the RED ALLIANCE ZONE as a RED ROBOT(behind the starting line effectively)
+                    (!m_isBlue && pose.getMeasureX().gt(Inches.of(Units.metersToInches(FieldConstants.LinesVertical.oppAllianceZoneR)).plus(kRobotFullWidth.div(2))));      //are we in the RED ALLIANCE ZONE as a RED ROBOT(behind the starting line effectively)
     }
 
     /**
