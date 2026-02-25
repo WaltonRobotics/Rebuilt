@@ -1,4 +1,4 @@
-// Copyright (c) 2024 FRC 6328
+// Copyright (c) 2025-2026 Littleton Robotics
 // http://github.com/Mechanical-Advantage
 //
 // Use of this source code is governed by an MIT-style
@@ -7,157 +7,55 @@
 
 package frc.util;
 
-import static frc.robot.Constants.FieldK.kFieldLengthMeters;
-import static frc.robot.Constants.FieldK.kFieldWidthMeters;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import frc.robot.FieldConstants;
 
 /** Utility functions for flipping from the blue to red alliance. */
 public class AllianceFlipUtil {
-  /**
-   * Flips the x-coordinate from blue alliance to red alliance.
-   * Calculates the new x-coordinate when flipping from the blue side to the red side on a field with a given length.
-   * @param xCoordinateMeters The x-coordinate in meters from the blue alliance's perspective.
-   * @return The flipped x-coordinate in meters, relative to the red alliance's perspective.
-   */
-  public static double flipXCoordinate(double xCoordinateMeters) {
-    return kFieldLengthMeters - xCoordinateMeters;
+  public static double applyX(double x) {
+    return shouldFlip() ? FieldConstants.fieldLength - x : x;
   }
 
-  /**
-   * Flips the y-coordinate from blue alliance to red alliance.
-   * Calculates the new y-coordinate when flipping from the blue side to the red side on a field with a given width.
-   * @param yCoordinateMeters The y-coordinate in meters from the blue alliance's perspective.
-   * @return The flipped y-coordinate in meters, relative to the red alliance's perspective.
-   */
-  public static double flipYCoordinate(double yCoordinateMeters) {
-    return kFieldWidthMeters - yCoordinateMeters;
+  public static double applyY(double y) {
+    return shouldFlip() ? FieldConstants.fieldWidth - y : y;
   }
 
-  /**
-   * Flips an x-coordinate to the correct side of the field based on the current alliance color. 
-   * @param xCoordinate The x-coordinate in meters from the blue alliance's perspective.
-   * @return The flipped x-coordinate if the alliance is red, otherwise the x-coordinate.
-   */
-  public static double applyX(double xCoordinate) {
-    if (shouldFlip()) {
-      return flipXCoordinate(xCoordinate);
-    } else {
-      return xCoordinate;
-    }
-  }
-
-  /**
-   * Flips a y-coordinate to the correct side of the field based on the current alliance color.
-   * @param yCoordinate The y-coordinate in meters from the blue alliance's perspective.
-   * @return The flipped y-coordinate if the alliance is red, otherwise the y-coordinate.
-   */
-  public static double applyY(double yCoordinate) {
-    if (shouldFlip()) {
-      return flipYCoordinate(yCoordinate);
-    } else {
-      return yCoordinate;
-    }
-  }
-
-  /**
-   * Flips a translation by flipping its x and y coordinates.
-   * @param translation The translation to be flipped.
-   * @return new Translation2d with flipped coordinates
-   */
-  public static Translation2d flip(Translation2d translation) {
-    return new Translation2d(flipXCoordinate(translation.getX()), flipYCoordinate(translation.getY()));
-  }
-
-  /**
-   * Flips a translation to the correct side of the field based on the current alliance color.
-   * @param translation The translation to be applied.
-   * @return The flipped translation if the alliance is red, otherwise the translation. 
-   */
   public static Translation2d apply(Translation2d translation) {
-    if (shouldFlip()) {
-      return flip(translation);
-    } else {
-      return translation;
-    }
+    return new Translation2d(applyX(translation.getX()), applyY(translation.getY()));
   }
 
-  /**
-   * Flips (Rotates) a rotation by 180 degrees.
-   * @param rotation The rotation to be flipped.
-   * @return new Rotation2d object rotated by 180 degrees
-   */
-  public static Rotation2d flip(Rotation2d rotation) {
-    return rotation.rotateBy(Rotation2d.kPi);
-  }
-
-  /**
-   * Flips a rotation based on the current alliance color.
-   * @param rotation The rotation to be applied.
-   * @return The flipped rotation if the alliance is red, otherwise the rotation.
-   */
   public static Rotation2d apply(Rotation2d rotation) {
-    if (shouldFlip()) {
-      return flip(rotation);
-    } else {
-      return rotation;
-    }
+    return shouldFlip() ? rotation.rotateBy(Rotation2d.kPi) : rotation;
   }
 
-  /**
-   * Flips a pose by flipping its translation and rotation.
-   * @param pose The pose to be flipped.
-   * @return new Pose2d with flippted translation and rotation.
-   */
-  public static Pose2d flip(Pose2d pose) {
-    return new Pose2d(flip(pose.getTranslation()), flip(pose.getRotation()));
-  }
-
-  /**
-   * Flips a pose to the correct side of the field based on the current alliance color.
-   * @param pose The pose to be applied.
-   * @return The flipped pose if the allaince is red, otherwise the pose.
-   */
   public static Pose2d apply(Pose2d pose) {
-    if (shouldFlip()) {
-      return flip(pose);
-    } else {
-      return pose;
-    }
+    return shouldFlip()
+        ? new Pose2d(apply(pose.getTranslation()), apply(pose.getRotation()))
+        : pose;
   }
 
-  /**
-   * Flips a translation in 3D space by flipping the x and y coordinates, z-coordinate is unchanged.
-   * @param translation3d The translation to be flipped.
-   * @return new Translation3d object with the flipped x and y coordinates.
-   */
-  public static Translation3d flip(Translation3d translation3d) {
+  public static Translation3d apply(Translation3d translation) {
     return new Translation3d(
-      flipXCoordinate(translation3d.getX()), flipYCoordinate(translation3d.getY()), translation3d.getZ());
+        applyX(translation.getX()), applyY(translation.getY()), translation.getZ());
   }
 
-  /**
-   * Flips a translation to the correct side of the field based on the current alliance color.
-   * @param translation3d The translation to be applied
-   * @return The flipped translation if the alliance is red, otherwise the translation.
-   */
-  public static Translation3d apply(Translation3d translation3d) {
-    if (shouldFlip()) {
-      return flip(translation3d);
-    } else {
-      return translation3d;
-    }
+  public static Rotation3d apply(Rotation3d rotation) {
+    return shouldFlip() ? rotation.rotateBy(new Rotation3d(0.0, 0.0, Math.PI)) : rotation;
   }
 
-  /**
-   * Determine whether to flip or not, based on current alliance color.
-   * @return true if the alliance is red, otherwise false.
-   */
+  public static Pose3d apply(Pose3d pose) {
+    return new Pose3d(apply(pose.getTranslation()), apply(pose.getRotation()));
+  }
+
+  //kept this method, since I don't know what disableHAL is... until that point this shall stay :D
   public static boolean shouldFlip() {
     return DriverStation.getAlliance().isPresent()
         && DriverStation.getAlliance().get() == Alliance.Red;
