@@ -12,8 +12,8 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
-import static frc.robot.Constants.IndexerK.kLogTab;
-import static frc.robot.Constants.ShooterK.kDistanceAboveFunnel;
+import static frc.robot.Constants.ShooterK.kLogTab;
+import static frc.robot.Constants.ShooterK.kInchesAboveFunnel;
 import static frc.robot.Constants.ShooterK.kFlywheelRadius;
 import static frc.robot.Constants.ShooterK.kTurretTransform;
 import static frc.robot.Constants.ShooterK.kTurretMaxRots;
@@ -38,8 +38,9 @@ import edu.wpi.first.units.measure.Time;
 
 public class ShotCalculator {
 
-    private static final DoubleLogger log_desiredTurretRot = new DoubleLogger(kLogTab,
-            "desiredTurretRotations");
+    private static final DoubleLogger log_desiredTurretRot = new DoubleLogger(kLogTab, "desiredTurretRotations");
+
+    private static final DoubleLogger log_timeOfFlight = new DoubleLogger(kLogTab, "timeOfFlight");
 
     //see 5000's code (circa 2/16/2026 9:11 PM EST)
     public static final InterpolatingTreeMap<Double, ShotData> m_shotMap = new InterpolatingTreeMap<>(
@@ -119,9 +120,7 @@ public class ShotCalculator {
         double angle = Math.PI / 2 - hoodAngle.in(Radians);
         double dist = distance.in(Meters);
 
-        if (vel == 0 || Math.cos(angle) == 0) {
-            return null;
-        }
+        log_timeOfFlight.accept(Seconds.of(dist / (vel * Math.cos(angle))).magnitude());
 
         return Seconds.of(dist / (vel * Math.cos(angle)));
     }
@@ -189,7 +188,7 @@ public class ShotCalculator {
         double g = 386;
         double r = FieldConstants.Hub.funnelRadius.in(Inches) * x_dist
                 / getDistanceToTarget(robot, actualTarget).in(Inches);
-        double h = FieldConstants.Hub.funnelHeight.plus(kDistanceAboveFunnel).in(Inches);
+        double h = FieldConstants.Hub.funnelHeight.plus(kInchesAboveFunnel).in(Inches);
         double A1 = x_dist * x_dist;
         double B1 = x_dist;
         double D1 = y_dist;

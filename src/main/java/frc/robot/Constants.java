@@ -46,9 +46,8 @@ public class Constants {
 
     public static class ShooterK {
         public static final String kLogTab = "Shooter";
-        //cant really think of any other name but is where the turret is relative to the robot
         public static final Transform3d kTurretTransform = new Transform3d(new Translation3d(Inches.zero(), Inches.zero(), Inches.of(18)), Rotation3d.kZero); //DUMMY VALS
-        public static final Distance kDistanceAboveFunnel = Inches.of(20); //distance above the hub funnel
+        public static final Distance kInchesAboveFunnel = Inches.of(20);// distance the ball must travel above the funnel opening to arc correctly into the hub
 
 
         public static final double kHoodMinAngle = Units.degreesToRadians(19);
