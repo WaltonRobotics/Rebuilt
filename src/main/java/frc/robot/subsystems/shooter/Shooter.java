@@ -22,6 +22,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -174,6 +175,8 @@ public class Shooter extends SubsystemBase {
                 fieldSpeedsSupplier);
 
         m_fuelSim = FuelSim.getInstance();
+
+        setGoal(ShooterGoal.SCORING);
     }
 
     /* COMMANDS */
@@ -384,7 +387,7 @@ public class Shooter extends SubsystemBase {
     private Translation3d getPassingTarget(Pose2d robotPose) {
         boolean onLeftSide = m_isBlue ? robotPose.getMeasureY().gt(fieldWidthDiv2) : robotPose.getMeasureY().lt(fieldWidthDiv2);
 
-        return onLeftSide ? AllianceFlipUtil.apply(kPassingSpotLeft) : AllianceFlipUtil.apply(kPassingSpotRight);
+        return onLeftSide ? kPassingSpotLeft : kPassingSpotRight;
     }
 
     /**
@@ -421,9 +424,9 @@ public class Shooter extends SubsystemBase {
     private boolean inAllianceZone() {
         //UNTESTED
         Pose2d pose = m_poseSupplier.get();
-
-        return (m_isBlue && pose.getMeasureX().lt(Inches.of(FieldConstants.LinesVertical.allianceZone).plus(kRobotFullWidth.div(2)))) || //are we in the BLUE ALLIANCE ZONE as a BLUE ROBOT (behind the starting line effectively)
-                    (!m_isBlue && pose.getMeasureX().gt(Inches.of(FieldConstants.LinesVertical.oppAllianceZone).plus(kRobotFullWidth.div(2))));      //are we in the RED ALLIANCE ZONE as a RED ROBOT(behind the starting line effectively)
+    
+        return (m_isBlue && pose.getMeasureX().lt(Inches.of(Units.metersToInches(FieldConstants.LinesVertical.allianceZone)).plus(kRobotFullWidth.div(2)))) || //are we in the BLUE ALLIANCE ZONE as a BLUE ROBOT (behind the starting line effectively)
+                    (!m_isBlue && pose.getMeasureX().gt(Inches.of(Units.metersToInches(FieldConstants.LinesVertical.oppAllianceZone)).plus(kRobotFullWidth.div(2))));      //are we in the RED ALLIANCE ZONE as a RED ROBOT(behind the starting line effectively)
     }
 
     /**
@@ -474,12 +477,15 @@ public class Shooter extends SubsystemBase {
         trg_inAllianceZone.negate().and(DriverStation::isTeleop)
                 .onTrue(setGoal(ShooterGoal.PASSING));
 
+        trg_inAllianceZone.and(DriverStation::isTeleop).whileTrue(setGoal(ShooterGoal.SCORING));
+        trg_inAllianceZone.negate().and(DriverStation::isTeleop).whileTrue(setGoal(ShooterGoal.PASSING));
+
         switch (m_goal) {
             case SCORING:
                 calculateShot(pose);
                 break;
             case PASSING:
-                setTarget(getPassingTarget(pose));
+                calculateShot(pose);;
                 break;
             case TEST:
                 calculateTurretAngle(pose);
