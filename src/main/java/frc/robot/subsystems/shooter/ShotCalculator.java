@@ -145,8 +145,7 @@ public class ShotCalculator {
      */
     public static Angle calculateAzimuthAngle(Pose2d robot, Translation3d target,
             Angle currentAngle) {
-        Translation2d turretTranslation = new Pose3d(robot).transformBy(kTurretTransform).toPose2d()
-                .getTranslation();
+        Translation2d turretTranslation = new Pose3d(robot).transformBy(kTurretTransform).toPose2d().getTranslation(); //where the turret is on the robot
 
         Translation2d direction = target.toTranslation2d().minus(turretTranslation); //distance from target to turret
         double angle = MathUtil.inputModulus(
@@ -167,12 +166,21 @@ public class ShotCalculator {
         return Rotations.of(angle);
     }
 
-    // Move a target a set time in the future along a velocity defined by fieldSpeeds
-    // Integral for SOTM, as this is what accounts for the speed the Robot is going.
+    /**
+     * Move a target a set time in the future along a velocity defined by
+     * fieldSpeeds
+     * Integral for SOTM, as this is what accounts for the speed the Robot is
+     * going.
+     * 
+     * @param target desired target
+     * @param fieldSpeeds curret robotVelocity
+     * @param timeOfFlight timeOfFlight from calculations or LERP table
+     * @return where we will need to shoot to account for us moving.
+     */
     public static Translation3d predictTargetPos(Translation3d target, ChassisSpeeds fieldSpeeds,
             Time timeOfFlight) {
         double predictedX = target.getX()
-                - fieldSpeeds.vxMetersPerSecond * timeOfFlight.in(Seconds);
+                - fieldSpeeds.vxMetersPerSecond * timeOfFlight.in(Seconds); //need time of flight b/c that tells you how close/far you can shoot to the target according to speeds.
         double predictedY = target.getY()
                 - fieldSpeeds.vyMetersPerSecond * timeOfFlight.in(Seconds);
 
@@ -180,6 +188,7 @@ public class ShotCalculator {
     }
 
     // https://www.desmos.com/calculator/ezjqolho6g
+    // If you're having trouble understanding this method, go mess with the values in desmos / read what those do, as this is just the same desmos calc.
     public static ShotData calculateShotFromFunnelClearance(Pose2d robot,
             Translation3d actualTarget, Translation3d predictedTarget) {
         double x_dist = getDistanceToTarget(robot, predictedTarget).in(Inches);
@@ -235,8 +244,9 @@ public class ShotCalculator {
     }
 
     /**
-     * use an iterative interpolation approach to determine shot parameters for a moving robot 
+     * Use an iterative interpolation approach to determine shot parameters for a moving robot 
      * compensating for speed, and the target.
+     * 
      * @param robot current robot pose
      * @param fieldSpeeds current robot speeds (w direction)
      * @param target target you are aiming for (either the passing point OR the HUB)

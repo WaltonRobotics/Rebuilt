@@ -332,14 +332,14 @@ public class Shooter extends SubsystemBase {
             return;
         // m_fuelStored--;
 
-        AngularVelocity flywheelVelocity = getShooterVelocity();
-        Angle hoodAngle = Degrees.of(90).minus(getHoodAngle());
-        Angle turretPosition = getTurretPosition();
+        AngularVelocity flywheelVelocity = getShooterVelocity();    //current flywheel velocity
+        Angle hoodAngle = Degrees.of(90).minus(getHoodAngle()); //current hood angle (need to subtract from 90 to get an accurate launching angle)
+        Angle turretPosition = getTurretPosition(); //current turret position
         LinearVelocity flywheelLinearVelocity = ShotCalculator
                 .angularToLinearVelocity(flywheelVelocity, kFlywheelRadius);
 
         m_fuelSim.launchFuel(flywheelLinearVelocity, hoodAngle, turretPosition,
-                kTurretTransform.getMeasureZ());
+            kTurretTransform.getMeasureZ()); //launch from where the turret *should* be
     }
 
     // TODO: update orientation values (if needed)
@@ -366,7 +366,7 @@ public class Shooter extends SubsystemBase {
     }
 
     /**
-     * Sets the current aiming position ahead of the robot distanceMeters ahead of the robot.
+     * Testing Method  - Sets the current aiming position ahead of the robot distanceMeters ahead of the robot.
      * 
      * @param distanceMeters how far ahead of the robot the target will be
      */
