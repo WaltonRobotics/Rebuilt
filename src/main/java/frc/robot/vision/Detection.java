@@ -17,10 +17,10 @@ import frc.robot.Constants.VisionK;
 public class Detection {
     /* CLASS VARIABLES */
     private final PhotonCamera[] m_cameras = {
-        new PhotonCamera(VisionK.kCameras[0].getCameraName()),
-        new PhotonCamera(VisionK.kCameras[1].getCameraName()),
-        new PhotonCamera(VisionK.kCameras[2].getCameraName()),
-        new PhotonCamera(VisionK.kCameras[3].getCameraName())
+        VisionK.kCameras[0].getPhotonCamera(),
+        VisionK.kCameras[1].getPhotonCamera(),
+        VisionK.kCameras[2].getPhotonCamera(),
+        VisionK.kCameras[3].getPhotonCamera(),
     };
     private final VisionSim m_visionSim = new VisionSim();
 

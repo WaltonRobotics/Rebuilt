@@ -16,6 +16,7 @@ public class Camera {
     private String m_cameraName;
     private String m_simVisualName;
     private Transform3d m_roboToCam;
+    private PhotonCamera m_photonCamera;
 
     /* CONSTRUCTOR */
     public Camera(SimCameraProperties simCameraProperties, String cameraName, String simVisualName, Transform3d roboToCam) {
@@ -23,6 +24,8 @@ public class Camera {
         m_simVisualName = cameraName + simVisualName;
         m_roboToCam = roboToCam;
         m_simCameraProperties = simCameraProperties;
+
+        m_photonCamera = new PhotonCamera(cameraName);
     }
 
     /* METHODS */
@@ -135,19 +138,23 @@ public class Camera {
         return m_simCameraProperties;
     }
 
-    public void setFPSLimit(int fps) {
-        PhotonCamera camera = new PhotonCamera(m_cameraName);
-        camera.setFPSLimit(fps);
-        camera.close();
+    public PhotonCamera getPhotonCamera() {
+        return m_photonCamera;
     }
 
-    public static Command setFPSLimit(Camera[] cameras, int fps) {
+    public void setFPSLimit(int fps) {
+        m_photonCamera.setFPSLimit(fps);
+    }
+
+    //STATIC METHODS
+    public static Command setFPSLimit(Camera[] cams, int fps) {
         return Commands.runOnce(
             () -> {
-                for (int i = 0; i < cameras.length; i++) {
-                    cameras[i].setFPSLimit(fps);
+                for (int i = 0; i < cams.length; i++) {
+                    cams[i].setFPSLimit(fps);
                 }
             }
         );
     }
+
 }

@@ -48,9 +48,9 @@ public class Vision {
     private final DoubleArrayPublisher log_stdDevs;
 
     /* CONSTRUCTOR */
-    public Vision(String cameraName, String simVisualName, Transform3d roboToCam, VisionSim visionSim, SimCameraProperties simCameraProperties) {
+    public Vision(String cameraName, String simVisualName, Transform3d roboToCam, VisionSim visionSim, SimCameraProperties simCameraProperties, PhotonCamera camera) {
         m_cameraName = cameraName;
-        m_camera = new PhotonCamera(m_cameraName);
+        m_camera = camera;
         m_roboToCam = roboToCam;
         m_simVisualName = simVisualName;
         m_visionSim = visionSim;
@@ -78,7 +78,7 @@ public class Vision {
     }
 
     public Vision(Camera camera, VisionSim visionSim) {
-        this(camera.getCameraName(), camera.getSimVisualName(), camera.getRoboToCam(), visionSim, camera.getSimCameraProperties());
+        this(camera.getCameraName(), camera.getSimVisualName(), camera.getRoboToCam(), visionSim, camera.getSimCameraProperties(), camera.getPhotonCamera());
     }
 
     /* METHODS */
