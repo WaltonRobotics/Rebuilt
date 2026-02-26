@@ -572,6 +572,7 @@ public class Robot extends TimedRobot {
         log_povLeft.accept(m_driver.povLeft());
         log_povRight.accept(m_driver.povRight());
         log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
+        
         // log_shooterDirection.accept(
         //     new Pose3d(
         //         m_drivetrain.getState().Pose

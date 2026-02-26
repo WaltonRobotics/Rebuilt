@@ -326,7 +326,7 @@ public class Constants {
             .withKI(0)
             .withKD(0);
         public static final MotorOutputConfigs kIntakeRollersMotorOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.Clockwise_Positive) // TODO: CW or CCW?
+            .withInverted(InvertedValue.Clockwise_Positive)
             .withNeutralMode(NeutralModeValue.Coast)
             .withPeakForwardDutyCycle(0.1)
             .withPeakReverseDutyCycle(0.1);
