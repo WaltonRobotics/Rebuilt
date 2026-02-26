@@ -126,6 +126,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_intakeUpOverride = trg_manipOverride.and(m_manipulator.leftTrigger());
 
     private final Trigger trg_limitFPS = RobotModeTriggers.disabled();
+    private final Trigger trg_unlimitFps = RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop());
 
 
     /* LOGGERS */
@@ -137,7 +138,6 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
     private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
 
-    // private final Pose3dLogger log_estimatedPose = WaltLogger.logPose3d(kLogTab, "estimatedPose yippee");
     private final BooleanLogger log_isDisabled = WaltLogger.logBoolean(kLogTab, "is robot disabled");
 
     // for testing only
@@ -153,6 +153,9 @@ public class Robot extends TimedRobot {
         configureBindings();
         // configureTestBindings();    //this should be commented out during competition matches
         // configureTestingDashboard();
+
+        // set FPS limit on boot
+        WaltCamera.setFpsLimit(true);   //MAKE THIS FALSE BEFORE MATCHES!!!!!!!!!!!!!!!!
     }
 
     /* COMMANDS */
@@ -219,7 +222,8 @@ public class Robot extends TimedRobot {
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
-        trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true)).onFalse(WaltCamera.setFpsLimitCmd(false));
+        trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   
+        trg_unlimitFps.onTrue(WaltCamera.setFpsLimitCmd(false));
 
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
         // trg_swerveToObject.whileTrue(
@@ -255,7 +259,7 @@ public class Robot extends TimedRobot {
 
         //---OVERRIDE COMMANDS
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
-        m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.hoodEncoderHoming());
+        // m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.hoodEncoderHoming());
 
         // m_manipulator.y().and(trg_manipOverride).whileTrue(m_shooter.setHoodPositionCmd(Degrees.of(37))).onFalse(m_shooter.setHoodPositionCmd(Degrees.of(1)));
 
@@ -411,7 +415,7 @@ public class Robot extends TimedRobot {
         m_manipulator.y().and(trg_manipOverride).whileTrue(m_superstructure.shimmy()).onFalse(m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED));
 
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
-        m_manipulator.start().and(trg_manipOverride).onTrue(m_shooter.hoodEncoderHoming());
+        // m_manipulator.start().and(trg_manipOverride).onTrue(m_shooter.hoodEncoderHoming());
 
         // m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.set(180));
 
@@ -544,16 +548,12 @@ public class Robot extends TimedRobot {
             Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
             if (estimatedPoseOptional.isPresent()) {
                 EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
-
-                // log_estimatedPose.accept(estimatedRobotPose.toString());
-
                 Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
                 var ctreTime = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
                 m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());                
                 m_visionSeenLastSec = ctreTime;
             }
         }
-        // log_estimatedPose.accept(m_drivetrain.);
 
         // periodics
         m_shooter.periodic();

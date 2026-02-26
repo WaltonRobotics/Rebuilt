@@ -122,9 +122,9 @@ public class Shooter extends SubsystemBase {
 
         m_shooterFollower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed));
 
-        if(Robot.isReal()) {
-            setDefaultCommand(hoodEncoderHoming());
-        }
+        // if(Robot.isReal()) {
+        //     setDefaultCommand(hoodEncoderHoming());
+        // }
 
         initSim();
     }
@@ -182,26 +182,26 @@ public class Shooter extends SubsystemBase {
         return run(() -> setHoodPosition(Degrees.of(sub_degs.getAsDouble())));
     }
 
-    public Command hoodEncoderHoming() {
-        Runnable init = () -> {
-            m_hoodHomingTimer.start();
-            setHoodPosition(Degrees.of(0));
-        };
+    // public Command hoodEncoderHoming() {
+    //     Runnable init = () -> {
+    //         m_hoodHomingTimer.start();
+    //         setHoodPosition(Degrees.of(0));
+    //     };
 
-        Runnable execute = () -> {};
+    //     Runnable execute = () -> {};
 
-        Consumer<Boolean> onEnd = (Boolean interrupted) -> {
-            m_hoodEncoder.setPosition(Rotations.of(0));
-            m_hoodHomingTimer.stop();
-            m_hoodHomingTimer.reset();
-            removeDefaultCommand();
-        };
+    //     Consumer<Boolean> onEnd = (Boolean interrupted) -> {
+    //         m_hoodEncoder.setPosition(Rotations.of(0));
+    //         m_hoodHomingTimer.stop();
+    //         m_hoodHomingTimer.reset();
+    //         removeDefaultCommand();
+    //     };
 
-        BooleanSupplier isFinished = () -> 
-            ((Math.abs(m_hoodEncoder.getVelocity().getValueAsDouble()) < 0.001) && (m_hoodHomingTimer.get() / 1000 > 350));
+    //     BooleanSupplier isFinished = () -> 
+    //         ((Math.abs(m_hoodEncoder.getVelocity().getValueAsDouble()) < 0.001) && (m_hoodHomingTimer.get() / 1000 > 350));
 
-        return new FunctionalCommand(init, execute, onEnd, isFinished, this).withTimeout(3).withName("hoodEncoder homing");
-    }
+    //     return new FunctionalCommand(init, execute, onEnd, isFinished, this).withTimeout(3).withName("hoodEncoder homing");
+    // }
 
     private void setTurretPos(Angle rots) {
         m_turret.setControl(m_MMVRequest.withPosition(rots));
@@ -223,7 +223,7 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         //---Loggers
         log_shooterVelocityRPS.accept(m_shooterLeader.getVelocity().getValueAsDouble());
-        log_hoodEncoderPositionDegs.accept(Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees) / kHoodGearing);
+        log_hoodEncoderPositionDegs.accept(Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees) / kHoodEncoderGearing);
         log_hoodEncoderVelocityRPS.accept(m_hoodEncoder.getVelocity().getValueAsDouble());
         log_hoodReferencePosition.accept(m_hoodSetpoint.magnitude());
         log_hoodEncoderError.accept((m_hoodSetpoint.magnitude()) - (convertServoAngleToHoodAngle(Degrees.of(Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees)))));

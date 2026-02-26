@@ -67,7 +67,7 @@ public class Constants {
 
         //---HOOD CONSTANTS
         public static final double kHoodMoI = 0.00027505;
-        public static final double kHoodGearing = 300.0/20;
+        public static final double kHoodEncoderGearing = 360/40.0;
 
         public static final Angle kHoodMinDegs = Degrees.of(0); // ABS min (1 should be the min for the rest of match, 0 only for homing)
         public static final Angle kHoodMaxDegs = Degrees.of(37);    // ABS max (40 is too much)
@@ -133,9 +133,9 @@ public class Constants {
 
         //---HOOD
         private static final MagnetSensorConfigs kHoodEncoderMagnetSensorConfigs = new MagnetSensorConfigs()
-            .withMagnetOffset(Rotations.of(0))
+            .withMagnetOffset(Rotations.of(0.999756))
             .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-            .withAbsoluteSensorDiscontinuityPoint(Rotations.of(0));
+            .withAbsoluteSensorDiscontinuityPoint(Rotations.of(1));
         public static final CANcoderConfiguration kHoodEncoderConfiguration = new CANcoderConfiguration()
             .withMagnetSensor(kHoodEncoderMagnetSensorConfigs);
 

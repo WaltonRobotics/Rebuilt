@@ -27,26 +27,33 @@ import static frc.robot.Constants.VisionK;
 import static frc.robot.Constants.FieldK;
 
 public class WaltCamera extends PhotonCamera {
+    /* CLASS VARIABLES */
     private static final int kGlobalFpsLimit = 5;
 
     public static final List<WaltCamera> AllCameras = Collections.unmodifiableList(Arrays.asList(
-        new WaltCamera("FrontLeft", VisionK.kFrontLeftCTR),
+        // new WaltCamera("FrontLeft", VisionK.kFrontLeftCTR),
         new WaltCamera("FrontRight", VisionK.kFrontRightCTR),
-        new WaltCamera("BackLeft", VisionK.kBackLeftCTR),
+        // new WaltCamera("BackLeft", VisionK.kBackLeftCTR),
         new WaltCamera("BackRight", VisionK.kBackRightCTR)
     ));
+
+    public static void setFpsLimit(boolean limited) {
+        for (var cam : AllCameras) {
+            cam.setFPSLimit(limited ? kGlobalFpsLimit : -1); 
+        }
+    }
 
     public static Command setFpsLimitCmd(boolean limited) {
         return Commands.runOnce(() -> {
             for (var cam : AllCameras) {
                 cam.setFPSLimit(limited ? kGlobalFpsLimit : -1); 
             }
-        });
+        }).andThen(Commands.print("FPS Limit: " + limited));
     }
 
     public final PhotonCameraSim m_sim;
-    public final Transform3d robotToCam;
-    public final PhotonPoseEstimator estimator;
+    public final Transform3d m_robotToCam;
+    public final PhotonPoseEstimator m_estimator;
     
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.5, 1.5, 6.24);
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 6.24);
@@ -57,11 +64,12 @@ public class WaltCamera extends PhotonCamera {
 
     private Matrix<N3, N1> m_curStdDevs;
 
-    public WaltCamera(String cameraName, Transform3d robotToCam_) {
+    /* CONSTRUCTOR */
+    public WaltCamera(String cameraName, Transform3d robotToCam) {
         super(cameraName);
         m_sim = new PhotonCameraSim(this);
-        robotToCam = robotToCam_;
-        estimator = new PhotonPoseEstimator(FieldK.kTagLayout, robotToCam);
+        m_robotToCam = robotToCam;
+        m_estimator = new PhotonPoseEstimator(FieldK.kTagLayout, m_robotToCam);
 
         final String ntPrefix = "Vision/" + cameraName + "/";
         log_camPose = NetworkTableInstance.getDefault()
@@ -71,9 +79,10 @@ public class WaltCamera extends PhotonCamera {
         log_stdDevs = NetworkTableInstance.getDefault()
             .getDoubleArrayTopic(ntPrefix + "/stdDevs").publish();
 
-        log_camTransform.accept(robotToCam_);
+        log_camTransform.accept(robotToCam);
     }
 
+    /* VISION ESTIMATION METHODS */
    /**
      * The latest estimated robot pose on the field from vision data. This may be empty. This should
      * only be called once per loop.
@@ -89,7 +98,7 @@ public class WaltCamera extends PhotonCamera {
         List<PhotonPipelineResult> unreadCameraResults = this.getAllUnreadResults();
 
         for (var change : unreadCameraResults) {
-            visionEst = estimator.estimateCoprocMultiTagPose(change);
+            visionEst = m_estimator.estimateCoprocMultiTagPose(change);
             updateEstimationStdDevs(visionEst, change.getTargets());
             log_stdDevs.accept(m_curStdDevs.getData());
 
@@ -133,7 +142,7 @@ public class WaltCamera extends PhotonCamera {
 
             // Precalculation - see how many tags we found, and calculate an average-distance metric
             for (var tgt : targets) {
-                var tagPose = estimator.getFieldTags().getTagPose(tgt.getFiducialId());
+                var tagPose = m_estimator.getFieldTags().getTagPose(tgt.getFiducialId());
                 if (tagPose.isEmpty()) continue;
                 numTags++;
                 avgDist +=
