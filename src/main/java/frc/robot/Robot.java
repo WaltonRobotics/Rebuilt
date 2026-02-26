@@ -5,8 +5,6 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.Constants.IndexerK;
-import static frc.robot.Constants.ShooterK;
 import static frc.robot.Constants.RobotK.*;
 
 import java.util.HashMap;
@@ -22,13 +20,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.util.datalog.StringLogEntry;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -37,8 +28,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ShooterK;
-import frc.robot.Constants.VisionK;
-import frc.robot.dashboards.AutonChooser;
 import frc.robot.dashboards.TestingDashboard;
 import frc.robot.autons.WaltAutonFactory;
 import frc.robot.generated.TunerConstants;
@@ -48,9 +37,7 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Indexer;
-import frc.robot.vision.Camera;
-import frc.robot.vision.Vision;
-import frc.robot.vision.VisionSim;
+import frc.robot.vision.WaltCamera;
 import frc.util.Telemetry;
 // import frc.util.WaltVisualSim;
 import frc.util.WaltLogger;
@@ -76,8 +63,8 @@ public class Robot extends TimedRobot {
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
         .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-    private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+    // private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+    // private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
@@ -97,22 +84,14 @@ public class Robot extends TimedRobot {
 
     //---AUTONS
     private Command m_autonomousCommand;
-    private String m_autonChosen = "noAutonSelected";
+    // private String m_autonChosen = "noAutonSelected";
 
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
-    private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
-    private HashMap<String, Command> m_autonList = new HashMap<String, Command>();
+    // private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
+    // private HashMap<String, Command> m_autonList = new HashMap<String, Command>();
 
     //---VISION
-    private final VisionSim m_visionSim = new VisionSim();
-
-    // this should be updated with all of our cameras
-    private final Vision[] m_cameras = {
-        // new Vision(VisionK.kCameras[0], m_visionSim),
-        new Vision(VisionK.kCameras[1], m_visionSim),
-    //     new Vision(VisionK.kCameras[2], m_visionSim),
-        new Vision(VisionK.kCameras[3], m_visionSim),
-    };
+    // private final VisionSim m_visionSim = new VisionSim();
 
     /* TRIGGERS */
     private Trigger trg_driverOverride = m_driver.b();
@@ -146,7 +125,8 @@ public class Robot extends TimedRobot {
     private Trigger trg_deployIntakeOverride = trg_manipOverride.and(m_manipulator.rightTrigger());
     private Trigger trg_intakeUpOverride = trg_manipOverride.and(m_manipulator.leftTrigger());
 
-    private Trigger trg_limitFPS = new Trigger(() -> DriverStation.isDisabled());
+    private final Trigger trg_limitFPS = RobotModeTriggers.disabled();
+
 
     /* LOGGERS */
     private final DoubleLogger log_stickDesiredFieldX = WaltLogger.logDouble("Swerve", "stick desired teleop x");
@@ -157,7 +137,7 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
     private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
 
-    private final StringLogger log_estimatedPose = WaltLogger.logString(kLogTab, "estimatedPose yippee");
+    // private final Pose3dLogger log_estimatedPose = WaltLogger.logPose3d(kLogTab, "estimatedPose yippee");
     private final BooleanLogger log_isDisabled = WaltLogger.logBoolean(kLogTab, "is robot disabled");
 
     // for testing only
@@ -239,7 +219,7 @@ public class Robot extends TimedRobot {
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
-        trg_limitFPS.onTrue(Camera.setFPSLimit(VisionK.kCameras, 5)).onFalse(Camera.setFPSLimit(VisionK.kCameras, -1));
+        trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true)).onFalse(WaltCamera.setFpsLimitCmd(false));
 
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
         // trg_swerveToObject.whileTrue(
@@ -560,7 +540,7 @@ public class Robot extends TimedRobot {
         m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run(); 
 
-        for (Vision camera : m_cameras) {
+        for (var camera : WaltCamera.AllCameras) {
             Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
             if (estimatedPoseOptional.isPresent()) {
                 EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
@@ -573,6 +553,7 @@ public class Robot extends TimedRobot {
                 m_visionSeenLastSec = ctreTime;
             }
         }
+        // log_estimatedPose.accept(m_drivetrain.);
 
         // periodics
         m_shooter.periodic();
@@ -719,7 +700,7 @@ public class Robot extends TimedRobot {
         SwerveDriveState robotState = m_drivetrain.getState();
         Pose2d robotPose = robotState.Pose;
 
-        m_visionSim.simulationPeriodic(robotPose);
+        // m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();
         m_shooter.simulationPeriodic();
         m_intake.simulationPeriodic();

@@ -11,17 +11,11 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import frc.robot.Robot;
-import frc.robot.Constants.VisionK;
 
 
 public class Detection {
     /* CLASS VARIABLES */
-    private final PhotonCamera[] m_cameras = {
-        VisionK.kCameras[0].getPhotonCamera(),
-        VisionK.kCameras[1].getPhotonCamera(),
-        VisionK.kCameras[2].getPhotonCamera(),
-        VisionK.kCameras[3].getPhotonCamera(),
-    };
+    private final List<WaltCamera> m_cameras = WaltCamera.AllCameras;
     private final VisionSim m_visionSim = new VisionSim();
 
     private List<PhotonTrackedTarget> m_targetList = new LinkedList<>();
