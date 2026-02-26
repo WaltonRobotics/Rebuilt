@@ -25,6 +25,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.WaltLogger.DoubleLogger;
@@ -39,14 +40,15 @@ public class Intake extends SubsystemBase {
     private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID); //x44Foc
 
     private DynamicMotionMagicVoltage m_MMVReq = new DynamicMotionMagicVoltage(0, 1, 1).withEnableFOC(true);
+    // private PositionVoltage m_PVReq = new PositionVoltage(0).withEnableFOC(true);
     private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
 
-    private BooleanSupplier m_currentSpike = () -> m_intakeArm.getStatorCurrent().getValueAsDouble() > 5.0; //TODO: update value (5.0)
-    private BooleanSupplier m_veloIsNearZero = () -> Math.abs(m_intakeArm.getVelocity().getValueAsDouble()) < 0.005; //TODO: update value (0.005)
+    private BooleanSupplier m_currentSpike = () -> m_intakeArm.getStatorCurrent().getValueAsDouble() > 5.0;
+    private BooleanSupplier m_veloIsNearZero = () -> Math.abs(m_intakeArm.getVelocity().getValueAsDouble()) < 0.005;
 
     private VoltageOut m_intakeArmZeroingReq = new VoltageOut(0);
 
-    private Debouncer m_currentDebouncer = new Debouncer(0.25, DebounceType.kRising);
+    private Debouncer m_currentDebouncer = new Debouncer(0.100, DebounceType.kRising);
     private Debouncer m_velocityDebouncer = new Debouncer(0.125, DebounceType.kRising);
 
     /* SIM OBJECTS */
@@ -69,19 +71,20 @@ public class Intake extends SubsystemBase {
     );
 
     /* LOGGERS */
-    DoubleLogger log_intakeArmRots = WaltLogger.logDouble(kLogTab, "intakeArmRots");
-    DoubleLogger log_targetIntakeArmRots = WaltLogger.logDouble(kLogTab, "targetIntakeArmRots");
-
-    DoubleLogger log_intakeRollersRPS = WaltLogger.logDouble(kLogTab, "intakeRollersRPS");
-    DoubleLogger log_targetIntakeRollersRPS = WaltLogger.logDouble(kLogTab, "targetIntakeRollersRPS");
+    private final DoubleLogger log_intakeArmRots = WaltLogger.logDouble(kLogTab, "intakeArmRots");
+    private final DoubleLogger log_targetIntakeArmRots = WaltLogger.logDouble(kLogTab, "targetIntakeArmRots");
+    private final DoubleLogger log_intakeArmClosedLoopError = WaltLogger.logDouble(kLogTab, "intakeArmClosedLoopError");
+    
+    private final DoubleLogger log_intakeRollersRPS = WaltLogger.logDouble(kLogTab, "intakeRollersRPS");
+    private final DoubleLogger log_targetIntakeRollersRPS = WaltLogger.logDouble(kLogTab, "targetIntakeRollersRPS");
 
     /* CONSTRUCTOR */
     public Intake() {
         m_intakeArm.getConfigurator().apply(kIntakeArmConfiguration);
         m_intakeRollers.getConfigurator().apply(kIntakeRollersConfiguration);
 
-        if(Robot.isReal()) {
-            setDefaultCommand(currentSenseHoming());
+        if (Robot.isReal()) {
+            setDefaultCommand(intakeArmCurrentSenseHoming());
         }
 
         initSim();
@@ -101,6 +104,28 @@ public class Intake extends SubsystemBase {
         return runOnce(() -> m_intakeArm.setControl(m_MMVReq.withPosition(rots).withAcceleration(RPSPS)));
     }
 
+    public boolean intakeArmAtPos(IntakeArmPosition pos) {
+        return m_intakeArm.getPosition().isNear(pos.rots, Rotations.of(0.015)); //TODO: find better tolerance
+    }
+
+    //TODO: if no worky use timer to check instead
+    public boolean isIntakeArmAtPos() {
+        var err = m_intakeArm.getClosedLoopError();
+        log_intakeArmClosedLoopError.accept(err.getValueAsDouble());
+        boolean isNear = m_intakeArm.getClosedLoopError().isNear(0, 0.03);
+        return isNear;
+    }
+
+    public Command shimmy() {
+        return Commands.repeatingSequence(
+            setIntakeRollersVelocityCmd(RotationsPerSecond.of(0)),
+            setIntakeArmPos(IntakeArmPosition.SHIMMY),
+            Commands.waitUntil(() -> intakeArmAtPos(IntakeArmPosition.SHIMMY)),
+            setIntakeArmPos(IntakeArmPosition.DEPLOYED),
+            Commands.waitUntil(() -> intakeArmAtPos(IntakeArmPosition.DEPLOYED))
+        ).finallyDo(() -> setIntakeArmPos(IntakeArmPosition.SAFE));
+    }
+
     //for TestingDashboard
     public Command setIntakeArmPos(DoubleSubscriber sub_rots) {
         return run(() -> m_intakeArm.setControl(m_MMVReq.withPosition(Rotations.of(sub_rots.get()))));
@@ -114,12 +139,16 @@ public class Intake extends SubsystemBase {
         return setIntakeRollersVelocityCmd(RotationsPerSecond.of(0));
     }
 
+    public void setIntakeRollersVelocity(AngularVelocity RPS) {
+        m_intakeRollers.setControl(m_VVReq.withVelocity(RPS));
+    }
+
     public Command setIntakeRollersVelocityCmd(AngularVelocity RPS) {
         return runOnce(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RPS)));
     }
 
     //for TestingDashboard
-    public Command setIntakeRollersSpeed(DoubleSubscriber sub_RPS) {
+    public Command setIntakeRollersVelocity(DoubleSubscriber sub_RPS) {
         return run(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
     }
 
@@ -131,16 +160,16 @@ public class Intake extends SubsystemBase {
         return m_intakeRollers;
     }
 
-    public Command currentSenseHoming() {
+    public Command intakeArmCurrentSenseHoming() {
         Runnable init = () -> {
-            m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(-2));
+            m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(-3.25));
         };
 
         Runnable execute = () -> {};
 
         Consumer<Boolean> onEnd = (Boolean interrupted) -> {
-            m_intakeArm.setPosition(0);
             m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(0));
+            m_intakeArm.setPosition(0);
             removeDefaultCommand();
             setIntakeArmPos(IntakeArmPosition.RETRACTED);
         };
@@ -149,13 +178,14 @@ public class Intake extends SubsystemBase {
             m_currentDebouncer.calculate(m_currentSpike.getAsBoolean()) &&
             m_velocityDebouncer.calculate(m_veloIsNearZero.getAsBoolean());
 
-        return new FunctionalCommand(init, execute, onEnd, isFinished, this);
+        return new FunctionalCommand(init, execute, onEnd, isFinished, this).withTimeout(3).withName("intakeArm homing");
     }
 
     /* PERIODICS */
     @Override
     public void periodic() {
         log_targetIntakeArmRots.accept(m_MMVReq.Position);
+        // log_targetIntakeArmRots.accept(m_PVReq.Position);
         log_targetIntakeRollersRPS.accept(m_VVReq.Velocity);
         log_intakeRollersRPS.accept(m_intakeRollers.getVelocity().getValueAsDouble());
         log_intakeArmRots.accept(m_intakeArm.getPosition().getValueAsDouble());
@@ -169,9 +199,10 @@ public class Intake extends SubsystemBase {
 
     /* ENUMS */
     public enum IntakeArmPosition{
-        RETRACTED(0),
-        SAFE(72),
-        DEPLOYED(87.485);
+        RETRACTED(Rotations.of(0.082764).in(Degrees)),
+        DEPLOYED(Rotations.of(0.295410).in(Degrees)),
+        SHIMMY(Rotations.of(0.176025).in(Degrees)),
+        SAFE((DEPLOYED.rots.minus(Rotations.of(0.06))).in(Degrees));
 
         public Angle degs;
         public Angle rots;
