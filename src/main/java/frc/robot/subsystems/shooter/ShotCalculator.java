@@ -12,12 +12,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
-import static frc.robot.Constants.ShooterK.kLogTab;
-import static frc.robot.Constants.ShooterK.kInchesAboveFunnel;
-import static frc.robot.Constants.ShooterK.kFlywheelRadius;
-import static frc.robot.Constants.ShooterK.kTurretTransform;
-import static frc.robot.Constants.ShooterK.kTurretMaxRots;
-import static frc.robot.Constants.ShooterK.kTurretMinRots;
+import static frc.robot.Constants.ShooterK.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -101,14 +96,13 @@ public class ShotCalculator {
     // see https://www.desmos.com/geometry/l4edywkmha
     public static Angle calculateAngleFromVelocity(Pose2d robot, LinearVelocity velocity,
             Translation3d target) {
-        double gravity = MetersPerSecondPerSecond.of(9.81).in(InchesPerSecondPerSecond);
         double vel = velocity.in(InchesPerSecond);
         double x_dist = getDistanceToTarget(robot, target).in(Inches);
         double y_dist = target.getMeasureZ().minus(kTurretTransform.getMeasureZ()).in(Inches);
 
         double angle = Math.atan(((vel * vel) + Math.sqrt(
-                Math.pow(vel, 4) - gravity * (gravity * x_dist * x_dist + 2 * y_dist * vel * vel)))
-                / (gravity * x_dist));
+                Math.pow(vel, 4) - kGravity * (kGravity * x_dist * x_dist + 2 * y_dist * vel * vel)))
+                / (kGravity  * x_dist));
 
         return Radians.of(angle);
     }
@@ -234,10 +228,24 @@ public class ShotCalculator {
 
         // Iterate the process, getting better time of flight estimations and updating the predicted target accordingly
         for (int i = 0; i < iterations; i++) {
+            ShotData prevShot = shot;
+            Distance prevDistance = distance;
+            Time prevTOF = timeOfFlight;
+            Translation3d prevPredTarget = predictedTarget;
+
             predictedTarget = predictTargetPos(target, fieldSpeeds, timeOfFlight);
             shot = calculateShotFromFunnelClearance(robot, target, predictedTarget);
             timeOfFlight = calculateTimeOfFlight(shot.getExitVelocity(), shot.getHoodAngle(),
                     getDistanceToTarget(robot, predictedTarget));
+
+            ShotData shotDataDiff = shot.minus(prevShot);
+            Distance distanceDiff = prevDistance.minus(distance);
+            Time timeOfFlightDiff = prevTOF.minus(timeOfFlight);
+
+            if (shotDataDiff.hoodAngle() < .05 && shotDataDiff.exitVelocity() < .05 && prevShot.target().getDistance(shot.getTarget()) < .05 
+                    && distanceDiff.magnitude() < .05 && timeOfFlightDiff.magnitude() < .005 && prevPredTarget.getDistance(predictedTarget) < .05) {
+                break;
+            }
         }
 
         return shot;
@@ -265,11 +273,25 @@ public class ShotCalculator {
         //meant to iterate the process, and converge on one specific value.
         //gets a better ToF estimation & updates predictedTarget accordingly!
         for (int i = 0; i < iterations; i++) {
+            ShotData prevShot = shot;
+            Time prevTOF = timeOfFlight;
+            Translation3d prevPredTarget = predictedTarget;
+
             predictedTarget = predictTargetPos(target, fieldSpeeds, timeOfFlight);
             distance = getDistanceToTarget(robot, predictedTarget).in(Meters);
             shot = m_shotMap.get(distance);
             shot = new ShotData(shot.exitVelocity, shot.hoodAngle, predictedTarget);
             timeOfFlight = Seconds.of(m_timeOfFlightMap.get(distance));
+
+            ShotData shotDataDiff = shot.minus(prevShot);
+            Time timeOfFlightDiff = prevTOF.minus(timeOfFlight);
+
+            if (shotDataDiff.hoodAngle() < .05 && shotDataDiff.exitVelocity() < .05
+                    && prevShot.target().getDistance(shot.getTarget()) < .05
+                    && timeOfFlightDiff.magnitude() < .005
+                    && prevPredTarget.getDistance(predictedTarget) < .05) {
+                break;
+            }
         }
 
         return shot;
@@ -286,6 +308,14 @@ public class ShotCalculator {
 
         public ShotData(double exitVelocity, double hoodAngle) {
             this(exitVelocity, hoodAngle, FieldConstants.Hub.topCenterPoint);
+        }
+
+        public ShotData minus(ShotData prevShotData) {
+            double shotVelDiff = prevShotData.exitVelocity - this.exitVelocity;
+            double shotHoodDiff = prevShotData.hoodAngle - this.hoodAngle;
+            Translation3d shotTargetDiff = prevShotData.target.minus(this.target);
+
+            return new ShotData(shotVelDiff, shotHoodDiff, shotTargetDiff);
         }
 
         public LinearVelocity getExitVelocity() {

@@ -391,7 +391,7 @@ public class Shooter extends SubsystemBase {
     /**
      * Testing Method  - Sets the current aiming position ahead of the robot distanceMeters ahead of the robot.
      * 
-     * @param distanceMeters how far ahead of the robot the target will be
+     * @param distanceMeters how far ahead (in X) of the robot the target will be 
      */
     private void setTargetAheadOfRobot(double distanceMeters) {
         Pose2d currentPose = m_poseSupplier.get();
@@ -471,7 +471,7 @@ public class Shooter extends SubsystemBase {
                 currentTarget, 3);                                                                               
         Angle azimuthAngle = ShotCalculator.calculateAzimuthAngle(robotPose, calculatedShot.getTarget(),                //The turret angle according to the Calculated shot
                 m_turret.getPosition().getValue());
-        setTurretPos(azimuthAngle);                                                                                //Sets the TurretPosition to the Calculated TurretAngle
+        setTurretPos(azimuthAngle);                                                                                     //Sets the TurretPosition to the Calculated TurretAngle
         setHoodPosition(calculatedShot.getHoodAngle());                                                                 //Sets the HoodPosition to the Calculated HoodAngle
         setShooterVelocity(ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));  //Sets the ShooterVelocity to the Calculated ShooterVelocity
 
