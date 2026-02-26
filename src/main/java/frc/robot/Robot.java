@@ -36,7 +36,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ShooterK;
-import frc.robot.Constants.VisionK;
 import frc.robot.dashboards.AutonChooser;
 import frc.robot.dashboards.TestingDashboard;
 import frc.robot.autons.WaltAutonFactory;
@@ -47,9 +46,8 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Indexer;
-import frc.robot.vision.Camera;
-import frc.robot.vision.Vision;
 import frc.robot.vision.VisionSim;
+import frc.robot.vision.WaltCamera;
 import frc.util.Telemetry;
 import frc.util.WaltVisualSim;
 import frc.util.WaltLogger;
@@ -102,21 +100,14 @@ public class Robot extends TimedRobot {
     private HashMap<String, Command> m_autonList = new HashMap<String, Command>();
 
     //---VISION
-    private final VisionSim m_visionSim = new VisionSim();
-
-    // this should be updated with all of our cameras
-    private final Vision[] m_cameras = {
-        new Vision(VisionK.kCameras[0], m_visionSim),
-        new Vision(VisionK.kCameras[1], m_visionSim),
-        new Vision(VisionK.kCameras[2], m_visionSim),
-        new Vision(VisionK.kCameras[3], m_visionSim),
-    };
+    public static final VisionSim m_visionSim = new VisionSim();
 
     /* TRIGGERS */
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
 
-    private Trigger trg_limitFPS = new Trigger(() -> DriverStation.isDisabled());
+    private final Trigger trg_limitFPS = RobotModeTriggers.disabled();
+    private final Trigger trg_unlimitFps = RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop());
 
     //---COMMAND SEQUENCE TRIGGERS
     private Trigger trg_swerveToObject = m_driver.x();
@@ -168,6 +159,8 @@ public class Robot extends TimedRobot {
         configureBindings();
         // configureTestBindings();    //this should be commented out during competition matches
         // configureTestingDashboard();
+
+        WaltCamera.setFpsLimit(true); //MAKE THIS FALSE BEFORE MATCHES!!!!!!!!!!!!!!!!
     }
 
     /* COMMANDS */
@@ -234,8 +227,9 @@ public class Robot extends TimedRobot {
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
+        trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   
+        trg_unlimitFps.onTrue(WaltCamera.setFpsLimitCmd(false));
 
-        trg_limitFPS.onTrue(Camera.setFPSLimit(VisionK.kCameras, 5)).onFalse(Camera.setFPSLimit(VisionK.kCameras, -1));
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
         trg_swerveToObject.whileTrue(
             m_drivetrain.swerveToObject()
@@ -530,7 +524,7 @@ public class Robot extends TimedRobot {
         m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run(); 
 
-        for (Vision camera : m_cameras) {
+        for (var camera : WaltCamera.AllCameras) {
             Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
             if (estimatedPoseOptional.isPresent()) {
                 EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();

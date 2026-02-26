@@ -14,8 +14,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import org.photonvision.simulation.SimCameraProperties;
-
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -34,9 +32,8 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
-import frc.robot.vision.Camera;
 import frc.util.AllianceFlipUtil;
+import frc.util.VisionUtil;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
@@ -193,43 +190,10 @@ public class Constants {
     }
 
     public static class VisionK {
-        public static final Camera[] kCameras = new Camera[4];
-        private static final String kSimCameraSimVisualNames = "VisionEstimation"; //suffixed to each camera name
-
-        //Initialize cameras
-        static {
-            kCameras[0] = new Camera(
-                new SimCameraProperties(), 
-                "frontLeftCamera", 
-                kSimCameraSimVisualNames, 
-                Camera.transformToRobo(10.413, 12.394, 28.844, 0, 30, 45)
-            );
-            kCameras[0].setProps("ThriftyCam", 0, 0, 0, 0);
-            
-            kCameras[1] = new Camera(
-                new SimCameraProperties(), 
-                "frontRightCamera", 
-                kSimCameraSimVisualNames, 
-                Camera.transformToRobo(10.413, -12.394, 28.844, 0, 30, 315)
-            );
-            kCameras[1].setProps("ThriftyCam", 0, 0, 0, 0);
-
-            kCameras[2] = new Camera(
-                new SimCameraProperties(), 
-                "backLeftCamera", 
-                kSimCameraSimVisualNames, 
-                Camera.transformToRobo(-11.894, 12.394, 28.844, 0, 30, 135)
-            );
-            kCameras[2].setProps("ThriftyCam", 0, 0, 0, 0);
-
-            kCameras[3] = new Camera(
-                new SimCameraProperties(), 
-                "backRightCamera", 
-                kSimCameraSimVisualNames, 
-                Camera.transformToRobo(-11.894, -12.394, 28.844, 0, 30, 225)
-            );
-            kCameras[3].setProps("ThriftyCam", 0, 0, 0, 0);
-        }
+        public static final Transform3d kFrontLeftRTC = VisionUtil.transformToRobo(10.413, 12.394, 28.844, 0, -10, 45);
+        public static final Transform3d kFrontRightRTC = VisionUtil.transformToRobo(10.413, -12.394, 28.844, 0, -10, 315);
+        public static final Transform3d kBackLeftRTC = VisionUtil.transformToRobo(-11.894, 12.394, 28.844, 0, -10, 135);
+        public static final Transform3d kBackRightRTC = VisionUtil.transformToRobo(-11.894, -12.394, 28.844, 0, -10, 225);
     }
 
     public static class FieldK {
