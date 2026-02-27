@@ -21,12 +21,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -50,14 +44,14 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Indexer;
-import frc.robot.vision.Vision;
-import frc.robot.vision.VisionSim;
+import frc.robot.vision.WaltCamera;
 import frc.util.Telemetry;
 // import frc.util.WaltVisualSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.Pose3dLogger;
+import frc.util.WaltLogger.StringLogger;
 
 public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
@@ -76,8 +70,8 @@ public class Robot extends TimedRobot {
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
         .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-    private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+    // private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+    // private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
@@ -97,22 +91,14 @@ public class Robot extends TimedRobot {
 
     //---AUTONS
     private Command m_autonomousCommand;
-    private String m_autonChosen = "noAutonSelected";
+    // private String m_autonChosen = "noAutonSelected";
 
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
-    private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
-    private HashMap<String, Command> m_autonList = new HashMap<String, Command>();
+    // private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
+    // private HashMap<String, Command> m_autonList = new HashMap<String, Command>();
 
     //---VISION
-    private final VisionSim m_visionSim = new VisionSim();
-
-    // this should be updated with all of our cameras
-    private final Vision[] m_cameras = {
-        // new Vision(VisionK.kCameras[0], m_visionSim),
-        new Vision(VisionK.kCameras[1], m_visionSim),
-    //     new Vision(VisionK.kCameras[2], m_visionSim),
-        new Vision(VisionK.kCameras[3], m_visionSim),
-    };
+    // private final VisionSim m_visionSim = new VisionSim();
 
     /* TRIGGERS */
     private Trigger trg_driverOverride = m_driver.b();
@@ -153,6 +139,10 @@ public class Robot extends TimedRobot {
     private Trigger trg_deployIntakeOverride = trg_manipOverride.and(m_manipulator.rightTrigger());
     private Trigger trg_intakeUpOverride = trg_manipOverride.and(m_manipulator.leftTrigger());
 
+    private final Trigger trg_limitFPS = RobotModeTriggers.disabled();
+    private final Trigger trg_unlimitFps = RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop());
+
+
     /* LOGGERS */
     private final DoubleLogger log_stickDesiredFieldX = WaltLogger.logDouble("Swerve", "stick desired teleop x");
     private final DoubleLogger log_stickDesiredFieldY = WaltLogger.logDouble("Swerve", "stick desired teleop y");
@@ -161,6 +151,8 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_povRight = WaltLogger.logBoolean(kLogTab, "Pov Right");
     private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
     private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
+
+    private final BooleanLogger log_isDisabled = WaltLogger.logBoolean(kLogTab, "is robot disabled");
 
     // for testing only
     private final Pose3dLogger log_shooterDirection = WaltLogger.logPose3d(kLogTab, "Shooter Direction");
@@ -187,6 +179,8 @@ public class Robot extends TimedRobot {
             configureFuelSim();
             // FuelSim.getInstance().enableAirResistance();
         }
+        // set FPS limit on boot
+        WaltCamera.setFpsLimit(true);   //MAKE THIS FALSE BEFORE MATCHES!!!!!!!!!!!!!!!!
     }
 
     /* COMMANDS */
@@ -289,6 +283,8 @@ public class Robot extends TimedRobot {
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
+        trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   
+        trg_unlimitFps.onTrue(WaltCamera.setFpsLimitCmd(false));
 
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
         // trg_swerveToObject.whileTrue(
@@ -325,7 +321,7 @@ public class Robot extends TimedRobot {
 
         //---OVERRIDE COMMANDS
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
-        m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.hoodEncoderHoming());
+        // m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.hoodEncoderHoming());
 
         // m_manipulator.y().and(trg_manipOverride).whileTrue(m_shooter.setHoodPositionCmd(Degrees.of(37))).onFalse(m_shooter.setHoodPositionCmd(Degrees.of(1)));
 
@@ -481,7 +477,7 @@ public class Robot extends TimedRobot {
         m_manipulator.y().and(trg_manipOverride).whileTrue(m_superstructure.shimmy()).onFalse(m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED));
 
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
-        m_manipulator.start().and(trg_manipOverride).onTrue(m_shooter.hoodEncoderHoming());
+        // m_manipulator.start().and(trg_manipOverride).onTrue(m_shooter.hoodEncoderHoming());
 
         // m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.set(180));
 
@@ -624,7 +620,7 @@ public class Robot extends TimedRobot {
         m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run(); 
 
-        for (Vision camera : m_cameras) {
+        for (var camera : WaltCamera.AllCameras) {
             Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
             if (estimatedPoseOptional.isPresent()) {
                 EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
@@ -644,8 +640,10 @@ public class Robot extends TimedRobot {
         log_povDown.accept(m_driver.povDown());
         log_povLeft.accept(m_driver.povLeft());
         log_povRight.accept(m_driver.povRight());
+
         log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
-        
+        log_isDisabled.accept(trg_limitFPS);
+
         // log_shooterDirection.accept(
         //     new Pose3d(
         //         m_drivetrain.getState().Pose
@@ -787,7 +785,7 @@ public class Robot extends TimedRobot {
         SwerveDriveState robotState = m_drivetrain.getState();
         Pose2d robotPose = robotState.Pose;
 
-        m_visionSim.simulationPeriodic(robotPose);
+        // m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();
         m_shooter.simulationPeriodic();
         m_intake.simulationPeriodic();

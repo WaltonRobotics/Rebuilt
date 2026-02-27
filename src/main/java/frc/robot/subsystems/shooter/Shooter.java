@@ -93,7 +93,6 @@ public class Shooter extends SubsystemBase {
     private final CANcoder m_hoodEncoder = new CANcoder(kHoodEncoderCANID, Constants.kCanivoreBus);
 
     private Angle m_hoodSetpoint = Degrees.of(0);
-    private Angle m_currentHoodPos = Rotations.of(0);
 
     private Angle m_calcHood = Degrees.of(0);
     private Angle m_calcTurret = Rotations.of(0);
@@ -147,10 +146,6 @@ public class Shooter extends SubsystemBase {
         m_turretTurnPosition = m_turret.getPosition().getValue();
 
         m_flywheelVelocity = m_shooterLeader.getVelocity().getValue();
-
-        if(Robot.isReal()) {
-            setDefaultCommand(hoodEncoderHoming());
-        }
 
         m_poseSupplier = poseSupplier;
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
@@ -249,27 +244,6 @@ public class Shooter extends SubsystemBase {
         return run(() -> setHoodPosition(Degrees.of(sub_degs.getAsDouble())));
     }
 
-   public Command hoodEncoderHoming() {
-        Runnable init = () -> {
-            m_hoodHomingTimer.start();
-            setHoodPosition(Degrees.of(0));
-        };
-
-        Runnable execute = () -> {};
-
-        Consumer<Boolean> onEnd = (Boolean interrupted) -> {
-            m_hoodEncoder.setPosition(Rotations.of(0));
-            m_hoodHomingTimer.stop();
-            m_hoodHomingTimer.reset();
-            removeDefaultCommand();
-        };
-
-        BooleanSupplier isFinished = () -> 
-            ((Math.abs(m_hoodEncoder.getVelocity().getValueAsDouble()) < 0.001) && (m_hoodHomingTimer.get() / 1000 > 350));
-
-        return new FunctionalCommand(init, execute, onEnd, isFinished, this).withTimeout(3).withName("hoodEncoder homing");
-    }
-
     // ---TURRET (Motionmagic Angle Control)
     public Command setTurretPositionCmd(Angle rots) {
         return runOnce(() -> setTurretPos(rots));
@@ -285,20 +259,12 @@ public class Shooter extends SubsystemBase {
     }
 
     /* GETTERS */
-    public TalonFX getShooter() {
-        return m_shooterLeader;
-    }
-
     public AngularVelocity getShooterVelocity() {
         return m_shooterLeader.getVelocity().getValue();
     }
 
     public Angle getHoodAngle() {
-        return m_currentHoodPos;
-    }
-
-    public TalonFX getTurret() {
-        return m_turret;
+        return m_hoodEncoder.getAbsolutePosition().getValue();
     }
 
     public Angle getTurretPosition() {
@@ -386,7 +352,7 @@ public class Shooter extends SubsystemBase {
      * Passing Method - Determines which passing target you will be shooting to based off of current
      * position on the field, and which alliance you are on.
      * 
-     * @param robotPose curret robotPose
+     * @param robotPose current robotPose
      * @return kPassingSpotLeft if the robot is on the left side of the field, kPassingSpotRight if
      *         the robot is on the right side of the field. Relative of what alliance one is on.
      */
@@ -520,10 +486,10 @@ public class Shooter extends SubsystemBase {
         m_turretTurnPosition = m_turret.getPosition().getValue();
         m_flywheelVelocity = m_shooterLeader.getVelocity().getValue();
 
-        m_turretVisualizer.update3dPose(m_turretTurnPosition, m_currentHoodPos);
+        m_turretVisualizer.update3dPose(m_turretTurnPosition, getHoodAngle());
 
         log_shooterVelocityRPS.accept(m_shooterLeader.getVelocity().getValueAsDouble());
-        log_hoodEncoderPositionDegs.accept(Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees) / kHoodGearing);
+        log_hoodEncoderPositionDegs.accept(Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees) / kHoodEncoderGearing);
         log_hoodEncoderVelocityRPS.accept(m_hoodEncoder.getVelocity().getValueAsDouble());
         log_hoodReferencePosition.accept(m_hoodSetpoint.magnitude());
         log_hoodEncoderError.accept((m_hoodSetpoint.magnitude()) - (convertServoAngleToHoodAngle(Degrees.of(Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees)))));
@@ -541,7 +507,7 @@ public class Shooter extends SubsystemBase {
     public void simulationPeriodic() {
         m_turretVisualizer.updateFuel(
                 ShotCalculator.angularToLinearVelocity(m_flywheelVelocity, kFlywheelRadius),
-                m_currentHoodPos);
+                getHoodAngle());
 
         WaltMotorSim.updateSimFX(m_shooterLeader, m_shooterSim);
         WaltMotorSim.updateSimFX(m_turret, m_turretSim);

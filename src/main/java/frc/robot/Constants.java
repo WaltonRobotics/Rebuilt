@@ -39,10 +39,8 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.Voltage;
-import frc.robot.vision.Camera;
 import frc.util.AllianceFlipUtil;
+import frc.util.VisionUtil;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
@@ -90,7 +88,7 @@ public class Constants {
 
         //---HOOD CONSTANTS
         public static final double kHoodMoI = 0.00027505;
-        public static final double kHoodGearing = 300.0/20;
+        public static final double kHoodEncoderGearing = 360/40.0;
 
         // servo to hood: 300 : 0 || 0 : 40
         // hood to encoder: 0 : 0 || 40 : 0.9451 (340.236)
@@ -159,9 +157,9 @@ public class Constants {
 
         //---HOOD
         private static final MagnetSensorConfigs kHoodEncoderMagnetSensorConfigs = new MagnetSensorConfigs()
-            .withMagnetOffset(Rotations.of(0))
+            .withMagnetOffset(Rotations.of(0.999756))
             .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-            .withAbsoluteSensorDiscontinuityPoint(Rotations.of(0));
+            .withAbsoluteSensorDiscontinuityPoint(Rotations.of(1));
         public static final CANcoderConfiguration kHoodEncoderConfiguration = new CANcoderConfiguration()
             .withMagnetSensor(kHoodEncoderMagnetSensorConfigs);
 
@@ -219,43 +217,47 @@ public class Constants {
     }
 
     public static class VisionK {
-        public static final Camera[] kCameras = new Camera[4];
-        private static final String kSimCameraSimVisualNames = "VisionEstimation"; //suffixed to each camera name
+        // public static final Camera[] kCameras = new Camera[4];
+        // private static final String kSimCameraSimVisualNames = /"VisionEstimation"; //suffixed to each camera name
 
+        public static final Transform3d kFrontLeftCTR = VisionUtil.transformToRobo(10.413, 12.394, 28.844, 0, -10, 45);
+        public static final Transform3d kFrontRightCTR = VisionUtil.transformToRobo(10.413, -12.394, 28.844, 0, -10, 315);
+        public static final Transform3d kBackLeftCTR = VisionUtil.transformToRobo(-11.894, 12.394, 28.844, 0, -10, 135);
+        public static final Transform3d kBackRightCTR = VisionUtil.transformToRobo(-11.894, -12.394, 28.844, 0, -10, 225);
         //Initialize cameras
-        static {
-            kCameras[0] = new Camera(
-                new SimCameraProperties(), 
-                "FrontLeft", 
-                kSimCameraSimVisualNames, 
-                Camera.transformToRobo(10.413, 12.394, 28.844, 0, -30, 45)
-            );
-            kCameras[0].setProps("ThriftyCam", 0, 0, 0, 0);
+        // static {
+        //     kCameras[0] = new Camera(
+        //         new SimCameraProperties(), 
+        //         "FrontLeft", 
+        //         kSimCameraSimVisualNames, 
+        //         Camera.transformToRobo(10.413, 12.394, 28.844, 0, -10, 45)
+        //     );
+        //     kCameras[0].setProps("ThriftyCam", 0, 0, 0, 0);
             
-            kCameras[1] = new Camera(
-                new SimCameraProperties(), 
-                "FrontRight", 
-                kSimCameraSimVisualNames, 
-                Camera.transformToRobo(10.413, -12.394, 28.844, 0, -30, 315)
-            );
-            kCameras[1].setProps("ThriftyCam", 0, 0, 0, 0);
+        //     kCameras[1] = new Camera(
+        //         new SimCameraProperties(), 
+        //         "FrontRight", 
+        //         kSimCameraSimVisualNames, 
+        //         Camera.transformToRobo(10.413, -12.394, 28.844, 0, -10, 315)
+        //     );
+        //     kCameras[1].setProps("ThriftyCam", 0, 0, 0, 0);
 
-            kCameras[2] = new Camera(
-                new SimCameraProperties(), 
-                "BackLeft", 
-                kSimCameraSimVisualNames, 
-                Camera.transformToRobo(-11.894, 12.394, 28.844, 0, -30, 135)
-            );
-            kCameras[2].setProps("ThriftyCam", 0, 0, 0, 0);
+        //     kCameras[2] = new Camera(
+        //         new SimCameraProperties(), 
+        //         "BackLeft", 
+        //         kSimCameraSimVisualNames, 
+        //         Camera.transformToRobo(-11.894, 12.394, 28.844, 0, -10, 135)
+        //     );
+        //     kCameras[2].setProps("ThriftyCam", 0, 0, 0, 0);
 
-            kCameras[3] = new Camera(
-                new SimCameraProperties(), 
-                "BackRight", 
-                kSimCameraSimVisualNames, 
-                Camera.transformToRobo(-11.894, -12.394, 28.844, 0, -30, 225)
-            );
-            kCameras[3].setProps("ThriftyCam", 0, 0, 0, 0);
-        }
+        //     kCameras[3] = new Camera(
+        //         new SimCameraProperties(), 
+        //         "BackRight", 
+        //         kSimCameraSimVisualNames, 
+        //         Camera.transformToRobo(-11.894, -12.394, 28.844, 0, -10, 225)
+        //     );
+        //     kCameras[3].setProps("ThriftyCam", 0, 0, 0, 0);
+        // }
     }
 
     public static class FieldK {
