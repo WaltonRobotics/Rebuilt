@@ -32,7 +32,6 @@ import static frc.robot.Constants.FieldK;
 
 public class WaltCamera extends PhotonCamera {
     /* CLASS VARIABLES */
-    public static final VisionSim m_visionSim = new VisionSim();
     private static final int kGlobalFpsLimit = 5;
 
     public static final List<WaltCamera> AllCameras = Collections.unmodifiableList(Arrays.asList(
@@ -44,6 +43,7 @@ public class WaltCamera extends PhotonCamera {
 
     //---SIM
     private final PhotonCameraSim m_sim;
+    public static final VisionSim m_visionSim = new VisionSim();
 
     private final Transform3d m_robotToCam;
     private final PhotonPoseEstimator m_estimator;
