@@ -97,7 +97,10 @@ public class Shooter extends SubsystemBase {
     //---HOOD
     private final DoubleLogger log_hoodEncoderPositionDegs = WaltLogger.logDouble(kLogTab, "hoodEncoderPositionDegs");
     private final DoubleLogger log_hoodEncoderVelocityRPS = WaltLogger.logDouble(kLogTab, "hoodEncoderVelocityRPS");
-    private final DoubleLogger log_hoodReferencePosition = WaltLogger.logDouble(kLogTab, "hoodReferencePosition");
+    private final DoubleLogger log_requestedServoPositionDegs = WaltLogger.logDouble(kLogTab, "requestedServoPositionDegs");
+    private final DoubleLogger log_requestedHoodPositionDegs = WaltLogger.logDouble(kLogTab, "requestedHoodPositionDegs");
+
+
     private final DoubleLogger log_hoodEncoderError = WaltLogger.logDouble(kLogTab, "hoodEncoderError");
 
     // private final BooleanLogger log_exitBeamBreak = WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
@@ -107,12 +110,6 @@ public class Shooter extends SubsystemBase {
     private final DoubleLogger log_hoodServoCurrent = WaltLogger.logDouble(kLogTab, "hoodServoCurrent");
     private final DoubleLogger log_shooterClosedLoopError = WaltLogger.logDouble(kLogTab, "shooterClosedLoopError");
 
-    private final BooleanLogger log_isHoodHoming = WaltLogger.logBoolean(kLogTab, "isHoodHoming");
-
-    private boolean m_isHoodHoming = false;
-
-    private Timer m_hoodHomingTimer = new Timer();
-
     /* CONSTRUCTOR */
     public Shooter() {
         m_shooterLeader.getConfigurator().apply(kShooterLeaderTalonFXConfiguration);
@@ -121,10 +118,6 @@ public class Shooter extends SubsystemBase {
         m_hoodEncoder.getConfigurator().apply(kHoodEncoderConfiguration);    //if needed, we can add a position offset
 
         m_shooterFollower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed));
-
-        // if(Robot.isReal()) {
-        //     setDefaultCommand(hoodEncoderHoming());
-        // }
 
         initSim();
     }
@@ -177,31 +170,14 @@ public class Shooter extends SubsystemBase {
         return (1 - (servoAngleDegs.magnitude() / kHoodServoMaxDegs.magnitude())) * kHoodAbsoluteMaxDegs.magnitude();
     }
 
+    public double convertEncoderAngleToServoAngle(Angle encoderAngleDegs) {
+        return (1 - (encoderAngleDegs.magnitude() / kHoodEncoderMaxDegs.magnitude())) * kHoodServoMaxDegs.magnitude();
+    }
+
     //for TestingDashboard
     public Command setHoodPositionCmd(DoubleSubscriber sub_degs) {
         return run(() -> setHoodPosition(Degrees.of(sub_degs.getAsDouble())));
     }
-
-    // public Command hoodEncoderHoming() {
-    //     Runnable init = () -> {
-    //         m_hoodHomingTimer.start();
-    //         setHoodPosition(Degrees.of(0));
-    //     };
-
-    //     Runnable execute = () -> {};
-
-    //     Consumer<Boolean> onEnd = (Boolean interrupted) -> {
-    //         m_hoodEncoder.setPosition(Rotations.of(0));
-    //         m_hoodHomingTimer.stop();
-    //         m_hoodHomingTimer.reset();
-    //         removeDefaultCommand();
-    //     };
-
-    //     BooleanSupplier isFinished = () -> 
-    //         ((Math.abs(m_hoodEncoder.getVelocity().getValueAsDouble()) < 0.001) && (m_hoodHomingTimer.get() / 1000 > 350));
-
-    //     return new FunctionalCommand(init, execute, onEnd, isFinished, this).withTimeout(3).withName("hoodEncoder homing");
-    // }
 
     private void setTurretPos(Angle rots) {
         m_turret.setControl(m_MMVRequest.withPosition(rots));
@@ -223,11 +199,12 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         //---Loggers
         log_shooterVelocityRPS.accept(m_shooterLeader.getVelocity().getValueAsDouble());
-        log_hoodEncoderPositionDegs.accept(Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees) / kHoodEncoderGearing);
+        log_hoodEncoderPositionDegs.accept(convertServoAngleToHoodAngle(Degrees.of(convertEncoderAngleToServoAngle(Degrees.of(Rotations.of(m_hoodEncoder.getAbsolutePosition().getValueAsDouble()).in(Degrees))))));
         log_hoodEncoderVelocityRPS.accept(m_hoodEncoder.getVelocity().getValueAsDouble());
-        log_hoodReferencePosition.accept(m_hoodSetpoint.magnitude());
-        log_hoodEncoderError.accept((m_hoodSetpoint.magnitude()) - (convertServoAngleToHoodAngle(Degrees.of(Rotations.of(m_hoodEncoder.getPosition().getValueAsDouble()).in(Degrees)))));
-        log_isHoodHoming.accept(m_isHoodHoming);
+        log_requestedServoPositionDegs.accept(m_hood.getAngle());
+        log_requestedHoodPositionDegs.accept(convertServoAngleToHoodAngle(Degrees.of(m_hood.getAngle())));
+
+        log_hoodEncoderError.accept(Math.abs((convertServoAngleToHoodAngle(Degrees.of(m_hood.getAngle()))) - convertServoAngleToHoodAngle(Degrees.of(convertEncoderAngleToServoAngle(Degrees.of(Rotations.of(m_hoodEncoder.getAbsolutePosition().getValueAsDouble()).in(Degrees)))))));
 
         log_turretPositionRots.accept(m_turret.getPosition().getValueAsDouble());
 

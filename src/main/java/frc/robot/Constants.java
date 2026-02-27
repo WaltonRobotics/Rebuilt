@@ -73,7 +73,8 @@ public class Constants {
         public static final Angle kHoodMaxDegs = Degrees.of(37);    // ABS max (40 is too much)
 
         //300° on the servo is 0° on the hood, and 0° on the servo is 40° on the hood.
-        public static final Angle kHoodServoMaxDegs = Degrees.of(300);  
+        public static final Angle kHoodServoMaxDegs = Degrees.of(300);
+        public static final Angle kHoodEncoderMaxDegs = Degrees.of(Rotations.of(0.9415).in(Degrees));
         public static final Angle kHoodAbsoluteMaxDegs = Degrees.of(40);
 
         public static final DCMotor khoodDCMotorGearbox = new DCMotor(
@@ -133,8 +134,8 @@ public class Constants {
 
         //---HOOD
         private static final MagnetSensorConfigs kHoodEncoderMagnetSensorConfigs = new MagnetSensorConfigs()
-            .withMagnetOffset(Rotations.of(0.999756))
-            .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
+            .withMagnetOffset(Rotations.of(-0.021728515625 + (0.01)))
+            .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
             .withAbsoluteSensorDiscontinuityPoint(Rotations.of(1));
         public static final CANcoderConfiguration kHoodEncoderConfiguration = new CANcoderConfiguration()
             .withMagnetSensor(kHoodEncoderMagnetSensorConfigs);
