@@ -127,10 +127,11 @@ public class ShotCalculator {
         return MetersPerSecond.of(vel.in(RadiansPerSecond) * radius.in(Meters));
     }
 
-  /**
+    /**
      * Calculates the turret's *TARGET* angle while ensuring it stays within physical limits.
      * IF the turret is near a limit, snaps 360 degrees in the opposite direction to reach the same angle
      * without hitting the hardstop.
+     * Note that if you have less than 360 degrees on the turret, you will simply snap back to the other hard limit.
      * @param robot used to calculate where on the robot the turret will be
      * @param target target position
      * @param currentAngle current measured position of the turret
@@ -146,12 +147,17 @@ public class ShotCalculator {
                 direction.getAngle().minus(robot.getRotation()).getRotations(),
                 kTurretMinRots.magnitude(), kTurretMaxRots.magnitude()); //normalizes the angle to be fit in the range of the max rotations
         double current = currentAngle.in(Rotations);
+        var calculated = false;
 
+        if (kTurretMaxRotsFromHome.times(2).magnitude() < Rotations.of(1).magnitude()) {
+            angle = MathUtil.clamp(angle, kTurretMinRots.in(Rotations), kTurretMaxRots.in(Rotations));
+            calculated = true;
+        }
         //this is the snapback function, to make sure that you will always be tracking and you will not go over your physical limits.
-        if (current > 0 && angle + 1 <= kTurretMaxRots.in(Rotations)) {
+        if (!calculated && current > 0 && angle + 1 <= kTurretMaxRots.in(Rotations)) {
             angle += 1;
         }
-        else if (current < 0 && angle - 1 >= kTurretMinRots.in(Rotations)) {
+        else if (!calculated && current < 0 && angle - 1 >= kTurretMinRots.in(Rotations)) {
             angle -= 1;
         }
 
