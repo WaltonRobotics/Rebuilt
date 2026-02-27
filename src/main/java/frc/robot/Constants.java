@@ -234,6 +234,8 @@ public class Constants {
         }
     }
     public static class AutoAlignK {
+        public static final String kLogTab = "MovingAutoAlign";
+
         //Placeholder tolerances - to be tuned
         //Delete this comment when done tuning
         public static final Distance kFieldTranslationTol = Meters.of(0); //meters
@@ -244,7 +246,6 @@ public class Constants {
         public static final double kIntermediatePoseDistance = -Units.inchesToMeters(6); // value in meters
         public static final Transform2d kIntermediatePoseTransform 
             = new Transform2d(kIntermediatePoseDistance, 0, Rotation2d.kZero);
-
 
         public static double kXKP = 8;
         public static double kYKP = 8;
@@ -266,12 +267,6 @@ public class Constants {
         public static final double kMaxThetaVel = 4; // rad/s
         public static final double kMaxThetaAccel = 8; // rad/s^2
         public static final TrapezoidProfile.Constraints kThetaConstraints = new TrapezoidProfile.Constraints(kMaxThetaVel, kMaxThetaAccel);
-
-        /** <p>Arbitrary number to control how much a difference in rotation should affect tag selection. Higher means more weight
-         * <p> 0 means rotation difference has no weight, negative will literally bias it against tags that have more similar rotations */
-        public static final double kRotationWeight = 0.2;
-
-        public static final double kFutureDelta = 0.3; // seconds, TODO: needs tuning
     }
     
     public static class FieldK {

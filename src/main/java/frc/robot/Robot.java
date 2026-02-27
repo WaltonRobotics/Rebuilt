@@ -38,7 +38,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.AutoAlignK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.VisionK;
-import frc.robot.AutoAlign.MovingAutoAlign;
+import frc.robot.autoalign.MovingAutoAlign;
 import frc.robot.dashboards.AutonChooser;
 import frc.robot.dashboards.TestingDashboard;
 import frc.robot.autons.WaltAutonFactory;
@@ -175,7 +175,7 @@ public class Robot extends TimedRobot {
     }
 
     /* COMMANDS */
-    Command autoAlignCmd(int shooterPose) {
+    private Command autoAlignCmd(int shooterPose) {
     return MovingAutoAlign.autoAlignWithIntermediateTransformUntilInTolerances(
       m_drivetrain, 
       () -> ShooterK.kShooterOverridePose[shooterPose], 
