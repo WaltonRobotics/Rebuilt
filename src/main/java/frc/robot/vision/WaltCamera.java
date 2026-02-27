@@ -32,6 +32,7 @@ import static frc.robot.Constants.FieldK;
 
 public class WaltCamera extends PhotonCamera {
     /* CLASS VARIABLES */
+    public static final VisionSim m_visionSim = new VisionSim();
     private static final int kGlobalFpsLimit = 5;
 
     public static final List<WaltCamera> AllCameras = Collections.unmodifiableList(Arrays.asList(
@@ -77,7 +78,7 @@ public class WaltCamera extends PhotonCamera {
             // Create a PhotonCameraSim which will update the linked PhotonCamera's values with visible targets.
             m_sim = new PhotonCameraSim(this, simCamProperties);
             // Add the simulated camera to view the targets on this simulated field.
-            Robot.m_visionSim.addCamera(m_sim, robotToCam);
+            m_visionSim.addCamera(m_sim, robotToCam);
 
             m_sim.enableDrawWireframe(true);
         } else m_sim = null; //temp solution to make code compiled.
@@ -135,11 +136,11 @@ public class WaltCamera extends PhotonCamera {
             if (Robot.isSimulation()) {
                 visionEst.ifPresentOrElse(
                         est ->
-                                Robot.m_visionSim.getSimDebugField()
+                                m_visionSim.getSimDebugField()
                                     .getObject(this.getName() + "VisionEstimation")
                                     .setPose(est.estimatedPose.toPose2d()),
                         () -> {
-                            Robot.m_visionSim.getSimDebugField().getObject("VisionEstimation").setPoses();
+                            m_visionSim.getSimDebugField().getObject("VisionEstimation").setPoses();
                         });
             }
         }
