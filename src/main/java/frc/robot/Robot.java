@@ -101,6 +101,7 @@ public class Robot extends TimedRobot {
     private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
     private HashMap<String, Command> m_autonList = new HashMap<String, Command>();
 
+    //---VISION
     public static final VisionSim m_visionSim = new VisionSim();
 
     /* TRIGGERS */
