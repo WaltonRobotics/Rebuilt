@@ -92,11 +92,11 @@ public class Constants {
         public static final double kHoodMoI = 0.00027505;
         public static final double kHoodGearing = 300.0/20;
 
-        public static final Angle kHoodMinDegs = Degrees.of(0); // ABS min (1 should be the min for the rest of match, 0 only for homing)
-        public static final Angle kHoodMaxDegs = Degrees.of(37);    // ABS max (40 is too much)
-
-        //300° on the servo is 0° on the hood, and 0° on the servo is 40° on the hood.
-        public static final Angle kHoodServoMaxDegs = Degrees.of(300);  
+        public static final Angle kHoodMinDegs = Degrees.of(0); // 0 = 0
+        public static final Angle kHoodMaxDegs = Degrees.of(37);    // 40 = 0.9451
+        //TODO: for sotm, need to check if we are NEAR this servo rotation/degree b/c this value beneath this is not for setting anything, but rather to check.
+        //TODO: also make a "at position" to start shooting -- hood angle will have a tolerance of 0.5 degrees.
+        public static final Angle kHoodServoMaxDegs = Degrees.of(Rotations.of(0.9451).in(Degrees));  
         public static final Angle kHoodAbsoluteMaxDegs = Degrees.of(40);
 
         public static final DCMotor khoodDCMotorGearbox = new DCMotor(
