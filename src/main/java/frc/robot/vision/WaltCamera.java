@@ -25,6 +25,8 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.util.VisionUtil;
+import frc.robot.Constants.FieldK;
+import frc.robot.Constants.VisionK;
 import frc.robot.Robot;
 
 import static frc.robot.Constants.VisionK;
@@ -33,6 +35,7 @@ import static frc.robot.Constants.FieldK;
 public class WaltCamera extends PhotonCamera {
     /* CLASS VARIABLES */
     private static final int kGlobalFpsLimit = 5;
+    public static final VisionSim m_visionSim = new VisionSim();
 
     public static final List<WaltCamera> AllCameras = Collections.unmodifiableList(Arrays.asList(
         // new WaltCamera("FrontLeft", VisionK.kFrontLeftCTR, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0)),
@@ -77,7 +80,7 @@ public class WaltCamera extends PhotonCamera {
             // Create a PhotonCameraSim which will update the linked PhotonCamera's values with visible targets.
             m_sim = new PhotonCameraSim(this, simCamProperties);
             // Add the simulated camera to view the targets on this simulated field.
-            Robot.m_visionSim.addCamera(m_sim, robotToCam);
+            m_visionSim.addCamera(m_sim, robotToCam);
 
             m_sim.enableDrawWireframe(true);
         }
@@ -136,11 +139,11 @@ public class WaltCamera extends PhotonCamera {
             if (Robot.isSimulation()) {
                 visionEst.ifPresentOrElse(
                         est ->
-                                Robot.m_visionSim.getSimDebugField()
+                                m_visionSim.getSimDebugField()
                                     .getObject(this.getName() + "VisionEstimation")
                                     .setPose(est.estimatedPose.toPose2d()),
                         () -> {
-                            Robot.m_visionSim.getSimDebugField().getObject("VisionEstimation").setPoses();
+                            m_visionSim.getSimDebugField().getObject("VisionEstimation").setPoses();
                         });
             }
         }
