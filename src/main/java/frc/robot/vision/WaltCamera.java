@@ -43,7 +43,6 @@ public class WaltCamera extends PhotonCamera {
 
     //---SIM
     private final PhotonCameraSim m_sim;
-    public static final VisionSim m_visionSim = new VisionSim();
 
     private final Transform3d m_robotToCam;
     private final PhotonPoseEstimator m_estimator;
@@ -78,10 +77,11 @@ public class WaltCamera extends PhotonCamera {
             // Create a PhotonCameraSim which will update the linked PhotonCamera's values with visible targets.
             m_sim = new PhotonCameraSim(this, simCamProperties);
             // Add the simulated camera to view the targets on this simulated field.
-            m_visionSim.addCamera(m_sim, robotToCam);
+            Robot.m_visionSim.addCamera(m_sim, robotToCam);
 
             m_sim.enableDrawWireframe(true);
-        } else m_sim = null; //temp solution to make code compiled.
+        }
+        else m_sim = null; //temp solution to make code compiled.
     }
 
     /* METHODS */
@@ -136,11 +136,11 @@ public class WaltCamera extends PhotonCamera {
             if (Robot.isSimulation()) {
                 visionEst.ifPresentOrElse(
                         est ->
-                                m_visionSim.getSimDebugField()
+                                Robot.m_visionSim.getSimDebugField()
                                     .getObject(this.getName() + "VisionEstimation")
                                     .setPose(est.estimatedPose.toPose2d()),
                         () -> {
-                            m_visionSim.getSimDebugField().getObject("VisionEstimation").setPoses();
+                            Robot.m_visionSim.getSimDebugField().getObject("VisionEstimation").setPoses();
                         });
             }
         }
