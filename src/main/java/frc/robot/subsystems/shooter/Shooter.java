@@ -24,19 +24,12 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import com.reduxrobotics.sensors.canandmag.Canandmag;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.DoubleSubscriber;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -66,7 +59,6 @@ import frc.util.WaltMotorSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
-import frc.util.WaltLogger.Pose2dLogger;
 
 public class Shooter extends SubsystemBase {
     /* VARIABLES */
@@ -103,31 +95,18 @@ public class Shooter extends SubsystemBase {
     private Angle m_hoodSetpoint = Degrees.of(0);
     private Angle m_currentHoodPos = Rotations.of(0);
 
+    private Angle m_calcHood = Degrees.of(0);
+    private Angle m_calcTurret = Rotations.of(0);
+    private AngularVelocity m_calcFlywheel = RotationsPerSecond.of(0);
+
     //---LOGIC BOOLEANS
-    private boolean m_spunUp = false; // currently unused
-    private final boolean m_inSim = RobotBase.isSimulation();
-
-    //---LOGIC TRIGGERS
+    //---TRIGGERS
     private final Trigger trg_inAllianceZone = new Trigger(this::inAllianceZone);
-
-    //---BEAM BREAKS (if we have one on the shooter)
-    // public DigitalInput m_exitBeamBreak = new DigitalInput(kExitBeamBreakChannel);
-    // public final Trigger trg_exitBeamBreak = new Trigger(() -> !m_exitBeamBreak.get()); //true when beam is broken
-
-    // public final Trigger exitBeamBreakTrigger(EventLoop loop) {
-    //     return new Trigger(loop, () -> !m_exitBeamBreak.get());
-    // }
 
     /* SIM OBJECTS */
     private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(
             DCMotor.getKrakenX60Foc(2), kShooterMoI, kShooterGearing), DCMotor.getKrakenX60Foc(2) // returns gearbox
     );
-
-    // Since the servo acts like a DC Motor, we use DCMotorSim
-    // private final DCMotorSim m_hoodSim = new DCMotorSim(
-    //         LinearSystemId.createDCMotorSystem(khoodDCMotorGearbox, kHoodMoI, kHoodGearing),
-    //         khoodDCMotorGearbox // returns gearbox
-    // );
 
     private final DCMotorSim m_turretSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(
             DCMotor.getKrakenX44Foc(1), kTurretMoI, kTurretGearing), DCMotor.getKrakenX44Foc(1) // returns gearbox
@@ -474,7 +453,10 @@ public class Shooter extends SubsystemBase {
         setTurretPos(azimuthAngle);                                                                                     //Sets the TurretPosition to the Calculated TurretAngle
         setHoodPosition(calculatedShot.getHoodAngle());                                                                 //Sets the HoodPosition to the Calculated HoodAngle
         setShooterVelocity(ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));  //Sets the ShooterVelocity to the Calculated ShooterVelocity
-
+        
+        m_calcTurret = azimuthAngle;
+        m_calcHood = calculatedShot.getHoodAngle();
+        m_calcFlywheel = ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius);
     }
 
     /**
@@ -495,6 +477,21 @@ public class Shooter extends SubsystemBase {
                 calculatedShot.getTarget(),
                 m_turret.getPosition().getValue());
         setTurretPos(azimuthAngle);
+
+        m_calcTurret = azimuthAngle;
+    }
+
+    /**
+     * Tells us whether or not our Turret, Hood, and Flywheel are at their desired position with a certain amount of tolerance relative to the object
+     * 
+     * Hood Tolerance: .5 degrees. Turret Tolerance: __ rotations. Flywheel Tolerance: __ RPS.
+     * @return
+     */
+    public boolean atPosition() {
+        getTurretPosition().isNear(m_calcTurret, Rotations.of(0)); //TODO: get the turret tolerance
+        getShooterVelocity().isNear(m_calcFlywheel, RotationsPerSecond.of(0)); //TODO: get the flywheel tolerance
+        // getHoodAngle().isNear(kHoodMaxDegs, kHoodAbsoluteMaxDegs)
+        return true;
     }
 
     /* PERIODICS */

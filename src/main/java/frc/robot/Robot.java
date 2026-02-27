@@ -308,6 +308,7 @@ public class Robot extends TimedRobot {
         );
 
         //Shooting
+        //TODO: limit speed while they doin ts
         trg_shoot.and(trg_pass.negate()).whileTrue(
             m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)
         );
