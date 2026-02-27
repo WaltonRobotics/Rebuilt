@@ -35,20 +35,20 @@ public class WaltCamera extends PhotonCamera {
     private static final int kGlobalFpsLimit = 5;
 
     public static final List<WaltCamera> AllCameras = Collections.unmodifiableList(Arrays.asList(
-        // new WaltCamera("FrontLeft", VisionK.kFrontLeftCTR, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0), new VisionSim()),
+        // new WaltCamera("FrontLeft", VisionK.kFrontLeftCTR, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0)),
         new WaltCamera("FrontRight", VisionK.kFrontRightRTC, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0)),
-        // new WaltCamera("BackLeft", VisionK.kBackLeftCTR, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0), new VisionSim()),
+        // new WaltCamera("BackLeft", VisionK.kBackLeftCTR, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0)),
         new WaltCamera("BackRight", VisionK.kBackRightRTC, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0))
     ));
 
     //---SIM
-    public final PhotonCameraSim m_sim;
+    private final PhotonCameraSim m_sim;
 
-    public final Transform3d m_robotToCam;
-    public final PhotonPoseEstimator m_estimator;
+    private final Transform3d m_robotToCam;
+    private final PhotonPoseEstimator m_estimator;
     
-    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.5, 1.5, 6.24);
-    public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 6.24);
+    private static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.5, 1.5, 6.24);
+    private static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 6.24);
 
     private final StructPublisher<Pose2d> log_camPose;
     private final StructPublisher<Transform3d> log_camTransform;

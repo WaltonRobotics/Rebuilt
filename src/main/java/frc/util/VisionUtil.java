@@ -31,9 +31,9 @@ public class VisionUtil {
     public static SimCameraProperties SimCamProps(String cameraType, double avgErrorPx, double errorStdDevPx, double avgLatencyMs, double latencyStdDevMs) {
         switch(cameraType) {
             case "ThriftyCam": //https://docs.thethriftybot.com/thriftycam
-                return SimCamProps(1600, 1304, 90, 60, avgErrorPx, errorStdDevPx, avgLatencyMs, latencyStdDevMs);
+                return SimCamProps(1600, 1304, 92, 60, avgErrorPx, errorStdDevPx, avgLatencyMs, latencyStdDevMs);
             default:
-                return SimCamProps(1600, 1304, 90, 60, avgErrorPx, errorStdDevPx, avgLatencyMs, latencyStdDevMs);
+                return SimCamProps(1600, 1304, 92, 60, avgErrorPx, errorStdDevPx, avgLatencyMs, latencyStdDevMs);
         }
     }
 }
