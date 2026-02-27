@@ -46,7 +46,6 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Indexer;
-import frc.robot.vision.VisionSim;
 import frc.robot.vision.WaltCamera;
 import frc.util.Telemetry;
 import frc.util.WaltVisualSim;
@@ -98,9 +97,6 @@ public class Robot extends TimedRobot {
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
     private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
     private HashMap<String, Command> m_autonList = new HashMap<String, Command>();
-
-    //---VISION
-    public static final VisionSim m_visionSim = new VisionSim();
 
     /* TRIGGERS */
     private Trigger trg_driverOverride = m_driver.b();
@@ -677,7 +673,7 @@ public class Robot extends TimedRobot {
         SwerveDriveState robotState = m_drivetrain.getState();
         Pose2d robotPose = robotState.Pose;
 
-        m_visionSim.simulationPeriodic(robotPose);
+        WaltCamera.m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();
         m_shooter.simulationPeriodic();
         m_intake.simulationPeriodic();
