@@ -11,6 +11,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import frc.robot.Robot;
+
 public class Detection {
     /* CLASS VARIABLES */
     private final List<WaltCamera> m_cameras = WaltCamera.AllCameras;
