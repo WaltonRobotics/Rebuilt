@@ -618,11 +618,11 @@ public class Robot extends TimedRobot {
     /* PERIODICS */
     @Override
     public void robotPeriodic() {
-        // m_periodicTracer.addEpoch("Entry (Unused Time)");
+        m_periodicTracer.addEpoch("Entry (Unused Time)");
         m_timeAndJoystickReplay.update();
-        // m_periodicTracer.addEpoch("timeJoystickReplay");
+        m_periodicTracer.addEpoch("timeJoystickReplay");
         CommandScheduler.getInstance().run(); 
-        // m_periodicTracer.addEpoch("CommandScheduler");
+        m_periodicTracer.addEpoch("CommandScheduler");
 
 
         for (var camera : WaltCamera.AllCameras) {
@@ -635,14 +635,14 @@ public class Robot extends TimedRobot {
                 m_visionSeenLastSec = ctreTime;
             }
         }
-        // m_periodicTracer.addEpoch("VisionUpdate");
+        m_periodicTracer.addEpoch("VisionUpdate");
 
 
         // periodics
         m_shooter.periodic();
         m_indexer.periodic();
         m_intake.periodic();
-        // m_periodicTracer.addEpoch("SubsysPeriodics");
+        m_periodicTracer.addEpoch("SubsysPeriodics");
 
 
         log_povUp.accept(m_driver.povUp());
@@ -652,7 +652,7 @@ public class Robot extends TimedRobot {
 
         log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
         log_isDisabled.accept(trg_limitFPS);
-        // m_periodicTracer.addEpoch("Logging");
+        m_periodicTracer.addEpoch("Logging");
 
 
         // log_shooterDirection.accept(

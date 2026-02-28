@@ -109,8 +109,10 @@ public class Shooter extends SubsystemBase {
     private AngularVelocity m_calcFlywheel = RotationsPerSecond.of(0);
 
     //---LOGIC BOOLEANS
+    private boolean m_isTurretHomed = false;
     //---TRIGGERS
     private final Trigger trg_inAllianceZone = new Trigger(this::inAllianceZone);
+    private final Trigger trg_turretHomingCompleted = new Trigger(() -> m_isTurretHomed);
 
     /* SIM OBJECTS */
     private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(
@@ -165,8 +167,9 @@ public class Shooter extends SubsystemBase {
 
         m_fuelSim = FuelSim.getInstance();
 
-        setGoal(ShooterGoal.SCORING);
+        setDefaultCommand(turretHomingCmd());
 
+        trg_turretHomingCompleted.onTrue(Commands.runOnce(() -> setGoal(ShooterGoal.SCORING)));
         // if (inAllianceZone()) {
         //     setGoal(ShooterGoal.SCORING);
         // } else {
@@ -174,7 +177,6 @@ public class Shooter extends SubsystemBase {
         // }
 
         m_turret.setPosition(0);
-        setDefaultCommand(turretHomingCmd());
 
         initSim();
     }
@@ -429,7 +431,7 @@ public class Shooter extends SubsystemBase {
                 m_turret.getPosition().getValue());
         setTurretPos(azimuthAngle);                                                                                     //Sets the TurretPosition to the Calculated TurretAngle
         setHoodPosition(calculatedShot.getHoodAngle());                                                                 //Sets the HoodPosition to the Calculated HoodAngle
-        setShooterVelocity(ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));  //Sets the ShooterVelocity to the Calculated ShooterVelocity
+        // setShooterVelocity(ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));  //Sets the ShooterVelocity to the Calculated ShooterVelocity
         
         m_calcTurret = azimuthAngle;
         m_calcHood = calculatedShot.getHoodAngle();
@@ -476,9 +478,9 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         Pose2d pose = m_poseSupplier.get();
 
-        trg_inAllianceZone.and(DriverStation::isTeleop)
-            .onTrue(Commands.runOnce(() -> setGoal(ShooterGoal.SCORING)))
-            .onFalse(Commands.runOnce(() -> setGoal(ShooterGoal.PASSING)));
+        // trg_inAllianceZone.and(DriverStation::isTeleop)
+        //     .onTrue(Commands.runOnce(() -> setGoal(ShooterGoal.SCORING)))
+        //     .onFalse(Commands.runOnce(() -> setGoal(ShooterGoal.PASSING)));
         // trg_inAllianceZone.negate().and(DriverStation::isTeleop).whileTrue(Commands.runOnce(() -> setGoal(ShooterGoal.PASSING)));
 
         switch (m_goal) {
@@ -544,6 +546,7 @@ public class Shooter extends SubsystemBase {
             m_turret.setPosition(Rotations.of(-0.2175)); // Flowkirkentologicalexpialibrostatenuinely
             m_turret.setControl(m_BrakeReq);
             removeDefaultCommand();
+            m_isTurretHomed = true;
             // setDefaultCommand(new PrintCommand("ShooterDefault"));
         };
 

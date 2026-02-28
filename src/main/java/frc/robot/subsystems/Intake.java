@@ -88,7 +88,7 @@ public class Intake extends SubsystemBase {
         m_intakeRollers.getConfigurator().apply(kIntakeRollersConfiguration);
 
         if (Robot.isReal()) {
-            setDefaultCommand(intakeArmCurrentSenseHoming());
+            // setDefaultCommand(intakeArmCurrentSenseHoming());
         }
 
         initSim();
