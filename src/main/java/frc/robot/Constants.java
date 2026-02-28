@@ -259,6 +259,8 @@ public class Constants {
         public static final String kLogTab = "Robot";
         public static final Transform3d kTurretTransform = new Transform3d(new Translation3d(0, 0, 0.7), new Rotation3d());
 
+        public static final double kRobotSpeedIntakingLimit = 0.2;
+
     }
 
     public static class SuperstructureK {

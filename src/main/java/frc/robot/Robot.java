@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.dashboards.TestingDashboard;
 import frc.robot.autons.WaltAutonFactory;
@@ -105,7 +106,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_retractIntake = m_manipulator.y().and(trg_manipOverride.negate());
 
     private Trigger trg_shoot = m_driver.rightTrigger().and(trg_manipOverride.negate());
-    private Trigger trg_emergencyBarf = m_driver.leftTrigger().and(trg_manipOverride.negate());
+    private Trigger trg_emergencyBarf = m_driver.leftTrigger().and(trg_driverOverride);
 
     private Trigger trg_pass = m_manipulator.rightBumper().and(trg_manipOverride.negate());
 
@@ -159,26 +160,31 @@ public class Robot extends TimedRobot {
     }
 
     /* COMMANDS */
-    private Command driveCommand() {
+    /**
+     * 
+     * @param speedMultiplier how much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
+     * @return swerve drive command
+     */
+    private Command driveCommand(double speedMultiplier) {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         // Drivetrain will execute this command periodically
         return m_drivetrain.applyRequest(() -> {
-            var angularRate = m_driver.leftTrigger().getAsBoolean() ? 
-            kMaxHighAngularRate : kMaxAngularRate;
+            var translationSpeed = m_driver.leftTrigger().getAsBoolean() ? 
+            kMaxTranslationSpeed * speedMultiplier : kMaxTranslationSpeed;
         
-            var driverXVelo = -m_driver.getLeftY() * kMaxTranslationSpeed;
-            var driverYVelo = -m_driver.getLeftX() * kMaxTranslationSpeed;
-            var driverYawRate = -m_driver.getRightX() * angularRate;
+            var driverXVelo = -m_driver.getLeftY() * translationSpeed;
+            var driverYVelo = -m_driver.getLeftX() * translationSpeed;
+            var driverYawRate = -m_driver.getRightX();
 
             log_stickDesiredFieldX.accept(driverXVelo);
             log_stickDesiredFieldY.accept(driverYVelo);
             log_stickDesiredFieldZRot.accept(driverYawRate);
             
             return drive
-            .withVelocityX(driverXVelo) // Drive forward with Y (forward)
-            .withVelocityY(driverYVelo) // Drive left with X (left)
-            .withRotationalRate(driverYawRate); // Drive counterclockwise with negative X (left)
+                .withVelocityX(driverXVelo) // Drive forward with Y (forward)
+                .withVelocityY(driverYVelo) // Drive left with X (left)
+                .withRotationalRate(driverYawRate); // Drive counterclockwise with negative X (left)
             }
         );
     }
@@ -188,14 +194,7 @@ public class Robot extends TimedRobot {
         /* GENERATED SWERVE BINDS */
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
-        m_drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
-            m_drivetrain.applyRequest(() ->
-                drive.withVelocityX(-m_driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-m_driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-m_driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
-        );
+        m_drivetrain.setDefaultCommand(driveCommand(RobotK.kRobotSpeedIntakingLimit));
 
         // Idle while the robot is disabled. This ensures the configured
         // neutral mode is applied to the drive motors while disabled.
