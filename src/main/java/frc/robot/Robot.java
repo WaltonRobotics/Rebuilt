@@ -7,10 +7,10 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.RobotK.*;
 
-import java.util.HashMap;
 import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
 
 import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.Utils;
@@ -20,7 +20,9 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -30,7 +32,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.dashboards.TestingDashboard;
-import frc.robot.autons.WaltAutonFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Superstructure;
@@ -45,7 +46,6 @@ import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.Pose3dLogger;
-import frc.util.WaltLogger.StringLogger;
 
 public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
@@ -149,14 +149,19 @@ public class Robot extends TimedRobot {
         .withTimestampReplay()
         .withJoystickReplay();
 
+    private final Tracer m_periodicTracer = new Tracer();
+
     /* CONSTRUCTOR */
     public Robot() {
         configureBindings();
         // configureTestBindings();    //this should be commented out during competition matches
-        // configureTestingDashboard();
+        configureTestingDashboard();
 
         // set FPS limit on boot
-        WaltCamera.setFpsLimit(true);   //MAKE THIS FALSE BEFORE MATCHES!!!!!!!!!!!!!!!!
+        WaltCamera.setFpsLimit(true);
+
+        DriverStation.silenceJoystickConnectionWarning(true);
+        PhotonCamera.setVersionCheckEnabled(false);
     }
 
     /* COMMANDS */
@@ -540,8 +545,12 @@ public class Robot extends TimedRobot {
     /* PERIODICS */
     @Override
     public void robotPeriodic() {
+        // m_periodicTracer.addEpoch("Entry (Unused Time)");
         m_timeAndJoystickReplay.update();
+        // m_periodicTracer.addEpoch("timeJoystickReplay");
         CommandScheduler.getInstance().run(); 
+        // m_periodicTracer.addEpoch("CommandScheduler");
+
 
         for (var camera : WaltCamera.AllCameras) {
             Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
@@ -553,11 +562,15 @@ public class Robot extends TimedRobot {
                 m_visionSeenLastSec = ctreTime;
             }
         }
+        // m_periodicTracer.addEpoch("VisionUpdate");
+
 
         // periodics
         m_shooter.periodic();
         m_indexer.periodic();
         m_intake.periodic();
+        // m_periodicTracer.addEpoch("SubsysPeriodics");
+
 
         log_povUp.accept(m_driver.povUp());
         log_povDown.accept(m_driver.povDown());
@@ -566,6 +579,8 @@ public class Robot extends TimedRobot {
 
         log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
         log_isDisabled.accept(trg_limitFPS);
+        // m_periodicTracer.addEpoch("Logging");
+
 
         // log_shooterDirection.accept(
         //     new Pose3d(
@@ -585,6 +600,7 @@ public class Robot extends TimedRobot {
 
         /* for the mechanism2D in 3D, drag all 3 mechanisms2ds onto the robot pose
         and also log the shooter position pose */ 
+        // m_periodicTracer.printEpochs();
     }
 
     @Override

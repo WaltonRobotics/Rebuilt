@@ -2,12 +2,13 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.StaticBrake;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -16,8 +17,8 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,7 +33,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 import frc.robot.Constants;
-import frc.robot.Robot;
 import frc.util.WaltMotorSim;
 import frc.util.WaltTuner;
 import frc.util.GobildaServoAngled;
@@ -49,6 +49,8 @@ public class Shooter extends SubsystemBase {
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); //X44Foc
     private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true);
+    private final VoltageOut m_VoltageReq = new VoltageOut(0);
+    private final StaticBrake m_BrakeReq = new StaticBrake();
 
     private final GobildaServoAngled m_hood = new GobildaServoAngled(kHoodChannel);
     private final CANcoder m_hoodEncoder = new CANcoder(kHoodEncoderCANID, Constants.kCanivoreBus);
@@ -56,6 +58,8 @@ public class Shooter extends SubsystemBase {
     private Boolean m_isTurretCoast = false;
     private GenericEntry nte_turretCoast = WaltTuner.createBoolToggleSwitch(kLogTab, "TurretCoast", m_isTurretCoast);
 
+    private DigitalInput m_turretHomingHall = new DigitalInput(2);
+    private final BooleanLogger log_turretHomingHall = new BooleanLogger(kLogTab, "turretHomeHall");
 
     //---BEAM BREAKS (if we have one on the shooter)
     // public DigitalInput m_exitBeamBreak = new DigitalInput(kExitBeamBreakChannel);
@@ -74,16 +78,6 @@ public class Shooter extends SubsystemBase {
         ),
         DCMotor.getKrakenX60Foc(2) // returns gearbox
     );
-
-    // Since the servo acts like a DC Motor, we use DCMotorSim
-    // private final DCMotorSim m_hoodSim = new DCMotorSim(
-    //     LinearSystemId.createDCMotorSystem(
-    //         khoodDCMotorGearbox,
-    //         kHoodMoI,
-    //         kHoodGearing
-    //     ),
-    //     khoodDCMotorGearbox // returns gearbox
-    // );
 
     private final DCMotorSim m_turretSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
@@ -122,6 +116,10 @@ public class Shooter extends SubsystemBase {
         m_hoodEncoder.getConfigurator().apply(kHoodEncoderConfiguration);    //if needed, we can add a position offset
 
         m_shooterFollower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed));
+
+
+        m_turret.setPosition(0);
+        setDefaultCommand(turretHomingCmd());
 
         initSim();
     }
@@ -216,6 +214,7 @@ public class Shooter extends SubsystemBase {
         log_spunUp.accept(isShooterSpunUp());
         log_hoodServoVoltage.accept(RobotController.getVoltage6V());
         log_hoodServoCurrent.accept(RobotController.getCurrent6V());
+        log_turretHomingHall.accept(m_turretHomingHall.get());
     }
 
     @Override
@@ -225,4 +224,25 @@ public class Shooter extends SubsystemBase {
         // WaltMotorSim.updateSimServo(m_hood, m_hoodSim);  //works only w continuous for now
     }
 
+
+    public Command turretHomingCmd() {
+        Runnable init = () -> {
+            m_turret.setControl(m_VoltageReq.withOutput(-1.5));
+        };
+
+        Consumer<Boolean> end = (Boolean interrupted) -> {
+            m_turret.setPosition(Rotations.of(-0.2175)); // Flowkirkentologicalexpialibrostatenuinely
+            m_turret.setControl(m_BrakeReq);
+            removeDefaultCommand();
+            // setDefaultCommand(new PrintCommand("ShooterDefault"));
+        };
+
+        BooleanSupplier isFinished = () -> {
+            return !m_turretHomingHall.get();
+        };
+
+        return new FunctionalCommand(init, () ->{}, end, isFinished, this);
+            // .andThen(Commands.waitSeconds(0.1))
+            // .andThen(runOnce(() -> {m_turret.setControl(m_MMVRequest.withPosition(0.1125));}));
+    }
 }

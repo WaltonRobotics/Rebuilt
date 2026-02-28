@@ -126,11 +126,10 @@ public class Constants {
             .withFeedback(kShooterLeaderFeedbackConfigs)
             .withVoltage(kShooterLeaderVoltageConfigs);
         
-        // TODO: mimics the leader, so it doesn't need its own configs - right?
         public static final TalonFXConfiguration kShooterFollowerTalonFXConfiguration = new TalonFXConfiguration()
             .withMotorOutput(
                 new MotorOutputConfigs()
-                    .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
+                    .withInverted(InvertedValue.Clockwise_Positive)
                     .withNeutralMode(NeutralModeValue.Coast));
 
         //---HOOD
@@ -144,35 +143,35 @@ public class Constants {
         //---TURRET
         private static final Slot0Configs kTurretSlot0Configs = new Slot0Configs()
             .withKS(0)
-            .withKV(4.07)
+            .withKV(5)
             .withKA(0.02)
-            .withKP(120)  //3 - testing values in Pheonix Tuner
+            .withKP(78)  //3 - testing values in Pheonix Tuner
             .withKI(0)
             .withKD(0); // OLD: kP was too low making the slope less steep, kS kV and kA were causing rlly weird behavior (jumping up/down way further than targeted position)
         private static final CurrentLimitsConfigs kTurretCurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(60)
-            .withSupplyCurrentLimit(20)
-            .withSupplyCurrentLowerLimit(10)
-            .withStatorCurrentLimitEnable(true);
+            .withStatorCurrentLimit(55)
+            .withStatorCurrentLimitEnable(true)
+            .withSupplyCurrentLimit(55)
+            .withSupplyCurrentLowerLimit(15)
+            .withSupplyCurrentLowerTime(1.0) // drop to 15A after 1 second
+            .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kTurretOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
-            .withNeutralMode(NeutralModeValue.Brake)
-            .withPeakForwardDutyCycle(0.1)
-            .withPeakReverseDutyCycle(0.1);
+            .withInverted(InvertedValue.CounterClockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Brake);
         private static final MotionMagicConfigs kTurretMotionMagicConfigs = new MotionMagicConfigs()
             .withMotionMagicCruiseVelocity(110)  //TODO: update MMV Configs
             .withMotionMagicAcceleration(20)
             .withMotionMagicJerk(0);
         private static final SoftwareLimitSwitchConfigs kTurretSoftwareLimitSwitchConfigs = new SoftwareLimitSwitchConfigs()
-            .withForwardSoftLimitEnable(false)
-            .withForwardSoftLimitThreshold(0.78)    //TODO: update threshold numbers
-            .withReverseSoftLimitEnable(false)
-            .withReverseSoftLimitThreshold(0.02);
+            .withForwardSoftLimitEnable(true)
+            .withForwardSoftLimitThreshold(0.75)
+            .withReverseSoftLimitEnable(true)
+            .withReverseSoftLimitThreshold(-0.75);
         private static final FeedbackConfigs kTurretFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kTurretGearing);
         private static final VoltageConfigs kTurretVoltageConfigs = new VoltageConfigs()
-            .withPeakForwardVoltage(0.5)
-            .withPeakReverseVoltage(-0.5);
+            .withPeakForwardVoltage(12)
+            .withPeakReverseVoltage(-12);
         public static final TalonFXConfiguration kTurretTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kTurretSlot0Configs)
             .withCurrentLimits(kTurretCurrentLimitConfigs)
