@@ -48,7 +48,6 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Indexer;
-import frc.robot.vision.VisionSim;
 import frc.robot.vision.WaltCamera;
 import frc.util.Telemetry;
 import frc.util.WaltVisualSim;

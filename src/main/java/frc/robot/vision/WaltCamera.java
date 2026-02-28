@@ -25,8 +25,6 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.util.VisionUtil;
-import frc.robot.Constants.FieldK;
-import frc.robot.Constants.VisionK;
 import frc.robot.Robot;
 
 import static frc.robot.Constants.VisionK;
