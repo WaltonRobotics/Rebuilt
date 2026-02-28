@@ -86,9 +86,9 @@ public class Intake extends SubsystemBase {
         m_intakeArm.getConfigurator().apply(kIntakeArmConfiguration);
         m_intakeRollers.getConfigurator().apply(kIntakeRollersConfiguration);
 
-        // if (Robot.isReal()) {
-        //     setDefaultCommand(intakeArmCurrentSenseHoming());
-        // }
+        if (Robot.isReal()) {
+            setDefaultCommand(intakeArmCurrentSenseHoming());
+        }
 
         initSim();
     }
@@ -99,34 +99,37 @@ public class Intake extends SubsystemBase {
     }
 
     /* COMMANDS */
-    public Command setIntakeArmPos(IntakeArmPosition rots) {
-        return setIntakeArmPos(rots.rots, rots == IntakeArmPosition.RETRACTED ? 3 : 1);
+    public void setIntakeArmPos(IntakeArmPosition rots) {
+        setIntakeArmPos(rots.rots, rots == IntakeArmPosition.RETRACTED ? 3 : 1);
     }
 
-    public Command setIntakeArmPos(Angle rots, double RPSPS) {
-        return runOnce(() -> m_intakeArm.setControl(m_MMVReq.withPosition(rots).withAcceleration(RPSPS)));
+    public Command setIntakeArmPosCmd(IntakeArmPosition rots) {
+        return setIntakeArmPosCmd(rots.rots, rots == IntakeArmPosition.RETRACTED ? 3 : 1);
     }
 
-    public boolean intakeArmAtPos(IntakeArmPosition pos) {
-        return m_intakeArm.getPosition().isNear(pos.rots, Rotations.of(0.015)); //TODO: find better tolerance
+    public Command setIntakeArmPosCmd(Angle rots, double RPSPS) {
+        return runOnce(() -> setIntakeArmPos(rots, RPSPS));
     }
 
-    //TODO: if no worky use timer to check instead
+    public void setIntakeArmPos(Angle rots, double RPSPS) {
+        m_intakeArm.setControl(m_MMVReq.withPosition(rots).withAcceleration(RPSPS));
+    }
+
     public boolean isIntakeArmAtPos() {
         var err = m_intakeArm.getClosedLoopError();
         log_intakeArmClosedLoopError.accept(err.getValueAsDouble());
-        boolean isNear = m_intakeArm.getClosedLoopError().isNear(0, 0.03);
+        boolean isNear = m_intakeArm.getClosedLoopError().isNear(0, 0.01);
         return isNear;
     }
 
     public Command shimmy() {
         return Commands.repeatingSequence(
             setIntakeRollersVelocityCmd(RotationsPerSecond.of(0)),
-            setIntakeArmPos(IntakeArmPosition.SHIMMY),
-            Commands.waitUntil(() -> intakeArmAtPos(IntakeArmPosition.SHIMMY)),
-            setIntakeArmPos(IntakeArmPosition.DEPLOYED),
-            Commands.waitUntil(() -> intakeArmAtPos(IntakeArmPosition.DEPLOYED))
-        ).finallyDo(() -> setIntakeArmPos(IntakeArmPosition.SAFE));
+            setIntakeArmPosCmd(IntakeArmPosition.SHIMMY),
+            Commands.waitUntil(() -> isIntakeArmAtPos()),
+            setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
+            Commands.waitUntil(() -> isIntakeArmAtPos())
+        ).finallyDo(() -> setIntakeArmPosCmd(IntakeArmPosition.SAFE));
     }
 
     //for TestingDashboard
@@ -174,7 +177,7 @@ public class Intake extends SubsystemBase {
             m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(0));
             m_intakeArm.setPosition(0);
             removeDefaultCommand();
-            setIntakeArmPos(IntakeArmPosition.RETRACTED);
+            setIntakeArmPosCmd(IntakeArmPosition.RETRACTED);
         };
 
         BooleanSupplier isFinished = () -> 

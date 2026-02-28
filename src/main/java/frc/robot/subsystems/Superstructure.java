@@ -63,9 +63,9 @@ public class Superstructure {
                 break;
         }
         return Commands.sequence(
-            m_indexer.stopSpindexerCmd(),
-            m_intake.setIntakeArmPos(pos),
             m_intake.stopIntakeRollers(),
+            m_intake.setIntakeArmPosCmd(pos),
+            m_indexer.stopSpindexerCmd(),
             logCommand
         );
     }
@@ -75,7 +75,7 @@ public class Superstructure {
      */
     public Command activateIntake() {
         return Commands.sequence(
-            m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED),
+            m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()),
             m_intake.startIntakeRollers(),
             logActiveCommands("activateIntake", "safeIntake", "retractIntake")
@@ -135,18 +135,20 @@ public class Superstructure {
     public Command emergencyBarf() {
         return Commands.startEnd(
             () -> {
-                m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
+                m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
                 m_shooter.setHoodPosition(ShooterK.kHoodMaxDegs);
-                m_indexer.setSpindexerVelocity(IndexerK.m_spindexerRPS);
                 m_indexer.setTunnelVelocity(IndexerK.m_tunnelRPS);
+                m_indexer.setSpindexerVelocity(IndexerK.m_spindexerRPS);
+                m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
                 m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersMaxRPS.times(-1));
             },
             () -> {
+                m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));
+                m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
                 m_shooter.setShooterVelocity(RotationsPerSecond.of(0));
-                m_shooter.setHoodPosition(ShooterK.kHoodMinDegs);
+                m_shooter.setHoodPosition(ShooterK.kHoodSafeDegs);
                 m_indexer.setSpindexerVelocity(RotationsPerSecond.of(0));
                 m_indexer.setTunnelVelocity(RotationsPerSecond.of(0));
-                m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));
             }
         );
     }
@@ -311,7 +313,7 @@ public class Superstructure {
                 break;
         }
         return logCommand = Commands.sequence(
-            m_intake.setIntakeArmPos(pos),
+            m_intake.setIntakeArmPosCmd(pos),
             logCommand
         );
     }

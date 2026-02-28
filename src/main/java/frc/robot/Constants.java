@@ -70,6 +70,7 @@ public class Constants {
         public static final double kHoodEncoderGearing = 360/40.0;
 
         public static final Angle kHoodMinDegs = Degrees.of(0); // ABS min (1 should be the min for the rest of match, 0 only for homing)
+        public static final Angle kHoodSafeDegs = Degrees.of(1);
         public static final Angle kHoodMaxDegs = Degrees.of(37);    // ABS max (40 is too much)
 
         //300° on the servo is 0° on the hood, and 0° on the servo is 40° on the hood.
@@ -134,7 +135,7 @@ public class Constants {
 
         //---HOOD
         private static final MagnetSensorConfigs kHoodEncoderMagnetSensorConfigs = new MagnetSensorConfigs()
-            .withMagnetOffset(Rotations.of(-0.021728515625 + (0.01)))
+            .withMagnetOffset(Rotations.of(-0.0068359375))
             .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
             .withAbsoluteSensorDiscontinuityPoint(Rotations.of(1));
         public static final CANcoderConfiguration kHoodEncoderConfiguration = new CANcoderConfiguration()
