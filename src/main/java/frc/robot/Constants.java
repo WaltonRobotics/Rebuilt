@@ -90,15 +90,18 @@ public class Constants {
         public static final double kHoodMoI = 0.00027505;
         public static final double kHoodEncoderGearing = 360/40.0;
 
+        // 300° on the servo is 0° on the hood, and 0° on the servo is 40° on the hood.
         // servo to hood: 300 : 0 || 0 : 40
         // hood to encoder: 0 : 0 || 40 : 0.9451 (340.236)
         // servo to encoder: 300 : 0 || 0 : 0.9451 (340.236)
         public static final Angle kHoodMinDegs = Degrees.of(0); // 0 = 0 (encoder wise i believe)
+        public static final Angle kHoodSafeDegs = Degrees.of(1);
         public static final Angle kHoodMaxDegs = Degrees.of(37);    // 40 = 0.9451 (encoder wise i believe)
         //TODO: for sotm, need to check if we are NEAR this servo rotation/degree b/c this value beneath this is not for setting anything, but rather to check.
         //TODO: also make a "at position" to start shooting -- hood angle will have a tolerance of 0.5 degrees.
-        public static final Angle kHoodServoMaxDegs = Degrees.of(Rotations.of(0.9451).in(Degrees));  
+        public static final Angle kHoodEncoderMaxDegs = Degrees.of(Rotations.of(0.9451).in(Degrees));
         public static final Angle kHoodAbsoluteMaxDegs = Degrees.of(40);
+        public static final Angle kHoodServoMaxDegs = Degrees.of(300);
 
         public static final Angle kHoodShootingTolerance = Degrees.of(0.5);
 
@@ -150,17 +153,16 @@ public class Constants {
             .withFeedback(kShooterLeaderFeedbackConfigs)
             .withVoltage(kShooterLeaderVoltageConfigs);
         
-        // TODO: mimics the leader, so it doesn't need its own configs - right?
         public static final TalonFXConfiguration kShooterFollowerTalonFXConfiguration = new TalonFXConfiguration()
             .withMotorOutput(
                 new MotorOutputConfigs()
-                    .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
+                    .withInverted(InvertedValue.Clockwise_Positive)
                     .withNeutralMode(NeutralModeValue.Coast));
 
         //---HOOD
         private static final MagnetSensorConfigs kHoodEncoderMagnetSensorConfigs = new MagnetSensorConfigs()
-            .withMagnetOffset(Rotations.of(0.999756))
-            .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
+            .withMagnetOffset(Rotations.of(-0.0068359375))
+            .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
             .withAbsoluteSensorDiscontinuityPoint(Rotations.of(1));
         public static final CANcoderConfiguration kHoodEncoderConfiguration = new CANcoderConfiguration()
             .withMagnetSensor(kHoodEncoderMagnetSensorConfigs);
@@ -168,35 +170,35 @@ public class Constants {
         //---TURRET
         private static final Slot0Configs kTurretSlot0Configs = new Slot0Configs()
             .withKS(0)
-            .withKV(4.07)
+            .withKV(5)
             .withKA(0.02)
-            .withKP(120)  //3 - testing values in Pheonix Tuner
+            .withKP(78)  //3 - testing values in Pheonix Tuner
             .withKI(0)
             .withKD(0); // OLD: kP was too low making the slope less steep, kS kV and kA were causing rlly weird behavior (jumping up/down way further than targeted position)
         private static final CurrentLimitsConfigs kTurretCurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(60)
-            .withSupplyCurrentLimit(20)
-            .withSupplyCurrentLowerLimit(10)
-            .withStatorCurrentLimitEnable(true);
+            .withStatorCurrentLimit(55)
+            .withStatorCurrentLimitEnable(true)
+            .withSupplyCurrentLimit(55)
+            .withSupplyCurrentLowerLimit(15)
+            .withSupplyCurrentLowerTime(1.0) // drop to 15A after 1 second
+            .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kTurretOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: check whether this should be CW or CCW
-            .withNeutralMode(NeutralModeValue.Brake)
-            .withPeakForwardDutyCycle(0.1)
-            .withPeakReverseDutyCycle(0.1);
+            .withInverted(InvertedValue.CounterClockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Brake);
         private static final MotionMagicConfigs kTurretMotionMagicConfigs = new MotionMagicConfigs()
             .withMotionMagicCruiseVelocity(110)  //TODO: update MMV Configs
             .withMotionMagicAcceleration(20)
             .withMotionMagicJerk(0);
         private static final SoftwareLimitSwitchConfigs kTurretSoftwareLimitSwitchConfigs = new SoftwareLimitSwitchConfigs()
-            .withForwardSoftLimitEnable(false)
-            .withForwardSoftLimitThreshold(0.78)    //TODO: update threshold numbers
-            .withReverseSoftLimitEnable(false)
-            .withReverseSoftLimitThreshold(0.02);
+            .withForwardSoftLimitEnable(true)
+            .withForwardSoftLimitThreshold(0.75)
+            .withReverseSoftLimitEnable(true)
+            .withReverseSoftLimitThreshold(-0.75);
         private static final FeedbackConfigs kTurretFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kTurretGearing);
         private static final VoltageConfigs kTurretVoltageConfigs = new VoltageConfigs()
-            .withPeakForwardVoltage(0.5)
-            .withPeakReverseVoltage(-0.5);
+            .withPeakForwardVoltage(12)
+            .withPeakReverseVoltage(-12);
         public static final TalonFXConfiguration kTurretTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kTurretSlot0Configs)
             .withCurrentLimits(kTurretCurrentLimitConfigs)
@@ -286,6 +288,7 @@ public class Constants {
         public static final Distance kRobotFullWidth = Inches.of(33.6875);
         public static final Distance kRobotFullLength = Inches.of(32.6875);
         public static final Distance kBumperHeight = Inches.of(4.5);
+        public static final double kRobotSpeedIntakingLimit = 0.2;
     }
 
     public static class SuperstructureK {

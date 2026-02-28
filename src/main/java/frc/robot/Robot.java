@@ -8,10 +8,10 @@ import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.RobotK.*;
 import static frc.robot.Constants.ShooterK.kTurretTransform;
 
-import java.util.HashMap;
 import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
 
 import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.Utils;
@@ -21,8 +21,10 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -34,10 +36,10 @@ import frc.robot.Constants.VisionK;
 import frc.robot.subsystems.shooter.FuelSim;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.ShooterGoal;
+import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.dashboards.AutonChooser;
 import frc.robot.dashboards.TestingDashboard;
-import frc.robot.autons.WaltAutonFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
@@ -51,7 +53,6 @@ import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.Pose3dLogger;
-import frc.util.WaltLogger.StringLogger;
 
 public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
@@ -111,8 +112,8 @@ public class Robot extends TimedRobot {
     private Trigger trg_safeIntake = m_manipulator.x().and(trg_manipOverride.negate());
     private Trigger trg_retractIntake = m_manipulator.y().and(trg_manipOverride.negate());
 
-    private Trigger trg_shoot = m_driver.rightTrigger().and(trg_driverOverride.negate());
-    private Trigger trg_emergencyBarf = m_driver.leftTrigger().and(trg_driverOverride.negate());
+    private Trigger trg_shoot = m_driver.rightTrigger().and(trg_manipOverride.negate());
+    private Trigger trg_emergencyBarf = m_driver.leftTrigger().and(trg_driverOverride);
 
     private Trigger trg_pass = m_driver.rightBumper().and(trg_driverOverride.negate());
 
@@ -162,48 +163,55 @@ public class Robot extends TimedRobot {
         .withTimestampReplay()
         .withJoystickReplay();
 
+    private final Tracer m_periodicTracer = new Tracer();
+
     /* CONSTRUCTOR */
     public Robot() {
         m_shooter = new Shooter(() -> m_drivetrain.getState().Pose, () -> m_drivetrain.getChassisSpeeds());
         // m_visualSim = new WaltVisualSim(m_intake, m_indexer, m_shooter);
         m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
-
-        // m_shooter.setDefaultCommand(m_shooter.shooterDefaultCommands());
-        m_shooter.zeroHoodCmd();
-        m_shooter.zeroTurretCmd();
-        // configureBindings();
-        configureTestBindings();    //this should be commented out during competition matches
-        // configureTestingDashboard();
+        
+        configureBindings();
+        // configureTestBindings();    //this should be commented out during competition matches
+        configureTestingDashboard();
 
         if (Robot.isSimulation()) {
             configureFuelSim();
             // FuelSim.getInstance().enableAirResistance();
         }
         // set FPS limit on boot
-        WaltCamera.setFpsLimit(true);   //MAKE THIS FALSE BEFORE MATCHES!!!!!!!!!!!!!!!!
+        WaltCamera.setFpsLimit(true);
+
+        DriverStation.silenceJoystickConnectionWarning(true);
+        PhotonCamera.setVersionCheckEnabled(false);
     }
 
     /* COMMANDS */
-    private Command driveCommand() {
+    /**
+     * 
+     * @param speedMultiplier how much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
+     * @return swerve drive command
+     */
+    private Command driveCommand(double speedMultiplier) {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         // Drivetrain will execute this command periodically
         return m_drivetrain.applyRequest(() -> {
-            var angularRate = m_driver.leftTrigger().getAsBoolean() ? 
-            kMaxHighAngularRate : kMaxAngularRate;
+            var translationSpeed = m_driver.leftTrigger().getAsBoolean() ? 
+            kMaxTranslationSpeed * speedMultiplier : kMaxTranslationSpeed;
         
-            var driverXVelo = -m_driver.getLeftY() * kMaxTranslationSpeed;
-            var driverYVelo = -m_driver.getLeftX() * kMaxTranslationSpeed;
-            var driverYawRate = -m_driver.getRightX() * angularRate;
+            var driverXVelo = -m_driver.getLeftY() * translationSpeed;
+            var driverYVelo = -m_driver.getLeftX() * translationSpeed;
+            var driverYawRate = -m_driver.getRightX();
 
             log_stickDesiredFieldX.accept(driverXVelo);
             log_stickDesiredFieldY.accept(driverYVelo);
             log_stickDesiredFieldZRot.accept(driverYawRate);
             
             return drive
-            .withVelocityX(driverXVelo) // Drive forward with Y (forward)
-            .withVelocityY(driverYVelo) // Drive left with X (left)
-            .withRotationalRate(driverYawRate); // Drive counterclockwise with negative X (left)
+                .withVelocityX(driverXVelo) // Drive forward with Y (forward)
+                .withVelocityY(driverYVelo) // Drive left with X (left)
+                .withRotationalRate(driverYawRate); // Drive counterclockwise with negative X (left)
             }
         );
     }
@@ -249,14 +257,7 @@ public class Robot extends TimedRobot {
         /* GENERATED SWERVE BINDS */
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
-        m_drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
-            m_drivetrain.applyRequest(() ->
-                drive.withVelocityX(-m_driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-m_driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-m_driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
-        );
+        m_drivetrain.setDefaultCommand(driveCommand(RobotK.kRobotSpeedIntakingLimit));
 
         // Idle while the robot is disabled. This ensures the configured
         // neutral mode is applied to the drive motors while disabled.
@@ -321,9 +322,9 @@ public class Robot extends TimedRobot {
 
         //---OVERRIDE COMMANDS
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
-        // m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.hoodEncoderHoming());
 
-        // m_manipulator.y().and(trg_manipOverride).whileTrue(m_shooter.setHoodPositionCmd(Degrees.of(37))).onFalse(m_shooter.setHoodPositionCmd(Degrees.of(1)));
+        m_manipulator.y().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(44.5)));
+        m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(1)));
 
         trg_maxShooterOverride.onTrue(
             m_superstructure.maxShooter()
@@ -474,7 +475,7 @@ public class Robot extends TimedRobot {
         // m_manipulator.y().and(trg_manipOverride).whileTrue(m_shooter.setHoodMin()).onFalse(m_shooter.setHoodStop());
 
         m_manipulator.a().and(trg_manipOverride).whileTrue(m_shooter.setHoodPositionCmd(Degrees.of(37))).onFalse(m_shooter.setHoodPositionCmd(Degrees.of(1)));
-        m_manipulator.y().and(trg_manipOverride).whileTrue(m_superstructure.shimmy()).onFalse(m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED));
+        m_manipulator.y().and(trg_manipOverride).whileTrue(m_superstructure.shimmy()).onFalse(m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED));
 
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
         // m_manipulator.start().and(trg_manipOverride).onTrue(m_shooter.hoodEncoderHoming());
@@ -617,8 +618,12 @@ public class Robot extends TimedRobot {
     /* PERIODICS */
     @Override
     public void robotPeriodic() {
-        // m_timeAndJoystickReplay.update();
+        // m_periodicTracer.addEpoch("Entry (Unused Time)");
+        m_timeAndJoystickReplay.update();
+        // m_periodicTracer.addEpoch("timeJoystickReplay");
         CommandScheduler.getInstance().run(); 
+        // m_periodicTracer.addEpoch("CommandScheduler");
+
 
         for (var camera : WaltCamera.AllCameras) {
             Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
@@ -630,11 +635,15 @@ public class Robot extends TimedRobot {
                 m_visionSeenLastSec = ctreTime;
             }
         }
+        // m_periodicTracer.addEpoch("VisionUpdate");
+
 
         // periodics
         m_shooter.periodic();
         m_indexer.periodic();
         m_intake.periodic();
+        // m_periodicTracer.addEpoch("SubsysPeriodics");
+
 
         log_povUp.accept(m_driver.povUp());
         log_povDown.accept(m_driver.povDown());
@@ -643,6 +652,8 @@ public class Robot extends TimedRobot {
 
         log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
         log_isDisabled.accept(trg_limitFPS);
+        // m_periodicTracer.addEpoch("Logging");
+
 
         // log_shooterDirection.accept(
         //     new Pose3d(
@@ -662,6 +673,7 @@ public class Robot extends TimedRobot {
 
         /* for the mechanism2D in 3D, drag all 3 mechanisms2ds onto the robot pose
         and also log the shooter position pose */ 
+        // m_periodicTracer.printEpochs();
     }
 
     @Override
