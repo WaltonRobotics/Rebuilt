@@ -15,6 +15,7 @@ import com.ctre.phoenix6.sim.TalonFXSimState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -33,6 +34,7 @@ import java.util.function.Consumer;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.util.WaltMotorSim;
+import frc.util.WaltTuner;
 import frc.util.GobildaServoAngled;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
@@ -51,7 +53,9 @@ public class Shooter extends SubsystemBase {
     private final GobildaServoAngled m_hood = new GobildaServoAngled(kHoodChannel);
     private final CANcoder m_hoodEncoder = new CANcoder(kHoodEncoderCANID, Constants.kCanivoreBus);
 
-    private Angle m_hoodSetpoint = Degrees.of(0);
+    private Boolean m_isTurretCoast = false;
+    private GenericEntry nte_turretCoast = WaltTuner.createBoolToggleSwitch(kLogTab, "TurretCoast", m_isTurretCoast);
+
 
     //---BEAM BREAKS (if we have one on the shooter)
     // public DigitalInput m_exitBeamBreak = new DigitalInput(kExitBeamBreakChannel);
@@ -153,12 +157,10 @@ public class Shooter extends SubsystemBase {
 
     //---HOOD (Basic Position Control)
     public Command setHoodPositionCmd(Angle degs) {
-        m_hoodSetpoint = degs;
         return runOnce(() -> setHoodPosition(degs));
     }
 
     public void setHoodPosition(Angle degs) {
-        m_hoodSetpoint = degs;
         m_hood.setAngle(convertHoodAngleToServoAngle(degs));
     }
     
@@ -197,6 +199,8 @@ public class Shooter extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
+        WaltTuner.toggleMotorCoast(m_isTurretCoast, nte_turretCoast.getBoolean(false), m_turret);
+
         //---Loggers
         log_shooterVelocityRPS.accept(m_shooterLeader.getVelocity().getValueAsDouble());
         log_hoodEncoderPositionDegs.accept(convertServoAngleToHoodAngle(Degrees.of(convertEncoderAngleToServoAngle(Degrees.of(Rotations.of(m_hoodEncoder.getAbsolutePosition().getValueAsDouble()).in(Degrees))))));

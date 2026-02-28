@@ -5,7 +5,6 @@ import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.sim.ChassisReference;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IntakeK.*;
@@ -15,7 +14,6 @@ import java.util.function.Consumer;
 
 import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 
 import edu.wpi.first.math.filter.Debouncer;
@@ -23,6 +21,7 @@ import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -32,8 +31,8 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltMotorSim;
+import frc.util.WaltTuner;
 import frc.robot.Robot;
-import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
@@ -43,7 +42,6 @@ public class Intake extends SubsystemBase {
     private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID); //x44Foc
 
     private DynamicMotionMagicVoltage m_MMVReq = new DynamicMotionMagicVoltage(0, 1, 1).withEnableFOC(true);
-    // private PositionVoltage m_PVReq = new PositionVoltage(0).withEnableFOC(true);
     private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
 
     private BooleanSupplier m_currentSpike = () -> m_intakeArm.getStatorCurrent().getValueAsDouble() > 5.0;
@@ -53,6 +51,9 @@ public class Intake extends SubsystemBase {
 
     private Debouncer m_currentDebouncer = new Debouncer(0.100, DebounceType.kRising);
     private Debouncer m_velocityDebouncer = new Debouncer(0.125, DebounceType.kRising);
+
+    private Boolean m_isIntakeArmCoast = false;
+    private GenericEntry nte_intakeArmCoast = WaltTuner.createBoolToggleSwitch(kLogTab, "IntakeArmCoast", m_isIntakeArmCoast);
 
     /* SIM OBJECTS */
     private final DCMotorSim m_intakeArmSim = new DCMotorSim(
@@ -190,6 +191,8 @@ public class Intake extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
+        WaltTuner.toggleMotorCoast(m_isIntakeArmCoast, nte_intakeArmCoast.getBoolean(false), m_intakeArm);
+
         log_targetIntakeArmRots.accept(m_MMVReq.Position);
         // log_targetIntakeArmRots.accept(m_PVReq.Position);
         log_targetIntakeRollersRPS.accept(m_VVReq.Velocity);
