@@ -66,6 +66,30 @@ public class WaltLogger {
         return new Pose2dLogger(table, name, options);
     }
 
+    public static final class Pose2dArrayLogger implements Consumer<Pose2d[]> {
+        public final StructArrayPublisher<Pose2d> ntPub;
+        public final StructArrayLogEntry<Pose2d> logEntry;
+
+        public Pose2dArrayLogger(String subTable, String name, PubSubOption... options) {
+            StructArrayTopic<Pose2d> topic = logTable.getSubTable(subTable).getStructArrayTopic(name, new Pose2dStruct());
+            ntPub = topic.publish(options);
+            logEntry = StructArrayLogEntry.create(DataLogManager.getLog(), "Robot/" + subTable + "/" + name, new Pose2dStruct());
+        }
+
+        @Override
+        public void accept(Pose2d[] value) {
+            if (shouldPublishNt()) {
+                ntPub.set(value);
+            } else {
+                logEntry.append(value);
+            }
+        }
+    }
+
+    public static Pose2dArrayLogger logPose2dArray(String table, String name, PubSubOption... options) {
+        return new Pose2dArrayLogger(table, name, options);
+    }
+
     public static final class Pose3dLogger implements Consumer<Pose3d> {
         public final StructPublisher<Pose3d> ntPub;
         public final StructLogEntry<Pose3d> logEntry;

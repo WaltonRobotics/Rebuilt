@@ -212,7 +212,7 @@ public class Constants {
             .setInvertDirection(false);
 
         //Left, Center (Climb), Center (Hub), Right - Driver POV
-        public static final Pose2d kShooterOverridePose[] = {
+        public static final Pose2d kShooterOverridePoses[] = {
             AllianceFlipUtil.apply(new Pose2d(FieldK.kFieldLengthMeters / 6, FieldK.kFieldWidthMeters * 2 / 3, new Rotation2d(0))),
             AllianceFlipUtil.apply(new Pose2d(Units.inchesToMeters(156.61 - 115.05 + 10), FieldK.kFieldWidthMeters / 2, new Rotation2d(0))),
             AllianceFlipUtil.apply(new Pose2d(Units.inchesToMeters(156.61 - 10), FieldK.kFieldWidthMeters / 2, new Rotation2d(0))),

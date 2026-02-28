@@ -6,6 +6,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.RobotK.*;
+import static frc.robot.Constants.ShooterK.kShooterOverridePoses;
 import static frc.robot.Constants.ShooterK.kTurretTransform;
 
 import java.util.Optional;
@@ -52,6 +53,7 @@ import frc.util.Telemetry;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.Pose2dArrayLogger;
 import frc.util.WaltLogger.Pose3dLogger;
 
 public class Robot extends TimedRobot {
@@ -157,6 +159,7 @@ public class Robot extends TimedRobot {
 
     // for testing only
     private final Pose3dLogger log_shooterDirection = WaltLogger.logPose3d(kLogTab, "Shooter Direction");
+    private final Pose2dArrayLogger log_overridePoses = WaltLogger.logPose2dArray(kLogTab, "Override poses");
 
     // log and replay timestamp and joystick data
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -653,6 +656,8 @@ public class Robot extends TimedRobot {
         log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
         log_isDisabled.accept(trg_limitFPS);
         m_periodicTracer.addEpoch("Logging");
+
+        log_overridePoses.accept(kShooterOverridePoses);
 
 
         // log_shooterDirection.accept(
