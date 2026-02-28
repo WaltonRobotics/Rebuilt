@@ -14,9 +14,9 @@
  },
  "params":{
   "waypoints":[
-    {"x":{"exp":"leftBumpAlliance.x", "val":3.3882551193237305}, "y":{"exp":"leftBumpAlliance.y", "val":5.437880039215088}, "heading":{"exp":"leftBumpAlliance.heading", "val":-0.8223814729706524}, "intervals":29, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"leftBumpNeutral.x", "val":5.795487403869629}, "y":{"exp":"leftBumpNeutral.y", "val":5.437880039215088}, "heading":{"exp":"leftBumpNeutral.heading", "val":-0.8223814729706524}, "intervals":31, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"leftFuelPickup.x", "val":6.924767017364502}, "y":{"exp":"leftFuelPickup.y", "val":5.437880039215088}, "heading":{"exp":"leftFuelPickup.heading", "val":0.0}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":{"exp":"leftBumpAlliance.x", "val":3.3882551193237305}, "y":{"exp":"leftBumpAlliance.y", "val":5.837104797363281}, "heading":{"exp":"leftBumpAlliance.heading", "val":-0.8223814729706524}, "intervals":29, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"leftBumpNeutral.x", "val":5.795487403869629}, "y":{"exp":"leftBumpNeutral.y", "val":5.837104797363281}, "heading":{"exp":"leftBumpNeutral.heading", "val":-0.8223814729706524}, "intervals":31, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"leftFuelPickup.x", "val":6.924767017364502}, "y":{"exp":"leftFuelPickup.y", "val":5.837104797363281}, "heading":{"exp":"leftFuelPickup.heading", "val":0.0}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
