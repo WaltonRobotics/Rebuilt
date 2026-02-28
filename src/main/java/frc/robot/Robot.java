@@ -121,7 +121,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_simClearFuel = m_driver.povDown();
     private Trigger trg_simSetPassing = m_driver.povUp();
     private Trigger trg_simSetTest = m_driver.povRight();
-    private Trigger trg_simSetShooting = m_driver.povLeft();
+    private Trigger trg_simSetScoring = m_driver.povLeft();
 
     //---OVERRIDE TRIGGERS
     private Trigger trg_maxShooterOverride = trg_manipOverride.and(m_manipulator.povLeft());
@@ -586,9 +586,9 @@ public class Robot extends TimedRobot {
                             FuelSim.getInstance().clearFuel();
                             // FuelSim.getInstance().spawnStartingFuel();
                         }));
-        trg_simSetPassing.onTrue(m_shooter.setGoal(ShooterGoal.PASSING));
-        trg_simSetTest.onTrue(m_shooter.setGoal(ShooterGoal.TEST));
-        trg_simSetShooting.onTrue(m_shooter.setGoal(ShooterGoal.SCORING));
+        trg_simSetPassing.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING)));
+        trg_simSetTest.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.TEST)));
+        trg_simSetScoring.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SCORING)));
     }
 
     private void configureTestingDashboard() {
@@ -617,7 +617,7 @@ public class Robot extends TimedRobot {
     /* PERIODICS */
     @Override
     public void robotPeriodic() {
-        m_timeAndJoystickReplay.update();
+        // m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run(); 
 
         for (var camera : WaltCamera.AllCameras) {

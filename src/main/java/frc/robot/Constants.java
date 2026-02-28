@@ -78,7 +78,7 @@ public class Constants {
         public static final double kShooterGearing = 1/1;
         public static final double kTurretGearing = 41.66666666/1;
 
-        public static final Angle kTurretMaxRotsFromHome = Rotations.of(1.5); //1.5 rots in each direction from home
+        public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.75); //1.5 rots in each direction from home
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.magnitude());
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.magnitude());
 
@@ -99,6 +99,8 @@ public class Constants {
         //TODO: also make a "at position" to start shooting -- hood angle will have a tolerance of 0.5 degrees.
         public static final Angle kHoodServoMaxDegs = Degrees.of(Rotations.of(0.9451).in(Degrees));  
         public static final Angle kHoodAbsoluteMaxDegs = Degrees.of(40);
+
+        public static final Angle kHoodShootingTolerance = Degrees.of(0.5);
 
         public static final DCMotor khoodDCMotorGearbox = new DCMotor(
             6, 

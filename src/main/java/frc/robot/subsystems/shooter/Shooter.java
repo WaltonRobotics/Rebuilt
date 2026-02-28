@@ -29,12 +29,10 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -45,13 +43,10 @@ import static frc.robot.Constants.RobotK.kRobotFullWidth;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
 
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
-import frc.robot.Robot;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
 import frc.util.AllianceFlipUtil;
 import frc.util.GobildaServoAngled;
@@ -132,8 +127,6 @@ public class Shooter extends SubsystemBase {
 
     private boolean m_isHoodHoming = false;
 
-    private Timer m_hoodHomingTimer = new Timer();
-
     /* CONSTRUCTOR */
     public Shooter(Supplier<Pose2d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
         m_shooterLeader.getConfigurator().apply(kShooterLeaderTalonFXConfiguration);
@@ -163,9 +156,9 @@ public class Shooter extends SubsystemBase {
         m_fuelSim = FuelSim.getInstance();
 
         if (inAllianceZone()) {
-            setDefaultCommand(setGoal(ShooterGoal.SCORING));
+            setGoal(ShooterGoal.SCORING);
         } else {
-            setDefaultCommand(setGoal(ShooterGoal.PASSING));
+            setGoal(ShooterGoal.PASSING);
         }
     }
 
@@ -334,7 +327,7 @@ public class Shooter extends SubsystemBase {
     }
 
     /**
-     * Testing Method  - Sets the current aiming position ahead of the robot distanceMeters ahead of the robot.
+     * Testing Method - Sets the current aiming position ahead of the robot distanceMeters ahead of the robot.
      * 
      * @param distanceMeters how far ahead (in X) of the robot the target will be 
      */
@@ -366,10 +359,8 @@ public class Shooter extends SubsystemBase {
      * Sets the Goal State of the Shooter to either SCORING, PASSING, TEST, or OFF.
      * Method is incomplete for now, but add other methods that should be running passively when in certain goal states.
      * @param goal ShooterGoal desired
-     * @return Command that runs the setTarget, setTargetAheadOfRobot, or zeroShooterCmd methods.
      */
-    public Command setGoal(ShooterGoal goal) {
-        return runOnce(() -> {
+    public void setGoal(ShooterGoal goal) {
             m_goal = goal;
             switch (goal) {
             case SCORING:
@@ -389,7 +380,6 @@ public class Shooter extends SubsystemBase {
                 removeDefaultCommand();
                 break;
             }
-        });
     }
 
     /**
@@ -412,6 +402,7 @@ public class Shooter extends SubsystemBase {
      */
     private void calculateShot(Pose2d robotPose) {
         ChassisSpeeds fieldSpeeds = m_fieldSpeedsSupplier.get();                                                        //How fast the robot is currently going, (CURRENT ROBOT VELOCITY)
+        //TODO: once we finish our lerp, switch to the iterativeMovingShotFromInterpolationMap method
         ShotData calculatedShot = ShotCalculator.iterativeMovingShotFromFunnelClearance(robotPose, fieldSpeeds,         //The Calculated shot itself, according to the current robotPose, robotSpeeds, and the currentTarget
                 currentTarget, 3);                                                                               
         Angle azimuthAngle = ShotCalculator.calculateAzimuthAngle(robotPose, calculatedShot.getTarget(),                //The turret angle according to the Calculated shot
@@ -454,10 +445,10 @@ public class Shooter extends SubsystemBase {
      * @return
      */
     public boolean atPosition() {
-        getTurretPosition().isNear(m_calcTurret, Rotations.of(0)); //TODO: get the turret tolerance
-        getShooterVelocity().isNear(m_calcFlywheel, RotationsPerSecond.of(0)); //TODO: get the flywheel tolerance
-        // getHoodAngle().isNear(kHoodMaxDegs, kHoodAbsoluteMaxDegs)
-        return true;
+        var turretAtPos = getTurretPosition().isNear(m_calcTurret, Rotations.of(0)); //TODO: get the turret tolerance
+        var flywheelAtPos = getShooterVelocity().isNear(m_calcFlywheel, RotationsPerSecond.of(0)); //TODO: get the flywheel tolerance
+        var hoodAtPos = getHoodAngle().isNear(Degrees.of(convertHoodAngleToServoAngle(m_calcHood)), kHoodShootingTolerance); //is this right buh
+        return turretAtPos && flywheelAtPos && hoodAtPos;
     }
 
     /* PERIODICS */
@@ -465,15 +456,17 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         Pose2d pose = m_poseSupplier.get();
 
-        trg_inAllianceZone.and(DriverStation::isTeleop).whileTrue(setGoal(ShooterGoal.SCORING));
-        trg_inAllianceZone.negate().and(DriverStation::isTeleop).whileTrue(setGoal(ShooterGoal.PASSING));
+        trg_inAllianceZone.and(DriverStation::isTeleop)
+            .onTrue(Commands.runOnce(() -> setGoal(ShooterGoal.SCORING)))
+            .onFalse(Commands.runOnce(() -> setGoal(ShooterGoal.PASSING)));
+        // trg_inAllianceZone.negate().and(DriverStation::isTeleop).whileTrue(Commands.runOnce(() -> setGoal(ShooterGoal.PASSING)));
 
         switch (m_goal) {
             case SCORING:
                 calculateShot(pose);
                 break;
             case PASSING:
-                calculateShot(pose);;
+                calculateShot(pose);
                 break;
             case TEST:
                 calculateTurretAngle(pose);
