@@ -54,6 +54,7 @@ import java.util.function.Supplier;
 
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
+import frc.robot.Robot;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
 import frc.util.AllianceFlipUtil;
 import frc.util.GobildaServoAngled;
@@ -62,6 +63,7 @@ import frc.util.WaltTuner;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.StringLogger;
 
 public class Shooter extends SubsystemBase {
     /* VARIABLES */
@@ -75,9 +77,10 @@ public class Shooter extends SubsystemBase {
     private final Supplier<Pose2d> m_poseSupplier;
     private final Supplier<ChassisSpeeds> m_fieldSpeedsSupplier;
 
-    private final Distance fieldWidthDiv2 = Inches.of(FieldConstants.fieldWidth / 2);
+    private final Distance fieldWidthDiv2 = Inches.of(FieldConstants.fieldWidth / 2.0);
 
     private boolean m_isBlue;
+    private boolean m_onLeftSide;
     //need to implement the differing targets (if in neutral zone, shoot to X point (passing))
     Translation3d currentTarget = AllianceFlipUtil.apply(FieldConstants.Hub.innerCenterPoint);
 
@@ -103,11 +106,14 @@ public class Shooter extends SubsystemBase {
     private DigitalInput m_turretHomingHall = new DigitalInput(2);
     private final BooleanLogger log_turretHomingHall = new BooleanLogger(kLogTab, "turretHomeHall");
 
-
-    private Angle m_calcHood = Degrees.of(0);
+    private Angle m_calcHoodAngle = Degrees.of(0);
     private Angle m_calcTurret = Rotations.of(0);
-    private AngularVelocity m_calcFlywheel = RotationsPerSecond.of(0);
+    private AngularVelocity m_calcFlywheelVelocity = RotationsPerSecond.of(0);
 
+    private final DoubleLogger log_calcHoodAngle = new DoubleLogger(kLogTab, "calcHoodAngle");
+    private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger(kLogTab, "calcFlywheelVelocity");
+    private final DoubleLogger log_calcTurretPos = new DoubleLogger(kLogTab, "calcTurretPos");
+    
     //---LOGIC BOOLEANS
     private boolean m_isTurretHomed = false;
     //---TRIGGERS
@@ -126,6 +132,8 @@ public class Shooter extends SubsystemBase {
     /* LOGGERS */
     private final DoubleLogger log_shooterVelocityRPS = WaltLogger.logDouble(kLogTab, "shooterVelocityRPS");
     private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble(kLogTab, "turretPositionRots");
+    private final BooleanLogger log_onLeftSide = WaltLogger.logBoolean(kLogTab, "onLeftSide");
+    private final StringLogger log_shootingGoal = WaltLogger.logString(kLogTab, "currentShootingGoal");
 
     //---HOOD
     private final DoubleLogger log_hoodEncoderPositionDegs = WaltLogger.logDouble(kLogTab, "hoodEncoderPositionDegs");
@@ -169,7 +177,11 @@ public class Shooter extends SubsystemBase {
 
         setDefaultCommand(turretHomingCmd());
 
-        trg_turretHomingCompleted.onTrue(Commands.runOnce(() -> setGoal(ShooterGoal.SCORING)));
+        trg_turretHomingCompleted.onTrue(Commands.runOnce(() -> setGoal(ShooterGoal.SHOOTING)));
+
+        if (Robot.isSimulation()) {
+            setGoal(ShooterGoal.PASSING);
+        }
         // if (inAllianceZone()) {
         //     setGoal(ShooterGoal.SCORING);
         // } else {
@@ -286,6 +298,10 @@ public class Shooter extends SubsystemBase {
         return m_turret.getPosition().getValue();
     }
 
+    public AngularVelocity getFlywheelCalcVelocity() {
+        return m_calcFlywheelVelocity;
+    }
+
     /* SIMULATION */
     public boolean simAbleToIntake() {
         return canIntake();
@@ -372,9 +388,10 @@ public class Shooter extends SubsystemBase {
      *         the robot is on the right side of the field. Relative of what alliance one is on.
      */
     private Translation3d getPassingTarget(Pose2d robotPose) {
-        boolean onLeftSide = m_isBlue ? robotPose.getMeasureY().gt(fieldWidthDiv2) : robotPose.getMeasureY().lt(fieldWidthDiv2);
+        BooleanSupplier onLeftSide = () -> (m_isBlue ? robotPose.getMeasureY().lt(fieldWidthDiv2) : robotPose.getMeasureY().gt(fieldWidthDiv2));
+        m_onLeftSide = onLeftSide.getAsBoolean();
 
-        return onLeftSide ? kPassingSpotLeft : kPassingSpotRight;
+        return onLeftSide.getAsBoolean() ? kPassingSpotLeft : kPassingSpotRight;
     }
 
     /**
@@ -385,21 +402,20 @@ public class Shooter extends SubsystemBase {
     public void setGoal(ShooterGoal goal) {
             m_goal = goal;
             switch (goal) {
-            case SCORING:
+            case SHOOTING:
                 setTarget(FieldConstants.Hub.innerCenterPoint);
-                removeDefaultCommand();
+                break;
+            case STATIC_SHOOTING:
+                setTarget(FieldConstants.Hub.innerCenterPoint);
                 break;
             case PASSING:
                 setTarget(getPassingTarget(m_poseSupplier.get()));
-                removeDefaultCommand();
                 break;
             case TEST:
                 setTargetAheadOfRobot(3);
-                removeDefaultCommand();
                 break;
             case OFF:
                 zeroShooterCmd();
-                removeDefaultCommand();
                 break;
             }
     }
@@ -419,7 +435,7 @@ public class Shooter extends SubsystemBase {
 
     /**
      * Calculates the ideal shot to put the FUEL™ into the HUB™
-     * 
+     * Accounts for moving speeds
      * @param robotPose current Robot position.
      */
     private void calculateShot(Pose2d robotPose) {
@@ -430,12 +446,32 @@ public class Shooter extends SubsystemBase {
         Angle azimuthAngle = ShotCalculator.calculateAzimuthAngle(robotPose, calculatedShot.getTarget(),                //The turret angle according to the Calculated shot
                 m_turret.getPosition().getValue());
         setTurretPos(azimuthAngle);                                                                                     //Sets the TurretPosition to the Calculated TurretAngle
-        setHoodPosition(calculatedShot.getHoodAngle());                                                                 //Sets the HoodPosition to the Calculated HoodAngle
+        setHoodPosition(Degrees.of(calculatedShot.getHoodAngle().in(Degrees)));                                                                 //Sets the HoodPosition to the Calculated HoodAngle
         // setShooterVelocity(ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));  //Sets the ShooterVelocity to the Calculated ShooterVelocity
         
         m_calcTurret = azimuthAngle;
-        m_calcHood = calculatedShot.getHoodAngle();
-        m_calcFlywheel = ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius);
+        m_calcHoodAngle = calculatedShot.getHoodAngle();
+        m_calcFlywheelVelocity = ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius);
+    }
+
+    /**
+     * Calculates the ideal shot to put the FUEL™ into the HUB™
+     * Does NOT account for moving speeds
+     * @param robotPose current Robot position.
+     */
+    private void calculateStaticShot(Pose2d robotPose) {
+        ShotData calculatedShot = ShotCalculator.iterativeMovingShotFromFunnelClearance(robotPose,
+                new ChassisSpeeds(0, 0, 0),
+                currentTarget, 3);
+        Angle azimuthAngle = ShotCalculator.calculateAzimuthAngle(robotPose, calculatedShot.getTarget(),
+                m_turret.getPosition().getValue());
+        setTurretPos(azimuthAngle);
+        setHoodPosition(Degrees.of(calculatedShot.getHoodAngle().in(Degrees)));
+        // setShooterVelocity(ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius));  //Sets the ShooterVelocity to the Calculated ShooterVelocity
+        
+        m_calcTurret = azimuthAngle;
+        m_calcHoodAngle = calculatedShot.getHoodAngle();
+        m_calcFlywheelVelocity = ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius);
     }
 
     /**
@@ -467,9 +503,9 @@ public class Shooter extends SubsystemBase {
      * @return
      */
     public boolean atPosition() {
-        var turretAtPos = getTurretPosition().isNear(m_calcTurret, Rotations.of(0)); //TODO: get the turret tolerance
-        var flywheelAtPos = getShooterVelocity().isNear(m_calcFlywheel, RotationsPerSecond.of(0)); //TODO: get the flywheel tolerance
-        var hoodAtPos = getHoodAngle().isNear(Degrees.of(convertHoodAngleToServoAngle(m_calcHood)), kHoodShootingTolerance); //is this right buh
+        var turretAtPos = getTurretPosition().isNear(m_calcTurret, Degrees.of(1)); //TODO: get the turret tolerance
+        var flywheelAtPos = getShooterVelocity().isNear(m_calcFlywheelVelocity, RotationsPerSecond.of(1)); //TODO: get the flywheel tolerance
+        var hoodAtPos = m_hoodEncoder.getVelocity().getValue().isNear(RotationsPerSecond.of(0), 0.01); //is this right buh
         return turretAtPos && flywheelAtPos && hoodAtPos;
     }
 
@@ -484,11 +520,15 @@ public class Shooter extends SubsystemBase {
         // trg_inAllianceZone.negate().and(DriverStation::isTeleop).whileTrue(Commands.runOnce(() -> setGoal(ShooterGoal.PASSING)));
 
         switch (m_goal) {
-            case SCORING:
+            case SHOOTING:
                 calculateShot(pose);
                 break;
             case PASSING:
+                setTarget(currentTarget);
                 calculateShot(pose);
+                break;
+            case STATIC_SHOOTING:
+                calculateStaticShot(pose);
                 break;
             case TEST:
                 calculateTurretAngle(pose);
@@ -524,6 +564,12 @@ public class Shooter extends SubsystemBase {
         log_hoodServoCurrent.accept(RobotController.getCurrent6V());
 
         log_turretHomingHall.accept(m_turretHomingHall.get());
+        // log_onLeftSide.accept(m_onLeftSide);
+        log_shootingGoal.accept(m_goal.toString());
+
+        log_calcHoodAngle.accept(m_calcHoodAngle.in(Degrees));
+        log_calcFlywheelVelocity.accept(m_calcFlywheelVelocity.in(RotationsPerSecond));
+        log_calcTurretPos.accept(m_calcTurret.in(Degrees));
     }
 
     @Override
@@ -561,8 +607,9 @@ public class Shooter extends SubsystemBase {
 
     /* CONSTANTS */
     public enum ShooterGoal {
-        SCORING,
+        SHOOTING,
         PASSING,
+        STATIC_SHOOTING,
         TEST,
         OFF
     }

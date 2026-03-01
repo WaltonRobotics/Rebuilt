@@ -97,8 +97,6 @@ public class Constants {
         public static final Angle kHoodMinDegs = Degrees.of(0); // 0 = 0 (encoder wise i believe)
         public static final Angle kHoodSafeDegs = Degrees.of(1);
         public static final Angle kHoodMaxDegs = Degrees.of(37);    // 40 = 0.9451 (encoder wise i believe)
-        //TODO: for sotm, need to check if we are NEAR this servo rotation/degree b/c this value beneath this is not for setting anything, but rather to check.
-        //TODO: also make a "at position" to start shooting -- hood angle will have a tolerance of 0.5 degrees.
         public static final Angle kHoodEncoderMaxDegs = Degrees.of(Rotations.of(0.9451).in(Degrees));
         public static final Angle kHoodAbsoluteMaxDegs = Degrees.of(40);
         public static final Angle kHoodServoMaxDegs = Degrees.of(300);
@@ -119,7 +117,7 @@ public class Constants {
         public static final int kFollowerCANID = 21;
         public static final int kTurretCANID = 12;
 
-        public static final int kExitBeamBreakChannel = 1; //TODO: Update channel number
+        // public static final int kExitBeamBreakChannel = 1; //TODO: Update channel number
         public static final int kHoodChannel = 0;
         public static final int kHoodEncoderCANID = 25;
 

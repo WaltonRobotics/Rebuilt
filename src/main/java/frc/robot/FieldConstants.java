@@ -31,7 +31,7 @@ import java.nio.file.Path;
 public class FieldConstants {
 
   // AprilTag related constants
-  public static final int aprilTagCount = kTagLayout.getTags().size();                 //AprilTagLayoutType.OFFICIAL.getLayout().getTags().size();
+  public static final int aprilTagCount = kTagLayout.getTags().size();
   public static final double aprilTagWidth = Units.inchesToMeters(6.5);
   public static final AprilTagLayoutType defaultAprilTagType = AprilTagLayoutType.OFFICIAL;
 

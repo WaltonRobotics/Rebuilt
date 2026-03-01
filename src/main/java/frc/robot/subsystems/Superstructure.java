@@ -79,10 +79,9 @@ public class Superstructure {
         );
     }
 
-    public Command startShootSequence(AngularVelocity RPS, Angle hoodDegs) {
+    public Command startShootSequence(AngularVelocity RPS) {
         return Commands.sequence(
             m_shooter.setShooterVelocityCmd(RPS),
-            m_shooter.setHoodPositionCmd(hoodDegs),
             Commands.waitUntil(() -> m_shooter.isShooterSpunUp()).withTimeout(3),
             m_indexer.startTunnelCmd(),
             m_indexer.startSpindexerCmd()
@@ -104,7 +103,7 @@ public class Superstructure {
         }
 
         return Commands.parallel(
-            startShootSequence(RPS, Degrees.of(20))
+            startShootSequence(RPS)
                 .onlyWhile(() -> m_shooter.isShooterSpunUp())
                 .andThen(Commands.waitUntil(() -> m_shooter.isShooterSpunUp()))
                 .repeatedly(),

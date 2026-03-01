@@ -23,6 +23,7 @@ import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,13 +33,12 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-import frc.robot.Constants.VisionK;
 import frc.robot.subsystems.shooter.FuelSim;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.shooter.Shooter.ShooterGoal;
 import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
-import frc.robot.dashboards.AutonChooser;
 import frc.robot.dashboards.TestingDashboard;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
@@ -113,7 +113,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_retractIntake = m_manipulator.y().and(trg_manipOverride.negate());
 
     private Trigger trg_shoot = m_driver.rightTrigger().and(trg_manipOverride.negate());
-    private Trigger trg_emergencyBarf = m_driver.leftTrigger().and(trg_driverOverride);
+    private Trigger trg_emergencyBarf = m_driver.rightTrigger().and(trg_driverOverride);
 
     private Trigger trg_pass = m_driver.rightBumper().and(trg_driverOverride.negate());
 
@@ -279,7 +279,7 @@ public class Robot extends TimedRobot {
         // m_driver.start().and(m_driver.x()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset the field-centric heading on left bumper press.
-        m_driver.leftBumper().onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
+        // m_driver.leftBumper().onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
 
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
@@ -305,9 +305,8 @@ public class Robot extends TimedRobot {
         );
 
         //Shooting
-        //TODO: limit speed while they doin ts
         trg_shoot.and(trg_pass.negate()).whileTrue(
-            m_superstructure.activateOuttake(ShooterK.kShooterMaxRPS)
+            m_superstructure.activateOuttake(m_shooter.getFlywheelCalcVelocity())
         );
         // trg_shoot.and(trg_pass).onTrue(
         //     m_superstructure.startPassing()
@@ -359,6 +358,13 @@ public class Robot extends TimedRobot {
             m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
         );
 
+        m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd());
+        m_driver.rightBumper()
+                .onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.STATIC_SHOOTING)))
+                .onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
+
+        m_driver.povUp().onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING)));
+
         // TODO: add shooter overrides for drivet but waiting for sohan's calculate method
     }
 
@@ -383,7 +389,7 @@ public class Robot extends TimedRobot {
         );
 
         // Reset the field-centric heading on left bumper press.
-        m_driver.leftBumper().and(trg_manipOverride.negate()).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
+        // m_driver.leftBumper().and(trg_manipOverride.negate()).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
 
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
@@ -589,7 +595,7 @@ public class Robot extends TimedRobot {
                         }));
         trg_simSetPassing.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING)));
         trg_simSetTest.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.TEST)));
-        trg_simSetScoring.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SCORING)));
+        trg_simSetScoring.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
     }
 
     private void configureTestingDashboard() {
@@ -631,7 +637,8 @@ public class Robot extends TimedRobot {
                 EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
                 Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
                 var ctreTime = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
-                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());                
+                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());
+                System.out.println("AddingVisMeas - " + camera.getName());          
                 m_visionSeenLastSec = ctreTime;
             }
         }
@@ -676,8 +683,11 @@ public class Robot extends TimedRobot {
         // m_periodicTracer.printEpochs();
     }
 
+    private final Timer m_fpsLimitTimer = new Timer();
+
     @Override
     public void disabledInit() {
+        m_fpsLimitTimer.restart();
         // m_waltAutonFactory.setAlliance(
         //     DriverStation.getAlliance().isPresent() && 
         //     DriverStation.getAlliance().get().equals(Alliance.Red)
@@ -696,6 +706,7 @@ public class Robot extends TimedRobot {
         //     m_autonomousCommand = m_autonList.get("threeRightNeutralPickup");
         // }
     }
+
 
     @Override
     public void disabledPeriodic() {
@@ -741,6 +752,11 @@ public class Robot extends TimedRobot {
         //     AutonChooser.pub_autonMade.set(true);
         //     AutonChooser.pub_makeAuton.set(false);
         // }
+
+        if (m_fpsLimitTimer.hasElapsed(10)) {
+            WaltCamera.setFpsLimit(true);
+            m_fpsLimitTimer.restart();
+        }
     }
 
     @Override
