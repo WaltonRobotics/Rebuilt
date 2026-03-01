@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IndexerK.*;
 
@@ -69,24 +68,38 @@ public class Indexer extends SubsystemBase {
     }
 
     /* COMMANDS */
-    public Command startSpindexer() {
+    //---STARTS AND STOPS
+    public Command startSpindexerCmd() {
         return setSpindexerVelocityCmd(m_spindexerRPS);
     }
 
-    public Command stopSpindexer() {
+    public Command stopSpindexerCmd() {
         return setSpindexerVelocityCmd(RotationsPerSecond.of(0));
     }
 
-    public Command startTunnel() {
+    public void stopSpindexer() {
+        setSpindexerVelocity(RotationsPerSecond.of(0));
+    }
+
+    public Command startTunnelCmd() {
         return setTunnelVelocityCmd(m_tunnelRPS);
     }
 
-    public Command stopTunnel() {
+    public Command stopTunnelCmd() {
         return setTunnelVelocityCmd(RotationsPerSecond.of(0));
     }
 
+    public void stopTunnel() {
+        setTunnelVelocity(RotationsPerSecond.of(0));
+    }
+
+    //---SPINDEXER
+    public void setSpindexerVelocity(AngularVelocity RPS) {
+        m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RPS));
+    }
+
     public Command setSpindexerVelocityCmd(AngularVelocity RPS) {
-        return runOnce(() -> m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RPS)));
+        return runOnce(() -> setSpindexerVelocity(RPS));
     }
 
     //for TestingDashboard
@@ -94,21 +107,18 @@ public class Indexer extends SubsystemBase {
         return run(() -> m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
     }
 
+    //---TUNNEL
+    public void setTunnelVelocity(AngularVelocity RPS) {
+        m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS));
+    }
+
     public Command setTunnelVelocityCmd(AngularVelocity RPS) {
-        return runOnce(() -> m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS)));
+        return runOnce(() -> setTunnelVelocity(RPS));
     }
 
     //for TestingDashboard
     public Command setTunnelVelocityCmd(DoubleSubscriber sub_RPS) {
         return run(() -> m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
-    }
-
-    public TalonFX getSpindexer() {
-        return m_spindexer;
-    }
-
-    public TalonFX getTunnel() {
-        return m_tunnel;
     }
 
     /* PERIODICS */

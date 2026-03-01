@@ -38,10 +38,10 @@ public class WaltAutonFactory {
     }
 
     public void setAlliance(boolean isRed) {
-        m_postRightPickupNeutral = isRed ? AllianceFlipUtil.flip(AutonK.rightNeutralPose) : AutonK.rightNeutralPose;
-        m_postPickupDepot = isRed ? AllianceFlipUtil.flip(AutonK.rightDepotPose) : AutonK.rightDepotPose;
+        m_postRightPickupNeutral = isRed ? AllianceFlipUtil.apply(AutonK.rightNeutralPose) : AutonK.rightNeutralPose;
+        m_postPickupDepot = isRed ? AllianceFlipUtil.apply(AutonK.rightDepotPose) : AutonK.rightDepotPose;
 
-        m_postLeftPickupNeutral = isRed ? AllianceFlipUtil.flip(AutonK.leftNeutralPose) : AutonK.leftNeutralPose;
+        m_postLeftPickupNeutral = isRed ? AllianceFlipUtil.apply(AutonK.leftNeutralPose) : AutonK.leftNeutralPose;
     }
 
     /* CONSTRUCTOR */
@@ -61,29 +61,29 @@ public class WaltAutonFactory {
         );
     }
 
-    public Command pickupCmd(PickupLocation location) {
-        Pose2d postPickupPose;
+    // public Command pickupCmd(PickupLocation location) {
+    //     Pose2d postPickupPose;
 
-        switch (location) {
-            case LEFT:
-                postPickupPose = m_postLeftPickupNeutral;
-                break;
-            case RIGHT:
-                postPickupPose = m_postRightPickupNeutral;
-                break;
-            case DEPOT:
-                postPickupPose = m_postPickupDepot;
-                break;
-            default:
-                postPickupPose = m_postRightPickupNeutral;
-                break;
-        }
+    //     switch (location) {
+    //         case LEFT:
+    //             postPickupPose = m_postLeftPickupNeutral;
+    //             break;
+    //         case RIGHT:
+    //             postPickupPose = m_postRightPickupNeutral;
+    //             break;
+    //         case DEPOT:
+    //             postPickupPose = m_postPickupDepot;
+    //             break;
+    //         default:
+    //             postPickupPose = m_postRightPickupNeutral;
+    //             break;
+    //     }
 
-        return Commands.sequence(
-            m_drivetrain.swerveToObject().withTimeout(1),
-            m_drivetrain.toPose(postPickupPose).withTimeout(1)
-        );
-    }
+    //     return Commands.sequence(
+    //         m_drivetrain.swerveToObject().withTimeout(1),
+    //         m_drivetrain.toPose(postPickupPose).withTimeout(1)
+    //     );
+    // }
 
     /**
      * Pass in an integer pickupTimes to create a sequence of commands for an auton that
@@ -95,7 +95,7 @@ public class WaltAutonFactory {
         if (pickupTimes == 1) { // Base case when pickupTimes = 1 in the recursive loop
             return Commands.sequence(
                 runTrajCmd(neutralCycle[0]), //right to neutral
-                pickupCmd(m_side.equals(AutonSide.RIGHT) ? PickupLocation.RIGHT : PickupLocation.LEFT),
+                // pickupCmd(m_side.equals(AutonSide.RIGHT) ? PickupLocation.RIGHT : PickupLocation.LEFT),
                 runTrajCmd(neutralCycle[1]) //neutral to shoot
             );
         }
@@ -114,7 +114,7 @@ public class WaltAutonFactory {
 
         // Code required for both pickupTimes == 2 and != 2 
         commandSequence.add(runTrajCmd(neutralCycle[2])); //shoot to neutral
-        commandSequence.add(pickupCmd(m_side.equals(AutonSide.RIGHT) ? PickupLocation.RIGHT : PickupLocation.LEFT));
+        // commandSequence.add(pickupCmd(m_side.equals(AutonSide.RIGHT) ? PickupLocation.RIGHT : PickupLocation.LEFT));
 
 
         return Commands.sequence(commandSequence.toArray(new Command[commandSequence.size()]));// Return final command
@@ -184,7 +184,7 @@ public class WaltAutonFactory {
         return Commands.sequence(
             runTrajCmd("RightToDepot"),
             
-            pickupCmd(PickupLocation.DEPOT),
+            // pickupCmd(PickupLocation.DEPOT),
 
             runTrajCmd("RightDepotToShoot")
         );
