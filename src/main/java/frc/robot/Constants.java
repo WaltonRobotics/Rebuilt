@@ -211,12 +211,11 @@ public class Constants {
         public static final CanandmagSettings kHoodEncoderSettings = new CanandmagSettings()
             .setInvertDirection(false);
 
-        //Left, Center (Climb), Center (Hub), Right - Driver POV
         public static final Pose2d kShooterOverridePoses[] = {
-            AllianceFlipUtil.apply(new Pose2d(FieldK.kFieldLengthMeters / 6, FieldK.kFieldWidthMeters * 2 / 3, new Rotation2d(0))),
-            AllianceFlipUtil.apply(new Pose2d(Units.inchesToMeters(156.61 - 115.05 + 10), FieldK.kFieldWidthMeters / 2, new Rotation2d(0))),
-            AllianceFlipUtil.apply(new Pose2d(Units.inchesToMeters(156.61 - 10), FieldK.kFieldWidthMeters / 2, new Rotation2d(0))),
-            AllianceFlipUtil.apply(new Pose2d(FieldK.kFieldLengthMeters / 6, FieldK.kFieldWidthMeters / 3, new Rotation2d(0))),
+            AllianceFlipUtil.apply(new Pose2d(Units.inchesToMeters(156.61), FieldK.kFieldWidthMeters * 8.5 / 9.5, new Rotation2d(0))),       // Left Trench
+            AllianceFlipUtil.apply(new Pose2d(Units.inchesToMeters(156.61 - 115.05 + 20), FieldK.kFieldWidthMeters / 2 - 0.26, new Rotation2d(0))), // Climb
+            AllianceFlipUtil.apply(new Pose2d(Units.inchesToMeters(156.61 - 15), FieldK.kFieldWidthMeters / 2, new Rotation2d(0))),                 // Hub
+            AllianceFlipUtil.apply(new Pose2d(Units.inchesToMeters(156.61), FieldK.kFieldWidthMeters / 9.5, new Rotation2d(0))),             // Right Trench
         };
     }
 
