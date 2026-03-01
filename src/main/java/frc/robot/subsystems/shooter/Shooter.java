@@ -75,6 +75,8 @@ public class Shooter extends SubsystemBase {
     private final Supplier<Pose2d> m_poseSupplier;
     private final Supplier<ChassisSpeeds> m_fieldSpeedsSupplier;
 
+    private Pose2d m_overridePose = new Pose2d();
+
     private final Distance fieldWidthDiv2 = Inches.of(FieldConstants.fieldWidth / 2);
 
     private boolean m_isBlue;
@@ -110,6 +112,8 @@ public class Shooter extends SubsystemBase {
 
     //---LOGIC BOOLEANS
     private boolean m_isTurretHomed = false;
+    private boolean m_isInOverride = false;
+    
     //---TRIGGERS
     private final Trigger trg_inAllianceZone = new Trigger(this::inAllianceZone);
     private final Trigger trg_turretHomingCompleted = new Trigger(() -> m_isTurretHomed);
@@ -438,6 +442,15 @@ public class Shooter extends SubsystemBase {
         m_calcFlywheel = ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius);
     }
 
+    public void overrideShooter(Pose2d overridePose) {
+        m_isInOverride = true;
+        m_overridePose = overridePose;
+    }
+
+    public void deoverrideShooter() {
+        m_isInOverride = false;
+    }
+
     /**
      * Version of calculateShot where, FOR TESTING, the turret will align to the target.
      * 
@@ -476,7 +489,7 @@ public class Shooter extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        Pose2d pose = m_poseSupplier.get();
+        Pose2d pose = m_isInOverride ? m_overridePose : m_poseSupplier.get();
 
         // trg_inAllianceZone.and(DriverStation::isTeleop)
         //     .onTrue(Commands.runOnce(() -> setGoal(ShooterGoal.SCORING)))
@@ -566,5 +579,4 @@ public class Shooter extends SubsystemBase {
         TEST,
         OFF
     }
-
 }
