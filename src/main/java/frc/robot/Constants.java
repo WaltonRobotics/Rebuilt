@@ -42,6 +42,9 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.util.AllianceFlipUtil;
 import frc.util.VisionUtil;
+import frc.util.WaltLogger;
+import frc.util.WaltLogger.Pose3dLogger;
+import frc.util.WaltLogger.Transform3dLogger;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
@@ -55,8 +58,14 @@ public class Constants {
 
     public static class ShooterK {
         public static final String kLogTab = "Shooter";
-        public static final Transform3d kTurretTransform = new Transform3d(new Translation3d(Inches.of(-4.744), Inches.of(4.239), Inches.of(17.260)), Rotation3d.kZero); //DUMMY VALS
+        private static final Rotation2d kTurretAngleOffset = Rotation2d.fromDegrees(-135);
+        public static final Transform3d kTurretTransform = new Transform3d(new Translation3d(Inches.of(-4.744), Inches.of(-4.239), Inches.of(17.260)), new Rotation3d(kTurretAngleOffset)); //DUMMY VALS
         public static final Distance kInchesAboveFunnel = Inches.of(20);// distance the ball must travel above the funnel opening to arc correctly into the hub
+
+        private static final Pose3dLogger log_turretTransform = WaltLogger.logPose3d(kLogTab, "TurretTransformRaw");
+        static {
+            log_turretTransform.accept(kTurretTransform);
+        }
 
 
         public static final double kHoodMinAngle = Units.degreesToRadians(19);

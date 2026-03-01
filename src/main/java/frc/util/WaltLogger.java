@@ -4,6 +4,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -60,6 +61,14 @@ public class WaltLogger {
                 logEntry.append(value);
             }
         }
+
+        public void accept(Translation2d value) {
+            accept(new Pose2d(value, Rotation2d.kZero));
+        }
+
+        public void accept(Translation2d translation, Rotation2d value) {
+            accept(new Pose2d(translation, value));
+        }
     }
 
     public static Pose2dLogger logPose2d(String table, String name, PubSubOption... options) {
@@ -87,6 +96,10 @@ public class WaltLogger {
 
         public void accept(Translation3d value) {
             accept(new Pose3d(value.getX(), value.getY(), value.getZ(), new Rotation3d()));
+        }
+
+        public void accept(Transform3d value) {
+            accept(new Pose3d(value.getTranslation(), value.getRotation()));
         }
     }
 

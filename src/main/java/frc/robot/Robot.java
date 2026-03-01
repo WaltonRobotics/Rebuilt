@@ -113,7 +113,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_safeIntake = m_manipulator.x().and(trg_manipOverride.negate());
     private Trigger trg_retractIntake = m_manipulator.y().and(trg_manipOverride.negate());
 
-    private Trigger trg_shoot = m_driver.rightTrigger().and(trg_manipOverride.negate());
+    private Trigger trg_shoot = m_driver.rightTrigger().and(trg_driverOverride.negate());
     private Trigger trg_emergencyBarf = m_driver.rightTrigger().and(trg_driverOverride);
 
     private Trigger trg_pass = m_driver.rightBumper().and(trg_driverOverride.negate());
@@ -364,7 +364,7 @@ public class Robot extends TimedRobot {
                 .onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.STATIC_SHOOTING)))
                 .onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
 
-        m_driver.povUp().onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING)));
+        // m_driver.povUp().onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING)));
         m_driver.povDown().onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.OFF)));
         m_driver.povRight().onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
 
@@ -596,8 +596,8 @@ public class Robot extends TimedRobot {
                             FuelSim.getInstance().clearFuel();
                             // FuelSim.getInstance().spawnStartingFuel();
                         }));
-        trg_simSetPassing.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING)));
-        trg_simSetTest.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.TEST)));
+        // trg_simSetPassing.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING)));
+        // trg_simSetTest.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.TEST)));
         trg_simSetScoring.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
     }
 

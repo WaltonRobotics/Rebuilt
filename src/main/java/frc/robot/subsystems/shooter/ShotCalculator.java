@@ -15,6 +15,7 @@ import static frc.robot.Constants.ShooterK.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
@@ -26,14 +27,19 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.FieldConstants;
+import frc.util.WaltLogger;
 import frc.util.WaltLogger.*;
 import edu.wpi.first.units.measure.Time;
 
 public class ShotCalculator {
 
+    private static final DoubleLogger log_rawDesiredTurretRot = WaltLogger.logDouble("ShotCalc", "rawDesiredTurretRots");
     private static final DoubleLogger log_desiredTurretRot = new DoubleLogger("Shooter/Calculator", "desiredTurretRotations");
 
     private static final DoubleLogger log_timeOfFlight = new DoubleLogger("Shooter/Calculator", "timeOfFlight");
+
+    private static final Pose2dLogger log_turretTx2d = WaltLogger.logPose2d("ShotCalc", "TurretTranslation2d");
+    private static final Pose2dLogger log_turretDir = WaltLogger.logPose2d("ShotCalc", "TurretDirection");
 
     //see 5000's code (circa 2/16/2026 9:11 PM EST)
     public static final InterpolatingTreeMap<Double, ShotData> m_shotMap = new InterpolatingTreeMap<>(
@@ -126,45 +132,6 @@ public class ShotCalculator {
     }
 
     /**
-     * Calculates the turret's *TARGET* angle while ensuring it stays within physical limits.
-     * IF the turret is near a limit, snaps 360 degrees in the opposite direction to reach the same angle
-     * without hitting the hardstop.
-     * Note that if you have less than 360 degrees on the turret, you will simply snap back to the other hard limit.
-     * @param robot used to calculate where on the robot the turret will be
-     * @param target target position
-     * @param currentAngle current measured position of the turret
-     * @return safe rotation setpoint that is accurate to the target within bounds of kTurretMaxAngle
-     * and kTurretMinAngle
-     */
-    public static Angle calculateAzimuthAngle(Pose2d robot, Translation3d target,
-            Angle currentAngle) {
-        Translation2d turretTranslation = new Pose3d(robot).transformBy(kTurretTransform).toPose2d().getTranslation(); //where the turret is on the robot
-
-        Translation2d direction = target.toTranslation2d().minus(turretTranslation); //distance from target to turret
-        double angle = MathUtil.inputModulus(
-                direction.getAngle().minus(robot.getRotation()).getRotations(),
-                kTurretMinRots.magnitude(), kTurretMaxRots.magnitude()); //normalizes the angle to be fit in the range of the max rotations
-        double current = currentAngle.in(Rotations);
-        var calculated = false;
-        
-        if (kTurretMaxRotsFromHome.times(2).magnitude() < Rotations.of(1).magnitude()) {
-            angle = MathUtil.clamp(angle, kTurretMinRots.in(Rotations), kTurretMaxRots.in(Rotations));
-            calculated = true;
-        }
-        //this is the snapback function, to make sure that you will always be tracking and you will not go over your physical limits.
-        if (!calculated && current > 0 && angle + 1 <= kTurretMaxRots.in(Rotations)) {
-            angle += 1;
-        }
-        else if (!calculated && current < 0 && angle - 1 >= kTurretMinRots.in(Rotations)) {
-            angle -= 1;
-        }
-
-        log_desiredTurretRot.accept(angle);
-
-        return Rotations.of(angle);
-    }
-
-    /**
      * Move a target a set time in the future along a velocity defined by
      * fieldSpeeds
      * Integral for SOTM, as this is what accounts for the speed the Robot is
@@ -246,10 +213,10 @@ public class ShotCalculator {
             Distance distanceDiff = prevDistance.minus(distance);
             Time timeOfFlightDiff = prevTOF.minus(timeOfFlight);
 
-            if (shotDataDiff.hoodAngle() < .05 && shotDataDiff.exitVelocity() < .05 && prevShot.target().getDistance(shot.getTarget()) < .05 
-                    && distanceDiff.magnitude() < .05 && timeOfFlightDiff.magnitude() < .005 && prevPredTarget.getDistance(predictedTarget) < .05) {
-                break;
-            }
+            // if (shotDataDiff.hoodAngle() < .05 && shotDataDiff.exitVelocity() < .05 && prevShot.target().getDistance(shot.getTarget()) < .05 
+            //         && distanceDiff.magnitude() < .05 && timeOfFlightDiff.magnitude() < .005 && prevPredTarget.getDistance(predictedTarget) < .05) {
+            //     break;
+            // }
         }
 
         return shot;
@@ -307,11 +274,11 @@ public class ShotCalculator {
         }
 
         public ShotData(AngularVelocity exitVelocity, Angle hoodAngle) {
-            this(exitVelocity, hoodAngle, FieldConstants.Hub.topCenterPoint);
+            this(exitVelocity, hoodAngle, FieldConstants.Hub.innerCenterPoint);
         }
 
         public ShotData(double exitVelocity, double hoodAngle) {
-            this(exitVelocity, hoodAngle, FieldConstants.Hub.topCenterPoint);
+            this(exitVelocity, hoodAngle, FieldConstants.Hub.innerCenterPoint);
         }
 
         public ShotData minus(ShotData prevShotData) {
