@@ -34,6 +34,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
@@ -47,6 +48,10 @@ public class Constants {
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
     public static final CANBus kCanivoreBus = new CANBus("fd");
+
+    public static class WpiK {
+        public static final ChassisSpeeds kZeroChassisSpeeds = new ChassisSpeeds(0, 0, 0);
+    }
 
     public static class ShooterK {
         public static final String kLogTab = "Shooter";

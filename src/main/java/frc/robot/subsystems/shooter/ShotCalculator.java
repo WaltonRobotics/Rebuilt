@@ -31,9 +31,9 @@ import edu.wpi.first.units.measure.Time;
 
 public class ShotCalculator {
 
-    private static final DoubleLogger log_desiredTurretRot = new DoubleLogger(kLogTab, "desiredTurretRotations");
+    private static final DoubleLogger log_desiredTurretRot = new DoubleLogger("Shooter/Calculator", "desiredTurretRotations");
 
-    private static final DoubleLogger log_timeOfFlight = new DoubleLogger(kLogTab, "timeOfFlight");
+    private static final DoubleLogger log_timeOfFlight = new DoubleLogger("Shooter/Calculator", "timeOfFlight");
 
     //see 5000's code (circa 2/16/2026 9:11 PM EST)
     public static final InterpolatingTreeMap<Double, ShotData> m_shotMap = new InterpolatingTreeMap<>(
@@ -146,7 +146,7 @@ public class ShotCalculator {
                 kTurretMinRots.magnitude(), kTurretMaxRots.magnitude()); //normalizes the angle to be fit in the range of the max rotations
         double current = currentAngle.in(Rotations);
         var calculated = false;
-
+        
         if (kTurretMaxRotsFromHome.times(2).magnitude() < Rotations.of(1).magnitude()) {
             angle = MathUtil.clamp(angle, kTurretMinRots.in(Rotations), kTurretMaxRots.in(Rotations));
             calculated = true;

@@ -203,7 +203,7 @@ public class Robot extends TimedRobot {
         
             var driverXVelo = -m_driver.getLeftY() * translationSpeed;
             var driverYVelo = -m_driver.getLeftX() * translationSpeed;
-            var driverYawRate = -m_driver.getRightX();
+            var driverYawRate = -m_driver.getRightX() * kMaxAngularRate;
 
             log_stickDesiredFieldX.accept(driverXVelo);
             log_stickDesiredFieldY.accept(driverYVelo);
