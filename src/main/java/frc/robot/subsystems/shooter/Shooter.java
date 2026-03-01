@@ -82,7 +82,7 @@ public class Shooter extends SubsystemBase {
     private boolean m_isBlue;
     private boolean m_onLeftSide;
     //need to implement the differing targets (if in neutral zone, shoot to X point (passing))
-    Translation3d currentTarget = AllianceFlipUtil.apply(FieldConstants.Hub.innerCenterPoint);
+    Translation3d currentTarget = AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint);
 
     private final TurretVisualizer m_turretVisualizer;
     private final FuelSim m_fuelSim;
@@ -299,7 +299,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public AngularVelocity getFlywheelCalcVelocity() {
-        return m_calcFlywheelVelocity;
+        return RotationsPerSecond.of(m_calcFlywheelVelocity.in(RotationsPerSecond));
     }
 
     /* SIMULATION */
@@ -403,10 +403,10 @@ public class Shooter extends SubsystemBase {
             m_goal = goal;
             switch (goal) {
             case SHOOTING:
-                setTarget(FieldConstants.Hub.innerCenterPoint);
+                setTarget(FieldConstants.Hub.topCenterPoint);
                 break;
             case STATIC_SHOOTING:
-                setTarget(FieldConstants.Hub.innerCenterPoint);
+                setTarget(FieldConstants.Hub.topCenterPoint);
                 break;
             case PASSING:
                 setTarget(getPassingTarget(m_poseSupplier.get()));

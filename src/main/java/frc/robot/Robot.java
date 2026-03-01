@@ -6,6 +6,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.RobotK.*;
+import static frc.robot.Constants.ShooterK.kShooterMaxRPS;
 import static frc.robot.Constants.ShooterK.kTurretTransform;
 
 import java.util.Optional;
@@ -306,7 +307,7 @@ public class Robot extends TimedRobot {
 
         //Shooting
         trg_shoot.and(trg_pass.negate()).whileTrue(
-            m_superstructure.activateOuttake(m_shooter.getFlywheelCalcVelocity())
+            m_superstructure.activateOuttake(kShooterMaxRPS)
         );
         // trg_shoot.and(trg_pass).onTrue(
         //     m_superstructure.startPassing()
@@ -364,6 +365,8 @@ public class Robot extends TimedRobot {
                 .onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
 
         m_driver.povUp().onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING)));
+        m_driver.povDown().onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.OFF)));
+        m_driver.povRight().onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
 
         // TODO: add shooter overrides for drivet but waiting for sohan's calculate method
     }
@@ -637,7 +640,7 @@ public class Robot extends TimedRobot {
                 EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
                 Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
                 var ctreTime = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
-                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, ctreTime, camera.getEstimationStdDevs());
+                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
                 System.out.println("AddingVisMeas - " + camera.getName());          
                 m_visionSeenLastSec = ctreTime;
             }
