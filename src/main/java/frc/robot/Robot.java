@@ -6,7 +6,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.RobotK.*;
-import static frc.robot.Constants.ShooterK.kShooterMaxRPS;
+import static frc.robot.Constants.ShooterK.kShooterRPS;
 import static frc.robot.Constants.ShooterK.kTurretTransform;
 
 import java.util.HashMap;
@@ -27,6 +27,7 @@ import choreo.auto.AutoFactory;
 import choreo.auto.AutoTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -112,6 +113,7 @@ public class Robot extends TimedRobot {
     Consumer<Command> getAuton = auton -> m_autonomousCommand = auton;
 
     //---VISION
+    private PowerDistribution m_PDH = new PowerDistribution();
     // private final VisionSim m_visionSim = new VisionSim();
 
     /* TRIGGERS */
@@ -124,12 +126,15 @@ public class Robot extends TimedRobot {
     // private Trigger trg_activateIntake = m_manipulator.a().and(trg_manipOverride.negate());
     // private Trigger trg_safeIntake = m_manipulator.x().and(trg_manipOverride.negate());
     private Trigger trg_intake = m_manipulator.rightTrigger().and(trg_manipOverride.negate());
-    private Trigger trg_retractIntake = m_manipulator.y().and(trg_manipOverride.negate());
+    private Trigger trg_retractIntake = m_manipulator.rightBumper().and(trg_manipOverride.negate());
 
     private Trigger trg_shoot = m_driver.rightTrigger().and(trg_driverOverride.negate());
     private Trigger trg_emergencyBarf = m_driver.rightTrigger().and(trg_driverOverride);
 
-    private Trigger trg_pass = m_driver.rightBumper().and(trg_driverOverride.negate());
+    private Trigger trg_passLeft = m_manipulator.povLeft().and(trg_driverOverride.negate());
+    private Trigger trg_passRight = m_manipulator.povRight().and(trg_driverOverride.negate()).and(trg_passLeft.negate());
+
+    private Trigger trg_shimmy = m_manipulator.leftBumper();
 
     // COMMENT OUT WHEN NOT SIMULATION
     private Trigger trg_simShoot = m_driver.a();
@@ -168,6 +173,8 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_povRight = WaltLogger.logBoolean(kLogTab, "Pov Right");
     private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
     private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
+
+    private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble(kLogTab, "MiniPC current");
 
     private final BooleanLogger log_isDisabled = WaltLogger.logBoolean(kLogTab, "is robot disabled");
 
@@ -291,7 +298,7 @@ public class Robot extends TimedRobot {
         // m_driver.start().and(m_driver.x()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset the field-centric heading on left bumper press.
-        // m_driver.leftBumper().onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
+        m_driver.leftBumper().and(trg_driverOverride).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
 
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
@@ -306,7 +313,7 @@ public class Robot extends TimedRobot {
 
         //---NORMAL SEQUENCES
         //Intake
-        trg_intake.whileTrue(
+        trg_intake.and((trg_passLeft.or(trg_passRight)).negate()).whileTrue(
             m_superstructure.intake()
         );
         trg_retractIntake.onTrue(
@@ -314,19 +321,27 @@ public class Robot extends TimedRobot {
         );
 
         //Shooting
-        trg_shoot.and(trg_pass.negate()).whileTrue(
-            m_superstructure.activateOuttake(kShooterMaxRPS)
+        trg_shoot.whileTrue(
+            m_superstructure.activateOuttake(kShooterRPS)
         );
+
+        trg_intake.and(trg_passLeft.or(trg_passRight)).whileTrue(
+            m_superstructure.intakeWhilePassing()
+        );
+
         // trg_shoot.and(trg_pass).onTrue(
         //     m_superstructure.startPassing()
         // ).onFalse(
         //     m_superstructure.stopPassing()
         // );
+
         trg_emergencyBarf.whileTrue(
             m_superstructure.emergencyBarf()
         );
-        // m_manipulator.leftBumper().whileTrue(m_superstructure.shimmy());    //need to make trg   AUTOMATIC WHILE SHOOTING
-        m_driver.leftBumper().onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
+        
+        trg_shimmy.whileTrue(m_superstructure.shimmy());
+        trg_passLeft.and(trg_passRight.negate()).onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING_LEFT))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
+        trg_passRight.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING_RIGHT))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
 
         //---OVERRIDE COMMANDS
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
@@ -666,7 +681,7 @@ public class Robot extends TimedRobot {
         m_periodicTracer.addEpoch("IndexerPeriodic");
         m_intake.periodic();
         m_periodicTracer.addEpoch("IntakePeriodic");
-
+        m_superstructure.periodic();
 
         log_povUp.accept(m_driver.povUp());
         log_povDown.accept(m_driver.povDown());
@@ -677,6 +692,7 @@ public class Robot extends TimedRobot {
         log_isDisabled.accept(trg_limitFPS);
         m_periodicTracer.addEpoch("Logging");
 
+        log_miniPCCurrent.accept(m_PDH.getCurrent(kMiniPCChannel));
 
         // log_shooterDirection.accept(
         //     new Pose3d(

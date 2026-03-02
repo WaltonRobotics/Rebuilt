@@ -56,8 +56,8 @@ public class WaltCamera extends PhotonCamera {
     public final Transform3d m_robotToCam;
     public final PhotonPoseEstimator m_estimator;
     
-    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.5, 1.5, 6.24);
-    public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 6.24);
+    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.0, 1.0, 5.24); //1.5, 1.5, 6.24
+    public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.25, 0.25, 5.24);  //0.5, 0.5, 6.24
 
     private final StructPublisher<Pose2d> log_camPose;
     private final StructPublisher<Transform3d> log_camTransform;

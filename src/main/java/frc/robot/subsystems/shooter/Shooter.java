@@ -4,6 +4,7 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.StaticBrake;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -57,6 +58,7 @@ import java.util.function.Supplier;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.Robot;
+import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.WpiK;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
 import frc.util.AllianceFlipUtil;
@@ -101,7 +103,7 @@ public class Shooter extends SubsystemBase {
     private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(true);
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); // X44Foc
-    private final MotionMagicVoltage m_MMVRequest = new MotionMagicVoltage(0).withEnableFOC(true);
+    private final PositionVoltage m_PVRequest = new PositionVoltage(0).withEnableFOC(true);
     private final VoltageOut m_VoltageReq = new VoltageOut(0);
     private final StaticBrake m_BrakeReq = new StaticBrake();
 
@@ -309,7 +311,7 @@ public class Shooter extends SubsystemBase {
     }
 
     private void setTurretPos(Angle rots) {
-        m_turret.setControl(m_MMVRequest.withPosition(rots));
+        m_turret.setControl(m_PVRequest.withPosition(rots));
         log_turretControlPos.accept(rots.in(Rotations));
     }
 
@@ -339,12 +341,28 @@ public class Shooter extends SubsystemBase {
         return RotationsPerSecond.of(m_calcFlywheelVelocity.in(RotationsPerSecond));
     }
 
-    public TalonFX getFlywheelMotors() {
-        return m_shooterLeader;
+    public double getFlywheelStatorCurrent() {
+        return m_shooterLeader.getStatorCurrent().getValueAsDouble();
     }
 
-    public TalonFX getTurretMotors() {
-        return m_turret;
+    public double getTurretStatorCurrent() {
+        return m_turret.getStatorCurrent().getValueAsDouble();
+    }
+
+    public double getFlywheelSupplyCurrent() {
+        return m_shooterLeader.getSupplyCurrent().getValueAsDouble();
+    }
+
+    public double getTurretSupplyCurrent() {
+        return m_turret.getSupplyCurrent().getValueAsDouble();
+    }
+
+    public double getFlywheelMotorVoltage() {
+        return m_shooterLeader.getMotorVoltage().getValueAsDouble();
+    }
+
+    public double getTurretMotorVoltage() {
+        return m_turret.getMotorVoltage().getValueAsDouble();
     }
 
     /* SIMULATION */
@@ -515,8 +533,11 @@ public class Shooter extends SubsystemBase {
         case STATIC_SHOOTING:
             setTarget(FieldConstants.Hub.innerCenterPoint);
             break;
-        case PASSING:
-            setTarget(getPassingTarget(m_poseSupplier.get()));
+        case PASSING_LEFT:
+            setTarget(ShooterK.kPassingSpotLeft);
+            break;
+        case PASSING_RIGHT:
+            setTarget(ShooterK.kPassingSpotRight);
             break;
         // case TEST:
         //     setTargetAheadOfRobot(3);
@@ -619,7 +640,10 @@ public class Shooter extends SubsystemBase {
             case SHOOTING:
                 calculateShot(pose, true);
                 break;
-            case PASSING:
+            case PASSING_LEFT:
+                calculateShot(pose, false);
+                break;
+            case PASSING_RIGHT:
                 calculateShot(pose, false);
                 break;
             case STATIC_SHOOTING:
@@ -708,7 +732,7 @@ public class Shooter extends SubsystemBase {
                 Commands.print("========== TURRET HOMING COMPLETE =========="),
                 Commands.waitSeconds(0.1),
                 runOnce(() -> {
-                    m_turret.setControl(m_MMVRequest.withPosition(0));
+                    m_turret.setControl(m_PVRequest.withPosition(0));
                 })
             );
     }
@@ -716,7 +740,8 @@ public class Shooter extends SubsystemBase {
     /* CONSTANTS */
     public enum ShooterGoal {
         SHOOTING,
-        PASSING,
+        PASSING_LEFT,
+        PASSING_RIGHT,
         STATIC_SHOOTING,
         // TEST,
         OFF

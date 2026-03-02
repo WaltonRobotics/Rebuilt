@@ -44,6 +44,20 @@ public class Superstructure extends SubsystemBase {
     private final DoubleLogger log_turretStator = new DoubleLogger(kLogTab, "turretStator");
     private final DoubleLogger log_totalSubsysStator = new DoubleLogger(kLogTab, "totalSubsysStator");
 
+    private final DoubleLogger log_intakeArmSupply = new DoubleLogger(kLogTab, "intakeArmStator");
+    private final DoubleLogger log_intakeRollersSupply = new DoubleLogger(kLogTab, "intakeRollersStator");
+    private final DoubleLogger log_spindexSupply = new DoubleLogger(kLogTab, "spindexStator");
+    private final DoubleLogger log_tunnelSupply = new DoubleLogger(kLogTab, "tunnelStator");
+    private final DoubleLogger log_shooterSupply = new DoubleLogger(kLogTab, "shooterStator");
+    private final DoubleLogger log_turretSupply = new DoubleLogger(kLogTab, "turretStator");
+
+    private final DoubleLogger log_intakeArmMotorVoltage = new DoubleLogger(kLogTab, "intakeArmStator");
+    private final DoubleLogger log_intakeRollersMotorVoltage = new DoubleLogger(kLogTab, "intakeRollersStator");
+    private final DoubleLogger log_spindexMotorVoltage = new DoubleLogger(kLogTab, "spindexStator");
+    private final DoubleLogger log_tunnelMotorVoltage = new DoubleLogger(kLogTab, "tunnelStator");
+    private final DoubleLogger log_shooterMotorVoltage = new DoubleLogger(kLogTab, "shooterStator");
+    private final DoubleLogger log_turretMotorVoltage = new DoubleLogger(kLogTab, "turretStator");
+
     
     /* CONSTRUCTOR */
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
@@ -62,7 +76,7 @@ public class Superstructure extends SubsystemBase {
         Command logCommand;
         switch (pos) {
             case SAFE:
-                if (m_intake.getIntakeArmMotor().getStatorCurrent().getValueAsDouble() < 40) {
+                if (m_intake.getIntakeArmStatorCurrent() < 40) {
                     logCommand = logActiveCommands("safeIntake", "activateIntake", "retractIntake");
                 } else {
                     return Commands.none();
@@ -88,7 +102,7 @@ public class Superstructure extends SubsystemBase {
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()),
             m_intake.startIntakeRollers(),
-            m_indexer.setSpindexerVelocityCmd(Constants.IndexerK.m_spindexerIntakeRPS),
+            m_indexer.setSpindexerVelocityCmd(Constants.IndexerK.kSpindexerIntakeRPS),
             logActiveCommands("activateIntake", "safeIntake", "retractIntake")
         );
     }
@@ -99,14 +113,31 @@ public class Superstructure extends SubsystemBase {
                 m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
                 if (m_intake.isIntakeArmAtPos()) {
                     m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
-                    m_indexer.setSpindexerVelocity(Constants.IndexerK.m_spindexerIntakeRPS);
+                    m_indexer.setSpindexerVelocity(Constants.IndexerK.kSpindexerIntakeRPS);
                 }
             }, 
             () -> {
-                if (m_intake.getIntakeArmMotor().getStatorCurrent().getValueAsDouble() < 40) {
+                if (m_intake.getIntakeArmStatorCurrent() < 40) {
                     m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
                     m_indexer.stopSpindexer();
-                    m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
+                    // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
+                }
+            }
+        );
+    }
+
+    public Command intakeWhilePassing() {
+        return Commands.runEnd(
+            () -> {
+                m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
+                if (m_intake.isIntakeArmAtPos()) {
+                    m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
+                }
+            }, 
+            () -> {
+                if (m_intake.getIntakeArmStatorCurrent() < 40) {
+                    m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
+                    // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
                 }
             }
         );
@@ -129,7 +160,7 @@ public class Superstructure extends SubsystemBase {
      */
     public Command activateOuttake(AngularVelocity RPS) {
         Command logCommand;
-        if (RPS == ShooterK.kShooterMaxRPS) {
+        if (RPS == ShooterK.kShooterRPS) {
             logCommand = logActiveCommands("shooting", "deactivateOuttake", "emergencyDump");   
         } else {
             logCommand = logActiveCommands("emergencyDump", "shooting", "deactivateOuttake");
@@ -140,7 +171,7 @@ public class Superstructure extends SubsystemBase {
                 .onlyWhile(() -> m_shooter.isShooterSpunUp())
                 .andThen(Commands.waitUntil(() -> m_shooter.isShooterSpunUp()))
                 .repeatedly(),
-            m_intake.shimmy(),
+            // m_intake.shimmy(),
             logCommand
         ).finallyDo(
             () -> deactivateOuttake()
@@ -166,8 +197,8 @@ public class Superstructure extends SubsystemBase {
             () -> {
                 m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
                 m_shooter.setHoodPosition(ShooterK.kHoodMaxDegs);
-                m_indexer.setTunnelVelocity(IndexerK.m_tunnelRPS);
-                m_indexer.setSpindexerVelocity(IndexerK.m_spindexerRPS);
+                m_indexer.setTunnelVelocity(IndexerK.kTunnelRPS);
+                m_indexer.setSpindexerVelocity(IndexerK.kSpindexerRPS);
                 m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
                 m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersMaxRPS.times(-1));
             },
@@ -192,7 +223,7 @@ public class Superstructure extends SubsystemBase {
     public Command startPassing() {
         return Commands.sequence(
             activateIntake(),
-            activateOuttake(ShooterK.kShooterMaxRPS),
+            activateOuttake(ShooterK.kShooterRPS),
             logActiveCommands("startPassing", "stopPassing")
         );
     }
@@ -214,7 +245,7 @@ public class Superstructure extends SubsystemBase {
      */
     public Command maxShooter() {
         return Commands.sequence(
-            m_shooter.setShooterVelocityCmd(ShooterK.kShooterMaxRPS),
+            m_shooter.setShooterVelocityCmd(ShooterK.kShooterRPS),
             // m_shooter.setShooterVelocityCmd(RotationsPerSecond.of(50)),
             logActiveOverrideCommands("maxShooter", "stopShooter")
         );
@@ -280,8 +311,8 @@ public class Superstructure extends SubsystemBase {
 
     public Command unjamCmd() {
         return Commands.sequence(
-            m_indexer.setSpindexerVelocityCmd(Constants.IndexerK.m_spindexerRPS.times(-1)),
-            m_indexer.setTunnelVelocityCmd(Constants.IndexerK.m_tunnelRPS.times(-1))
+            m_indexer.setSpindexerVelocityCmd(Constants.IndexerK.kSpindexerRPS.times(-1)),
+            m_indexer.setTunnelVelocityCmd(Constants.IndexerK.kTunnelRPS.times(-1))
         );
     }
 
@@ -340,7 +371,7 @@ public class Superstructure extends SubsystemBase {
                 logCommand = logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp");
                 break;
             default:
-                if (m_intake.getIntakeArmMotor().getStatorCurrent().getValueAsDouble() < 40) {
+                if (m_intake.getIntakeArmStatorCurrent() < 40) {
                     logCommand = logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake");
                 }
                 else {
@@ -410,11 +441,37 @@ public class Superstructure extends SubsystemBase {
 
     @Override
     public void periodic() {
-        log_intakeArmStator.accept(m_intake.getIntakeArmMotor().getStatorCurrent().getValueAsDouble());
-        log_intakeRollersStator.accept(m_intake.getIntakeRollers().getStatorCurrent().getValueAsDouble());
-        log_spindexStator.accept(m_indexer.getSpindexerMotors().getStatorCurrent().getValueAsDouble());
-        log_tunnelStator.accept(m_indexer.getTunnelMotors().getStatorCurrent().getValueAsDouble());
-        log_shooterStator.accept(m_shooter.getFlywheelMotors().getStatorCurrent().getValueAsDouble());
-        log_turretStator.accept(m_shooter.getTurretMotors().getStatorCurrent().getValueAsDouble());
+
+
+        log_intakeArmStator.accept(m_intake.getIntakeArmStatorCurrent());
+        log_intakeRollersStator.accept(m_intake.getIntakeRollersStatorCurrent());
+        log_spindexStator.accept(m_indexer.getSpindexerStatorCurrent());
+        log_tunnelStator.accept(m_indexer.getTunnelStatorCurrent());
+        log_shooterStator.accept(m_shooter.getFlywheelStatorCurrent());
+        log_turretStator.accept(m_shooter.getTurretStatorCurrent());
+
+        log_intakeArmSupply.accept(m_intake.getIntakeArmSupplyCurrent());
+        log_intakeRollersSupply.accept(m_intake.getIntakeRollersSupplyCurrent());
+        log_spindexSupply.accept(m_indexer.getSpindexerSupplyCurrent());
+        log_tunnelSupply.accept(m_indexer.getTunnelSupplyCurrent());
+        log_shooterSupply.accept(m_shooter.getFlywheelSupplyCurrent());
+        log_turretSupply.accept(m_shooter.getTurretSupplyCurrent());
+
+
+        log_intakeArmMotorVoltage.accept(m_intake.getIntakeArmMotorVoltage());
+        log_intakeRollersMotorVoltage.accept(m_intake.getIntakeRollersMotorVoltage());
+        log_spindexMotorVoltage.accept(m_indexer.getSpindexerMotorVoltage());
+        log_tunnelMotorVoltage.accept(m_indexer.getTunnelMotorVoltage());
+        log_shooterMotorVoltage.accept(m_shooter.getFlywheelMotorVoltage());
+        log_turretMotorVoltage.accept(m_shooter.getTurretMotorVoltage());
+
+        log_totalSubsysStator.accept(
+            m_intake.getIntakeArmStatorCurrent()
+          + m_intake.getIntakeRollersStatorCurrent()
+          + m_indexer.getSpindexerStatorCurrent()
+          + m_indexer.getTunnelStatorCurrent()
+          + m_shooter.getFlywheelStatorCurrent()
+          + m_shooter.getTurretStatorCurrent()
+        );
     }
 }

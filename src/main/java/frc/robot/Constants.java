@@ -75,7 +75,7 @@ public class Constants {
 
         //TODO: work out where our passing spots should be..?
         public static final Translation3d kPassingSpotLeft = new Translation3d(
-                Inches.of(90), FieldConstants.fieldWidthIn.div(2).plus(Inches.of(85)), Inches.zero());
+                Inches.of(90), FieldConstants.fieldWidthIn.div(2).plus(Inches.of(105)), Inches.zero());
         // public static final Translation3d kPassingSpotCenter = new Translation3d(
         //         Inches.of(90), FieldConstants.fieldWidthIn.div(2), Inches.zero());
         public static final Translation3d kPassingSpotRight = new Translation3d(
@@ -92,7 +92,7 @@ public class Constants {
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.magnitude());
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.magnitude());
 
-        public static final AngularVelocity kShooterMaxRPS = RotationsPerSecond.of((5785/60) * (0.65) / kShooterGearing);   //Kraken X60Foc Max (RPM: 5785) //(0.9)
+        public static final AngularVelocity kShooterRPS = RotationsPerSecond.of((5785/60) * (0.65) / kShooterGearing);   //Kraken X60Foc Max (RPM: 5785) //(0.9)
         public static final AngularVelocity kShooterBarfRPS = RotationsPerSecond.of((5785/60) * (0.2) / kShooterGearing);
         public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.of(/* 0/60 * (0.9) / kShooterGearing */ 0);
 
@@ -292,6 +292,8 @@ public class Constants {
     public static class RobotK {
         public static final String kLogTab = "Robot";
 
+        public static final int kMiniPCChannel = 14;
+
         // real values
         public static final Distance kRobotFullWidth = Inches.of(33.6875);
         public static final Distance kRobotFullLength = Inches.of(32.6875);
@@ -399,9 +401,9 @@ public class Constants {
         public static final double kSpindexerMOI = 0.00166190059;
         public static final double kTunnelMOI = 0.000215968064;
       
-        public static final AngularVelocity m_spindexerIntakeRPS = RotationsPerSecond.of((5785/60) * (-0.20) / kSpindexerGearing);  //Max RPM for X60Foc is 5785   (0.9)
-        public static final AngularVelocity m_spindexerRPS = RotationsPerSecond.of((5785/60) * (0.45) / kSpindexerGearing);  //Max RPM for X60Foc is 5785   (0.9)
-        public static final AngularVelocity m_tunnelRPS = RotationsPerSecond.of((5785/60) * (0.45) / kTunnelGearing);   //(0.9) //(0.65)
+        public static final AngularVelocity kSpindexerIntakeRPS = RotationsPerSecond.of((5785/60) * (-0.20) / kSpindexerGearing);  //Max RPM for X60Foc is 5785   (0.9)
+        public static final AngularVelocity kSpindexerRPS = RotationsPerSecond.of((5785/60) * (0.45) / kSpindexerGearing);  //Max RPM for X60Foc is 5785   (0.9)
+        public static final AngularVelocity kTunnelRPS = RotationsPerSecond.of((5785/60) * (0.45) / kTunnelGearing);   //(0.9) //(0.65)
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
@@ -413,8 +415,8 @@ public class Constants {
             .withKI(0)
             .withKD(0.03);
         private static final CurrentLimitsConfigs kSpindexerCurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(120)
-            .withSupplyCurrentLimit(70)
+            .withStatorCurrentLimit(45)
+            .withSupplyCurrentLimit(30)
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kSpindexerMotorOutputConfigs = new MotorOutputConfigs()
@@ -442,8 +444,8 @@ public class Constants {
             .withKI(0)
             .withKD(0);
         private static final CurrentLimitsConfigs kTunnelCurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(140)
-            .withSupplyCurrentLimit(60)
+            .withStatorCurrentLimit(45)
+            .withSupplyCurrentLimit(30)
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kTunnelMotorOutputConfigs = new MotorOutputConfigs()

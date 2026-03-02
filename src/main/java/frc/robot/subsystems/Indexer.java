@@ -30,6 +30,7 @@ public class Indexer extends SubsystemBase {
     private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
     private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
 
+
     /* SIM OBJECTS */
     private final DCMotorSim m_spindexerSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
@@ -70,7 +71,7 @@ public class Indexer extends SubsystemBase {
     /* COMMANDS */
     //---STARTS AND STOPS
     public Command startSpindexerCmd() {
-        return setSpindexerVelocityCmd(m_spindexerRPS);
+        return setSpindexerVelocityCmd(kSpindexerRPS);
     }
 
     public Command stopSpindexerCmd() {
@@ -82,7 +83,7 @@ public class Indexer extends SubsystemBase {
     }
 
     public Command startTunnelCmd() {
-        return setTunnelVelocityCmd(m_tunnelRPS);
+        return setTunnelVelocityCmd(kTunnelRPS);
     }
 
     public Command stopTunnelCmd() {
@@ -121,12 +122,28 @@ public class Indexer extends SubsystemBase {
         return run(() -> m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
     }
 
-    public TalonFX getSpindexerMotors() {
-        return m_spindexer;
+    public double getSpindexerStatorCurrent() {
+        return m_spindexer.getStatorCurrent().getValueAsDouble();
     }
 
-    public TalonFX getTunnelMotors() {
-        return m_tunnel;
+    public double getTunnelStatorCurrent() {
+        return m_tunnel.getStatorCurrent().getValueAsDouble();
+    }
+
+        public double getSpindexerSupplyCurrent() {
+        return m_spindexer.getSupplyCurrent().getValueAsDouble();
+    }
+
+    public double getTunnelSupplyCurrent() {
+        return m_tunnel.getSupplyCurrent().getValueAsDouble();
+    }    
+
+    public double getSpindexerMotorVoltage() {
+        return m_spindexer.getMotorVoltage().getValueAsDouble();
+    }
+
+    public double getTunnelMotorVoltage() {
+        return m_tunnel.getMotorVoltage().getValueAsDouble();
     }
 
     /* PERIODICS */
@@ -134,6 +151,7 @@ public class Indexer extends SubsystemBase {
     public void periodic() {
         log_spindexerRPS.accept(m_spindexer.getVelocity().getValueAsDouble());
         log_tunnelRPS.accept(m_tunnel.getVelocity().getValueAsDouble());
+        double spindexStator = m_spindexer.getStatorCurrent().getValueAsDouble();
     }
 
     @Override
