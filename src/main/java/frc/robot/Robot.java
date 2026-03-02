@@ -151,6 +151,8 @@ public class Robot extends TimedRobot {
     private final Trigger trg_limitFPS = RobotModeTriggers.disabled();
     private final Trigger trg_unlimitFps = RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop());
 
+    private Trigger trg_unjam = m_driver.rightBumper();
+
 
     /* LOGGERS */
     private final DoubleLogger log_stickDesiredFieldX = WaltLogger.logDouble("Swerve", "stick desired teleop x");
@@ -177,7 +179,7 @@ public class Robot extends TimedRobot {
     public Robot() {
         configureBindings();
         // configureTestBindings();    //this should be commented out during competition matches
-        configureTestingDashboard();
+        // configureTestingDashboard();
 
         if (Robot.isSimulation()) {
             configureFuelSim();
@@ -298,9 +300,10 @@ public class Robot extends TimedRobot {
 
         //---NORMAL SEQUENCES
         //Intake
-        trg_activateIntake.onTrue(
-            m_superstructure.activateIntake()
+        trg_activateIntake.whileTrue(
+            m_superstructure.intake()
         );
+        
         trg_safeIntake.onTrue(
             m_superstructure.deactivateIntake(IntakeArmPosition.SAFE)
         );
@@ -326,7 +329,7 @@ public class Robot extends TimedRobot {
         //---OVERRIDE COMMANDS
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
 
-        m_manipulator.y().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(44.5)));
+        m_manipulator.y().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(35)));
         m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(1)));
 
         trg_maxShooterOverride.onTrue(
@@ -347,6 +350,10 @@ public class Robot extends TimedRobot {
             m_superstructure.stopTunnelCmd()
         );
 
+        trg_unjam.whileTrue(
+            m_superstructure.unjamCmd()
+        );
+
         trg_maxRollersOverride.onTrue(
             m_superstructure.startIntakeRollers()
         ).onFalse(
@@ -362,10 +369,10 @@ public class Robot extends TimedRobot {
             m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
         );
 
-        m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd());
-        m_driver.rightBumper()
-                .onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.STATIC_SHOOTING)))
-                .onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
+        m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
+        // m_driver.rightBumper()
+        //         .onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.STATIC_SHOOTING)))
+        //         .onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
 
         // m_driver.povUp().onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING)));
         m_driver.povDown().onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.OFF)));
@@ -702,11 +709,11 @@ public class Robot extends TimedRobot {
 
         m_autonList.putIfAbsent("oneRightNeutralPickup", m_simpleAutonFactory.rightOneSweep());
 
-        // m_autonList.putIfAbsent("twoRightNeutralPickup", m_waltAutonFactory.twoRightNeutralPickup());
-        // m_autonList.putIfAbsent("threeRightNeutralPickup", m_waltAutonFactory.threeRightNeutralPickup());
-        // m_autonList.putIfAbsent("oneLeftNeutralPickup", m_waltAutonFactory.oneLeftNeutralPickup());
-        // m_autonList.putIfAbsent("twoLeftNeutralPickup", m_waltAutonFactory.twoLeftNeutralPickup());
-        // m_autonList.putIfAbsent("threeLeftNeutralPickup", m_waltAutonFactory.threeLeftNeutralPickup());
+        m_autonList.putIfAbsent("twoRightNeutralPickup", m_waltAutonFactory.twoRightNeutralPickup());
+        m_autonList.putIfAbsent("threeRightNeutralPickup", m_waltAutonFactory.threeRightNeutralPickup());
+        m_autonList.putIfAbsent("oneLeftNeutralPickup", m_waltAutonFactory.oneLeftNeutralPickup());
+        m_autonList.putIfAbsent("twoLeftNeutralPickup", m_waltAutonFactory.twoLeftNeutralPickup());
+        m_autonList.putIfAbsent("threeLeftNeutralPickup", m_waltAutonFactory.threeLeftNeutralPickup());
 
         if (m_autonChosen.equals("noAutonSelected")) {
             m_autonomousCommand = m_autonList.get("oneRightNeutralPickup");

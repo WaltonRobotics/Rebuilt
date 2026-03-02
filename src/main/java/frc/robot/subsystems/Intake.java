@@ -210,7 +210,7 @@ public class Intake extends SubsystemBase {
     public enum IntakeArmPosition{
         RETRACTED(Rotations.of(0.082764).in(Degrees)),
         DEPLOYED(Rotations.of(0.295410).in(Degrees)),
-        SHIMMY(Rotations.of(0.176025).in(Degrees)),
+        SHIMMY(Rotations.of(0.146025).in(Degrees)),
         SAFE((DEPLOYED.rots.minus(Rotations.of(0.06))).in(Degrees));
 
         public Angle degs;

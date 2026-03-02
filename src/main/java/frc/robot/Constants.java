@@ -67,10 +67,6 @@ public class Constants {
             log_turretTransform.accept(kTurretTransform);
         }
 
-
-        public static final double kHoodMinAngle = Units.degreesToRadians(19);
-        public static final double kHoodMaxAngle = Units.degreesToRadians(51);
-
         public static final Distance kFlywheelRadius = Inches.of(1.5); 
 
         public static final int kHopperCapacity = 55; //TODO: find true max
@@ -403,6 +399,7 @@ public class Constants {
         public static final double kSpindexerMOI = 0.00166190059;
         public static final double kTunnelMOI = 0.000215968064;
       
+        public static final AngularVelocity m_spindexerIntakeRPS = RotationsPerSecond.of((5785/60) * (-0.20) / kSpindexerGearing);  //Max RPM for X60Foc is 5785   (0.9)
         public static final AngularVelocity m_spindexerRPS = RotationsPerSecond.of((5785/60) * (0.45) / kSpindexerGearing);  //Max RPM for X60Foc is 5785   (0.9)
         public static final AngularVelocity m_tunnelRPS = RotationsPerSecond.of((5785/60) * (0.45) / kTunnelGearing);   //(0.9) //(0.65)
         

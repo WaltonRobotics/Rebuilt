@@ -4,10 +4,13 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.IndexerK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
+import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.StringArrayLogger;
 
 import static edu.wpi.first.units.Units.Degrees;
@@ -19,7 +22,7 @@ import static frc.robot.Constants.IntakeK;
 
 import java.util.HashSet;
 
-public class Superstructure {
+public class Superstructure extends SubsystemBase {
     /* SUBSYSTEMS */
     private final Intake m_intake;
     private final Indexer m_indexer;
@@ -31,6 +34,16 @@ public class Superstructure {
 
     private HashSet<String> m_activeOverrideCommands = new HashSet<>();
     private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
+
+    //intake r, intake a, spin, tunnel, shooter, turret, 
+    private final DoubleLogger log_intakeArmStator = new DoubleLogger(kLogTab, "intakeArmStator");
+    private final DoubleLogger log_intakeRollersStator = new DoubleLogger(kLogTab, "intakeRollersStator");
+    private final DoubleLogger log_spindexStator = new DoubleLogger(kLogTab, "spindexStator");
+    private final DoubleLogger log_tunnelStator = new DoubleLogger(kLogTab, "tunnelStator");
+    private final DoubleLogger log_shooterStator = new DoubleLogger(kLogTab, "shooterStator");
+    private final DoubleLogger log_turretStator = new DoubleLogger(kLogTab, "turretStator");
+    private final DoubleLogger log_totalSubsysStator = new DoubleLogger(kLogTab, "totalSubsysStator");
+
     
     /* CONSTRUCTOR */
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
@@ -75,7 +88,27 @@ public class Superstructure {
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()),
             m_intake.startIntakeRollers(),
+            m_indexer.setSpindexerVelocityCmd(Constants.IndexerK.m_spindexerIntakeRPS),
             logActiveCommands("activateIntake", "safeIntake", "retractIntake")
+        );
+    }
+
+    public Command intake() {
+        return Commands.runEnd(
+            () -> {
+                m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
+                if (m_intake.isIntakeArmAtPos()) {
+                    m_intake.startIntakeRollers();
+                    m_indexer.setSpindexerVelocity(Constants.IndexerK.m_spindexerIntakeRPS);
+                }
+            }, 
+            () -> {
+                if (m_intake.getIntakeArmMotor().getStatorCurrent().getValueAsDouble() < 40) {
+                    m_intake.stopIntakeRollers();   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
+                    m_indexer.stopSpindexer();
+                    m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
+                }
+            }
         );
     }
 
@@ -245,6 +278,13 @@ public class Superstructure {
         );
     }
 
+    public Command unjamCmd() {
+        return Commands.sequence(
+            m_indexer.setSpindexerVelocityCmd(Constants.IndexerK.m_spindexerRPS.times(-1)),
+            m_indexer.setTunnelVelocityCmd(Constants.IndexerK.m_tunnelRPS.times(-1))
+        );
+    }
+
     /**
      * Starts the indexer exhaust.
      */
@@ -366,5 +406,15 @@ public class Superstructure {
             removeFrom,
             updateLog
         );
+    }
+
+    @Override
+    public void periodic() {
+        log_intakeArmStator.accept(m_intake.getIntakeArmMotor().getStatorCurrent().getValueAsDouble());
+        log_intakeRollersStator.accept(m_intake.getIntakeRollers().getStatorCurrent().getValueAsDouble());
+        log_spindexStator.accept(m_indexer.getSpindexerMotors().getStatorCurrent().getValueAsDouble());
+        log_tunnelStator.accept(m_indexer.getTunnelMotors().getStatorCurrent().getValueAsDouble());
+        log_shooterStator.accept(m_shooter.getFlywheelMotors().getStatorCurrent().getValueAsDouble());
+        log_turretStator.accept(m_shooter.getTurretMotors().getStatorCurrent().getValueAsDouble());
     }
 }

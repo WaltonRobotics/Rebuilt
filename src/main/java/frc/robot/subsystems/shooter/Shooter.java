@@ -137,6 +137,8 @@ public class Shooter extends SubsystemBase {
     
     //---LOGIC BOOLEANS
     private boolean m_isTurretHomed = false;
+    private boolean m_isTurretHomingRerunning = false;
+
     //---TRIGGERS
     private final Trigger trg_inAllianceZone = new Trigger(this::inAllianceZone);
     private final Trigger trg_turretHomingCompleted = new Trigger(() -> m_isTurretHomed);
@@ -199,7 +201,7 @@ public class Shooter extends SubsystemBase {
 
         m_fuelSim = FuelSim.getInstance();
 
-        setDefaultCommand(turretHomingCmd());
+        setDefaultCommand(turretHomingCmd(false));
 
         trg_turretHomingCompleted.onTrue(Commands.runOnce(() -> setGoal(ShooterGoal.SHOOTING)));
 
@@ -326,6 +328,14 @@ public class Shooter extends SubsystemBase {
 
     public AngularVelocity getFlywheelCalcVelocity() {
         return RotationsPerSecond.of(m_calcFlywheelVelocity.in(RotationsPerSecond));
+    }
+
+    public TalonFX getFlywheelMotors() {
+        return m_shooterLeader;
+    }
+
+    public TalonFX getTurretMotors() {
+        return m_turret;
     }
 
     /* SIMULATION */
@@ -542,6 +552,7 @@ public class Shooter extends SubsystemBase {
         // Sets the TurretPosition to the Calculated TurretAngle
         setTurretPos(azimuthAngle);
         // Sets the HoodPosition to the Calculated HoodAngle
+        setHoodPosition(Degrees.of(28));
         // setHoodPosition(Degrees.of(calculatedShot.getHoodAngle().in(Degrees)));
 
         m_calcTurret = azimuthAngle;
@@ -659,8 +670,15 @@ public class Shooter extends SubsystemBase {
         // WaltMotorSim.updateSimServo(m_hood, m_hoodSim);
     }
 
-    public Command turretHomingCmd() {
+    public Command turretHomingCmd(boolean rerun) {
         Runnable init = () -> {
+            // if (rerun) {
+            //     m_turret.setControl(m_VoltageReq.withOutput(1.5));
+            //     m_isTurretHomingRerunning = false;
+            // } else {
+            //     m_turret.setControl(m_VoltageReq.withOutput(-1.5));
+            //     m_isTurretHomingRerunning = true;
+            // }
             m_turret.setControl(m_VoltageReq.withOutput(-1.5));
             m_isTurretHomed = false;
             log_turretHomed.accept(m_isTurretHomed);
@@ -679,8 +697,9 @@ public class Shooter extends SubsystemBase {
         };
 
         return new FunctionalCommand(init, () ->{}, end, isFinished, this)
-            .andThen(Commands.waitSeconds(0.1))
-            .andThen(runOnce(() -> {m_turret.setControl(m_MMVRequest.withPosition(0));}));
+                .andThen(Commands.waitSeconds(0.1))
+                .andThen(runOnce(() -> {m_turret.setControl(m_MMVRequest.withPosition(0));}));
+            // .withTimeout(2).andThen(turretHomingCmd(m_isTurretHomingRerunning));
     }
 
     /* CONSTANTS */

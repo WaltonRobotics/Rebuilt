@@ -30,8 +30,8 @@ public class WaltSimpleAutonFactory {
         return Commands.parallel(
             m_autoFactory.trajectoryCmd("RightSweep"),
             Commands.sequence(
-                m_intake.setIntakeArmPosCmd(IntakeArmPosition.SAFE),
-                Commands.waitSeconds(1),
+                // m_intake.setIntakeArmPosCmd(IntakeArmPosition.SAFE),
+                Commands.waitSeconds(2),
                 m_superstructre.activateIntake(),
                 Commands.waitSeconds(3),
                 m_superstructre.deactivateIntake(IntakeArmPosition.SAFE)
