@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.sim.ChassisReference;
 
@@ -87,9 +88,7 @@ public class Intake extends SubsystemBase {
         m_intakeArm.getConfigurator().apply(kIntakeArmConfiguration);
         m_intakeRollers.getConfigurator().apply(kIntakeRollersConfiguration);
 
-        if (Robot.isReal()) {
-            setDefaultCommand(intakeArmCurrentSenseHoming());
-        }
+        setDefaultCommand(intakeArmCurrentSenseHoming());
 
         initSim();
     }
@@ -131,6 +130,10 @@ public class Intake extends SubsystemBase {
             setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(() -> isIntakeArmAtPos())
         ).finallyDo(() -> setIntakeArmPosCmd(IntakeArmPosition.SAFE));
+    }
+
+     public void setIntakeArmNeutralMode(NeutralModeValue value) {
+        m_intakeArm.setNeutralMode(value);
     }
 
     //for TestingDashboard

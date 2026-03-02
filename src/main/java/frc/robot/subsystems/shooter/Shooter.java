@@ -31,7 +31,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.RobotController;
@@ -93,6 +93,8 @@ public class Shooter extends SubsystemBase {
     private final TurretVisualizer m_turretVisualizer;
     private final FuelSim m_fuelSim;
 
+    public final EventLoop shooterEventLoop = new EventLoop();
+
     // ---MOTORS + CONTROL REQUESTS
     private final TalonFX m_shooterLeader = new TalonFX(kLeaderCANID, Constants.kCanivoreBus); // X60Foc
     private final TalonFX m_shooterFollower = new TalonFX(kFollowerCANID, Constants.kCanivoreBus); // X60Foc
@@ -110,6 +112,7 @@ public class Shooter extends SubsystemBase {
     private GenericEntry nte_turretCoast = WaltTuner.createBoolToggleSwitch(kLogTab, "TurretCoast", m_isTurretCoast);
 
     private DigitalInput m_turretHomingHall = new DigitalInput(2);
+    private final Trigger trg_hallTrigger = new Trigger(shooterEventLoop, () -> !m_turretHomingHall.get());
     private final BooleanLogger log_turretHomingHall = new BooleanLogger(kLogTab, "turretHomeHall");
 
     private Angle m_calcHoodAngle = Degrees.of(0);
@@ -137,11 +140,10 @@ public class Shooter extends SubsystemBase {
     
     //---LOGIC BOOLEANS
     private boolean m_isTurretHomed = false;
-    private boolean m_isTurretHomingRerunning = false;
 
     //---TRIGGERS
-    private final Trigger trg_inAllianceZone = new Trigger(this::inAllianceZone);
-    private final Trigger trg_turretHomingCompleted = new Trigger(() -> m_isTurretHomed);
+    // private final Trigger trg_inAllianceZone = new Trigger(shooterEventLoop, this::inAllianceZone);
+    private final Trigger trg_turretHomingCompleted = new Trigger(shooterEventLoop, () -> m_isTurretHomed);
 
     /* SIM OBJECTS */
     private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(
@@ -167,6 +169,7 @@ public class Shooter extends SubsystemBase {
 
     // private final BooleanLogger log_exitBeamBreak = WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
     private final BooleanLogger log_spunUp = WaltLogger.logBoolean(kLogTab, "spunUp");
+    private final BooleanLogger log_inAllianceZone = WaltLogger.logBoolean(kLogTab, "inAllianceZone");
 
     private final DoubleLogger log_hoodServoVoltage = WaltLogger.logDouble("Shooter/Hood", "hoodServoVoltage");
     private final DoubleLogger log_hoodServoCurrent = WaltLogger.logDouble("Shooter/Hood", "hoodServoCurrent");
@@ -190,6 +193,7 @@ public class Shooter extends SubsystemBase {
 
         m_poseSupplier = poseSupplier;
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
+        setDefaultCommand(turretHomingCmd(false));
 
         m_isBlue = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue;
 
@@ -201,18 +205,19 @@ public class Shooter extends SubsystemBase {
 
         m_fuelSim = FuelSim.getInstance();
 
-        setDefaultCommand(turretHomingCmd(false));
-
         trg_turretHomingCompleted.onTrue(Commands.runOnce(() -> setGoal(ShooterGoal.SHOOTING)));
 
         // if (Robot.isSimulation()) {
         //     setGoal(ShooterGoal.PASSING);
         // }
-        // if (inAllianceZone()) {
-        //     setGoal(ShooterGoal.SCORING);
-        // } else {
-        //     setGoal(ShooterGoal.PASSING);
+        // if (trg_turretHomingCompleted.getAsBoolean()) {
+        //     if (inAllianceZone()) {
+        //         setGoal(ShooterGoal.SHOOTING);
+        //     } else {
+        //         setGoal(ShooterGoal.PASSING);
+        //     }
         // }
+    
 
         m_turret.setPosition(0);
 
@@ -306,6 +311,10 @@ public class Shooter extends SubsystemBase {
     private void setTurretPos(Angle rots) {
         m_turret.setControl(m_MMVRequest.withPosition(rots));
         log_turretControlPos.accept(rots.in(Rotations));
+    }
+
+    public void setTurretNeutralMode(NeutralModeValue value) {
+        m_turret.setNeutralMode(value);
     }
 
     // for TestingDashboard
@@ -506,9 +515,9 @@ public class Shooter extends SubsystemBase {
         case STATIC_SHOOTING:
             setTarget(FieldConstants.Hub.innerCenterPoint);
             break;
-        // case PASSING:
-        //     setTarget(getPassingTarget(m_poseSupplier.get()));
-        //     break;
+        case PASSING:
+            setTarget(getPassingTarget(m_poseSupplier.get()));
+            break;
         // case TEST:
         //     setTargetAheadOfRobot(3);
         //     break;
@@ -601,7 +610,7 @@ public class Shooter extends SubsystemBase {
         Pose2d pose = m_poseSupplier.get();
 
         // trg_inAllianceZone.and(DriverStation::isTeleop)
-        //     .onTrue(Commands.runOnce(() -> setGoal(ShooterGoal.SCORING)))
+        //     .onTrue(Commands.runOnce(() -> setGoal(ShooterGoal.SHOOTING)))
         //     .onFalse(Commands.runOnce(() -> setGoal(ShooterGoal.PASSING)));
         // trg_inAllianceZone.negate().and(DriverStation::isTeleop).whileTrue(Commands.runOnce(() -> setGoal(ShooterGoal.PASSING)));
 
@@ -610,10 +619,9 @@ public class Shooter extends SubsystemBase {
             case SHOOTING:
                 calculateShot(pose, true);
                 break;
-            // case PASSING:
-            //     setTarget(m_currentTarget);
-            //     calculateShot(pose, false);
-            //     break;
+            case PASSING:
+                calculateShot(pose, false);
+                break;
             case STATIC_SHOOTING:
                 calculateShot(pose, true);
                 break;
@@ -623,6 +631,7 @@ public class Shooter extends SubsystemBase {
             case OFF:
                 break;
         }
+
 
         WaltTuner.toggleMotorCoast(m_isTurretCoast, nte_turretCoast.getBoolean(false), m_turret);
 
@@ -650,13 +659,17 @@ public class Shooter extends SubsystemBase {
         log_hoodServoVoltage.accept(RobotController.getVoltage6V());
         log_hoodServoCurrent.accept(RobotController.getCurrent6V());
 
-        log_turretHomingHall.accept(m_turretHomingHall.get());
-        // log_onLeftSide.accept(m_onLeftSide);
+        log_turretHomingHall.accept(trg_hallTrigger);
+        log_onLeftSide.accept(m_onLeftSide);
+        // log_inAllianceZone.accept(trg_inAllianceZone);
         log_shootingGoal.accept(m_goal.toString());
 
         log_calcHoodAngle.accept(m_calcHoodAngle.in(Degrees));
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocity.in(RotationsPerSecond));
         log_calcTurretPos.accept(m_calcTurret.in(Rotations));
+
+        // KEEP AT THE BOTTOM OF PERIODIC
+        shooterEventLoop.poll();
     }
 
     @Override
@@ -672,14 +685,7 @@ public class Shooter extends SubsystemBase {
 
     public Command turretHomingCmd(boolean rerun) {
         Runnable init = () -> {
-            // if (rerun) {
-            //     m_turret.setControl(m_VoltageReq.withOutput(1.5));
-            //     m_isTurretHomingRerunning = false;
-            // } else {
-            //     m_turret.setControl(m_VoltageReq.withOutput(-1.5));
-            //     m_isTurretHomingRerunning = true;
-            // }
-            m_turret.setControl(m_VoltageReq.withOutput(-1.5));
+            m_turret.setControl(m_VoltageReq.withOutput(-0.75));
             m_isTurretHomed = false;
             log_turretHomed.accept(m_isTurretHomed);
         };
@@ -697,15 +703,20 @@ public class Shooter extends SubsystemBase {
         };
 
         return new FunctionalCommand(init, () ->{}, end, isFinished, this)
-                .andThen(Commands.waitSeconds(0.1))
-                .andThen(runOnce(() -> {m_turret.setControl(m_MMVRequest.withPosition(0));}));
-            // .withTimeout(2).andThen(turretHomingCmd(m_isTurretHomingRerunning));
+            .until(trg_hallTrigger)
+            .andThen(
+                Commands.print("========== TURRET HOMING COMPLETE =========="),
+                Commands.waitSeconds(0.1),
+                runOnce(() -> {
+                    m_turret.setControl(m_MMVRequest.withPosition(0));
+                })
+            );
     }
 
     /* CONSTANTS */
     public enum ShooterGoal {
         SHOOTING,
-        // PASSING,
+        PASSING,
         STATIC_SHOOTING,
         // TEST,
         OFF
