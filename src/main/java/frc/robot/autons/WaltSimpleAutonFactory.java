@@ -21,8 +21,9 @@ public class WaltSimpleAutonFactory {
 
     private Command preloadShot() {
         return Commands.sequence(
-            Commands.waitSeconds(0.15),  //TODO: tune number
-            m_superstructre.activateOuttake(ShooterK.kShooterMaxRPS)
+            // Commands.waitUntil(() -> (m_intake.m_isIntakeArmHomed && m_shooter.m_isTurretHomed)),
+            Commands.waitSeconds(0.15),
+            m_superstructre.activateOuttake(ShooterK.kShooterMaxRPS).withTimeout(2)
         );
     }
 
@@ -30,15 +31,15 @@ public class WaltSimpleAutonFactory {
         return Commands.parallel(
             m_autoFactory.trajectoryCmd("RightSweep"),
             Commands.sequence(
-                // m_intake.setIntakeArmPosCmd(IntakeArmPosition.SAFE),
                 Commands.waitSeconds(2),
+                // Commands.waitUntil(m_autoTrajectory.atTime("postBump")),
                 m_superstructre.activateIntake(),
                 Commands.waitSeconds(3),
-                m_superstructre.deactivateIntake(IntakeArmPosition.SAFE)
-                // Commands.waitSeconds(1),
-                // m_superstructre.activateOuttake(ShooterK.kShooterMaxRPS),
-                // Commands.waitSeconds(0.15),
-                // m_superstructre.deactivateOuttake()
+                // Commands.waitUntil(m_autoTrajectory.atTime("toSafe")),
+                m_superstructre.deactivateIntake(IntakeArmPosition.SAFE),
+                Commands.waitSeconds(1),
+                // Commands.waitUntil(m_autoTrajectory.atTime("startOuttake")),
+                m_superstructre.activateOuttake(ShooterK.kShooterMaxRPS).withTimeout(1)
             )
         ).withName("rightOneSweep");
     }
@@ -46,10 +47,9 @@ public class WaltSimpleAutonFactory {
     public Command rightTwoSweep() {
         return Commands.sequence(
             Commands.parallel(
-                m_autoFactory.resetOdometry("RightSweep")
-                // preloadShot()
+                m_autoFactory.resetOdometry("RightSweep"),
+                preloadShot()
             ),
-            // m_superstructre.deactivateOuttake(),
             rightOneSweep(),
             m_autoFactory.resetOdometry("RightTurnBack"),
             m_autoFactory.trajectoryCmd("RightTurnBack"),
@@ -63,7 +63,6 @@ public class WaltSimpleAutonFactory {
                 m_autoFactory.resetOdometry("RightToDepot"),
                 preloadShot()
             ),
-            // m_superstructre.deactivateOuttake(),
             Commands.parallel(
                 m_autoFactory.trajectoryCmd("RightToDepot"),
                 Commands.sequence(
@@ -76,8 +75,8 @@ public class WaltSimpleAutonFactory {
             Commands.parallel(
                 m_autoFactory.trajectoryCmd("RightDepotToShoot"),
                 Commands.sequence(
-                    Commands.waitSeconds(1)
-                    // m_superstructre.activateOuttake(ShooterK.kShooterMaxRPS)
+                    Commands.waitSeconds(1),
+                    m_superstructre.activateOuttake(ShooterK.kShooterMaxRPS).withTimeout(2)
                 )
             )
             
@@ -90,15 +89,13 @@ public class WaltSimpleAutonFactory {
                 m_autoFactory.resetOdometry("RightToOutpost"),
                 preloadShot()
             ),
-            // m_superstructre.deactivateOuttake(),
             m_autoFactory.resetOdometry("RightOutpostToNeutral"),
             Commands.parallel(
                 m_autoFactory.trajectoryCmd("RightOutpostToNeutral"),
                 Commands.sequence(
                     Commands.waitSeconds(0.5),
-                    // m_superstructre.activateOuttake(ShooterK.kShooterMaxRPS),
+                    m_superstructre.activateOuttake(ShooterK.kShooterMaxRPS).withTimeout(2),
                     Commands.waitSeconds(0.5),
-                    // m_superstructre.deactivateOuttake(),
                     m_intake.setIntakeArmPosCmd(IntakeArmPosition.SAFE),
                     Commands.waitSeconds(0.5),
                     m_superstructre.activateIntake()

@@ -11,6 +11,7 @@ import static frc.robot.Constants.ShooterK.kTurretTransform;
 
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -23,6 +24,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
+import choreo.auto.AutoTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -100,12 +102,14 @@ public class Robot extends TimedRobot {
 
     //---AUTONS
     private Command m_autonomousCommand;
-    private String m_autonChosen = "noAutonSelected";
+    private boolean m_autonChosen = false;
 
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
     private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
     private final WaltSimpleAutonFactory m_simpleAutonFactory = new WaltSimpleAutonFactory(m_superstructure, m_autoFactory, m_intake);
     private HashMap<String, Command> m_autonList = new HashMap<String, Command>();
+
+    Consumer<Command> getAuton = auton -> m_autonomousCommand = auton;
 
     //---VISION
     // private final VisionSim m_visionSim = new VisionSim();
@@ -404,23 +408,23 @@ public class Robot extends TimedRobot {
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
         /* TEST SEQUENCES/BINDS */
-        trg_activateIntake.onTrue(
-            Commands.parallel(
-                m_superstructure.activateIntake()
-                // m_visualSim.setIntakeArmPosition(),
-                // m_visualSim.setIntakeRollerVelocity(),
-                // m_visualSim.setSpindexerVelocity()
-            )
-        );
+        // trg_activateIntake.onTrue(
+        //     Commands.parallel(
+        //         m_superstructure.activateIntake()
+        //         // m_visualSim.setIntakeArmPosition(),
+        //         // m_visualSim.setIntakeRollerVelocity(),
+        //         // m_visualSim.setSpindexerVelocity()
+        //     )
+        // );
 
-        trg_safeIntake.onTrue(
-            Commands.parallel(
-                m_superstructure.deactivateIntake(IntakeArmPosition.SAFE)
-                // m_visualSim.setIntakeArmPosition(),
-                // m_visualSim.setIntakeRollerVelocity(),
-                // m_visualSim.setSpindexerVelocity()
-            )
-        );
+        // trg_safeIntake.onTrue(
+        //     Commands.parallel(
+        //         m_superstructure.deactivateIntake(IntakeArmPosition.SAFE)
+        //         // m_visualSim.setIntakeArmPosition(),
+        //         // m_visualSim.setIntakeRollerVelocity(),
+        //         // m_visualSim.setSpindexerVelocity()
+        //     )
+        // );
         trg_retractIntake.onTrue(
             Commands.parallel(    
                 m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
@@ -705,67 +709,12 @@ public class Robot extends TimedRobot {
             DriverStation.getAlliance().get().equals(Alliance.Red)
         );
 
-        AutonChooser.initialize();
-
-        m_autonList.putIfAbsent("oneRightNeutralPickup", m_simpleAutonFactory.rightOneSweep());
-
-        m_autonList.putIfAbsent("twoRightNeutralPickup", m_waltAutonFactory.twoRightNeutralPickup());
-        m_autonList.putIfAbsent("threeRightNeutralPickup", m_waltAutonFactory.threeRightNeutralPickup());
-        m_autonList.putIfAbsent("oneLeftNeutralPickup", m_waltAutonFactory.oneLeftNeutralPickup());
-        m_autonList.putIfAbsent("twoLeftNeutralPickup", m_waltAutonFactory.twoLeftNeutralPickup());
-        m_autonList.putIfAbsent("threeLeftNeutralPickup", m_waltAutonFactory.threeLeftNeutralPickup());
-
-        if (m_autonChosen.equals("noAutonSelected")) {
-            m_autonomousCommand = m_autonList.get("oneRightNeutralPickup");
-        }
+        AutonChooser.initialize(m_simpleAutonFactory);
     }
 
 
     @Override
     public void disabledPeriodic() {
-        if (!AutonChooser.m_chooser.getSelected().equals(m_autonChosen)) {
-            boolean autonSelected = true;
-            switch (AutonChooser.m_chooser.getSelected()) {
-                case "oneRightNeutralPickup":
-                    AutonChooser.pub_autonName.set("One Right Neutral Pickup");
-                    m_autonChosen = "oneRightNeutralPickup";
-                    break;
-                case "twoRightNeutralPickup":
-                    AutonChooser.pub_autonName.set("Two Right Neutral Pickup");
-                    m_autonChosen = "twoRightNeutralPickup";
-                    break;
-                case "threeRightNeutralPickup":
-                    AutonChooser.pub_autonName.set("Three Right Neutral Pickup");
-                    m_autonChosen = "threeRightNeutralPickup";
-                    break;
-                case "oneLeftNeutralPickup":
-                    AutonChooser.pub_autonName.set("One Left Neutral Pickup");
-                    m_autonChosen = "oneLeftNeutralPickup";
-                    break;
-                case "twoLeftNeutralPickup":
-                    AutonChooser.pub_autonName.set("Two Left Neutral Pickup");
-                    m_autonChosen = "twoLeftNeutralPickup";
-                    break;
-                case "threeLeftNeutralPickup":
-                    AutonChooser.pub_autonName.set("Three Left Neutral Pickup");
-                    m_autonChosen = "threeLeftNeutralPickup";
-                    break;
-                default:
-                    autonSelected = false;
-                    break;
-            }
-
-            if (autonSelected) {
-                AutonChooser.pub_autonMade.set(false);
-            }
-        }
-
-        if (AutonChooser.sub_makeAuton.get()) {
-            m_autonomousCommand = m_autonList.get(m_autonChosen);
-            AutonChooser.pub_autonMade.set(true);
-            AutonChooser.pub_makeAuton.set(false);
-        }
-
         if (m_fpsLimitTimer.hasElapsed(3)) {
             WaltCamera.setFpsLimit(true);
             m_fpsLimitTimer.restart();
@@ -781,6 +730,9 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
+        m_autonomousCommand = AutonChooser.m_chooser.getSelected();
+        AutonChooser.m_chooser.onChange(getAuton);
+
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
         }
