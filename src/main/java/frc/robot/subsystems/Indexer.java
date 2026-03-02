@@ -121,6 +121,14 @@ public class Indexer extends SubsystemBase {
         return run(() -> m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
     }
 
+    public TalonFX getSpindexerMotors() {
+        return m_spindexer;
+    }
+
+    public TalonFX getTunnelMotors() {
+        return m_tunnel;
+    }
+
     /* PERIODICS */
     @Override
     public void periodic() {
