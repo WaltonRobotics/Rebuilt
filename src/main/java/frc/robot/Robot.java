@@ -322,6 +322,7 @@ public class Robot extends TimedRobot {
             m_superstructure.emergencyBarf()
         );
         // m_manipulator.leftBumper().whileTrue(m_superstructure.shimmy());    //need to make trg   AUTOMATIC WHILE SHOOTING
+        m_driver.leftBumper().onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
 
         //---OVERRIDE COMMANDS
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
@@ -404,23 +405,23 @@ public class Robot extends TimedRobot {
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
         /* TEST SEQUENCES/BINDS */
-        trg_activateIntake.onTrue(
-            Commands.parallel(
-                m_superstructure.activateIntake()
-                // m_visualSim.setIntakeArmPosition(),
-                // m_visualSim.setIntakeRollerVelocity(),
-                // m_visualSim.setSpindexerVelocity()
-            )
-        );
+        // trg_activateIntake.onTrue(
+        //     Commands.parallel(
+        //         m_superstructure.activateIntake()
+        //         // m_visualSim.setIntakeArmPosition(),
+        //         // m_visualSim.setIntakeRollerVelocity(),
+        //         // m_visualSim.setSpindexerVelocity()
+        //     )
+        // );
 
-        trg_safeIntake.onTrue(
-            Commands.parallel(
-                m_superstructure.deactivateIntake(IntakeArmPosition.SAFE)
-                // m_visualSim.setIntakeArmPosition(),
-                // m_visualSim.setIntakeRollerVelocity(),
-                // m_visualSim.setSpindexerVelocity()
-            )
-        );
+        // trg_safeIntake.onTrue(
+        //     Commands.parallel(
+        //         m_superstructure.deactivateIntake(IntakeArmPosition.SAFE)
+        //         // m_visualSim.setIntakeArmPosition(),
+        //         // m_visualSim.setIntakeRollerVelocity(),
+        //         // m_visualSim.setSpindexerVelocity()
+        //     )
+        // );
         trg_retractIntake.onTrue(
             Commands.parallel(    
                 m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
@@ -656,9 +657,11 @@ public class Robot extends TimedRobot {
 
         // periodics
         m_shooter.periodic();
+        m_periodicTracer.addEpoch("ShooterPeriodic");
         m_indexer.periodic();
+        m_periodicTracer.addEpoch("IndexerPeriodic");
         m_intake.periodic();
-        m_periodicTracer.addEpoch("SubsysPeriodics");
+        m_periodicTracer.addEpoch("IntakePeriodic");
 
 
         log_povUp.accept(m_driver.povUp());
@@ -689,7 +692,7 @@ public class Robot extends TimedRobot {
 
         /* for the mechanism2D in 3D, drag all 3 mechanisms2ds onto the robot pose
         and also log the shooter position pose */ 
-        // m_periodicTracer.printEpochs();
+        m_periodicTracer.printEpochs();
     }
 
     private final Timer m_fpsLimitTimer = new Timer();
@@ -698,8 +701,8 @@ public class Robot extends TimedRobot {
     public void disabledInit() {
         m_fpsLimitTimer.restart();
         WaltCamera.setFpsLimit(true);
-        m_shooter.getTurretMotors().setNeutralMode(NeutralModeValue.Coast);
-        m_intake.getIntakeArmMotor().setNeutralMode(NeutralModeValue.Coast);
+        m_shooter.setTurretNeutralMode(NeutralModeValue.Coast);
+        m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
         m_waltAutonFactory.setAlliance(
             DriverStation.getAlliance().isPresent() && 
             DriverStation.getAlliance().get().equals(Alliance.Red)
@@ -775,8 +778,8 @@ public class Robot extends TimedRobot {
     @Override
     public void disabledExit() {
         System.out.println("Re-enabling motor brakes");
-        m_shooter.getTurretMotors().setNeutralMode(NeutralModeValue.Brake);
-        m_intake.getIntakeArmMotor().setNeutralMode(NeutralModeValue.Brake);
+        m_shooter.setTurretNeutralMode(NeutralModeValue.Brake);
+        m_intake.setIntakeArmNeutralMode(NeutralModeValue.Brake);
     }
 
     @Override
