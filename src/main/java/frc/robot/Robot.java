@@ -17,6 +17,7 @@ import org.photonvision.PhotonCamera;
 
 import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -116,8 +117,9 @@ public class Robot extends TimedRobot {
     //---COMMAND SEQUENCE TRIGGERS
     private Trigger trg_swerveToObject = m_driver.x();
 
-    private Trigger trg_activateIntake = m_manipulator.a().and(trg_manipOverride.negate());
-    private Trigger trg_safeIntake = m_manipulator.x().and(trg_manipOverride.negate());
+    // private Trigger trg_activateIntake = m_manipulator.a().and(trg_manipOverride.negate());
+    // private Trigger trg_safeIntake = m_manipulator.x().and(trg_manipOverride.negate());
+    private Trigger trg_intake = m_manipulator.rightTrigger().and(trg_manipOverride.negate());
     private Trigger trg_retractIntake = m_manipulator.y().and(trg_manipOverride.negate());
 
     private Trigger trg_shoot = m_driver.rightTrigger().and(trg_driverOverride.negate());
@@ -300,12 +302,8 @@ public class Robot extends TimedRobot {
 
         //---NORMAL SEQUENCES
         //Intake
-        trg_activateIntake.whileTrue(
+        trg_intake.whileTrue(
             m_superstructure.intake()
-        );
-        
-        trg_safeIntake.onTrue(
-            m_superstructure.deactivateIntake(IntakeArmPosition.SAFE)
         );
         trg_retractIntake.onTrue(
             m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
@@ -323,7 +321,6 @@ public class Robot extends TimedRobot {
         trg_emergencyBarf.whileTrue(
             m_superstructure.emergencyBarf()
         );
-
         // m_manipulator.leftBumper().whileTrue(m_superstructure.shimmy());    //need to make trg   AUTOMATIC WHILE SHOOTING
 
         //---OVERRIDE COMMANDS
@@ -700,6 +697,9 @@ public class Robot extends TimedRobot {
     @Override
     public void disabledInit() {
         m_fpsLimitTimer.restart();
+        WaltCamera.setFpsLimit(true);
+        m_shooter.getTurretMotors().setNeutralMode(NeutralModeValue.Coast);
+        m_intake.getIntakeArmMotor().setNeutralMode(NeutralModeValue.Coast);
         m_waltAutonFactory.setAlliance(
             DriverStation.getAlliance().isPresent() && 
             DriverStation.getAlliance().get().equals(Alliance.Red)
@@ -766,14 +766,18 @@ public class Robot extends TimedRobot {
             AutonChooser.pub_makeAuton.set(false);
         }
 
-        if (m_fpsLimitTimer.hasElapsed(10)) {
+        if (m_fpsLimitTimer.hasElapsed(3)) {
             WaltCamera.setFpsLimit(true);
             m_fpsLimitTimer.restart();
         }
     }
 
     @Override
-    public void disabledExit() {}
+    public void disabledExit() {
+        System.out.println("Re-enabling motor brakes");
+        m_shooter.getTurretMotors().setNeutralMode(NeutralModeValue.Brake);
+        m_intake.getIntakeArmMotor().setNeutralMode(NeutralModeValue.Brake);
+    }
 
     @Override
     public void autonomousInit() {

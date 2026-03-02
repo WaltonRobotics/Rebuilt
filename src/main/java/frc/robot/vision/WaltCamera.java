@@ -29,6 +29,7 @@ import static frc.robot.Constants.FieldK;
 public class WaltCamera extends PhotonCamera {
     /* CLASS VARIABLES */
     private static final int kGlobalFpsLimit = 5;
+    private static final int kGlobalFps = 45;
 
     public static final List<WaltCamera> AllCameras = Collections.unmodifiableList(Arrays.asList(
         new WaltCamera("FL_HAT", VisionK.kFrontLeftCTR),
@@ -39,7 +40,7 @@ public class WaltCamera extends PhotonCamera {
 
     public static void setFpsLimit(boolean limited) {
         for (var cam : AllCameras) {
-            cam.setFPSLimit(limited ? kGlobalFpsLimit : -1); 
+            cam.setFPSLimit(limited ? kGlobalFpsLimit : kGlobalFps); 
         }
     }
 

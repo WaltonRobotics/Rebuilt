@@ -98,13 +98,13 @@ public class Superstructure extends SubsystemBase {
             () -> {
                 m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
                 if (m_intake.isIntakeArmAtPos()) {
-                    m_intake.startIntakeRollers();
+                    m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
                     m_indexer.setSpindexerVelocity(Constants.IndexerK.m_spindexerIntakeRPS);
                 }
             }, 
             () -> {
                 if (m_intake.getIntakeArmMotor().getStatorCurrent().getValueAsDouble() < 40) {
-                    m_intake.stopIntakeRollers();   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
+                    m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
                     m_indexer.stopSpindexer();
                     m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
                 }
