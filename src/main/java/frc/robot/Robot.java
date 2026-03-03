@@ -780,6 +780,36 @@ public class Robot extends TimedRobot {
     @Override
     public void testInit() {
         CommandScheduler.getInstance().cancelAll();
+        
+        CommandScheduler.getInstance().schedule(
+            Commands.sequence(
+                m_drivetrain.runOnce(m_drivetrain::seedFieldCentric),
+                Commands.waitSeconds(1),
+                m_drivetrain.applyRequest(() ->
+                    drive.withVelocityX(MaxSpeed)
+                        .withVelocityY(0)
+                        .withRotationalRate(0)
+                ),
+                Commands.waitSeconds(5),
+                m_drivetrain.applyRequest(() ->
+                    drive.withVelocityX(-MaxSpeed)
+                        .withVelocityY(0)
+                        .withRotationalRate(0)
+                ),
+                Commands.waitSeconds(5),
+                m_drivetrain.applyRequest(() ->
+                    drive.withVelocityX(0)
+                        .withVelocityY(0)
+                        .withRotationalRate(MaxAngularRate)
+                ),
+                Commands.waitSeconds(5),
+                m_drivetrain.applyRequest(() ->
+                    drive.withVelocityX(0)
+                        .withVelocityY(0)
+                        .withRotationalRate(0)
+                )
+            )
+        );
     }
 
     @Override
