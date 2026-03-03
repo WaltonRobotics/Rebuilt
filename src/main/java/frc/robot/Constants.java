@@ -18,8 +18,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import org.photonvision.simulation.SimCameraProperties;
-
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -44,7 +42,6 @@ import frc.util.AllianceFlipUtil;
 import frc.util.VisionUtil;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.Pose3dLogger;
-import frc.util.WaltLogger.Transform3dLogger;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;

@@ -7,16 +7,12 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static frc.robot.Constants.ShooterK.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
@@ -27,19 +23,11 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.FieldConstants;
-import frc.util.WaltLogger;
 import frc.util.WaltLogger.*;
 import edu.wpi.first.units.measure.Time;
 
 public class ShotCalculator {
-
-    private static final DoubleLogger log_rawDesiredTurretRot = WaltLogger.logDouble("ShotCalc", "rawDesiredTurretRots");
-    private static final DoubleLogger log_desiredTurretRot = new DoubleLogger("Shooter/Calculator", "desiredTurretRotations");
-
     private static final DoubleLogger log_timeOfFlight = new DoubleLogger("Shooter/Calculator", "timeOfFlight");
-
-    private static final Pose2dLogger log_turretTx2d = WaltLogger.logPose2d("ShotCalc", "TurretTranslation2d");
-    private static final Pose2dLogger log_turretDir = WaltLogger.logPose2d("ShotCalc", "TurretDirection");
 
     //see 5000's code (circa 2/16/2026 9:11 PM EST)
     public static final InterpolatingTreeMap<Double, ShotData> m_shotMap = new InterpolatingTreeMap<>(
@@ -199,19 +187,19 @@ public class ShotCalculator {
 
         // Iterate the process, getting better time of flight estimations and updating the predicted target accordingly
         for (int i = 0; i < iterations; i++) {
-            ShotData prevShot = shot;
-            Distance prevDistance = distance;
-            Time prevTOF = timeOfFlight;
-            Translation3d prevPredTarget = predictedTarget;
+            // ShotData prevShot = shot;
+            // Distance prevDistance = distance;
+            // Time prevTOF = timeOfFlight;
+            // Translation3d prevPredTarget = predictedTarget;
 
             predictedTarget = predictTargetPos(target, fieldSpeeds, timeOfFlight);
             shot = calculateShotFromFunnelClearance(robot, target, predictedTarget);
             timeOfFlight = calculateTimeOfFlight(shot.getExitVelocity(), shot.getHoodAngle(),
                     getDistanceToTarget(robot, predictedTarget));
 
-            ShotData shotDataDiff = shot.minus(prevShot);
-            Distance distanceDiff = prevDistance.minus(distance);
-            Time timeOfFlightDiff = prevTOF.minus(timeOfFlight);
+            // ShotData shotDataDiff = shot.minus(prevShot);
+            // Distance distanceDiff = prevDistance.minus(distance);
+            // Time timeOfFlightDiff = prevTOF.minus(timeOfFlight);
 
             // if (shotDataDiff.hoodAngle() < .05 && shotDataDiff.exitVelocity() < .05 && prevShot.target().getDistance(shot.getTarget()) < .05 
             //         && distanceDiff.magnitude() < .05 && timeOfFlightDiff.magnitude() < .005 && prevPredTarget.getDistance(predictedTarget) < .05) {

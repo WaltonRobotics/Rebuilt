@@ -3,7 +3,6 @@ package frc.robot.subsystems.shooter;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.StaticBrake;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -21,14 +20,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -45,9 +41,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Rotations;
-import static frc.robot.Constants.RobotK.kRobotFullWidth;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
 
@@ -58,10 +52,8 @@ import java.util.function.Supplier;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.Robot;
-import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.WpiK;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
-import frc.util.AllianceFlipUtil;
 import frc.util.AllianceZoneUtil;
 import frc.util.GobildaServoAngled;
 import frc.util.WaltMotorSim;
@@ -72,7 +64,6 @@ import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.Pose2dLogger;
 import frc.util.WaltLogger.Pose3dLogger;
 import frc.util.WaltLogger.StringLogger;
-import frc.util.WaltLogger.Translation3dLogger;
 
 public class Shooter extends SubsystemBase {
     /* VARIABLES */
@@ -86,9 +77,6 @@ public class Shooter extends SubsystemBase {
     private final Supplier<Pose2d> m_poseSupplier;
     private final Supplier<ChassisSpeeds> m_fieldSpeedsSupplier;
 
-    private final Distance fieldWidthDiv2 = Inches.of(FieldConstants.fieldWidth / 2.0);
-
-    private boolean m_isBlue;
     private boolean m_onLeftSide;
     //need to implement the differing targets (if in neutral zone, shoot to X point (passing))
     private Translation3d m_currentTarget = Translation3d.kZero;
@@ -195,8 +183,6 @@ public class Shooter extends SubsystemBase {
         m_poseSupplier = poseSupplier;
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
         setDefaultCommand(turretHomingCmd(false));
-
-        m_isBlue = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue;
 
         m_turretVisualizer = new TurretVisualizer(
                 () -> new Pose3d(m_poseSupplier.get().rotateAround(

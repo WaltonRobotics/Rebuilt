@@ -10,7 +10,6 @@ import frc.robot.Constants.IndexerK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
-import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.StringArrayLogger;
 
 import static edu.wpi.first.units.Units.Degrees;

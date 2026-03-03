@@ -151,7 +151,6 @@ public class Indexer extends SubsystemBase {
     public void periodic() {
         log_spindexerRPS.accept(m_spindexer.getVelocity().getValueAsDouble());
         log_tunnelRPS.accept(m_tunnel.getVelocity().getValueAsDouble());
-        double spindexStator = m_spindexer.getStatorCurrent().getValueAsDouble();
     }
 
     @Override
