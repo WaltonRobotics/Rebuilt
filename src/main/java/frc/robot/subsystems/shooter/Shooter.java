@@ -62,6 +62,7 @@ import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.WpiK;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
 import frc.util.AllianceFlipUtil;
+import frc.util.AllianceZoneUtil;
 import frc.util.GobildaServoAngled;
 import frc.util.WaltMotorSim;
 import frc.util.WaltTuner;
@@ -146,6 +147,7 @@ public class Shooter extends SubsystemBase {
     //---TRIGGERS
     // private final Trigger trg_inAllianceZone = new Trigger(shooterEventLoop, this::inAllianceZone);
     private final Trigger trg_turretHomingCompleted = new Trigger(shooterEventLoop, () -> m_isTurretHomed);
+    // private final Trigger trg_inAllianceZone = new Trigger(shooterEventLoop, this::inAllianceZone);
 
     /* SIM OBJECTS */
     private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(
@@ -171,15 +173,12 @@ public class Shooter extends SubsystemBase {
 
     // private final BooleanLogger log_exitBeamBreak = WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
     private final BooleanLogger log_spunUp = WaltLogger.logBoolean(kLogTab, "spunUp");
-    private final BooleanLogger log_inAllianceZone = WaltLogger.logBoolean(kLogTab, "inAllianceZone");
 
     private final DoubleLogger log_hoodServoVoltage = WaltLogger.logDouble("Shooter/Hood", "hoodServoVoltage");
     private final DoubleLogger log_hoodServoCurrent = WaltLogger.logDouble("Shooter/Hood", "hoodServoCurrent");
     private final DoubleLogger log_shooterClosedLoopError = WaltLogger.logDouble("Shooter/Hood", "shooterClosedLoopError");
 
     private final DoubleLogger log_turretControlPos = WaltLogger.logDouble("Shooter/Turret", "turretControlPos");
-
-    private final Pose3dLogger log_currentTarget = WaltLogger.logPose3d(kLogTab, "currentTarget");
 
     /* CONSTRUCTOR */
     public Shooter(Supplier<Pose2d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
@@ -209,21 +208,17 @@ public class Shooter extends SubsystemBase {
 
         trg_turretHomingCompleted.onTrue(Commands.runOnce(() -> setGoal(ShooterGoal.SHOOTING)));
 
-        // if (Robot.isSimulation()) {
-        //     setGoal(ShooterGoal.PASSING);
-        // }
-        // if (trg_turretHomingCompleted.getAsBoolean()) {
-        //     if (inAllianceZone()) {
-        //         setGoal(ShooterGoal.SHOOTING);
-        //     } else {
-        //         setGoal(ShooterGoal.PASSING);
-        //     }
-        // }
+        if (Robot.isSimulation()) {
+            setGoal(ShooterGoal.PASSING);
+        }
+        if (trg_turretHomingCompleted.getAsBoolean()) {
+            setGoal(ShooterGoal.SHOOTING);
+        }
     
 
         m_turret.setPosition(0);
 
-        setTarget(FieldConstants.Hub.innerCenterPoint);
+        setTarget(m_poseSupplier.get());
         initSim();
     }
 
@@ -251,10 +246,6 @@ public class Shooter extends SubsystemBase {
 
     public Command zeroFlywheelCmd() {
         return runOnce(this::stopFlywheel).ignoringDisable(true);
-    }
-
-    public Command zeroShooterCmd() {
-        return Commands.sequence(zeroFlywheelCmd(), zeroHoodCmd(), zeroTurretCmd());
     }
 
     //---SHOOTER (Velocity Control)
@@ -479,14 +470,29 @@ public class Shooter extends SubsystemBase {
     }
 
     /**
-     * Sets the current aiming position to the target position, relative to what Alliance you are
-     * on.
-     * 
-     * @param target desired target position.
+     * Sets the target to a Pose on the field relative to where the robot is.
+     * EX: Robot in alliance zone red -> Red Hub Center
+     * Executes Passing and Shooting aiming.
+     * @param robotPose where the robot currently is
+     * @return target pose
      */
-    public void setTarget(Translation3d target) {
-        m_currentTarget = AllianceFlipUtil.apply(target);
-        log_currentTarget.accept(target);
+    public Translation3d setTarget(Pose2d robotPose) {
+        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
+            if (robotPose.getMeasureX().gt(AllianceZoneUtil.redHubCenter.getMeasureX())) {
+                return FieldConstants.Hub.oppInnerCenterPoint;
+            }
+            if (robotPose.getMeasureY().gt(AllianceZoneUtil.centerField_y_pos)) {
+                return AllianceZoneUtil.redLeftTarget.getTranslation();
+            }
+            return AllianceZoneUtil.redRightTarget.getTranslation();
+        }
+        if (robotPose.getMeasureX().lt(AllianceZoneUtil.blueHubCenter.getMeasureX())) {
+            return FieldConstants.Hub.innerCenterPoint;
+        }
+        if (robotPose.getMeasureY().gt(AllianceZoneUtil.centerField_y_pos)) {
+            return AllianceZoneUtil.blueLeftTarget.getTranslation();
+        }
+        return AllianceZoneUtil.blueRightTarget.getTranslation();
     }
 
     /**
@@ -505,21 +511,6 @@ public class Shooter extends SubsystemBase {
     // }
 
     /**
-     * Passing Method - Determines which passing target you will be shooting to based off of current
-     * position on the field, and which alliance you are on.
-     * 
-     * @param robotPose current robotPose
-     * @return kPassingSpotLeft if the robot is on the left side of the field, kPassingSpotRight if
-     *         the robot is on the right side of the field. Relative of what alliance one is on.
-     */
-    private Translation3d getPassingTarget(Pose2d robotPose) {
-        BooleanSupplier onLeftSide = () -> (m_isBlue ? robotPose.getMeasureY().lt(fieldWidthDiv2) : robotPose.getMeasureY().gt(fieldWidthDiv2));
-        m_onLeftSide = onLeftSide.getAsBoolean();
-
-        return onLeftSide.getAsBoolean() ? kPassingSpotLeft : kPassingSpotRight;
-    }
-
-    /**
      * Sets the Goal State of the Shooter to either SCORING, PASSING, TEST, or OFF.
      * Method is incomplete for now, but add other methods that should be running passively when in certain goal states.
      * @param goal ShooterGoal desired
@@ -528,40 +519,26 @@ public class Shooter extends SubsystemBase {
         m_goal = goal;
         switch (goal) {
         case SHOOTING:
-            setTarget(FieldConstants.Hub.innerCenterPoint);
+            setTarget(m_poseSupplier.get());
             break;
         case STATIC_SHOOTING:
-            setTarget(FieldConstants.Hub.innerCenterPoint);
+            setTarget(m_poseSupplier.get());
             break;
         case PASSING_LEFT:
-            setTarget(ShooterK.kPassingSpotLeft);
+            setTarget(m_poseSupplier.get());
             break;
         case PASSING_RIGHT:
-            setTarget(ShooterK.kPassingSpotRight);
+            setTarget(m_poseSupplier.get());
+            break;
+        case PASSING:
+            setTarget(m_poseSupplier.get());
             break;
         // case TEST:
         //     setTargetAheadOfRobot(3);
         //     break;
         case OFF:
-            zeroShooterCmd();
             break;
         }
-    }
-
-    /**
-     * Determines whether the robot is within the Alliance zone of the Alliance you are on.
-     * 
-     * @return true if the robot is in the AllianceZone, false otherwise.
-     */
-    private boolean inAllianceZone() {
-        //UNTESTED
-        Pose2d pose = m_poseSupplier.get();
-        // are we in the BLUE ALLIANCE ZONE as a BLUE ROBOT (behind the starting line // effectively)
-        boolean blueZone = Inches.of(pose.getMeasureX().in(Inches)).lt(Inches.of(Units.metersToInches(FieldConstants.LinesVertical.allianceZone)).plus(kRobotFullWidth.div(2)));
-        //are we in the RED ALLIANCE ZONE as a RED ROBOT(behind the starting line effectively)
-        boolean redZone = Inches.of(pose.getMeasureX().in(Inches)).gt(Inches.of(Units.metersToInches(FieldConstants.LinesVertical.oppAllianceZone)).plus(kRobotFullWidth.div(2)));
-
-        return (m_isBlue && blueZone) || (!m_isBlue && redZone);
     }
 
     /**
@@ -649,6 +626,8 @@ public class Shooter extends SubsystemBase {
             case STATIC_SHOOTING:
                 calculateShot(pose, true);
                 break;
+            case PASSING:
+                calculateShot(pose, false);
             // case TEST:
             //     calculateTurretAngle(pose);
             //     break;
@@ -742,6 +721,7 @@ public class Shooter extends SubsystemBase {
         SHOOTING,
         PASSING_LEFT,
         PASSING_RIGHT,
+        PASSING,
         STATIC_SHOOTING,
         // TEST,
         OFF

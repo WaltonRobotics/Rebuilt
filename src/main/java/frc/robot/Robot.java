@@ -340,8 +340,10 @@ public class Robot extends TimedRobot {
         );
         
         trg_shimmy.whileTrue(m_superstructure.shimmy());
-        trg_passLeft.and(trg_passRight.negate()).onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING_LEFT))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
-        trg_passRight.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING_RIGHT))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
+        // trg_passLeft.and(trg_passRight.negate()).onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING_LEFT))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
+        // trg_passRight.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING_RIGHT))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
+        trg_passLeft.and(trg_passRight.negate()).onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
+
 
         //---OVERRIDE COMMANDS
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
@@ -765,7 +767,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
-        m_shooter.zeroShooterCmd();
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().cancel(m_autonomousCommand);
         }
@@ -829,7 +830,6 @@ public class Robot extends TimedRobot {
         instance.logFuels();
         instance.updateSim();
         SwerveDriveState robotState = m_drivetrain.getState();
-        Pose2d robotPose = robotState.Pose;
 
         // m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();

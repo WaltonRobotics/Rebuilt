@@ -123,6 +123,11 @@ public class FieldConstants {
             kTagLayout.getTagPose(4).get().getX() + width / 2.0,
             fieldWidth / 2.0,
             height);
+    public static final Translation3d oppInnerCenterPoint = 
+        new Translation3d(
+            kTagLayout.getTagPose(4).get().getX() + width / 2.0,
+            fieldWidth / 2.0,
+            innerHeight);
     public static final Translation2d oppNearLeftCorner =
         new Translation2d(oppTopCenterPoint.getX() - width / 2.0, fieldWidth / 2.0 + width / 2.0);
     public static final Translation2d oppNearRightCorner =
