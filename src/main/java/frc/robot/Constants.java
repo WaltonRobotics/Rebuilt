@@ -143,6 +143,7 @@ public class Constants {
         private static final CurrentLimitsConfigs kShooterLeaderCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(80)
             .withSupplyCurrentLimit(50)
+            .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kShooterLeaderOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.Clockwise_Positive) //TODO: check whether this should be CW or CCW
@@ -326,7 +327,9 @@ public class Constants {
         private static final CurrentLimitsConfigs kIntakeArmCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(20)
             .withSupplyCurrentLimit(20)
-            .withStatorCurrentLimitEnable(true);
+            .withSupplyCurrentLowerLimit(20)
+            .withStatorCurrentLimitEnable(true)
+            .withSupplyCurrentLimitEnable(true);
         private static final Slot0Configs kIntakeArmSlot0Configs = new Slot0Configs()
             .withKS(1.5)
             .withKV(0)
@@ -403,7 +406,7 @@ public class Constants {
       
         public static final AngularVelocity kSpindexerIntakeRPS = RotationsPerSecond.of((5785/60) * (-0.20) / kSpindexerGearing);  //Max RPM for X60Foc is 5785   (0.9)
         public static final AngularVelocity kSpindexerRPS = RotationsPerSecond.of((5785/60) * (0.45) / kSpindexerGearing);  //Max RPM for X60Foc is 5785   (0.9)
-        public static final AngularVelocity kTunnelRPS = RotationsPerSecond.of((5785/60) * (0.45) / kTunnelGearing);   //(0.9) //(0.65)
+        public static final AngularVelocity kTunnelRPS = RotationsPerSecond.of((5785/60) * (0.20) / kTunnelGearing);   //(0.9) //(0.65)
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
@@ -417,6 +420,7 @@ public class Constants {
         private static final CurrentLimitsConfigs kSpindexerCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(45)
             .withSupplyCurrentLimit(30)
+            .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kSpindexerMotorOutputConfigs = new MotorOutputConfigs()
@@ -444,8 +448,9 @@ public class Constants {
             .withKI(0)
             .withKD(0);
         private static final CurrentLimitsConfigs kTunnelCurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(45)
+            .withStatorCurrentLimit(30)
             .withSupplyCurrentLimit(30)
+            .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kTunnelMotorOutputConfigs = new MotorOutputConfigs()
