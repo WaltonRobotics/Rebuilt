@@ -9,6 +9,7 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -23,19 +24,81 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.util.VisionUtil;
+import frc.robot.Robot;
+
 import static frc.robot.Constants.VisionK;
 import static frc.robot.Constants.FieldK;
 
 public class WaltCamera extends PhotonCamera {
     /* CLASS VARIABLES */
     private static final int kGlobalFpsLimit = 5;
+    public static final VisionSim m_visionSim = new VisionSim();
 
     public static final List<WaltCamera> AllCameras = Collections.unmodifiableList(Arrays.asList(
-        // new WaltCamera("FrontLeft", VisionK.kFrontLeftCTR),
-        new WaltCamera("FrontRight", VisionK.kFrontRightCTR),
-        // new WaltCamera("BackLeft", VisionK.kBackLeftCTR),
-        new WaltCamera("BackRight", VisionK.kBackRightCTR)
+        // new WaltCamera("FrontLeft", VisionK.kFrontLeftCTR, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0)),
+        new WaltCamera("FrontRight", VisionK.kFrontRightRTC, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0)),
+        // new WaltCamera("BackLeft", VisionK.kBackLeftCTR, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0)),
+        new WaltCamera("BackRight", VisionK.kBackRightRTC, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0))
     ));
+
+    //---SIM
+    private final PhotonCameraSim m_sim;
+
+    private final Transform3d m_robotToCam;
+    private final PhotonPoseEstimator m_estimator;
+    
+    private static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.5, 1.5, 6.24);
+    private static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 6.24);
+
+    private final StructPublisher<Pose2d> log_camPose;
+    private final StructPublisher<Transform3d> log_camTransform;
+    private final DoubleArrayPublisher log_stdDevs;
+
+    private Matrix<N3, N1> m_curStdDevs;
+
+    /* CONSTRUCTOR */
+    public WaltCamera(String cameraName, Transform3d robotToCam, SimCameraProperties simCamProperties) {
+        super(cameraName);
+        m_robotToCam = robotToCam;
+        m_estimator = new PhotonPoseEstimator(FieldK.kTagLayout, m_robotToCam);
+
+        final String ntPrefix = "Vision/" + cameraName + "/";
+        log_camPose = NetworkTableInstance.getDefault()
+            .getStructTopic(ntPrefix + "estRobotPose", Pose2d.struct).publish();
+        log_camTransform = NetworkTableInstance.getDefault()
+            .getStructTopic(ntPrefix + "transform", Transform3d.struct).publish();
+        log_stdDevs = NetworkTableInstance.getDefault()
+            .getDoubleArrayTopic(ntPrefix + "/stdDevs").publish();
+
+        log_camTransform.accept(robotToCam);
+
+        // Simulation
+        if (Robot.isSimulation()) {
+            // Create a PhotonCameraSim which will update the linked PhotonCamera's values with visible targets.
+            m_sim = new PhotonCameraSim(this, simCamProperties);
+            // Add the simulated camera to view the targets on this simulated field.
+            m_visionSim.addCamera(m_sim, robotToCam);
+
+            m_sim.enableDrawWireframe(true);
+        }
+        else m_sim = null; //temp solution to make code compiled.
+    }
+
+    /* METHODS */
+    public void takeOutputSnapshot() {
+        super.takeOutputSnapshot();
+    }
+
+    public void takeInputSnapshot() {
+        super.takeInputSnapshot();
+    }
+
+    public void takeBothSnapshots() {
+        takeInputSnapshot();
+        takeOutputSnapshot();
+        System.out.println(super.getName() + ": BothSnapshot");
+    }
 
     public static void setFpsLimit(boolean limited) {
         for (var cam : AllCameras) {
@@ -50,38 +113,7 @@ public class WaltCamera extends PhotonCamera {
             }
         }).andThen(Commands.print("FPS Limit: " + limited));
     }
-
-    public final PhotonCameraSim m_sim;
-    public final Transform3d m_robotToCam;
-    public final PhotonPoseEstimator m_estimator;
     
-    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.5, 1.5, 6.24);
-    public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 6.24);
-
-    private final StructPublisher<Pose2d> log_camPose;
-    private final StructPublisher<Transform3d> log_camTransform;
-    private final DoubleArrayPublisher log_stdDevs;
-
-    private Matrix<N3, N1> m_curStdDevs;
-
-    /* CONSTRUCTOR */
-    public WaltCamera(String cameraName, Transform3d robotToCam) {
-        super(cameraName);
-        m_sim = new PhotonCameraSim(this);
-        m_robotToCam = robotToCam;
-        m_estimator = new PhotonPoseEstimator(FieldK.kTagLayout, m_robotToCam);
-
-        final String ntPrefix = "Vision/" + cameraName + "/";
-        log_camPose = NetworkTableInstance.getDefault()
-            .getStructTopic(ntPrefix + "estRobotPose", Pose2d.struct).publish();
-        log_camTransform = NetworkTableInstance.getDefault()
-            .getStructTopic(ntPrefix + "transform", Transform3d.struct).publish();
-        log_stdDevs = NetworkTableInstance.getDefault()
-            .getDoubleArrayTopic(ntPrefix + "/stdDevs").publish();
-
-        log_camTransform.accept(robotToCam);
-    }
-
     /* VISION ESTIMATION METHODS */
    /**
      * The latest estimated robot pose on the field from vision data. This may be empty. This should
@@ -102,16 +134,16 @@ public class WaltCamera extends PhotonCamera {
             updateEstimationStdDevs(visionEst, change.getTargets());
             log_stdDevs.accept(m_curStdDevs.getData());
 
-            // if (Robot.isSimulation()) {
-            //     visionEst.ifPresentOrElse(
-            //             est ->
-            //                     m_visionSim.getSimDebugField()
-            //                         .getObject(m_simVisualName)
-            //                         .setPose(est.estimatedPose.toPose2d()),
-            //             () -> {
-            //                 m_visionSim.getSimDebugField().getObject("VisionEstimation").setPoses();
-            //             });
-            // }
+            if (Robot.isSimulation()) {
+                visionEst.ifPresentOrElse(
+                        est ->
+                                m_visionSim.getSimDebugField()
+                                    .getObject(this.getName() + "VisionEstimation")
+                                    .setPose(est.estimatedPose.toPose2d()),
+                        () -> {
+                            m_visionSim.getSimDebugField().getObject("VisionEstimation").setPoses();
+                        });
+            }
         }
 
         if (visionEst.isPresent()) {

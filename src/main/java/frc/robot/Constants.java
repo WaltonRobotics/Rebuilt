@@ -18,8 +18,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import org.photonvision.simulation.SimCameraProperties;
-
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -32,12 +30,16 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
+
 import frc.util.AllianceFlipUtil;
 import frc.util.VisionUtil;
 
@@ -187,56 +189,55 @@ public class Constants {
         //Left, Center (Climb), Center (Hub), Right - Driver POV
         public static final Pose2d kShooterOverridePose[] = {
             AllianceFlipUtil.apply(new Pose2d(FieldK.kFieldLengthMeters / 6, FieldK.kFieldWidthMeters * 2 / 3, new Rotation2d(0))),
-            AllianceFlipUtil.apply(new Pose2d(Units.inchesToMeters(156.61 - 115.05 + 10), FieldK.kFieldWidthMeters / 2, new Rotation2d(0))),
+            AllianceFlipUtil.apply(new Pose2d(Units.inchesToMeters(156.61 - 115.05 + 25), FieldK.kFieldWidthMeters / 2, new Rotation2d(0))),
             AllianceFlipUtil.apply(new Pose2d(Units.inchesToMeters(156.61 - 10), FieldK.kFieldWidthMeters / 2, new Rotation2d(0))),
             AllianceFlipUtil.apply(new Pose2d(FieldK.kFieldLengthMeters / 6, FieldK.kFieldWidthMeters / 3, new Rotation2d(0))),
         };
     }
 
     public static class VisionK {
-        // public static final Camera[] kCameras = new Camera[4];
-        // private static final String kSimCameraSimVisualNames = /"VisionEstimation"; //suffixed to each camera name
-
-        public static final Transform3d kFrontLeftCTR = VisionUtil.transformToRobo(10.413, 12.394, 28.844, 0, -10, 45);
-        public static final Transform3d kFrontRightCTR = VisionUtil.transformToRobo(10.413, -12.394, 28.844, 0, -10, 315);
-        public static final Transform3d kBackLeftCTR = VisionUtil.transformToRobo(-11.894, 12.394, 28.844, 0, -10, 135);
-        public static final Transform3d kBackRightCTR = VisionUtil.transformToRobo(-11.894, -12.394, 28.844, 0, -10, 225);
-        //Initialize cameras
-        // static {
-        //     kCameras[0] = new Camera(
-        //         new SimCameraProperties(), 
-        //         "FrontLeft", 
-        //         kSimCameraSimVisualNames, 
-        //         Camera.transformToRobo(10.413, 12.394, 28.844, 0, -10, 45)
-        //     );
-        //     kCameras[0].setProps("ThriftyCam", 0, 0, 0, 0);
-            
-        //     kCameras[1] = new Camera(
-        //         new SimCameraProperties(), 
-        //         "FrontRight", 
-        //         kSimCameraSimVisualNames, 
-        //         Camera.transformToRobo(10.413, -12.394, 28.844, 0, -10, 315)
-        //     );
-        //     kCameras[1].setProps("ThriftyCam", 0, 0, 0, 0);
-
-        //     kCameras[2] = new Camera(
-        //         new SimCameraProperties(), 
-        //         "BackLeft", 
-        //         kSimCameraSimVisualNames, 
-        //         Camera.transformToRobo(-11.894, 12.394, 28.844, 0, -10, 135)
-        //     );
-        //     kCameras[2].setProps("ThriftyCam", 0, 0, 0, 0);
-
-        //     kCameras[3] = new Camera(
-        //         new SimCameraProperties(), 
-        //         "BackRight", 
-        //         kSimCameraSimVisualNames, 
-        //         Camera.transformToRobo(-11.894, -12.394, 28.844, 0, -10, 225)
-        //     );
-        //     kCameras[3].setProps("ThriftyCam", 0, 0, 0, 0);
-        // }
+        public static final Transform3d kFrontLeftRTC = VisionUtil.transformToRobo(12.248, 10.266, 28.526, 0, -10, 45);
+        public static final Transform3d kFrontRightRTC = VisionUtil.transformToRobo(12.248, -10.266, 28.526, 0, -10, 315);
+        public static final Transform3d kBackLeftRTC = VisionUtil.transformToRobo(-12.238, 11.748, 28.526, 0, -10, 135);
+        public static final Transform3d kBackRightRTC = VisionUtil.transformToRobo(-12.238, -11.748, 28.526, 0, -10, 225);
     }
+    
+    public static class AutoAlignK {
+        public static final String kLogTab = "MovingAutoAlign";
 
+        //Placeholder tolerances - to be tuned
+        //Delete this comment when done tuning
+        public static final Distance kFieldTranslationTol = Meters.of(0); //meters
+        public static final Angle kFieldRotationTol = Degrees.of(0); //degrees
+
+        public static final double kFinishVelTol = 0; //meters per second
+
+        public static final double kIntermediatePoseDistance = -Units.inchesToMeters(6); // value in meters
+        public static final Transform2d kIntermediatePoseTransform 
+            = new Transform2d(kIntermediatePoseDistance, 0, Rotation2d.kZero);
+
+        public static double kXKP = 8;
+        public static double kYKP = 8;
+        public static double kThetaKP = 10;
+
+        // SUPER COOL AUTO ALIGN :sunglasses: - this should eventually allow you to replace all code using above constants
+
+        // TODO: these will really need tuning
+        // teleop speeds below
+        public static final double kMaxDimensionVel = 1.65; // m/s
+        public static final double kMaxDimensionAccel = 6; // m/s^2
+        public static final TrapezoidProfile.Constraints kXYConstraints = new TrapezoidProfile.Constraints(kMaxDimensionVel, kMaxDimensionAccel);
+        // Auton speeds below
+        public static final double kMaxDimensionVelEleUp = 2; // m/s
+        public static final double kMaxDimensionAccelEleUp = 3; // m/s^2
+        public static final TrapezoidProfile.Constraints kXYConstraintsAuton 
+            = new TrapezoidProfile.Constraints(kMaxDimensionVelEleUp,kMaxDimensionAccelEleUp);
+
+        public static final double kMaxThetaVel = 4; // rad/s
+        public static final double kMaxThetaAccel = 8; // rad/s^2
+        public static final TrapezoidProfile.Constraints kThetaConstraints = new TrapezoidProfile.Constraints(kMaxThetaVel, kMaxThetaAccel);
+    }
+    
     public static class FieldK {
         // take with a grain of salt - pulled from field dimensions (welded)
         public static final double kFieldLengthMeters = Units.inchesToMeters(651.22); 

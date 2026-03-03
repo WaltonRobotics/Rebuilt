@@ -29,8 +29,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.RobotK;
+import frc.robot.Constants.AutoAlignK;
 import frc.robot.Constants.ShooterK;
+import frc.robot.autoalign.MovingAutoAlign;
+import frc.robot.dashboards.AutonChooser;
+import frc.robot.Constants.RobotK;
 import frc.robot.dashboards.TestingDashboard;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Shooter;
@@ -91,12 +94,18 @@ public class Robot extends TimedRobot {
     // private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
     // private HashMap<String, Command> m_autonList = new HashMap<String, Command>();
 
-    //---VISION
-    // private final VisionSim m_visionSim = new VisionSim();
-
     /* TRIGGERS */
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
+
+    //---CAMERA TRIGGERS
+    private final Trigger trg_limitFPS = RobotModeTriggers.disabled();
+    private final Trigger trg_unlimitFps = RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop());
+    //---AUTO ALIGN TRIGGERS
+    private Trigger trg_autoAlignLeft = m_driver.povLeft();
+    private Trigger trg_autoAlignClimb = m_driver.povDown();
+    private Trigger trg_autoAlignHub = m_driver.povUp();
+    private Trigger trg_autoAlignRight = m_driver.povRight();
 
     //---COMMAND SEQUENCE TRIGGERS
     private Trigger trg_swerveToObject = m_driver.x();
@@ -125,10 +134,6 @@ public class Robot extends TimedRobot {
 
     private Trigger trg_deployIntakeOverride = trg_manipOverride.and(m_manipulator.rightTrigger());
     private Trigger trg_intakeUpOverride = trg_manipOverride.and(m_manipulator.leftTrigger());
-
-    private final Trigger trg_limitFPS = RobotModeTriggers.disabled();
-    private final Trigger trg_unlimitFps = RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop());
-
 
     /* LOGGERS */
     private final DoubleLogger log_stickDesiredFieldX = WaltLogger.logDouble("Swerve", "stick desired teleop x");
@@ -164,7 +169,21 @@ public class Robot extends TimedRobot {
         PhotonCamera.setVersionCheckEnabled(false);
     }
 
+    private final Runnable cameraSnapshotFunc = () -> {
+        for (var camera : WaltCamera.AllCameras) {
+        camera.takeBothSnapshots();
+        }
+    };
+
     /* COMMANDS */
+    private Command autoAlignCmd(int shooterPose) {
+        return MovingAutoAlign.autoAlignWithIntermediateTransformUntilInTolerances(
+        m_drivetrain, 
+        () -> ShooterK.kShooterOverridePose[shooterPose], 
+        () -> AutoAlignK.kIntermediatePoseTransform
+        ).alongWith(Commands.runOnce(cameraSnapshotFunc));
+    }
+    
     /**
      * 
      * @param speedMultiplier how much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
@@ -224,6 +243,12 @@ public class Robot extends TimedRobot {
         m_driver.leftBumper().onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
 
         m_drivetrain.registerTelemetry(logger::telemeterize);
+
+        //Auto Align
+        trg_autoAlignLeft.whileTrue(autoAlignCmd(0));
+        trg_autoAlignClimb.whileTrue(autoAlignCmd(1));
+        trg_autoAlignHub.whileTrue(autoAlignCmd(2));
+        trg_autoAlignRight.whileTrue(autoAlignCmd(3));
 
         /* CUSTOM BINDS */
         trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   
@@ -551,7 +576,6 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().run(); 
         // m_periodicTracer.addEpoch("CommandScheduler");
 
-
         for (var camera : WaltCamera.AllCameras) {
             Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
             if (estimatedPoseOptional.isPresent()) {
@@ -714,8 +738,7 @@ public class Robot extends TimedRobot {
     public void simulationPeriodic() {
         SwerveDriveState robotState = m_drivetrain.getState();
         Pose2d robotPose = robotState.Pose;
-
-        // m_visionSim.simulationPeriodic(robotPose);
+        WaltCamera.m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();
         m_shooter.simulationPeriodic();
         m_intake.simulationPeriodic();
