@@ -476,7 +476,7 @@ public class Constants {
         public static final Pose2d kLeftNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
             Meters.of(5.437880039215088), new Rotation2d(0));
         
-        public static final double kOneSweepMaxTime = 14; //in sec
+        public static final double kOneSweepMaxTime = 12.5; //in sec
 
     }
 }

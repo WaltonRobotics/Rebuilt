@@ -64,7 +64,7 @@ public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
     //---CONSTANTS
     private final double kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private final double kMaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+    private final double kMaxAngularRate = RotationsPerSecond.of(0.85).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
     private final double kMaxHighAngularRate = RotationsPerSecond.of(1.5).in(RadiansPerSecond);
 
     private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
@@ -287,13 +287,6 @@ public class Robot extends TimedRobot {
         //     point.withModuleDirection(new Rotation2d(-m_driver.getLeftY(), -m_driver.getLeftX()))
         // ));
 
-        // Run SysId routines when holding back/start and X/Y.
-        // Note that each routine should be run exactly once in a single log.
-        // m_driver.back().and(m_driver.y()).whileTrue(m_drivetrain.sysIdDynamic(Direction.kForward));
-        // m_driver.back().and(m_driver.x()).whileTrue(m_drivetrain.sysIdDynamic(Direction.kReverse));
-        // m_driver.start().and(m_driver.y()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kForward));
-        // m_driver.start().and(m_driver.x()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kReverse));
-
         // Reset the field-centric heading on left bumper press.
         m_driver.leftBumper().and(trg_driverOverride).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
 
@@ -327,55 +320,21 @@ public class Robot extends TimedRobot {
             m_superstructure.intake(() -> true)
         );
 
-        // trg_shoot.and(trg_pass).onTrue(
-        //     m_superstructure.startPassing()
-        // ).onFalse(
-        //     m_superstructure.stopPassing()
-        // );
-
         trg_emergencyBarf.whileTrue(
             m_superstructure.emergencyBarf()
         );
         
         trg_shimmy.whileTrue(m_superstructure.shimmy());
-        // trg_passLeft.and(trg_passRight.negate()).onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING_LEFT))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
-        // trg_passRight.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING_RIGHT))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
-        // trg_passLeft.and(trg_passRight.negate()).onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
-
-
-        //---OVERRIDE COMMANDS
-        m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
-
-        m_manipulator.y().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(35)));
-        m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(1)));
-
-        trg_maxShooterOverride.onTrue(
-            m_superstructure.maxShooter()
-        ).onFalse(
-            m_superstructure.stopShooter()
-        );
-
-        trg_startSpindexerOverride.onTrue(
-            m_superstructure.startSpindexerCmd()
-        ).onFalse(
-            m_superstructure.stopSpindexerCmd()
-        );
-
-        trg_startTunnelOverride.onTrue(
-            m_superstructure.startTunnelCmd()
-        ).onFalse(
-            m_superstructure.stopTunnelCmd()
-        );
 
         trg_unjam.whileTrue(
             m_superstructure.unjamCmd()
         );
 
-        trg_maxRollersOverride.onTrue(
-            m_superstructure.startIntakeRollers()
-        ).onFalse(
-            m_superstructure.stopIntakeRollers()
-        );
+        //---OVERRIDE COMMANDS
+        m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
+
+        // m_manipulator.y().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(35)));
+        // m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(1)));
 
         trg_deployIntakeOverride.onTrue(
             m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)
@@ -388,11 +347,8 @@ public class Robot extends TimedRobot {
 
         m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
 
-        // m_driver.povUp().onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING)));
         m_driver.povDown().onTrue(Commands.runOnce(() -> m_shooter.setShotCalcCmd(false)));
         m_driver.povRight().onTrue(Commands.runOnce(() -> m_shooter.setShotCalcCmd(true)));
-
-        // TODO: add shooter overrides for drivet but waiting for sohan's calculate method
     }
 
     private void configureTestBindings() {
@@ -412,6 +368,14 @@ public class Robot extends TimedRobot {
         m_driver.leftBumper().and(trg_manipOverride.negate()).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
 
         m_drivetrain.registerTelemetry(logger::telemeterize);
+
+        
+        // Run SysId routines when holding back/start and X/Y.
+        // Note that each routine should be run exactly once in a single log.
+        // m_driver.back().and(m_driver.y()).whileTrue(m_drivetrain.sysIdDynamic(Direction.kForward));
+        // m_driver.back().and(m_driver.x()).whileTrue(m_drivetrain.sysIdDynamic(Direction.kReverse));
+        // m_driver.start().and(m_driver.y()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kForward));
+        // m_driver.start().and(m_driver.x()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kReverse));
     }
 
     private void configureTestingDashboard() {

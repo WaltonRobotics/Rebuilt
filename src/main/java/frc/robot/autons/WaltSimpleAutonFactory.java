@@ -4,6 +4,7 @@ import choreo.auto.AutoFactory;
 import choreo.util.ChoreoAllianceFlipUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants.AutonK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.shooter.Shooter;
@@ -29,7 +30,7 @@ public class WaltSimpleAutonFactory {
         return Commands.sequence(
             // Commands.waitUntil(() -> (m_intake.m_isIntakeArmHomed && m_shooter.m_isTurretHomed)),
             // Commands.waitSeconds(1),    //0.15
-            m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(2)
+            m_superstructre.activateOuttake(ShooterK.kShooterAutonRPS).withTimeout(2)
         );
     }
 
@@ -52,11 +53,11 @@ public class WaltSimpleAutonFactory {
             Commands.parallel(
                 m_autoFactory.trajectoryCmd(trajName),
                 Commands.sequence(
-                    Commands.waitSeconds(2),
-                    m_superstructre.intake(() -> false).withTimeout(6)
+                    Commands.waitSeconds(2.5),
+                    m_superstructre.intake(() -> false).withTimeout(7.5)
                 )
-            ),
-            m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(1)
+            ).withTimeout(AutonK.kOneSweepMaxTime),  //should i remove this and j make the last pose in the choreo path 
+            m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(6)
         ).withName(trajName);
     }
 
@@ -98,7 +99,6 @@ public class WaltSimpleAutonFactory {
             Commands.parallel(
                 m_autoFactory.trajectoryCmd("RightDepotToShoot"),
                 Commands.sequence(
-                    Commands.waitSeconds(1),
                     m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(2)
                 )
             )
