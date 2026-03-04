@@ -89,7 +89,7 @@ public class Superstructure extends SubsystemBase {
             Commands.runEnd(
             () -> {
                 m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
-                m_indexer.setSpindexerVelocity(isPassing ? Constants.IndexerK.kSpindexerRPS : Constants.IndexerK.kSpindexerIntakeRPS); // Constants.IndexerK.kSpindexerIntakeRPS
+                m_indexer.setSpindexerVelocity(isPassing ? Constants.IndexerK.kSpindexerShootRPS : Constants.IndexerK.kSpindexerIntakeRPS);
             }, 
             () -> {
                 if (m_intake.getIntakeArmStatorCurrent() < 40) {
@@ -172,8 +172,8 @@ public class Superstructure extends SubsystemBase {
             () -> {
                 m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
                 m_shooter.setHoodPosition(ShooterK.kHoodMaxDegs);
-                m_indexer.setTunnelVelocity(IndexerK.kTunnelRPS);
-                m_indexer.setSpindexerVelocity(IndexerK.kSpindexerRPS);
+                m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS);
+                m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS);
                 m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
                 m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersMaxRPS.times(-1));
             },
@@ -287,8 +287,8 @@ public class Superstructure extends SubsystemBase {
     public Command unjamCmd() {
         return Commands.runEnd(
             () -> {
-                m_indexer.setSpindexerVelocity(Constants.IndexerK.kSpindexerRPS.times(-1));
-                m_indexer.setTunnelVelocity(Constants.IndexerK.kTunnelRPS.times(-1));
+                m_indexer.setSpindexerVelocity(Constants.IndexerK.kSpindexerShootRPS.times(-1));
+                m_indexer.setTunnelVelocity(Constants.IndexerK.kTunnelShootRPS.times(-1));
                 m_shooter.setShooterVelocity(Constants.ShooterK.kShooterRPS.times(-1));
             }, () -> {
                 m_indexer.setSpindexerVelocity(RotationsPerSecond.of(0));
