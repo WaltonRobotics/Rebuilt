@@ -13,6 +13,7 @@ import static frc.robot.Constants.ShooterK.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
@@ -28,6 +29,7 @@ import edu.wpi.first.units.measure.Time;
 
 public class ShotCalculator {
     private static final DoubleLogger log_timeOfFlight = new DoubleLogger("Shooter/Calculator", "timeOfFlight");
+    private static final Tracer m_iterativeTracer = new Tracer();
 
     //see 5000's code (circa 2/16/2026 9:11 PM EST)
     public static final InterpolatingTreeMap<Double, ShotData> m_shotMap = new InterpolatingTreeMap<>(
@@ -194,11 +196,17 @@ public class ShotCalculator {
     // use an iterative lookahead approach to determine shot parameters for a moving robot
     public static ShotData iterativeMovingShotFromFunnelClearance(Pose2d robot,
             ChassisSpeeds fieldSpeeds, Translation3d target, int iterations) {
+        m_iterativeTracer.clearEpochs();
+
         // Perform initial estimation (assuming unmoving robot) to get time of flight estimate
         ShotData shot = calculateShotFromFunnelClearance(robot, target, target);
+        m_iterativeTracer.addEpoch("initialShot");
+
         Distance distance = getDistanceToTarget(robot, target);
         Time timeOfFlight = calculateTimeOfFlight(shot.getExitVelocity(), shot.getHoodAngle(),
                 distance);
+        m_iterativeTracer.addEpoch("initialTOF");
+
         Translation3d predictedTarget = target;
 
         // Iterate the process, getting better time of flight estimations and updating the predicted target accordingly
@@ -212,17 +220,19 @@ public class ShotCalculator {
             shot = calculateShotFromFunnelClearance(robot, target, predictedTarget);
             timeOfFlight = calculateTimeOfFlight(shot.getExitVelocity(), shot.getHoodAngle(),
                     getDistanceToTarget(robot, predictedTarget));
+            m_iterativeTracer.addEpoch("iteration" + i);
 
             // ShotData shotDataDiff = shot.minus(prevShot);
             // Distance distanceDiff = prevDistance.minus(distance);
             // Time timeOfFlightDiff = prevTOF.minus(timeOfFlight);
 
-            // if (shotDataDiff.hoodAngle() < .05 && shotDataDiff.exitVelocity() < .05 && prevShot.target().getDistance(shot.getTarget()) < .05 
+            // if (shotDataDiff.hoodAngle() < .05 && shotDataDiff.exitVelocity() < .05 && prevShot.target().getDistance(shot.getTarget()) < .05
             //         && distanceDiff.magnitude() < .05 && timeOfFlightDiff.magnitude() < .005 && prevPredTarget.getDistance(predictedTarget) < .05) {
             //     break;
             // }
         }
 
+        m_iterativeTracer.printEpochs();
         return shot;
     }
 

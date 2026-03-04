@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -55,6 +56,7 @@ import frc.robot.Robot;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.WpiK;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
+import frc.util.AllianceFlipALWAYSUtil;
 import frc.util.AllianceFlipUtil;
 import frc.util.AllianceZoneUtil;
 import frc.util.GobildaServoAngled;
@@ -170,6 +172,8 @@ public class Shooter extends SubsystemBase {
 
     private final DoubleLogger log_turretControlPos = WaltLogger.logDouble("Shooter/Turret", "turretControlPos");
 
+    private final Tracer m_periodicTracer = new Tracer();
+
     /* CONSTRUCTOR */
     public Shooter(Supplier<Pose2d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
         m_shooterA.getConfigurator().apply(kShooterATalonFXConfiguration);
@@ -196,17 +200,17 @@ public class Shooter extends SubsystemBase {
 
         trg_turretHomingCompleted.onTrue(Commands.runOnce(() -> setGoal(ShooterGoal.SHOOTING)));
 
+        trg_hallTrigger.and(trg_turretHomingCompleted).onTrue(Commands.sequence(
+                Commands.waitSeconds(0.5),
+                Commands.runOnce(() -> shooterEventLoop.clear())));
+
         if (Robot.isSimulation()) {
             setGoal(ShooterGoal.PASSING);
-        }
-        if (trg_turretHomingCompleted.getAsBoolean()) {
-            setGoal(ShooterGoal.SHOOTING);
         }
     
 
         m_turret.setPosition(0);
 
-        setTarget(m_poseSupplier.get(), FieldConstants.Hub.innerCenterPoint);
         initSim();
     }
 
@@ -406,9 +410,10 @@ public class Shooter extends SubsystemBase {
      * @return safe rotation setpoint that is accurate to the target within bounds of kTurretMaxAngle
      * and kTurretMinAngle
      */
-    public Angle calculateAzimuthAngle(Translation3d target) {
-        Pose2d robotPose = m_poseSupplier.get();
+    public Angle calculateAzimuthAngle(Translation3d target, Pose2d robotPose) {
         Angle turretPosition = getTurretPosition();
+        m_periodicTracer.addEpoch("azimuth/getPose");
+
         /* Calculation Zone */
         // turret pivot location in field space (no extra rotateBy — that's for visualization only)
         Pose3d turretPose = new Pose3d(robotPose).transformBy(kTurretTransform);
@@ -438,6 +443,7 @@ public class Shooter extends SubsystemBase {
             kTurretMinRots.magnitude(), kTurretMaxRots.magnitude()); //normalizes the angle to be fit in the range of the max rotations
         
         log_rawDesiredTurretRot.accept(angleRotations);
+        m_periodicTracer.addEpoch("azimuth/calcAngle");
 
         /* Snapback Zone */
         double snapbackSafeAngleRotations = angleRotations;
@@ -458,6 +464,7 @@ public class Shooter extends SubsystemBase {
         }
 
         log_desiredTurretRot.accept(snapbackSafeAngleRotations);
+        m_periodicTracer.addEpoch("azimuth/snapback");
         return Rotations.of(snapbackSafeAngleRotations);
     }
 
@@ -545,23 +552,28 @@ public class Shooter extends SubsystemBase {
     private void calculateShot(Pose2d robotPose, boolean staticShot) {
         // How fast the robot is currently going, (CURRENT ROBOT VELOCITY)
         ChassisSpeeds fieldSpeeds = staticShot ? WpiK.kZeroChassisSpeeds : m_fieldSpeedsSupplier.get(); 
+        m_periodicTracer.addEpoch("calculateShot/getFieldSpeeds");
+
         //TODO: once we finish our lerp, switch to the iterativeMovingShotFromInterpolationMap method
         // The Calculated shot itself, according to the current robotPose, robotSpeeds, and the currentTarget
         ShotData calculatedShot = ShotCalculator.iterativeMovingShotFromFunnelClearance(robotPose, fieldSpeeds, m_currentTarget, 3);
+        m_periodicTracer.addEpoch("calculateShot/iterativeMovingShot");
 
         // The turret angle according to the Calculated shot
         log_calculatedShotTarget.accept(calculatedShot.getTarget());
-        Angle azimuthAngle = calculateAzimuthAngle(calculatedShot.getTarget());
+        Angle azimuthAngle = calculateAzimuthAngle(calculatedShot.getTarget(), robotPose);
+        m_periodicTracer.addEpoch("calculateShot/calculateAzimuthAngle");
+
         // Sets the TurretPosition to the Calculated TurretAngle
         setTurretPos(azimuthAngle);
         // Sets the HoodPosition to the Calculated HoodAngle
         setHoodPosition(Degrees.of(28));
         // setHoodPosition(Degrees.of(calculatedShot.getHoodAngle().in(Degrees)));
-        
 
         m_calcTurret = azimuthAngle;
         m_calcHoodAngle = calculatedShot.getHoodAngle();
         m_calcFlywheelVelocity = ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius);
+        m_periodicTracer.addEpoch("calculateShot/setOutputs");
     }
 
     /**
@@ -602,6 +614,7 @@ public class Shooter extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
+        m_periodicTracer.addEpoch("Entry (Unused Time)");
         Pose2d pose = m_poseSupplier.get();
 
         // trg_inAllianceZone.and(DriverStation::isTeleop)
@@ -631,9 +644,10 @@ public class Shooter extends SubsystemBase {
             case OFF:
                 break;
         }
-
+        m_periodicTracer.addEpoch("Calculating Shot");
 
         WaltTuner.toggleMotorCoast(m_isTurretCoast, nte_turretCoast.getBoolean(false), m_turret);
+        m_periodicTracer.addEpoch("Toggling Coast");
 
         //---Loggers
         m_turretTurnPosition = m_turret.getPosition().getValue();
@@ -668,8 +682,13 @@ public class Shooter extends SubsystemBase {
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocity.in(RotationsPerSecond));
         log_calcTurretPos.accept(m_calcTurret.in(Rotations));
 
+        m_periodicTracer.addEpoch("Logging");
+
         // KEEP AT THE BOTTOM OF PERIODIC
         shooterEventLoop.poll();
+        m_periodicTracer.addEpoch("EventLoop Poll");
+
+        m_periodicTracer.printEpochs();
     }
 
     @Override
