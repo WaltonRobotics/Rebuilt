@@ -1,16 +1,15 @@
 
 package frc.robot.subsystems.shooter;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.StaticBrake;
-import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
@@ -43,6 +42,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Hertz;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
@@ -53,12 +53,10 @@ import java.util.function.Supplier;
 
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
-import frc.robot.Robot;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.WpiK;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
 import frc.util.AllianceFlipALWAYSUtil;
-import frc.util.AllianceFlipUtil;
 import frc.util.AllianceZoneUtil;
 import frc.util.GobildaServoAngled;
 import frc.util.WaltMotorSim;
@@ -68,7 +66,6 @@ import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.Pose2dLogger;
 import frc.util.WaltLogger.Pose3dLogger;
-import frc.util.WaltLogger.StringLogger;
 
 public class Shooter extends SubsystemBase {
     /* VARIABLES */
@@ -102,7 +99,6 @@ public class Shooter extends SubsystemBase {
     private final StaticBrake m_BrakeReq = new StaticBrake();
 
     private final GobildaServoAngled m_hood = new GobildaServoAngled(kHoodChannel);
-    private final CANcoder m_hoodEncoder = new CANcoder(kHoodEncoderCANID, Constants.kCanivoreBus);
 
     private boolean m_isTurretCoast = false;
     private GenericEntry nte_turretCoast = WaltTuner.createBoolToggleSwitch(kLogTab, "TurretCoast", m_isTurretCoast);
@@ -156,12 +152,8 @@ public class Shooter extends SubsystemBase {
     private final DoubleLogger log_shooterVelocityRPS = WaltLogger.logDouble("Shooter/Flywheel", "shooterVelocityRPS");
     private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble("Shooter/Turret", "turretPositionRots");
     private final BooleanLogger log_onLeftSide = WaltLogger.logBoolean(kLogTab, "onLeftSide");
-    private final StringLogger log_shootingGoal = WaltLogger.logString(kLogTab, "currentShootingGoal");
 
     //---HOOD
-    private final DoubleLogger log_hoodEncoderPositionDegs = WaltLogger.logDouble("Shooter/Hood", "hoodEncoderPositionDegs");
-    private final DoubleLogger log_hoodEncoderVelocityRPS = WaltLogger.logDouble("Shooter/Hood", "hoodEncoderVelocityRPS");
-    private final DoubleLogger log_hoodEncoderError = WaltLogger.logDouble("Shooter/Hood", "hoodEncoderError");
     private final DoubleLogger log_requestedServoPositionDegs = WaltLogger.logDouble("Shooter/Hood", "requestedServoPositionDegs");
     private final DoubleLogger log_requestedHoodPositionDegs = WaltLogger.logDouble("Shooter/Hood", "requestedHoodPositionDegs");
 
@@ -176,14 +168,17 @@ public class Shooter extends SubsystemBase {
 
     private final Tracer m_periodicTracer = new Tracer();
 
+    StatusSignal<Double> sig_shooterCLErr = m_shooterA.getClosedLoopError();
+
     /* CONSTRUCTOR */
     public Shooter(Supplier<Pose2d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
         m_shooterA.getConfigurator().apply(kShooterATalonFXConfiguration);
         m_shooterB.getConfigurator().apply(kShooterBTalonFXConfiguration);
         m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
-        m_hoodEncoder.getConfigurator().apply(kHoodEncoderConfiguration); // if needed, we can add a position offset
 
         m_shooterB.setControl(new Follower(kShooterA_CANID, MotorAlignmentValue.Opposed)); 
+
+        sig_shooterCLErr.setUpdateFrequency(Hertz.of(50));
 
         m_turretTurnPosition = m_turret.getPosition().getValue();
         m_flywheelVelocity = m_shooterA.getVelocity().getValue();
@@ -319,7 +314,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Angle getHoodAngle() {
-        return m_hoodEncoder.getAbsolutePosition().getValue();
+        return Degrees.zero();
     }
 
     public Angle getTurretPosition() {
@@ -602,14 +597,8 @@ public class Shooter extends SubsystemBase {
         double hoodServoAngle = m_hood.getAngle();
 
         log_shooterVelocityRPS.accept(m_flywheelVelocity.in(RotationsPerSecond));
-        log_hoodEncoderPositionDegs.accept(convertServoAngleToHoodAngle(Degrees.of(convertEncoderAngleToServoAngle(Degrees.of(hoodEncoderAbsDeg)))));
-        log_hoodEncoderVelocityRPS.accept(m_hoodEncoder.getVelocity().getValueAsDouble());
         log_requestedServoPositionDegs.accept(hoodServoAngle);
         log_requestedHoodPositionDegs.accept(convertServoAngleToHoodAngle(Degrees.of(hoodServoAngle)));
-
-        log_hoodEncoderError.accept(Math.abs(
-                convertServoAngleToHoodAngle(Degrees.of(hoodServoAngle))
-                - convertServoAngleToHoodAngle(Degrees.of(convertEncoderAngleToServoAngle(Degrees.of(hoodEncoderAbsDeg))))));
 
         log_turretPositionRots.accept(m_turretTurnPosition.in(Rotations));
 
