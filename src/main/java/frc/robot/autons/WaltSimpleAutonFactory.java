@@ -25,7 +25,7 @@ public class WaltSimpleAutonFactory {
     private Command preloadShot() {
         return Commands.sequence(
             // Commands.waitUntil(() -> (m_intake.m_isIntakeArmHomed && m_shooter.m_isTurretHomed)),
-            Commands.waitSeconds(0.15),
+            Commands.waitSeconds(1),    //0.15
             m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(2)
         );
     }
@@ -38,24 +38,20 @@ public class WaltSimpleAutonFactory {
     }
 
     public Command rightOneSweep() {
-        return Commands.parallel(
+        return Commands.sequence(
             Commands.sequence(
                 homingCmd(),
-                Commands.waitUntil(() -> m_shooter.m_isTurretHomed),
-                m_autoFactory.trajectoryCmd("RightSweep")
+                Commands.waitUntil(() -> m_shooter.m_isTurretHomed),  //TODO: should probably change this to check if is aiming at target (hub)
+                preloadShot()
             ),
-            // m_autoFactory.trajectoryCmd("RightSweep"),
-            Commands.sequence(
-                Commands.waitSeconds(2),
-                // Commands.waitUntil(m_autoTrajectory.atTime("postBump")),
-                m_superstructre.activateIntake(),
-                Commands.waitSeconds(3),
-                // Commands.waitUntil(m_autoTrajectory.atTime("toSafe")),
-                m_superstructre.deactivateIntake(IntakeArmPosition.SAFE),
-                Commands.waitSeconds(1),
-                // Commands.waitUntil(m_autoTrajectory.atTime("startOuttake")),
-                m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(1)
-            )
+            Commands.parallel(
+                m_autoFactory.trajectoryCmd("RightSweep"),
+                Commands.sequence(
+                    Commands.waitSeconds(2),
+                    m_superstructre.intake(false).withTimeout(6)
+                )
+            ),
+            m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(1)
         ).withName("rightOneSweep");
     }
 

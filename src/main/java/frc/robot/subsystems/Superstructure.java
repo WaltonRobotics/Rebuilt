@@ -1,3 +1,4 @@
+
 package frc.robot.subsystems;
 
 import edu.wpi.first.units.measure.Angle;
@@ -10,7 +11,6 @@ import frc.robot.Constants.IndexerK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
-import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.StringArrayLogger;
 
 import static edu.wpi.first.units.Units.Degrees;
@@ -34,30 +34,6 @@ public class Superstructure extends SubsystemBase {
 
     private HashSet<String> m_activeOverrideCommands = new HashSet<>();
     private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
-
-    //intake r, intake a, spin, tunnel, shooter, turret, 
-    private final DoubleLogger log_intakeArmStator = new DoubleLogger(kLogTab, "intakeArmStator");
-    private final DoubleLogger log_intakeRollersStator = new DoubleLogger(kLogTab, "intakeRollersStator");
-    private final DoubleLogger log_spindexStator = new DoubleLogger(kLogTab, "spindexStator");
-    private final DoubleLogger log_tunnelStator = new DoubleLogger(kLogTab, "tunnelStator");
-    private final DoubleLogger log_shooterStator = new DoubleLogger(kLogTab, "shooterStator");
-    private final DoubleLogger log_turretStator = new DoubleLogger(kLogTab, "turretStator");
-    private final DoubleLogger log_totalSubsysStator = new DoubleLogger(kLogTab, "totalSubsysStator");
-
-    private final DoubleLogger log_intakeArmSupply = new DoubleLogger(kLogTab, "intakeArmStator");
-    private final DoubleLogger log_intakeRollersSupply = new DoubleLogger(kLogTab, "intakeRollersStator");
-    private final DoubleLogger log_spindexSupply = new DoubleLogger(kLogTab, "spindexStator");
-    private final DoubleLogger log_tunnelSupply = new DoubleLogger(kLogTab, "tunnelStator");
-    private final DoubleLogger log_shooterSupply = new DoubleLogger(kLogTab, "shooterStator");
-    private final DoubleLogger log_turretSupply = new DoubleLogger(kLogTab, "turretStator");
-
-    private final DoubleLogger log_intakeArmMotorVoltage = new DoubleLogger(kLogTab, "intakeArmStator");
-    private final DoubleLogger log_intakeRollersMotorVoltage = new DoubleLogger(kLogTab, "intakeRollersStator");
-    private final DoubleLogger log_spindexMotorVoltage = new DoubleLogger(kLogTab, "spindexStator");
-    private final DoubleLogger log_tunnelMotorVoltage = new DoubleLogger(kLogTab, "tunnelStator");
-    private final DoubleLogger log_shooterMotorVoltage = new DoubleLogger(kLogTab, "shooterStator");
-    private final DoubleLogger log_turretMotorVoltage = new DoubleLogger(kLogTab, "turretStator");
-
     
     /* CONSTRUCTOR */
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
@@ -107,14 +83,14 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
-    public Command intake() {
-        return Commands.runEnd(
+    public Command intake(boolean isPassing) {
+        return Commands.sequence(
+            m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
+            Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()).withTimeout(0.25),
+            Commands.runEnd(
             () -> {
-                m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
-                if (m_intake.isIntakeArmAtPos()) {
-                    m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
-                    m_indexer.setSpindexerVelocity(Constants.IndexerK.kSpindexerIntakeRPS);
-                }
+                m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
+                m_indexer.setSpindexerVelocity(isPassing ? Constants.IndexerK.kSpindexerRPS : Constants.IndexerK.kSpindexerIntakeRPS); // Constants.IndexerK.kSpindexerIntakeRPS
             }, 
             () -> {
                 if (m_intake.getIntakeArmStatorCurrent() < 40) {
@@ -122,7 +98,7 @@ public class Superstructure extends SubsystemBase {
                     m_indexer.stopSpindexer();
                     // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
                 }
-            }
+            })
         );
     }
 
@@ -310,9 +286,16 @@ public class Superstructure extends SubsystemBase {
     }
 
     public Command unjamCmd() {
-        return Commands.sequence(
-            m_indexer.setSpindexerVelocityCmd(Constants.IndexerK.kSpindexerRPS.times(-1)),
-            m_indexer.setTunnelVelocityCmd(Constants.IndexerK.kTunnelRPS.times(-1))
+        return Commands.runEnd(
+            () -> {
+                m_indexer.setSpindexerVelocity(Constants.IndexerK.kSpindexerRPS.times(-1));
+                m_indexer.setTunnelVelocity(Constants.IndexerK.kTunnelRPS.times(-1));
+                m_shooter.setShooterVelocity(Constants.ShooterK.kShooterRPS.times(-1));
+            }, () -> {
+                m_indexer.setSpindexerVelocity(RotationsPerSecond.of(0));
+                m_indexer.setTunnelVelocity(RotationsPerSecond.of(0));
+                m_shooter.setShooterVelocity(RotationsPerSecond.of(0));
+            }
         );
     }
 
@@ -436,42 +419,6 @@ public class Superstructure extends SubsystemBase {
             addTo,
             removeFrom,
             updateLog
-        );
-    }
-
-    @Override
-    public void periodic() {
-
-
-        log_intakeArmStator.accept(m_intake.getIntakeArmStatorCurrent());
-        log_intakeRollersStator.accept(m_intake.getIntakeRollersStatorCurrent());
-        log_spindexStator.accept(m_indexer.getSpindexerStatorCurrent());
-        log_tunnelStator.accept(m_indexer.getTunnelStatorCurrent());
-        log_shooterStator.accept(m_shooter.getFlywheelStatorCurrent());
-        log_turretStator.accept(m_shooter.getTurretStatorCurrent());
-
-        log_intakeArmSupply.accept(m_intake.getIntakeArmSupplyCurrent());
-        log_intakeRollersSupply.accept(m_intake.getIntakeRollersSupplyCurrent());
-        log_spindexSupply.accept(m_indexer.getSpindexerSupplyCurrent());
-        log_tunnelSupply.accept(m_indexer.getTunnelSupplyCurrent());
-        log_shooterSupply.accept(m_shooter.getFlywheelSupplyCurrent());
-        log_turretSupply.accept(m_shooter.getTurretSupplyCurrent());
-
-
-        log_intakeArmMotorVoltage.accept(m_intake.getIntakeArmMotorVoltage());
-        log_intakeRollersMotorVoltage.accept(m_intake.getIntakeRollersMotorVoltage());
-        log_spindexMotorVoltage.accept(m_indexer.getSpindexerMotorVoltage());
-        log_tunnelMotorVoltage.accept(m_indexer.getTunnelMotorVoltage());
-        log_shooterMotorVoltage.accept(m_shooter.getFlywheelMotorVoltage());
-        log_turretMotorVoltage.accept(m_shooter.getTurretMotorVoltage());
-
-        log_totalSubsysStator.accept(
-            m_intake.getIntakeArmStatorCurrent()
-          + m_intake.getIntakeRollersStatorCurrent()
-          + m_indexer.getSpindexerStatorCurrent()
-          + m_indexer.getTunnelStatorCurrent()
-          + m_shooter.getFlywheelStatorCurrent()
-          + m_shooter.getTurretStatorCurrent()
         );
     }
 }

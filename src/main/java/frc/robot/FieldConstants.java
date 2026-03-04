@@ -1,3 +1,4 @@
+
 // Copyright (c) 2025-2026 Littleton Robotics
 // http://github.com/Mechanical-Advantage
 //
@@ -14,7 +15,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
-import frc.util.AllianceFlipUtil;
 
 import static edu.wpi.first.units.Units.Inches;
 import static frc.robot.Constants.FieldK.*;
@@ -123,6 +123,11 @@ public class FieldConstants {
             kTagLayout.getTagPose(4).get().getX() + width / 2.0,
             fieldWidth / 2.0,
             height);
+    public static final Translation3d oppInnerCenterPoint = 
+        new Translation3d(
+            kTagLayout.getTagPose(4).get().getX() + width / 2.0,
+            fieldWidth / 2.0,
+            innerHeight);
     public static final Translation2d oppNearLeftCorner =
         new Translation2d(oppTopCenterPoint.getX() - width / 2.0, fieldWidth / 2.0 + width / 2.0);
     public static final Translation2d oppNearRightCorner =

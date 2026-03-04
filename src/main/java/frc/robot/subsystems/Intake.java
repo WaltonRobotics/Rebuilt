@@ -40,7 +40,7 @@ public class Intake extends SubsystemBase {
     /* CLASS VARIABLES */
     //---MOTORS + CONTROL REQUESTS
     private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID); //x44Foc
-    private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID); //x44Foc
+    private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID); //x60Foc
 
     private DynamicMotionMagicVoltage m_MMVReq = new DynamicMotionMagicVoltage(0, 1, 1).withEnableFOC(true);
     private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
@@ -68,7 +68,7 @@ public class Intake extends SubsystemBase {
 
     private final DCMotorSim m_intakeRollersSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX44Foc(1),
+            DCMotor.getKrakenX60Foc(1),
             kIntakeRollersMOI,
             kIntakeRollersGearing
         ),
@@ -89,7 +89,7 @@ public class Intake extends SubsystemBase {
         m_intakeRollers.getConfigurator().apply(kIntakeRollersConfiguration);
 
         if (Robot.isReal()) {
-            setDefaultCommand(intakeArmCurrentSenseHoming().withInterruptBehavior(null));
+            setDefaultCommand(intakeArmCurrentSenseHoming());
         }
 
         initSim();
@@ -97,7 +97,7 @@ public class Intake extends SubsystemBase {
 
     private void initSim() {
         WaltMotorSim.initSimFX(m_intakeArm, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
-        WaltMotorSim.initSimFX(m_intakeRollers, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
+        WaltMotorSim.initSimFX(m_intakeRollers, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
     }
 
     /* COMMANDS */
@@ -237,8 +237,8 @@ public class Intake extends SubsystemBase {
 
     /* ENUMS */
     public enum IntakeArmPosition{
-        RETRACTED(Rotations.of(0.082764).in(Degrees)),
-        DEPLOYED(Rotations.of(0.295410).in(Degrees)),
+        RETRACTED(Rotations.of(0.071514).in(Degrees)),
+        DEPLOYED(Rotations.of(0.289062 - (0.015)).in(Degrees)),
         SHIMMY(Rotations.of(0.126025).in(Degrees)),
         SAFE((DEPLOYED.rots.minus(Rotations.of(0.06))).in(Degrees));
 

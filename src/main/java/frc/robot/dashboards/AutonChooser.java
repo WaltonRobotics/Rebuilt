@@ -6,7 +6,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.autons.WaltSimpleAutonFactory;
-
 public class AutonChooser {
     public static NetworkTableInstance nte_inst = NetworkTableInstance.getDefault();
     public static SendableChooser<Command> m_chooser = new SendableChooser<>();

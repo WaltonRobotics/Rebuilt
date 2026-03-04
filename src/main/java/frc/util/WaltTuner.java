@@ -43,10 +43,11 @@ public final class WaltTuner {
      * @param coastRequest desired NeutralModeValue from dashboard widget
      * @param motor the motor you want to toggle coast
      */
-    public static void toggleMotorCoast(Boolean coastStateHolder, boolean coastRequest, TalonFX motor) {
+    public static boolean toggleMotorCoast(boolean coastStateHolder, boolean coastRequest, TalonFX motor) {
         if (coastRequest != coastStateHolder) {
-            coastStateHolder = coastRequest;
             motor.setNeutralMode(coastRequest ? NeutralModeValue.Coast : NeutralModeValue.Brake);
+            return coastRequest;
         }
+        return coastStateHolder;
     }
 }
