@@ -2,9 +2,9 @@ package frc.util;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -61,6 +61,14 @@ public class WaltLogger {
                 logEntry.append(value);
             }
         }
+
+        public void accept(Translation2d value) {
+            accept(new Pose2d(value, Rotation2d.kZero));
+        }
+
+        public void accept(Translation2d translation, Rotation2d value) {
+            accept(new Pose2d(translation, value));
+        }
     }
 
     public static Pose2dLogger logPose2d(String table, String name, PubSubOption... options) {
@@ -88,6 +96,10 @@ public class WaltLogger {
 
         public void accept(Translation3d value) {
             accept(new Pose3d(value.getX(), value.getY(), value.getZ(), new Rotation3d()));
+        }
+
+        public void accept(Transform3d value) {
+            accept(new Pose3d(value.getTranslation(), value.getRotation()));
         }
     }
 
@@ -141,6 +153,30 @@ public class WaltLogger {
 
     public static Translation3dLogger logTranslation3d(String table, String name, PubSubOption... options) {
         return new Translation3dLogger(table, name, options);
+    }
+
+    public static final class Translation3dArrayLogger implements Consumer<Translation3d[]> {
+        public final StructArrayPublisher<Translation3d> ntPub;
+        public final StructArrayLogEntry<Translation3d> logEntry;
+
+        public Translation3dArrayLogger(String subTable, String name, PubSubOption... options) {
+            StructArrayTopic<Translation3d> topic = logTable.getSubTable(subTable).getStructArrayTopic(name, new Translation3dStruct());
+            ntPub = topic.publish(options);
+            logEntry = StructArrayLogEntry.create(DataLogManager.getLog(), "Robot/" + subTable + "/" + name, new Translation3dStruct());
+        }
+
+        @Override
+        public void accept(Translation3d[] values) {
+            if (shouldPublishNt()) {
+                ntPub.set(values);
+            } else {
+                logEntry.append(values);
+            }
+        }
+    }
+
+    public static Translation3dArrayLogger logTranslation3dArray(String table, String name, PubSubOption... options) {
+        return new Translation3dArrayLogger(table, name, options);
     }
 
     public static final class Translation2dLogger implements Consumer<Translation2d> {

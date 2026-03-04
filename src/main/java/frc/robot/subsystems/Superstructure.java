@@ -2,15 +2,14 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.IndexerK;
-import frc.robot.Constants.IntakeK;
-import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
+import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
-import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.StringArrayLogger;
 
 import static edu.wpi.first.units.Units.Degrees;
@@ -22,7 +21,7 @@ import static frc.robot.Constants.IntakeK;
 
 import java.util.HashSet;
 
-public class Superstructure {
+public class Superstructure extends SubsystemBase {
     /* SUBSYSTEMS */
     private final Intake m_intake;
     private final Indexer m_indexer;
@@ -52,7 +51,7 @@ public class Superstructure {
         Command logCommand;
         switch (pos) {
             case SAFE:
-                if (m_intake.getIntakeArmMotor().getStatorCurrent().getValueAsDouble() < 40) {
+                if (m_intake.getIntakeArmStatorCurrent() < 40) {
                     logCommand = logActiveCommands("safeIntake", "activateIntake", "retractIntake");
                 } else {
                     return Commands.none();
@@ -78,14 +77,50 @@ public class Superstructure {
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()),
             m_intake.startIntakeRollers(),
+            m_indexer.setSpindexerVelocityCmd(Constants.IndexerK.kSpindexerIntakeRPS),
             logActiveCommands("activateIntake", "safeIntake", "retractIntake")
         );
     }
 
-    public Command startShootSequence(AngularVelocity RPS, Angle hoodDegs) {
+    public Command intake(boolean isPassing) {
+        return Commands.sequence(
+            m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
+            Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()).withTimeout(0.25),
+            Commands.runEnd(
+            () -> {
+                m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
+                m_indexer.setSpindexerVelocity(isPassing ? Constants.IndexerK.kSpindexerRPS : Constants.IndexerK.kSpindexerIntakeRPS); // Constants.IndexerK.kSpindexerIntakeRPS
+            }, 
+            () -> {
+                if (m_intake.getIntakeArmStatorCurrent() < 40) {
+                    m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
+                    m_indexer.stopSpindexer();
+                    // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
+                }
+            })
+        );
+    }
+
+    public Command intakeWhilePassing() {
+        return Commands.runEnd(
+            () -> {
+                m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
+                if (m_intake.isIntakeArmAtPos()) {
+                    m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
+                }
+            }, 
+            () -> {
+                if (m_intake.getIntakeArmStatorCurrent() < 40) {
+                    m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
+                    // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
+                }
+            }
+        );
+    }
+
+    public Command startShootSequence(AngularVelocity RPS) {
         return Commands.sequence(
             m_shooter.setShooterVelocityCmd(RPS),
-            m_shooter.setHoodPositionCmd(hoodDegs),
             Commands.waitUntil(() -> m_shooter.isShooterSpunUp()).withTimeout(3),
             m_indexer.startTunnelCmd(),
             m_indexer.startSpindexerCmd()
@@ -100,18 +135,18 @@ public class Superstructure {
      */
     public Command activateOuttake(AngularVelocity RPS) {
         Command logCommand;
-        if (RPS == ShooterK.kShooterMaxRPS) {
+        if (RPS == ShooterK.kShooterRPS) {
             logCommand = logActiveCommands("shooting", "deactivateOuttake", "emergencyDump");   
         } else {
             logCommand = logActiveCommands("emergencyDump", "shooting", "deactivateOuttake");
         }
 
         return Commands.parallel(
-            startShootSequence(RPS, Degrees.of(20))
+            startShootSequence(RPS)
                 .onlyWhile(() -> m_shooter.isShooterSpunUp())
                 .andThen(Commands.waitUntil(() -> m_shooter.isShooterSpunUp()))
                 .repeatedly(),
-            m_intake.shimmy(),
+            // m_intake.shimmy(),
             logCommand
         ).finallyDo(
             () -> deactivateOuttake()
@@ -137,8 +172,8 @@ public class Superstructure {
             () -> {
                 m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
                 m_shooter.setHoodPosition(ShooterK.kHoodMaxDegs);
-                m_indexer.setTunnelVelocity(IndexerK.m_tunnelRPS);
-                m_indexer.setSpindexerVelocity(IndexerK.m_spindexerRPS);
+                m_indexer.setTunnelVelocity(IndexerK.kTunnelRPS);
+                m_indexer.setSpindexerVelocity(IndexerK.kSpindexerRPS);
                 m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
                 m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersMaxRPS.times(-1));
             },
@@ -163,7 +198,7 @@ public class Superstructure {
     public Command startPassing() {
         return Commands.sequence(
             activateIntake(),
-            activateOuttake(ShooterK.kShooterMaxRPS),
+            activateOuttake(ShooterK.kShooterRPS),
             logActiveCommands("startPassing", "stopPassing")
         );
     }
@@ -185,7 +220,7 @@ public class Superstructure {
      */
     public Command maxShooter() {
         return Commands.sequence(
-            m_shooter.setShooterVelocityCmd(ShooterK.kShooterMaxRPS),
+            m_shooter.setShooterVelocityCmd(ShooterK.kShooterRPS),
             // m_shooter.setShooterVelocityCmd(RotationsPerSecond.of(50)),
             logActiveOverrideCommands("maxShooter", "stopShooter")
         );
@@ -249,6 +284,20 @@ public class Superstructure {
         );
     }
 
+    public Command unjamCmd() {
+        return Commands.runEnd(
+            () -> {
+                m_indexer.setSpindexerVelocity(Constants.IndexerK.kSpindexerRPS.times(-1));
+                m_indexer.setTunnelVelocity(Constants.IndexerK.kTunnelRPS.times(-1));
+                m_shooter.setShooterVelocity(Constants.ShooterK.kShooterRPS.times(-1));
+            }, () -> {
+                m_indexer.setSpindexerVelocity(RotationsPerSecond.of(0));
+                m_indexer.setTunnelVelocity(RotationsPerSecond.of(0));
+                m_shooter.setShooterVelocity(RotationsPerSecond.of(0));
+            }
+        );
+    }
+
     /**
      * Starts the indexer exhaust.
      */
@@ -304,7 +353,7 @@ public class Superstructure {
                 logCommand = logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp");
                 break;
             default:
-                if (m_intake.getIntakeArmMotor().getStatorCurrent().getValueAsDouble() < 40) {
+                if (m_intake.getIntakeArmStatorCurrent() < 40) {
                     logCommand = logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake");
                 }
                 else {

@@ -11,8 +11,8 @@
      "val":3.3882551193237305
     },
     "y":{
-     "exp":"5.437880039215088 m",
-     "val":5.437880039215088
+     "exp":"5.837104797363281 m",
+     "val":5.837104797363281
     },
     "heading":{
      "exp":"rightBumpAlliance.heading",
@@ -26,7 +26,7 @@
     },
     "y":{
      "exp":"leftBumpAlliance.y",
-     "val":5.437880039215088
+     "val":5.837104797363281
     },
     "heading":{
      "exp":"rightBumpAlliance.heading",
@@ -40,7 +40,7 @@
     },
     "y":{
      "exp":"leftBumpAlliance.y",
-     "val":5.437880039215088
+     "val":5.837104797363281
     },
     "heading":{
      "exp":"rightFuelPickup.heading",
@@ -67,8 +67,8 @@
      "val":3.3882551193237305
     },
     "y":{
-     "exp":"2.6657562255859375 m",
-     "val":2.6657562255859375
+     "exp":"2.3457818031311035 m",
+     "val":2.3457818031311035
     },
     "heading":{
      "exp":"-0.8223814729706524 rad",
@@ -82,7 +82,7 @@
     },
     "y":{
      "exp":"rightBumpAlliance.y",
-     "val":2.6657562255859375
+     "val":2.3457818031311035
     },
     "heading":{
      "exp":"rightBumpAlliance.heading",
@@ -91,8 +91,8 @@
    },
    "rightDepotPickup":{
     "x":{
-     "exp":"1.1576627492904663 m",
-     "val":1.1576627492904663
+     "exp":"0.47482019662857056 m",
+     "val":0.47482019662857056
     },
     "y":{
      "exp":"5.958622932434082 m",
@@ -124,7 +124,7 @@
     },
     "y":{
      "exp":"rightBumpNeutral.y",
-     "val":2.6657562255859375
+     "val":2.3457818031311035
     },
     "heading":{
      "exp":"0 rad",

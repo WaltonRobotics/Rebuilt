@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.sim.ChassisReference;
 
@@ -39,7 +40,7 @@ public class Intake extends SubsystemBase {
     /* CLASS VARIABLES */
     //---MOTORS + CONTROL REQUESTS
     private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID); //x44Foc
-    private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID); //x44Foc
+    private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID); //x60Foc
 
     private DynamicMotionMagicVoltage m_MMVReq = new DynamicMotionMagicVoltage(0, 1, 1).withEnableFOC(true);
     private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
@@ -67,7 +68,7 @@ public class Intake extends SubsystemBase {
 
     private final DCMotorSim m_intakeRollersSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX44Foc(1),
+            DCMotor.getKrakenX60Foc(1),
             kIntakeRollersMOI,
             kIntakeRollersGearing
         ),
@@ -96,7 +97,7 @@ public class Intake extends SubsystemBase {
 
     private void initSim() {
         WaltMotorSim.initSimFX(m_intakeArm, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
-        WaltMotorSim.initSimFX(m_intakeRollers, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
+        WaltMotorSim.initSimFX(m_intakeRollers, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
     }
 
     /* COMMANDS */
@@ -133,6 +134,10 @@ public class Intake extends SubsystemBase {
         ).finallyDo(() -> setIntakeArmPosCmd(IntakeArmPosition.SAFE));
     }
 
+     public void setIntakeArmNeutralMode(NeutralModeValue value) {
+        m_intakeArm.setNeutralMode(value);
+    }
+
     //for TestingDashboard
     public Command setIntakeArmPos(DoubleSubscriber sub_rots) {
         return run(() -> m_intakeArm.setControl(m_MMVReq.withPosition(Rotations.of(sub_rots.get()))));
@@ -159,12 +164,36 @@ public class Intake extends SubsystemBase {
         return run(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
     }
 
-    public TalonFX getIntakeArmMotor() {
-        return m_intakeArm;
+    // public TalonFX getIntakeArmMotor() {
+    //     return m_intakeArm;
+    // }
+
+    // public TalonFX getIntakeRollers() {
+    //     return m_intakeRollers;
+    // }
+
+    public double getIntakeArmStatorCurrent() {
+        return m_intakeArm.getStatorCurrent().getValueAsDouble();
     }
 
-    public TalonFX getIntakeRollers() {
-        return m_intakeRollers;
+    public double getIntakeRollersStatorCurrent() {
+        return m_intakeRollers.getStatorCurrent().getValueAsDouble();
+    }
+
+    public double getIntakeArmSupplyCurrent() {
+        return m_intakeArm.getSupplyCurrent().getValueAsDouble();
+    }
+
+    public double getIntakeRollersSupplyCurrent() {
+        return m_intakeRollers.getSupplyCurrent().getValueAsDouble();
+    }
+
+    public double getIntakeArmMotorVoltage() {
+        return m_intakeArm.getMotorVoltage().getValueAsDouble();
+    }
+
+    public double getIntakeRollersMotorVoltage() {
+        return m_intakeRollers.getMotorVoltage().getValueAsDouble();
     }
 
     public Command intakeArmCurrentSenseHoming() {
@@ -208,9 +237,9 @@ public class Intake extends SubsystemBase {
 
     /* ENUMS */
     public enum IntakeArmPosition{
-        RETRACTED(Rotations.of(0.082764).in(Degrees)),
-        DEPLOYED(Rotations.of(0.295410).in(Degrees)),
-        SHIMMY(Rotations.of(0.176025).in(Degrees)),
+        RETRACTED(Rotations.of(0.071514).in(Degrees)),
+        DEPLOYED(Rotations.of(0.289062 - (0.015)).in(Degrees)),
+        SHIMMY(Rotations.of(0.126025).in(Degrees)),
         SAFE((DEPLOYED.rots.minus(Rotations.of(0.06))).in(Degrees));
 
         public Angle degs;

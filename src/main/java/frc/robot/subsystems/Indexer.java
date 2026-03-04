@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IndexerK.*;
 
@@ -30,6 +29,7 @@ public class Indexer extends SubsystemBase {
 
     private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
     private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
+
 
     /* SIM OBJECTS */
     private final DCMotorSim m_spindexerSim = new DCMotorSim(
@@ -71,7 +71,7 @@ public class Indexer extends SubsystemBase {
     /* COMMANDS */
     //---STARTS AND STOPS
     public Command startSpindexerCmd() {
-        return setSpindexerVelocityCmd(m_spindexerRPS);
+        return setSpindexerVelocityCmd(kSpindexerRPS);
     }
 
     public Command stopSpindexerCmd() {
@@ -83,7 +83,7 @@ public class Indexer extends SubsystemBase {
     }
 
     public Command startTunnelCmd() {
-        return setTunnelVelocityCmd(m_tunnelRPS);
+        return setTunnelVelocityCmd(kTunnelRPS);
     }
 
     public Command stopTunnelCmd() {
@@ -120,6 +120,30 @@ public class Indexer extends SubsystemBase {
     //for TestingDashboard
     public Command setTunnelVelocityCmd(DoubleSubscriber sub_RPS) {
         return run(() -> m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
+    }
+
+    public double getSpindexerStatorCurrent() {
+        return m_spindexer.getStatorCurrent().getValueAsDouble();
+    }
+
+    public double getTunnelStatorCurrent() {
+        return m_tunnel.getStatorCurrent().getValueAsDouble();
+    }
+
+        public double getSpindexerSupplyCurrent() {
+        return m_spindexer.getSupplyCurrent().getValueAsDouble();
+    }
+
+    public double getTunnelSupplyCurrent() {
+        return m_tunnel.getSupplyCurrent().getValueAsDouble();
+    }    
+
+    public double getSpindexerMotorVoltage() {
+        return m_spindexer.getMotorVoltage().getValueAsDouble();
+    }
+
+    public double getTunnelMotorVoltage() {
+        return m_tunnel.getMotorVoltage().getValueAsDouble();
     }
 
     /* PERIODICS */

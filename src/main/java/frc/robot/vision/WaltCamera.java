@@ -29,17 +29,18 @@ import static frc.robot.Constants.FieldK;
 public class WaltCamera extends PhotonCamera {
     /* CLASS VARIABLES */
     private static final int kGlobalFpsLimit = 5;
+    private static final int kGlobalFps = 30;
 
     public static final List<WaltCamera> AllCameras = Collections.unmodifiableList(Arrays.asList(
-        // new WaltCamera("FrontLeft", VisionK.kFrontLeftCTR),
-        new WaltCamera("FrontRight", VisionK.kFrontRightCTR),
+        new WaltCamera("FL_HAT", VisionK.kFrontLeftCTR),
+        new WaltCamera("FR_HAT", VisionK.kFrontRightCTR),
         // new WaltCamera("BackLeft", VisionK.kBackLeftCTR),
-        new WaltCamera("BackRight", VisionK.kBackRightCTR)
+        new WaltCamera("BR_HAT", VisionK.kBackRightCTR)
     ));
 
     public static void setFpsLimit(boolean limited) {
         for (var cam : AllCameras) {
-            cam.setFPSLimit(limited ? kGlobalFpsLimit : -1); 
+            cam.setFPSLimit(limited ? kGlobalFpsLimit : kGlobalFps); 
         }
     }
 
@@ -55,8 +56,8 @@ public class WaltCamera extends PhotonCamera {
     public final Transform3d m_robotToCam;
     public final PhotonPoseEstimator m_estimator;
     
-    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.5, 1.5, 6.24);
-    public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 6.24);
+    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.0, 1.0, 5.24); //1.5, 1.5, 6.24
+    public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.25, 0.25, 2.5);  //0.5, 0.5, 5.24
 
     private final StructPublisher<Pose2d> log_camPose;
     private final StructPublisher<Transform3d> log_camTransform;
