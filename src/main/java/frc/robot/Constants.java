@@ -103,9 +103,10 @@ public class Constants {
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.magnitude());
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.magnitude());
 
-        public static final AngularVelocity kShooterRPS = RotationsPerSecond.of((5785/60) * (0.65) / kShooterGearing);   //Kraken X60Foc Max (RPM: 5785) //(0.9)
-        public static final AngularVelocity kShooterBarfRPS = RotationsPerSecond.of((5785/60) * (0.2) / kShooterGearing);
-        public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.of(/* 0/60 * (0.9) / kShooterGearing */ 0);
+        public static final AngularVelocity kShooterMaxRPS = MotorK.kX60MaxVelocity.div(kShooterGearing);
+        public static final AngularVelocity kShooterRPS = kShooterMaxRPS.times(0.65);
+        public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.2);
+        public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.zero();
 
         //---HOOD CONSTANTS
         public static final double kHoodMoI = 0.00027505;
@@ -407,7 +408,7 @@ public class Constants {
         public static final int kTunnelCANID = 11;
 
         public static final double kSpindexerGearing = 5.0;
-        public static final double kTunnelGearing = 1/1.2 * 0.5;
+        public static final double kTunnelGearing = 1.0/1.2 * 0.5;
 
         public static final double kSpindexerMOI = 0.00166190059;
         public static final double kTunnelMOI = 0.000215968064;
@@ -416,6 +417,8 @@ public class Constants {
         public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.7);
 
+        public static final AngularVelocity kTunnelMaxRPS = MotorK.kX60FOCMaxVelocity.div(kTunnelGearing);
+        public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(0.6);
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
