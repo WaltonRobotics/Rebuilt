@@ -7,16 +7,19 @@ import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
+import frc.robot.subsystems.shooter.Shooter;
 
 public class WaltSimpleAutonFactory {
     private final Superstructure m_superstructre;
     private final AutoFactory m_autoFactory;
     private final Intake m_intake;
+    private final Shooter m_shooter;
 
-    public WaltSimpleAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake) {
+    public WaltSimpleAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter) {
         m_superstructre = superstructure;
         m_autoFactory = autoFactory;
         m_intake = intake;
+        m_shooter = shooter;
     }
 
     private Command preloadShot() {
@@ -27,9 +30,21 @@ public class WaltSimpleAutonFactory {
         );
     }
 
+    private Command homingCmd() {
+        return Commands.parallel(
+            m_shooter.turretHomingCmd(false),
+            m_intake.intakeArmCurrentSenseHoming()
+        );
+    }
+
     public Command rightOneSweep() {
         return Commands.parallel(
-            m_autoFactory.trajectoryCmd("RightSweep"),
+            Commands.sequence(
+                homingCmd(),
+                Commands.waitUntil(() -> m_shooter.m_isTurretHomed),
+                m_autoFactory.trajectoryCmd("RightSweep")
+            ),
+            // m_autoFactory.trajectoryCmd("RightSweep"),
             Commands.sequence(
                 Commands.waitSeconds(2),
                 // Commands.waitUntil(m_autoTrajectory.atTime("postBump")),

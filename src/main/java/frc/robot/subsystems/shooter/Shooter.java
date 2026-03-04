@@ -141,7 +141,7 @@ public class Shooter extends SubsystemBase {
 
     
     //---LOGIC BOOLEANS
-    private boolean m_isTurretHomed = false;
+    public boolean m_isTurretHomed = false;
 
     //---TRIGGERS
     // private final Trigger trg_inAllianceZone = new Trigger(shooterEventLoop, this::inAllianceZone);

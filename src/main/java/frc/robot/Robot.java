@@ -107,7 +107,7 @@ public class Robot extends TimedRobot {
 
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
     private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
-    private final WaltSimpleAutonFactory m_simpleAutonFactory = new WaltSimpleAutonFactory(m_superstructure, m_autoFactory, m_intake);
+    private final WaltSimpleAutonFactory m_simpleAutonFactory = new WaltSimpleAutonFactory(m_superstructure, m_autoFactory, m_intake, m_shooter);
     private HashMap<String, Command> m_autonList = new HashMap<String, Command>();
 
     Consumer<Command> getAuton = auton -> m_autonomousCommand = auton;
