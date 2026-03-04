@@ -53,7 +53,7 @@ public class WaltSimpleAutonFactory {
                 m_autoFactory.trajectoryCmd(trajName),
                 Commands.sequence(
                     Commands.waitSeconds(2),
-                    m_superstructre.intake(false).withTimeout(6)
+                    m_superstructre.intake(() -> false).withTimeout(6)
                 )
             ),
             m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(1)
@@ -91,7 +91,7 @@ public class WaltSimpleAutonFactory {
                 m_autoFactory.trajectoryCmd("RightToDepot"),
                 Commands.sequence(
                     Commands.waitSeconds(1),
-                    m_superstructre.intake(false).withTimeout(2)
+                    m_superstructre.intake(() -> false).withTimeout(2)
                 )
             ),
             m_autoFactory.resetOdometry("RightDepotToShoot"),
@@ -121,7 +121,7 @@ public class WaltSimpleAutonFactory {
                     Commands.waitSeconds(0.5),
                     m_intake.setIntakeArmPosCmd(IntakeArmPosition.SAFE),
                     Commands.waitSeconds(0.5),
-                    m_superstructre.intake(false).withTimeout(2)
+                    m_superstructre.intake(() -> false).withTimeout(2)
                 )
             )
         );

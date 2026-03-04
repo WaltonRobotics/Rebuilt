@@ -311,7 +311,7 @@ public class Robot extends TimedRobot {
         //---NORMAL SEQUENCES
         //Intake
         trg_intake.and((trg_passLeft.or(trg_passRight)).negate()).whileTrue(
-            m_superstructure.intake(false)
+            m_superstructure.intake(() -> false)
         );
         trg_retractIntake.onTrue(
             m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
@@ -324,7 +324,7 @@ public class Robot extends TimedRobot {
         );
 
         trg_intake.and(trg_passLeft.or(trg_passRight)).whileTrue(
-            m_superstructure.intake(true)
+            m_superstructure.intake(() -> true)
         );
 
         // trg_shoot.and(trg_pass).onTrue(

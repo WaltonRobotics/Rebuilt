@@ -21,6 +21,7 @@ import static frc.robot.Constants.ShooterK;
 import static frc.robot.Constants.IntakeK;
 
 import java.util.HashSet;
+import java.util.function.BooleanSupplier;
 
 public class Superstructure extends SubsystemBase {
     /* SUBSYSTEMS */
@@ -83,14 +84,14 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
-    public Command intake(boolean isPassing) {
+    public Command intake(BooleanSupplier isPassing) {
         return Commands.sequence(
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()).withTimeout(0.25),
             Commands.runEnd(
             () -> {
                 m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
-                m_indexer.setSpindexerVelocity(isPassing ? Constants.IndexerK.kSpindexerRPS : Constants.IndexerK.kSpindexerIntakeRPS); // Constants.IndexerK.kSpindexerIntakeRPS
+                m_indexer.setSpindexerVelocity(isPassing.getAsBoolean() ? Constants.IndexerK.kSpindexerRPS : Constants.IndexerK.kSpindexerIntakeRPS); // Constants.IndexerK.kSpindexerIntakeRPS
             }, 
             () -> {
                 if (m_intake.getIntakeArmStatorCurrent() < 40) {

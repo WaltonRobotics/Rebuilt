@@ -74,7 +74,7 @@ public class Constants {
 
         //TODO: work out where our passing spots should be..?
         public static final Translation3d kPassingSpotLeft = new Translation3d(
-                Inches.of(90), FieldConstants.fieldWidthIn.div(2).plus(Inches.of(105)), Inches.zero());
+                Inches.of(90), Inches.of(FieldConstants.LeftBump.midBump), Inches.zero());
         // public static final Translation3d kPassingSpotCenter = new Translation3d(
         //         Inches.of(90), FieldConstants.fieldWidthIn.div(2), Inches.zero());
         public static final Translation3d kPassingSpotRight = new Translation3d(
