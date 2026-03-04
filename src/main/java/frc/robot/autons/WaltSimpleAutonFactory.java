@@ -39,18 +39,16 @@ public class WaltSimpleAutonFactory {
 
     public Command rightOneSweep() {
         return Commands.sequence(
-            preloadShot(),
+            Commands.sequence(
+                homingCmd(),
+                Commands.waitUntil(() -> m_shooter.m_isTurretHomed),  //TODO: should probably change this to check if is aiming at target (hub)
+                preloadShot()
+            ),
             Commands.parallel(
                 m_autoFactory.trajectoryCmd("RightSweep"),
                 Commands.sequence(
                     Commands.waitSeconds(2),
-                    // Commands.waitUntil(m_autoTrajectory.atTime("postBump")),
-                    m_superstructre.intake(false).withTimeout(3)
-                    // Commands.waitSeconds(3),
-                    // // Commands.waitUntil(m_autoTrajectory.atTime("toSafe")),
-                    // m_superstructre.deactivateIntake(IntakeArmPosition.SAFE),
-                    // Commands.waitSeconds(1),
-                    // Commands.waitUntil(m_autoTrajectory.atTime("startOuttake")),
+                    m_superstructre.intake(false).withTimeout(6)
                 )
             ),
             m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(1)

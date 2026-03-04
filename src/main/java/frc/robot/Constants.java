@@ -122,8 +122,8 @@ public class Constants {
         );
 
         /* IDS */
-        public static final int kLeaderCANID = 20;
-        public static final int kFollowerCANID = 21;
+        public static final int kShooterA_CANID = 20;
+        public static final int kShooterB_CANID = 21;
         public static final int kTurretCANID = 12;
 
         // public static final int kExitBeamBreakChannel = 1; //TODO: Update channel number
@@ -132,37 +132,41 @@ public class Constants {
 
         /* CONFIGS */
         // TODO: Check what more configs would be necessary
-        private static final Slot0Configs kShooterLeaderSlot0Configs = new Slot0Configs()   //Note to self (hrehaan) (and saarth cuz i did the same thing): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
+        private static final Slot0Configs kShooterASlot0Configs = new Slot0Configs()   //Note to self (hrehaan) (and saarth cuz i did the same thing): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
             .withKS(0)
             .withKV(0.12)
             .withKA(0)
             .withKP(0.5)
             .withKI(0)
             .withKD(0); // kP was causing the werid sinusoid behavior, kS and kA were adding inconsistency with the destination values
-        private static final CurrentLimitsConfigs kShooterLeaderCurrentLimitConfigs = new CurrentLimitsConfigs()
+        private static final CurrentLimitsConfigs kShooterACurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(80)
             .withSupplyCurrentLimit(50)
             .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true);
-        private static final MotorOutputConfigs kShooterLeaderOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.CounterClockwise_Positive)
+        private static final MotorOutputConfigs kShooterAOutputConfigs = new MotorOutputConfigs()
+            .withInverted(InvertedValue.Clockwise_Positive)
             .withNeutralMode(NeutralModeValue.Coast);
-        private static final FeedbackConfigs kShooterLeaderFeedbackConfigs = new FeedbackConfigs()
+        private static final FeedbackConfigs kShooterAFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kShooterGearing);
-        private static final VoltageConfigs kShooterLeaderVoltageConfigs = new VoltageConfigs()
+        private static final VoltageConfigs kShooterAVoltageConfigs = new VoltageConfigs()
             .withPeakForwardVoltage(kPeakShooterVolts)
             .withPeakReverseVoltage(-kPeakShooterVolts);
-        public static final TalonFXConfiguration kShooterLeaderTalonFXConfiguration = new TalonFXConfiguration()
-            .withSlot0(kShooterLeaderSlot0Configs)
-            .withCurrentLimits(kShooterLeaderCurrentLimitConfigs)
-            .withMotorOutput(kShooterLeaderOutputConfigs)
-            .withFeedback(kShooterLeaderFeedbackConfigs)
-            .withVoltage(kShooterLeaderVoltageConfigs);
+        public static final TalonFXConfiguration kShooterATalonFXConfiguration = new TalonFXConfiguration()
+            .withSlot0(kShooterASlot0Configs)
+            .withCurrentLimits(kShooterACurrentLimitConfigs)
+            .withMotorOutput(kShooterAOutputConfigs)
+            .withFeedback(kShooterAFeedbackConfigs)
+            .withVoltage(kShooterAVoltageConfigs);
 
-        public static final TalonFXConfiguration kShooterFollowerTalonFXConfiguration = kShooterLeaderTalonFXConfiguration;
-        static {
-            kShooterFollowerTalonFXConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-        }
+        private static final MotorOutputConfigs kShooterBOutputConfigs = new MotorOutputConfigs()
+                .withInverted(InvertedValue.CounterClockwise_Positive)
+                .withNeutralMode(NeutralModeValue.Coast);
+        public static final TalonFXConfiguration kShooterBTalonFXConfiguration = new TalonFXConfiguration()
+                .withCurrentLimits(kShooterACurrentLimitConfigs)
+                .withMotorOutput(kShooterBOutputConfigs)
+                .withFeedback(kShooterAFeedbackConfigs)
+                .withVoltage(kShooterAVoltageConfigs);
 
         //---HOOD
         private static final MagnetSensorConfigs kHoodEncoderMagnetSensorConfigs = new MagnetSensorConfigs()
@@ -177,9 +181,9 @@ public class Constants {
             .withKS(0)
             .withKV(5)
             .withKA(0.02)
-            .withKP(78)  //3 - testing values in Pheonix Tuner
+            .withKP(300)  //3 - testing values in Pheonix Tuner
             .withKI(0)
-            .withKD(0); // OLD: kP was too low making the slope less steep, kS kV and kA were causing rlly weird behavior (jumping up/down way further than targeted position)
+            .withKD(5); // OLD: kP was too low making the slope less steep, kS kV and kA were causing rlly weird behavior (jumping up/down way further than targeted position)
         private static final CurrentLimitsConfigs kTurretCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(55)
             .withStatorCurrentLimitEnable(true)
@@ -410,8 +414,9 @@ public class Constants {
             .withKI(0)
             .withKD(0.03);
         private static final CurrentLimitsConfigs kSpindexerCurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(45)
+            .withStatorCurrentLimit(65)
             .withSupplyCurrentLimit(30)
+            .withSupplyCurrentLowerTime(0)
             .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);

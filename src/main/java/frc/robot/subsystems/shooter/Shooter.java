@@ -89,9 +89,9 @@ public class Shooter extends SubsystemBase {
     public final EventLoop shooterEventLoop = new EventLoop();
 
     // ---MOTORS + CONTROL REQUESTS
-    private final TalonFX m_shooterLeader = new TalonFX(kLeaderCANID, Constants.kCanivoreBus); // X60Foc
-    private final TalonFX m_shooterFollower = new TalonFX(kFollowerCANID, Constants.kCanivoreBus); // X60Foc
-    private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(true);
+    private final TalonFX m_shooterA = new TalonFX(kShooterA_CANID, Constants.kCanivoreBus); // X60Foc
+    private final TalonFX m_shooterB = new TalonFX(kShooterB_CANID, Constants.kCanivoreBus); // X60Foc
+    private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(false);
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); // X44Foc
     private final PositionVoltage m_PVRequest = new PositionVoltage(0).withEnableFOC(true);
@@ -132,7 +132,7 @@ public class Shooter extends SubsystemBase {
 
     
     //---LOGIC BOOLEANS
-    private boolean m_isTurretHomed = false;
+    public boolean m_isTurretHomed = false;
 
     //---TRIGGERS
     // private final Trigger trg_inAllianceZone = new Trigger(shooterEventLoop, this::inAllianceZone);
@@ -172,15 +172,15 @@ public class Shooter extends SubsystemBase {
 
     /* CONSTRUCTOR */
     public Shooter(Supplier<Pose2d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
-        m_shooterLeader.getConfigurator().apply(kShooterLeaderTalonFXConfiguration);
-        m_shooterFollower.getConfigurator().apply(kShooterLeaderTalonFXConfiguration);
+        m_shooterA.getConfigurator().apply(kShooterATalonFXConfiguration);
+        m_shooterB.getConfigurator().apply(kShooterBTalonFXConfiguration);
         m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
         m_hoodEncoder.getConfigurator().apply(kHoodEncoderConfiguration); // if needed, we can add a position offset
 
-        m_shooterFollower.setControl(new Follower(kLeaderCANID, MotorAlignmentValue.Opposed)); 
+        m_shooterB.setControl(new Follower(kShooterA_CANID, MotorAlignmentValue.Opposed)); 
 
         m_turretTurnPosition = m_turret.getPosition().getValue();
-        m_flywheelVelocity = m_shooterLeader.getVelocity().getValue();
+        m_flywheelVelocity = m_shooterA.getVelocity().getValue();
 
         m_poseSupplier = poseSupplier;
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
@@ -228,7 +228,7 @@ public class Shooter extends SubsystemBase {
     }
 
     private void stopFlywheel() {
-        m_shooterLeader.setNeutralMode(NeutralModeValue.Coast);
+        m_shooterA.setNeutralMode(NeutralModeValue.Coast);
         setShooterVelocity(RotationsPerSecond.of(0.0));
     }
 
@@ -242,7 +242,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setShooterVelocity(AngularVelocity RPS) {
-        m_shooterLeader.setControl(m_velocityRequest.withVelocity(RPS));
+        m_shooterA.setControl(m_velocityRequest.withVelocity(RPS));
     }
 
     //for TestingDashboard
@@ -251,9 +251,9 @@ public class Shooter extends SubsystemBase {
     }
 
     public boolean isShooterSpunUp() {
-        var err = m_shooterLeader.getClosedLoopError();
+        var err = m_shooterA.getClosedLoopError();
         log_shooterClosedLoopError.accept(err.getValueAsDouble());
-        boolean isNear = m_shooterLeader.getClosedLoopError().isNear(0, 3);
+        boolean isNear = m_shooterA.getClosedLoopError().isNear(0, 3);
         log_spunUp.accept(isNear);
         return isNear;
     }
@@ -305,7 +305,7 @@ public class Shooter extends SubsystemBase {
 
     /* GETTERS */
     public AngularVelocity getShooterVelocity() {
-        return m_shooterLeader.getVelocity().getValue();
+        return m_shooterA.getVelocity().getValue();
     }
 
     public Angle getHoodAngle() {
@@ -321,7 +321,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public double getFlywheelStatorCurrent() {
-        return m_shooterLeader.getStatorCurrent().getValueAsDouble();
+        return m_shooterA.getStatorCurrent().getValueAsDouble();
     }
 
     public double getTurretStatorCurrent() {
@@ -329,7 +329,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public double getFlywheelSupplyCurrent() {
-        return m_shooterLeader.getSupplyCurrent().getValueAsDouble();
+        return m_shooterA.getSupplyCurrent().getValueAsDouble();
     }
 
     public double getTurretSupplyCurrent() {
@@ -337,7 +337,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public double getFlywheelMotorVoltage() {
-        return m_shooterLeader.getMotorVoltage().getValueAsDouble();
+        return m_shooterA.getMotorVoltage().getValueAsDouble();
     }
 
     public double getTurretMotorVoltage() {
@@ -389,7 +389,7 @@ public class Shooter extends SubsystemBase {
 
     // TODO: update orientation values (if needed)
     private void initSim() {
-        WaltMotorSim.initSimFX(m_shooterLeader, ChassisReference.CounterClockwise_Positive,
+        WaltMotorSim.initSimFX(m_shooterA, ChassisReference.CounterClockwise_Positive,
                 TalonFXSimState.MotorType.KrakenX60);
         WaltMotorSim.initSimFX(m_turret, ChassisReference.CounterClockwise_Positive,
                 TalonFXSimState.MotorType.KrakenX44);
@@ -637,11 +637,11 @@ public class Shooter extends SubsystemBase {
 
         //---Loggers
         m_turretTurnPosition = m_turret.getPosition().getValue();
-        m_flywheelVelocity = m_shooterLeader.getVelocity().getValue();
+        m_flywheelVelocity = m_shooterA.getVelocity().getValue();
 
         m_turretVisualizer.update3dPose(m_turretTurnPosition, getHoodAngle());
 
-        log_shooterVelocityRPS.accept(m_shooterLeader.getVelocity().getValueAsDouble());
+        log_shooterVelocityRPS.accept(m_shooterA.getVelocity().getValueAsDouble());
         log_hoodEncoderPositionDegs.accept(convertServoAngleToHoodAngle(Degrees.of(convertEncoderAngleToServoAngle(
                 Degrees.of(Rotations.of(m_hoodEncoder.getAbsolutePosition().getValueAsDouble()).in(Degrees))))));
         log_hoodEncoderVelocityRPS.accept(m_hoodEncoder.getVelocity().getValueAsDouble());
@@ -678,7 +678,7 @@ public class Shooter extends SubsystemBase {
                 ShotCalculator.angularToLinearVelocity(m_flywheelVelocity, kFlywheelRadius),
                 getHoodAngle());
 
-        WaltMotorSim.updateSimFX(m_shooterLeader, m_shooterSim);
+        WaltMotorSim.updateSimFX(m_shooterA, m_shooterSim);
         WaltMotorSim.updateSimFX(m_turret, m_turretSim);
         // WaltMotorSim.updateSimServo(m_hood, m_hoodSim);
     }
