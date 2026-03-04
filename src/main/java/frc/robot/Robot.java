@@ -16,7 +16,6 @@ import java.util.function.Consumer;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 
-import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -169,11 +168,6 @@ public class Robot extends TimedRobot {
 
     // for testing only
     private final Pose3dLogger log_shooterDirection = WaltLogger.logPose3d(kLogTab, "Shooter Direction");
-
-    // log and replay timestamp and joystick data
-    private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
-        .withTimestampReplay()
-        .withJoystickReplay();
 
     private final Tracer m_periodicTracer = new Tracer();
 
@@ -405,8 +399,6 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         m_periodicTracer.addEpoch("Entry (Unused Time)");
-        m_timeAndJoystickReplay.update();
-        m_periodicTracer.addEpoch("timeJoystickReplay");
         CommandScheduler.getInstance().run(); 
         m_periodicTracer.addEpoch("CommandScheduler");
 
