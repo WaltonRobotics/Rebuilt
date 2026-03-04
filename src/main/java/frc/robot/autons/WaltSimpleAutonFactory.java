@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 
@@ -12,35 +13,47 @@ public class WaltSimpleAutonFactory {
     private final Superstructure m_superstructre;
     private final AutoFactory m_autoFactory;
     private final Intake m_intake;
+    private final Shooter m_shooter;
 
-    public WaltSimpleAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake) {
+    public WaltSimpleAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter) {
         m_superstructre = superstructure;
         m_autoFactory = autoFactory;
         m_intake = intake;
+        m_shooter = shooter;
     }
 
     private Command preloadShot() {
         return Commands.sequence(
             // Commands.waitUntil(() -> (m_intake.m_isIntakeArmHomed && m_shooter.m_isTurretHomed)),
-            Commands.waitSeconds(0.15),
+            Commands.waitSeconds(1),    //0.15
             m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(2)
         );
     }
 
-    public Command rightOneSweep() {
+    private Command homingCmd() {
         return Commands.parallel(
-            m_autoFactory.trajectoryCmd("RightSweep"),
-            Commands.sequence(
-                Commands.waitSeconds(2),
-                // Commands.waitUntil(m_autoTrajectory.atTime("postBump")),
-                m_superstructre.activateIntake(),
-                Commands.waitSeconds(3),
-                // Commands.waitUntil(m_autoTrajectory.atTime("toSafe")),
-                m_superstructre.deactivateIntake(IntakeArmPosition.SAFE),
-                Commands.waitSeconds(1),
-                // Commands.waitUntil(m_autoTrajectory.atTime("startOuttake")),
-                m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(1)
-            )
+            m_shooter.turretHomingCmd(false),
+            m_intake.intakeArmCurrentSenseHoming()
+        );
+    }
+
+    public Command rightOneSweep() {
+        return Commands.sequence(
+            preloadShot(),
+            Commands.parallel(
+                m_autoFactory.trajectoryCmd("RightSweep"),
+                Commands.sequence(
+                    Commands.waitSeconds(2),
+                    // Commands.waitUntil(m_autoTrajectory.atTime("postBump")),
+                    m_superstructre.intake(false).withTimeout(3)
+                    // Commands.waitSeconds(3),
+                    // // Commands.waitUntil(m_autoTrajectory.atTime("toSafe")),
+                    // m_superstructre.deactivateIntake(IntakeArmPosition.SAFE),
+                    // Commands.waitSeconds(1),
+                    // Commands.waitUntil(m_autoTrajectory.atTime("startOuttake")),
+                )
+            ),
+            m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(1)
         ).withName("rightOneSweep");
     }
 

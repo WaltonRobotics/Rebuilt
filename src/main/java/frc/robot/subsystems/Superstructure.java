@@ -82,14 +82,14 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
-    public Command intake() {
-        return Commands.runEnd(
+    public Command intake(boolean isPassing) {
+        return Commands.sequence(
+            m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
+            Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()).withTimeout(0.25),
+            Commands.runEnd(
             () -> {
-                m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
-                if (m_intake.isIntakeArmAtPos()) {
-                    m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
-                    m_indexer.setSpindexerVelocity(Constants.IndexerK.kSpindexerIntakeRPS);
-                }
+                m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
+                m_indexer.setSpindexerVelocity(isPassing ? Constants.IndexerK.kSpindexerRPS : Constants.IndexerK.kSpindexerIntakeRPS); // Constants.IndexerK.kSpindexerIntakeRPS
             }, 
             () -> {
                 if (m_intake.getIntakeArmStatorCurrent() < 40) {
@@ -97,7 +97,7 @@ public class Superstructure extends SubsystemBase {
                     m_indexer.stopSpindexer();
                     // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
                 }
-            }
+            })
         );
     }
 

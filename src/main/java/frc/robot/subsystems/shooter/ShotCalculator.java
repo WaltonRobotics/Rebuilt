@@ -35,8 +35,16 @@ public class ShotCalculator {
 
     public static final InterpolatingDoubleTreeMap m_timeOfFlightMap = new InterpolatingDoubleTreeMap();
 
+    private static final double minDistance;
+    private static final double maxDistance;
+
+
     //note that this is not being used as of now, but we will need to make our OWN lerp that way we shoot more accurately.
     static {
+        //TODO: find the actual minDistance and maxDistance for shooting
+        minDistance = 0.0;
+        maxDistance = 5.0;
+
         m_shotMap.put(5.34, new ShotData(RotationsPerSecond.of(2900 / 60), Degrees.of(27)));
         m_timeOfFlightMap.put(5.34, 1.30);
 
@@ -117,6 +125,14 @@ public class ShotCalculator {
 
     public static LinearVelocity angularToLinearVelocity(AngularVelocity vel, Distance radius) {
         return MetersPerSecond.of(vel.in(RadiansPerSecond) * radius.in(Meters));
+    }
+
+    public static double getMinTimeOfFlight() {
+        return m_timeOfFlightMap.get(minDistance);
+    }
+
+    public static double getMaxTimeOfFlight() {
+        return m_timeOfFlightMap.get(maxDistance);
     }
 
     /**

@@ -52,8 +52,10 @@ import java.util.function.Supplier;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.Robot;
+import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.WpiK;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
+import frc.util.AllianceFlipUtil;
 import frc.util.AllianceZoneUtil;
 import frc.util.GobildaServoAngled;
 import frc.util.WaltMotorSim;
@@ -171,7 +173,7 @@ public class Shooter extends SubsystemBase {
     /* CONSTRUCTOR */
     public Shooter(Supplier<Pose2d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
         m_shooterLeader.getConfigurator().apply(kShooterLeaderTalonFXConfiguration);
-        m_shooterFollower.getConfigurator().apply(kShooterFollowerTalonFXConfiguration);
+        m_shooterFollower.getConfigurator().apply(kShooterLeaderTalonFXConfiguration);
         m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
         m_hoodEncoder.getConfigurator().apply(kHoodEncoderConfiguration); // if needed, we can add a position offset
 
@@ -204,7 +206,7 @@ public class Shooter extends SubsystemBase {
 
         m_turret.setPosition(0);
 
-        setTarget(m_poseSupplier.get());
+        setTarget(m_poseSupplier.get(), FieldConstants.Hub.innerCenterPoint);
         initSim();
     }
 
@@ -342,6 +344,10 @@ public class Shooter extends SubsystemBase {
         return m_turret.getMotorVoltage().getValueAsDouble();
     }
 
+    public ShooterGoal getCurrentGoal() {
+        return m_goal;
+    }
+
     /* SIMULATION */
     public boolean simAbleToIntake() {
         return canIntake();
@@ -462,23 +468,26 @@ public class Shooter extends SubsystemBase {
      * @param robotPose where the robot currently is
      * @return target pose
      */
-    public Translation3d setTarget(Pose2d robotPose) {
-        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-            if (robotPose.getMeasureX().gt(AllianceZoneUtil.redHubCenter.getMeasureX())) {
-                return FieldConstants.Hub.oppInnerCenterPoint;
-            }
-            if (robotPose.getMeasureY().gt(AllianceZoneUtil.centerField_y_pos)) {
-                return AllianceZoneUtil.redLeftTarget.getTranslation();
-            }
-            return AllianceZoneUtil.redRightTarget.getTranslation();
-        }
-        if (robotPose.getMeasureX().lt(AllianceZoneUtil.blueHubCenter.getMeasureX())) {
-            return FieldConstants.Hub.innerCenterPoint;
-        }
-        if (robotPose.getMeasureY().gt(AllianceZoneUtil.centerField_y_pos)) {
-            return AllianceZoneUtil.blueLeftTarget.getTranslation();
-        }
-        return AllianceZoneUtil.blueRightTarget.getTranslation();
+    private void setTarget(Pose2d robotPose, Translation3d target) {
+        m_currentTarget = AllianceFlipUtil.apply(target);
+        // if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
+        //     if (robotPose.getMeasureX().gt(AllianceZoneUtil.redHubCenter.getMeasureX())) {
+        //         return FieldConstants.Hub.oppInnerCenterPoint;
+        //     }
+        //     if (robotPose.getMeasureY().gt(AllianceZoneUtil.centerField_y_pos)) {
+        //         return AllianceZoneUtil.redLeftTarget.getTranslation();
+        //     }
+        //     return AllianceZoneUtil.redRightTarget.getTranslation();
+        // }
+        // if (robotPose.getMeasureX().lt(AllianceZoneUtil.blueHubCenter.getMeasureX())) {
+        //     return FieldConstants.Hub.innerCenterPoint;
+        // }
+        // if (robotPose.getMeasureY().gt(AllianceZoneUtil.centerField_y_pos)) {
+        //     return AllianceZoneUtil.blueLeftTarget.getTranslation();
+        // }
+        // return AllianceZoneUtil.blueRightTarget.getTranslation();
+
+
     }
 
     /**
@@ -503,22 +512,23 @@ public class Shooter extends SubsystemBase {
      */
     public void setGoal(ShooterGoal goal) {
         m_goal = goal;
+        //TODO: im commenting this out for now, because i realized that this is useless, so i think just having the goals is fine, but make sure that i can make further sense of this later.
         switch (goal) {
         case SHOOTING:
-            setTarget(m_poseSupplier.get());
+            setTarget(m_poseSupplier.get(), FieldConstants.Hub.innerCenterPoint);
             break;
         case STATIC_SHOOTING:
-            setTarget(m_poseSupplier.get());
+            setTarget(m_poseSupplier.get(), FieldConstants.Hub.innerCenterPoint);
             break;
         case PASSING_LEFT:
-            setTarget(m_poseSupplier.get());
+            setTarget(m_poseSupplier.get(), ShooterK.kPassingSpotLeft);
             break;
         case PASSING_RIGHT:
-            setTarget(m_poseSupplier.get());
+            setTarget(m_poseSupplier.get(), ShooterK.kPassingSpotRight);
             break;
-        case PASSING:
-            setTarget(m_poseSupplier.get());
-            break;
+        // case PASSING:
+        //     setTarget(m_poseSupplier.get());
+        //     break;
         // case TEST:
         //     setTargetAheadOfRobot(3);
         //     break;
@@ -547,6 +557,7 @@ public class Shooter extends SubsystemBase {
         // Sets the HoodPosition to the Calculated HoodAngle
         setHoodPosition(Degrees.of(28));
         // setHoodPosition(Degrees.of(calculatedShot.getHoodAngle().in(Degrees)));
+        
 
         m_calcTurret = azimuthAngle;
         m_calcHoodAngle = calculatedShot.getHoodAngle();
