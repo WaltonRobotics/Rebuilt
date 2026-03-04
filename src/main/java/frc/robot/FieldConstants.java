@@ -164,7 +164,7 @@ public class FieldConstants {
         new Translation2d(LinesVertical.hubCenter + width / 2, Units.inchesToMeters(255));
     public static final Translation2d farRightCorner = Hub.farLeftCorner;
 
-    public static final double midBump = LinesVertical.hubCenter - (width / 2);
+    public static final double midBump = LinesVertical.hubCenter + (width / 2);
 
     // Relevant reference points on opposing side
     public static final Translation2d oppNearLeftCorner =

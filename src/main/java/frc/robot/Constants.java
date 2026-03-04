@@ -74,7 +74,7 @@ public class Constants {
 
         //TODO: work out where our passing spots should be..?
         public static final Translation3d kPassingSpotLeft = new Translation3d(
-                Inches.of(90), Inches.of(FieldConstants.LeftBump.midBump), Inches.zero());
+                Inches.of(90), Inches.of(FieldConstants.RightBump.midBump), Inches.zero());
         // public static final Translation3d kPassingSpotCenter = new Translation3d(
         //         Inches.of(90), FieldConstants.fieldWidthIn.div(2), Inches.zero());
         public static final Translation3d kPassingSpotRight = new Translation3d(
@@ -94,6 +94,7 @@ public class Constants {
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.magnitude());
 
         public static final AngularVelocity kShooterRPS = RotationsPerSecond.of((5785/60) * (0.65) / kShooterGearing);   //Kraken X60Foc Max (RPM: 5785) //(0.9)
+        public static final AngularVelocity kShooterAutonRPS = RotationsPerSecond.of((5785/60) * (0.60) / kShooterGearing);  //auton pose is closer to the hub than teleop scoring
         public static final AngularVelocity kShooterBarfRPS = RotationsPerSecond.of((5785/60) * (0.2) / kShooterGearing);
         public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.of(/* 0/60 * (0.9) / kShooterGearing */ 0);
 
@@ -396,14 +397,14 @@ public class Constants {
         public static final int kSpindexerCANID = 10;
         public static final int kTunnelCANID = 11;
 
-        public static final double kSpindexerGearing = 3;
+        public static final double kSpindexerGearing = 5;
         public static final double kTunnelGearing = 1/1.2 * 0.5;
 
         public static final double kSpindexerMOI = 0.00166190059;
         public static final double kTunnelMOI = 0.000215968064;
       
-        public static final AngularVelocity kSpindexerIntakeRPS = RotationsPerSecond.of((5785/60) * (-0.20) / kSpindexerGearing);  //Max RPM for X60Foc is 5785   (0.9)
-        public static final AngularVelocity kSpindexerRPS = RotationsPerSecond.of((5785/60) * (0.45) / kSpindexerGearing);  //Max RPM for X60Foc is 5785   (0.9)
+        public static final AngularVelocity kSpindexerIntakeRPS = RotationsPerSecond.of((5785/60) * (-0.40) / kSpindexerGearing);  //Max RPM for X60Foc is 5785   (0.9)
+        public static final AngularVelocity kSpindexerRPS = RotationsPerSecond.of((5785/60) * (0.70) / kSpindexerGearing);  //Max RPM for X60Foc is 5785   (0.9)
         public static final AngularVelocity kTunnelRPS = RotationsPerSecond.of((5785/60) * (0.60) / kTunnelGearing);   //(0.9) //(0.65)
         
         /* CONFIGS */
@@ -467,13 +468,15 @@ public class Constants {
     }
 
     public static class AutonK {
-        public static final Pose2d rightNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
+        public static final Pose2d kRightNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
             Meters.of(2.251265048980713), new Rotation2d(0));
-        public static final Pose2d rightDepotPose = new Pose2d(Meters.of(1.1576627492904663), 
+        public static final Pose2d kRightDepotPose = new Pose2d(Meters.of(1.1576627492904663), 
             Meters.of(5.958622932434082), new Rotation2d(Math.PI));
 
-        public static final Pose2d leftNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
+        public static final Pose2d kLeftNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
             Meters.of(5.437880039215088), new Rotation2d(0));
+        
+        public static final double kOneSweepMaxTime = 14; //in sec
 
     }
 }
