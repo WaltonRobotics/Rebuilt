@@ -17,6 +17,7 @@ public class AutonChooser {
 
         m_chooser.setDefaultOption("None Selected", Commands.none());
         m_chooser.addOption("One Right Neutral Pickup", m_simpleAutonFactory.rightOneSweep());
+        m_chooser.addOption("One Left Neutral Pickup", m_simpleAutonFactory.leftOneSweep());
         m_chooser.addOption("Two Right Neutral Pickup", m_simpleAutonFactory.rightTwoSweep());
         m_chooser.addOption("Right Outpost to Shoot", m_simpleAutonFactory.rightOutpostToShoot());
         m_chooser.addOption("Right Depot To Shoot", m_simpleAutonFactory.rightDepotToShoot());

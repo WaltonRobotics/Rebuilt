@@ -1,6 +1,7 @@
 package frc.robot.autons;
 
 import choreo.auto.AutoFactory;
+import choreo.util.ChoreoAllianceFlipUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.ShooterK;
@@ -22,10 +23,11 @@ public class WaltSimpleAutonFactory {
         m_shooter = shooter;
     }
 
+    //could probably remove this method entirely (unless we plan to add more here in the future?)
     private Command preloadShot() {
         return Commands.sequence(
             // Commands.waitUntil(() -> (m_intake.m_isIntakeArmHomed && m_shooter.m_isTurretHomed)),
-            Commands.waitSeconds(1),    //0.15
+            // Commands.waitSeconds(1),    //0.15
             m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(2)
         );
     }
@@ -37,7 +39,9 @@ public class WaltSimpleAutonFactory {
         );
     }
 
-    public Command rightOneSweep() {
+    private Command oneSweep(boolean isLeft) {
+        String trajName = isLeft ? "LeftSweep" : "RightSweep";
+
         return Commands.sequence(
             Commands.sequence(
                 homingCmd(),
@@ -45,14 +49,22 @@ public class WaltSimpleAutonFactory {
                 preloadShot()
             ),
             Commands.parallel(
-                m_autoFactory.trajectoryCmd("RightSweep"),
+                m_autoFactory.trajectoryCmd(trajName),
                 Commands.sequence(
                     Commands.waitSeconds(2),
                     m_superstructre.intake(false).withTimeout(6)
                 )
             ),
             m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(1)
-        ).withName("rightOneSweep");
+        ).withName(trajName);
+    }
+
+    public Command rightOneSweep() {
+        return oneSweep(false);
+    }
+
+    public Command leftOneSweep() {
+        return oneSweep(true);
     }
 
     public Command rightTwoSweep() {
