@@ -38,6 +38,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
+import frc.util.AllianceFlipALWAYSUtil;
 import frc.util.AllianceFlipUtil;
 import frc.util.VisionUtil;
 import frc.util.WaltLogger;
@@ -76,7 +77,7 @@ public class Constants {
         // public static final Translation3d kPassingSpotCenter = new Translation3d(
         //         Inches.of(90), FieldConstants.fieldWidthIn.div(2), Inches.zero());
         public static final Translation3d kPassingSpotRight = new Translation3d(
-            Inches.of(90), Inches.of(AllianceFlipUtil.applyY(kPassingSpotLeft.getY())), Inches.of(0));
+            Inches.of(90), Inches.of(AllianceFlipALWAYSUtil.applyY(kPassingSpotLeft.getY())), Inches.of(0));
 
         /* MOTOR CONSTANTS */
         public static final double kShooterMoI = 0.000349 * 2.5;  //J for 5 3" 0.53lb flywheels

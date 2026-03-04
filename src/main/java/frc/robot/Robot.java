@@ -18,7 +18,6 @@ import org.photonvision.PhotonCamera;
 import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -27,6 +26,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -40,7 +40,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.robot.subsystems.shooter.FuelSim;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.Shooter.ShooterGoal;
 import frc.robot.Constants.RobotK;
 import frc.robot.dashboards.AutonChooser;
 import frc.robot.dashboards.TestingDashboard;
@@ -53,7 +52,6 @@ import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.WaltCamera;
-import frc.util.HubShiftUtil;
 import frc.util.Telemetry;
 // import frc.util.WaltVisualSim;
 import frc.util.WaltLogger;
@@ -195,6 +193,7 @@ public class Robot extends TimedRobot {
 
         DriverStation.silenceJoystickConnectionWarning(true);
         PhotonCamera.setVersionCheckEnabled(false);
+        LiveWindow.disableAllTelemetry();
     }
 
     /* COMMANDS */
@@ -341,7 +340,7 @@ public class Robot extends TimedRobot {
         trg_shimmy.whileTrue(m_superstructure.shimmy());
         // trg_passLeft.and(trg_passRight.negate()).onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING_LEFT))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
         // trg_passRight.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING_RIGHT))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
-        trg_passLeft.and(trg_passRight.negate()).onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
+        // trg_passLeft.and(trg_passRight.negate()).onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
 
 
         //---OVERRIDE COMMANDS
@@ -390,8 +389,8 @@ public class Robot extends TimedRobot {
         m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
 
         // m_driver.povUp().onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING)));
-        m_driver.povDown().onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.OFF)));
-        m_driver.povRight().onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
+        m_driver.povDown().onTrue(Commands.runOnce(() -> m_shooter.setShotCalcCmd(false)));
+        m_driver.povRight().onTrue(Commands.runOnce(() -> m_shooter.setShotCalcCmd(true)));
 
         // TODO: add shooter overrides for drivet but waiting for sohan's calculate method
     }
@@ -459,7 +458,7 @@ public class Robot extends TimedRobot {
             }
         }
         m_periodicTracer.addEpoch("VisionUpdate");
-        
+
         log_povUp.accept(m_driver.povUp());
         log_povDown.accept(m_driver.povDown());
         log_povLeft.accept(m_driver.povLeft());
@@ -493,7 +492,7 @@ public class Robot extends TimedRobot {
 
         /* for the mechanism2D in 3D, drag all 3 mechanisms2ds onto the robot pose
         and also log the shooter position pose */ 
-        m_periodicTracer.printEpochs();
+        // m_periodicTracer.printEpochs();
     }
 
     private final Timer m_fpsLimitTimer = new Timer();
