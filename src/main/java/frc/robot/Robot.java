@@ -339,9 +339,9 @@ public class Robot extends TimedRobot {
         );
         
         trg_shimmy.whileTrue(m_superstructure.shimmy());
-        trg_passLeft.and(trg_passRight.negate()).onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING_LEFT))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
-        trg_passRight.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING_RIGHT))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
-        // trg_passLeft.and(trg_passRight.negate()).onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
+        // trg_passLeft.and(trg_passRight.negate()).onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING_LEFT))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
+        // trg_passRight.onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING_RIGHT))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
+        trg_passLeft.and(trg_passRight.negate()).onTrue(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.PASSING))).onFalse(Commands.runOnce(() -> m_shooter.setGoal(ShooterGoal.SHOOTING)));
 
 
         //---OVERRIDE COMMANDS
@@ -459,17 +459,7 @@ public class Robot extends TimedRobot {
             }
         }
         m_periodicTracer.addEpoch("VisionUpdate");
-
-
-        // periodics
-        m_shooter.periodic();
-        m_periodicTracer.addEpoch("ShooterPeriodic");
-        m_indexer.periodic();
-        m_periodicTracer.addEpoch("IndexerPeriodic");
-        m_intake.periodic();
-        m_periodicTracer.addEpoch("IntakePeriodic");
-        m_superstructure.periodic();
-
+        
         log_povUp.accept(m_driver.povUp());
         log_povDown.accept(m_driver.povDown());
         log_povLeft.accept(m_driver.povLeft());
