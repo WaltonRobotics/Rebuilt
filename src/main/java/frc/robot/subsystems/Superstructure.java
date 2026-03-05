@@ -91,7 +91,7 @@ public class Superstructure extends SubsystemBase {
             Commands.runEnd(
             () -> {
                 m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
-                m_indexer.setSpindexerVelocity(isPassing ? Constants.IndexerK.kSpindexerShootRPS : Constants.IndexerK.kSpindexerIntakeRPS);
+                m_indexer.setSpindexerVelocity(isPassing.getAsBoolean() ? Constants.IndexerK.kSpindexerShootRPS : Constants.IndexerK.kSpindexerIntakeRPS);
             }, 
             () -> {
                 if (m_intake.getIntakeArmStatorCurrent() < 40) {

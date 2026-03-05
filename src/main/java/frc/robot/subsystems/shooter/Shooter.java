@@ -107,11 +107,9 @@ public class Shooter extends SubsystemBase {
     private final Trigger trg_hallTrigger = new Trigger(shooterEventLoop, () -> !m_turretHomingHall.get());
     private final BooleanLogger log_turretHomingHall = new BooleanLogger(kLogTab, "turretHomeHall");
 
-    private Angle m_calcHoodAngle = Degrees.of(0);
     private Angle m_calcTurret = Rotations.of(0);
     private AngularVelocity m_calcFlywheelVelocity = RotationsPerSecond.of(0);
 
-    private final DoubleLogger log_calcHoodAngle = new DoubleLogger("Shooter/Hood", "calcHoodAngle");
     private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
     private final DoubleLogger log_calcTurretPos = new DoubleLogger("Shooter/Turret", "calcTurretPos");
 
@@ -522,7 +520,6 @@ public class Shooter extends SubsystemBase {
         // setHoodPosition(Degrees.of(calculatedShot.getHoodAngle().in(Degrees)));
 
         m_calcTurret = azimuthAngle;
-        m_calcHoodAngle = calculatedShot.getHoodAngle();
         m_calcFlywheelVelocity = ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius);
         m_periodicTracer.addEpoch("calculateShot/setOutputs");
     }
@@ -593,25 +590,17 @@ public class Shooter extends SubsystemBase {
         if (m_isTurretHomed && m_useShotCalculator) {
             calculateAndSetShot(pose, true);
         }
-        double hoodEncoderAbsDeg = Rotations.of(m_hoodEncoder.getAbsolutePosition().getValueAsDouble()).in(Degrees);
-        double hoodServoAngle = m_hood.getAngle();
 
         log_shooterVelocityRPS.accept(m_flywheelVelocity.in(RotationsPerSecond));
-        log_requestedServoPositionDegs.accept(hoodServoAngle);
-        log_requestedHoodPositionDegs.accept(convertServoAngleToHoodAngle(Degrees.of(hoodServoAngle)));
-
         log_turretPositionRots.accept(m_turretTurnPosition.in(Rotations));
 
         // log_exitBeamBreak.accept(trg_exitBeamBreak);
         log_spunUp.accept(isShooterSpunUp());
-        log_hoodServoVoltage.accept(RobotController.getVoltage6V());
-        log_hoodServoCurrent.accept(RobotController.getCurrent6V());
 
         log_turretHomingHall.accept(trg_hallTrigger);
         log_onLeftSide.accept(m_onLeftSide);
         // log_inAllianceZone.accept(trg_inAllianceZone);
 
-        log_calcHoodAngle.accept(m_calcHoodAngle.in(Degrees));
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocity.in(RotationsPerSecond));
         log_calcTurretPos.accept(m_calcTurret.in(Rotations));
 

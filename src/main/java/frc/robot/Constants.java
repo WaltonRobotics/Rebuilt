@@ -2,6 +2,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.Constants.IndexerK.kTunnelShootRPS;
 
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -418,6 +419,8 @@ public class Constants {
         public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.7);
 
+        public static final AngularVelocity kTunnelMaxRPS = MotorK.kX44FOCMaxVelocity.div(kTunnelGearing);
+        public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(0.65);
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
