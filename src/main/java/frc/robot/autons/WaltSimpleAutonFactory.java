@@ -25,7 +25,7 @@ public class WaltSimpleAutonFactory {
 
     private Command homingCmd() {
         return Commands.parallel(
-            m_shooter.turretHomingCmd(false),
+            m_shooter.turretHomingCmd(),
             m_intake.intakeArmCurrentSenseHoming()
         );
     }
@@ -49,7 +49,7 @@ public class WaltSimpleAutonFactory {
                     Commands.waitSeconds(2.5),
                     m_superstructure.intake(() -> false).withTimeout(7.5)
                 )
-            ).withTimeout(AutonK.kOneSweepMaxTime),  //should i remove this and j make the last pose in the choreo path 
+            ).withTimeout(AutonK.kOneSweepMaxTime),
             shootWithTimeout(12)
         ).withName(trajName);
     }
@@ -60,6 +60,44 @@ public class WaltSimpleAutonFactory {
 
     public Command leftOneSweep() {
         return oneSweep(true);
+    }
+
+    //OVERALL TODO: clean up code and combine no preload w/ preload (and left/right) into one method
+    //TODO: find better name for this
+    public Command rightOneNoPreload() {
+        return Commands.sequence(
+            Commands.sequence(
+                homingCmd(),
+                Commands.waitUntil(() -> m_shooter.m_isTurretHomed),
+                shootWithTimeout(2)
+            ),
+            Commands.parallel(
+                m_autoFactory.trajectoryCmd("RightSweep"),
+                Commands.sequence(
+                    Commands.waitSeconds(2.5),
+                    m_superstructure.intake(() -> false).withTimeout(7.5)
+                )
+            ).withTimeout(AutonK.kOneSweepMaxTime),
+            shootWithTimeout(12)
+        ).withName("RightSweep");
+    }
+
+    public Command leftOneNoPreload() {
+        return Commands.sequence(
+            Commands.sequence(
+                homingCmd(),
+                Commands.waitUntil(() -> m_shooter.m_isTurretHomed),
+                shootWithTimeout(2)
+            ),
+            Commands.parallel(
+                m_autoFactory.trajectoryCmd("LeftSweep"),
+                Commands.sequence(
+                    Commands.waitSeconds(2.5),
+                    m_superstructure.intake(() -> false).withTimeout(7.5)
+                )
+            ).withTimeout(AutonK.kOneSweepMaxTime),
+            shootWithTimeout(12)
+        ).withName("LeftSweep");
     }
 
     public Command rightTwoSweep() {

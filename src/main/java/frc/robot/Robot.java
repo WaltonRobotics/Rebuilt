@@ -169,6 +169,9 @@ public class Robot extends TimedRobot {
         DriverStation.silenceJoystickConnectionWarning(true);
         PhotonCamera.setVersionCheckEnabled(false);
         LiveWindow.disableAllTelemetry();
+
+
+        addPeriodic(m_shooter::fastPeriodic, 0.0025);
     }
 
     /* COMMANDS */
@@ -320,7 +323,7 @@ public class Robot extends TimedRobot {
             m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
         );
 
-        m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
+        // m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
 
         m_driver.povDown().onTrue(Commands.runOnce(() -> m_shooter.setShotCalcCmd(false)));
         m_driver.povRight().onTrue(Commands.runOnce(() -> m_shooter.setShotCalcCmd(true)));

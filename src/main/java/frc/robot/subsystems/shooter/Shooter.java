@@ -54,7 +54,7 @@ import frc.robot.FieldConstants;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.WpiK;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
-import frc.util.AllianceFlipALWAYSUtil;
+import frc.util.AllianceFlipUtil;
 import frc.util.AllianceZoneUtil;
 import frc.util.WaltMotorSim;
 import frc.util.WaltLogger;
@@ -82,7 +82,7 @@ public class Shooter extends SubsystemBase {
     private final TurretVisualizer m_turretVisualizer;
     private final FuelSim m_fuelSim;
 
-    public final EventLoop shooterEventLoop = new EventLoop();
+    public final EventLoop homingEventLoop = new EventLoop();
 
     // ---MOTORS + CONTROL REQUESTS
     private final TalonFX m_shooterA = new TalonFX(kShooterA_CANID, Constants.kCanivoreBus); // X60Foc
@@ -94,9 +94,10 @@ public class Shooter extends SubsystemBase {
     private final VoltageOut m_VoltageReq = new VoltageOut(0);
     private final StaticBrake m_BrakeReq = new StaticBrake();
 
-    private DigitalInput m_turretHomingHall = new DigitalInput(2);
-    private final Trigger trg_hallTrigger = new Trigger(shooterEventLoop, () -> !m_turretHomingHall.get());
+    private final DigitalInput m_turretHomingHall = new DigitalInput(2);
+    private final Trigger trg_homingHallDirect = new Trigger(homingEventLoop, () -> !m_turretHomingHall.get());
     private final BooleanLogger log_turretHomingHall = new BooleanLogger(kLogTab, "turretHomeHall");
+
 
     private Angle m_calcTurret = Rotations.of(0);
     private AngularVelocity m_calcFlywheelVelocity = RotationsPerSecond.of(0);
@@ -106,7 +107,8 @@ public class Shooter extends SubsystemBase {
 
     private final DoubleLogger log_rawDesiredTurretRot = WaltLogger.logDouble("ShotCalc", "rawDesiredTurretRots");
     private final DoubleLogger log_desiredTurretRot = new DoubleLogger("ShotCalc", "desiredTurretRotations");
-    private final Pose3dLogger log_calculatedShotTarget = WaltLogger.logPose3d("ShotCalc", "calculatedShotTarget");
+    private final Pose3dLogger log_globalShotTarget = WaltLogger.logPose3d("ShotCalc", "globalTarget");
+    private final Pose3dLogger log_calculatedShotTarget = WaltLogger.logPose3d("ShotCalc", "shotCalcTarget");
 
     // private static final DoubleLogger log_timeOfFlight = new DoubleLogger("Shooter/Calculator", "timeOfFlight");
 
@@ -122,11 +124,6 @@ public class Shooter extends SubsystemBase {
     
     //---LOGIC BOOLEANS
     public boolean m_isTurretHomed = false;
-
-    //---TRIGGERS
-    // private final Trigger trg_inAllianceZone = new Trigger(shooterEventLoop, this::inAllianceZone);
-    private final Trigger trg_turretHomingCompleted = new Trigger(shooterEventLoop, () -> m_isTurretHomed);
-    // private final Trigger trg_inAllianceZone = new Trigger(shooterEventLoop, this::inAllianceZone);
 
     /* SIM OBJECTS */
     private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(
@@ -153,6 +150,8 @@ public class Shooter extends SubsystemBase {
 
     StatusSignal<Double> sig_shooterCLErr = m_shooterA.getClosedLoopError();
 
+    private final Command m_homingCommand = turretHomingCmd();
+
     /* CONSTRUCTOR */
     public Shooter(Supplier<Pose2d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
         m_shooterA.getConfigurator().apply(kShooterATalonFXConfiguration);
@@ -168,7 +167,7 @@ public class Shooter extends SubsystemBase {
 
         m_poseSupplier = poseSupplier;
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
-        setDefaultCommand(turretHomingCmd(false));
+        setDefaultCommand(m_homingCommand);
 
         m_turretVisualizer = new TurretVisualizer(
                 () -> new Pose3d(m_poseSupplier.get().rotateAround(
@@ -178,16 +177,13 @@ public class Shooter extends SubsystemBase {
 
         m_fuelSim = FuelSim.getInstance();
 
-        // THIS IS WHERE EVERYTHING ACTUALLY HAPPENS PLS DONT REMOVE
-        // trg_turretHomingCompleted.onTrue(Commands.run(() -> {
-        //     if (m_useShotCalculator) {
-        //         calculateAndSetShot(m_poseSupplier.get(), true);
-        //     }
-        // }));
-
-        trg_hallTrigger.and(trg_turretHomingCompleted).onTrue(Commands.sequence(
-                Commands.waitSeconds(0.5),
-                Commands.runOnce(() -> shooterEventLoop.clear())));
+        trg_homingHallDirect.onTrue(Commands.sequence(
+            Commands.runOnce(() -> {
+                m_homingCommand.cancel();
+                System.out.println("FastHoming OK!!!");
+            }),
+            Commands.runOnce(() -> homingEventLoop.clear()))
+        );
 
         m_turret.setPosition(0);
 
@@ -198,7 +194,7 @@ public class Shooter extends SubsystemBase {
         return Commands.runOnce(() -> { m_useShotCalculator = enable; });
     }
 
-    public void setShotCalc (boolean enable) {
+    public void setShotCalc(boolean enable) {
         m_useShotCalculator = enable;
     }
 
@@ -439,24 +435,20 @@ public class Shooter extends SubsystemBase {
      */
     private Translation3d calculateTarget(Pose2d robotPose) {
         // m_currentTarget = AllianceFlipUtil.apply(target);
-        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-            if (robotPose.getMeasureX().gt(AllianceZoneUtil.redHubCenter.getMeasureX())) {
-                return FieldConstants.Hub.oppInnerCenterPoint;
-            }
-            if (robotPose.getMeasureY().gt(AllianceZoneUtil.centerField_y_pos)) {
-                AllianceFlipALWAYSUtil.apply(ShooterK.kPassingSpotLeft);
-            }
-            return AllianceFlipALWAYSUtil.apply(ShooterK.kPassingSpotRight);
-        }
-        if (robotPose.getMeasureX().lt(AllianceZoneUtil.blueHubCenter.getMeasureX())) {
-            return FieldConstants.Hub.innerCenterPoint;
-        }
-        if (robotPose.getMeasureY().gt(AllianceZoneUtil.centerField_y_pos)) {
-            return ShooterK.kPassingSpotLeft;
-        }
-        return ShooterK.kPassingSpotRight;
+        boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+        Translation3d theTarget = FieldConstants.Hub.blueInnerCenterPoint;
 
+        boolean robotPastOurZoneX = isRed ? 
+            robotPose.getMeasureX().lt(AllianceZoneUtil.redHubCenter.getMeasureX()) : 
+            robotPose.getMeasureX().gt(AllianceZoneUtil.blueHubCenter.getMeasureX());
 
+        if (robotPastOurZoneX) {
+            boolean robotLeftOfCenter = isRed ? 
+                robotPose.getMeasureY().lt(AllianceZoneUtil.centerField_y_pos) :
+                robotPose.getMeasureY().gt(AllianceZoneUtil.centerField_y_pos);
+            theTarget = robotLeftOfCenter ? ShooterK.kPassingSpotLeft : ShooterK.kPassingSpotRight;
+        }
+        return AllianceFlipUtil.apply(theTarget);
     }
 
 
@@ -541,6 +533,7 @@ public class Shooter extends SubsystemBase {
         //     .onFalse(Commands.runOnce(() -> setGoal(ShooterGoal.PASSING)));
         // trg_inAllianceZone.negate().and(DriverStation::isTeleop).whileTrue(Commands.runOnce(() -> setGoal(ShooterGoal.PASSING)));
         m_currentTarget = calculateTarget(pose);
+        log_globalShotTarget.accept(m_currentTarget);
 
         m_periodicTracer.addEpoch("Calculating Shot");
 
@@ -562,7 +555,6 @@ public class Shooter extends SubsystemBase {
         // log_exitBeamBreak.accept(trg_exitBeamBreak);
         log_spunUp.accept(isShooterSpunUp());
 
-        log_turretHomingHall.accept(trg_hallTrigger);
         log_onLeftSide.accept(m_onLeftSide);
         // log_inAllianceZone.accept(trg_inAllianceZone);
 
@@ -574,10 +566,14 @@ public class Shooter extends SubsystemBase {
         m_periodicTracer.addEpoch("Logging");
 
         // KEEP AT THE BOTTOM OF PERIODIC
-        shooterEventLoop.poll();
         m_periodicTracer.addEpoch("EventLoop Poll");
 
         // m_periodicTracer.printEpochs();
+    }
+
+    public void fastPeriodic() {
+        homingEventLoop.poll();
+        log_turretHomingHall.accept(trg_homingHallDirect);
     }
 
     @Override
@@ -591,16 +587,16 @@ public class Shooter extends SubsystemBase {
         // WaltMotorSim.updateSimServo(m_hood, m_hoodSim);
     }
 
-    public Command turretHomingCmd(boolean rerun) {
+    public Command turretHomingCmd() {
         Runnable init = () -> {
-            m_turret.setControl(m_VoltageReq.withOutput(-0.75));
+            m_turret.setControl(m_VoltageReq.withOutput(kHomingVoltage));
             setShotCalc(false);
             m_isTurretHomed = false;
             log_turretHomed.accept(m_isTurretHomed);
         };
 
         Consumer<Boolean> end = (Boolean interrupted) -> {
-            m_turret.setPosition(Rotations.of(-0.2175)); // Flowkirkentologicalexpialibrostatenuinely
+            m_turret.setPosition(kHomePosition); // Flowkirkentologicalexpialibrostatenuinely
             m_turret.setControl(m_BrakeReq);
             removeDefaultCommand();
             m_isTurretHomed = true;
@@ -613,7 +609,7 @@ public class Shooter extends SubsystemBase {
         };
 
         return new FunctionalCommand(init, () ->{}, end, isFinished, this)
-            .until(trg_hallTrigger)
+            .until(trg_homingHallDirect)
             .andThen(
                 Commands.print("========== TURRET HOMING COMPLETE =========="),
                 Commands.waitSeconds(0.1),
