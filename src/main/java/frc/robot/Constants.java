@@ -51,6 +51,17 @@ public class Constants {
 
     public static final CANBus kCanivoreBus = new CANBus("fd");
 
+    public static final class MotorK {
+        public static final double kX60MaxRadPerSec = DCMotor.getKrakenX60(1).freeSpeedRadPerSec;
+        public static final AngularVelocity kX60MaxVelocity = RadiansPerSecond.of(kX60MaxRadPerSec);
+        public static final double kX60FOCMaxRadPerSec = DCMotor.getKrakenX60Foc(1).freeSpeedRadPerSec;
+        public static final AngularVelocity kX60FOCMaxVelocity = RadiansPerSecond.of(kX60MaxRadPerSec);
+
+        public static final double kX44MaxRadPerSec = DCMotor.getKrakenX44(1).freeSpeedRadPerSec;
+        public static final AngularVelocity kX44MaxVelocity = RadiansPerSecond.of(kX44MaxRadPerSec);
+        public static final double kX44FOCMaxRadPerSec = DCMotor.getKrakenX44Foc(1).freeSpeedRadPerSec;
+        public static final AngularVelocity kX44FOCMaxVelocity = RadiansPerSecond.of(kX44MaxRadPerSec);
+    }
     public static class WpiK {
         public static final ChassisSpeeds kZeroChassisSpeeds = new ChassisSpeeds(0, 0, 0);
     }
@@ -397,15 +408,16 @@ public class Constants {
         public static final int kSpindexerCANID = 10;
         public static final int kTunnelCANID = 11;
 
-        public static final double kSpindexerGearing = 5;
+        public static final double kSpindexerGearing = 5.0;
         public static final double kTunnelGearing = 1/1.2 * 0.5;
 
         public static final double kSpindexerMOI = 0.00166190059;
         public static final double kTunnelMOI = 0.000215968064;
       
-        public static final AngularVelocity kSpindexerIntakeRPS = RotationsPerSecond.of((5785/60) * (-0.40) / kSpindexerGearing);  //Max RPM for X60Foc is 5785   (0.9)
-        public static final AngularVelocity kSpindexerRPS = RotationsPerSecond.of((5785/60) * (0.70) / kSpindexerGearing);  //Max RPM for X60Foc is 5785   (0.9)
-        public static final AngularVelocity kTunnelRPS = RotationsPerSecond.of((5785/60) * (0.60) / kTunnelGearing);   //(0.9) //(0.65)
+        public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60FOCMaxVelocity.div(kSpindexerGearing);
+        public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
+        public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.7);
+
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate

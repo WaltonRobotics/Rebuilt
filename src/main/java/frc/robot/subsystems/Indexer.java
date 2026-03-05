@@ -71,27 +71,27 @@ public class Indexer extends SubsystemBase {
     /* COMMANDS */
     //---STARTS AND STOPS
     public Command startSpindexerCmd() {
-        return setSpindexerVelocityCmd(kSpindexerRPS);
+        return setSpindexerVelocityCmd(kSpindexerShootRPS);
     }
 
     public Command stopSpindexerCmd() {
-        return setSpindexerVelocityCmd(RotationsPerSecond.of(0));
+        return setSpindexerVelocityCmd(RotationsPerSecond.zero());
     }
 
     public void stopSpindexer() {
-        setSpindexerVelocity(RotationsPerSecond.of(0));
+        setSpindexerVelocity(RotationsPerSecond.zero());
     }
 
     public Command startTunnelCmd() {
-        return setTunnelVelocityCmd(kTunnelRPS);
+        return setTunnelVelocityCmd(kTunnelShootRPS);
     }
 
     public Command stopTunnelCmd() {
-        return setTunnelVelocityCmd(RotationsPerSecond.of(0));
+        return setTunnelVelocityCmd(RotationsPerSecond.zero());
     }
 
     public void stopTunnel() {
-        setTunnelVelocity(RotationsPerSecond.of(0));
+        setTunnelVelocity(RotationsPerSecond.zero());
     }
 
     //---SPINDEXER
@@ -105,7 +105,7 @@ public class Indexer extends SubsystemBase {
 
     //for TestingDashboard
     public Command setSpindexerVelocityCmd(DoubleSubscriber sub_RPS) {
-        return run(() -> m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
+        return run(() -> setSpindexerVelocity(RotationsPerSecond.of(sub_RPS.get())));
     }
 
     //---TUNNEL
@@ -119,31 +119,7 @@ public class Indexer extends SubsystemBase {
 
     //for TestingDashboard
     public Command setTunnelVelocityCmd(DoubleSubscriber sub_RPS) {
-        return run(() -> m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
-    }
-
-    public double getSpindexerStatorCurrent() {
-        return m_spindexer.getStatorCurrent().getValueAsDouble();
-    }
-
-    public double getTunnelStatorCurrent() {
-        return m_tunnel.getStatorCurrent().getValueAsDouble();
-    }
-
-        public double getSpindexerSupplyCurrent() {
-        return m_spindexer.getSupplyCurrent().getValueAsDouble();
-    }
-
-    public double getTunnelSupplyCurrent() {
-        return m_tunnel.getSupplyCurrent().getValueAsDouble();
-    }    
-
-    public double getSpindexerMotorVoltage() {
-        return m_spindexer.getMotorVoltage().getValueAsDouble();
-    }
-
-    public double getTunnelMotorVoltage() {
-        return m_tunnel.getMotorVoltage().getValueAsDouble();
+        return run(() -> setTunnelVelocity(RotationsPerSecond.of(sub_RPS.get())));
     }
 
     /* PERIODICS */
