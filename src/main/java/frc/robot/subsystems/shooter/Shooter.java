@@ -198,6 +198,10 @@ public class Shooter extends SubsystemBase {
         return Commands.runOnce(() -> { m_useShotCalculator = enable; });
     }
 
+    public void setShotCalc (boolean enable) {
+        m_useShotCalculator = enable;
+    }
+
     /* COMMANDS */
     public void zeroTurret() {
         setTurretPos(Rotations.of(0));
@@ -251,11 +255,11 @@ public class Shooter extends SubsystemBase {
     }
 
     // ---TURRET (Motionmagic Angle Control)
-    public Command setTurretPositionCmd(Angle rots) {
+    public Command setTurretPosCmd(Angle rots) {
         return runOnce(() -> setTurretPos(rots));
     }
 
-    private void setTurretPos(Angle rots) {
+    public void setTurretPos(Angle rots) {
         m_turret.setControl(m_PVRequest.withPosition(rots));
         log_turretControlPos.accept(rots.in(Rotations));
     }
@@ -590,6 +594,7 @@ public class Shooter extends SubsystemBase {
     public Command turretHomingCmd(boolean rerun) {
         Runnable init = () -> {
             m_turret.setControl(m_VoltageReq.withOutput(-0.75));
+            setShotCalc(false);
             m_isTurretHomed = false;
             log_turretHomed.accept(m_isTurretHomed);
         };
@@ -599,6 +604,7 @@ public class Shooter extends SubsystemBase {
             m_turret.setControl(m_BrakeReq);
             removeDefaultCommand();
             m_isTurretHomed = true;
+            setShotCalc(true);
             log_turretHomed.accept(m_isTurretHomed);
         };
 

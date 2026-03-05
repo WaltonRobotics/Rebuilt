@@ -90,11 +90,15 @@ public class Superstructure extends SubsystemBase {
             Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()).withTimeout(0.25),
             Commands.runEnd(
             () -> {
+                m_shooter.setShotCalc(false);
+                m_shooter.setTurretPos(Rotations.of(-0.250));
                 m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
                 m_indexer.setSpindexerVelocity(isPassing.getAsBoolean() ? Constants.IndexerK.kSpindexerShootRPS : Constants.IndexerK.kSpindexerIntakeRPS);
             }, 
             () -> {
                 if (m_intake.getIntakeArmStatorCurrent() < 40) {
+                    Commands.run(() -> m_shooter.setShotCalcCmd(true));
+                    m_shooter.setShotCalc(true);
                     m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
                     m_indexer.stopSpindexer();
                     // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
@@ -250,7 +254,7 @@ public class Superstructure extends SubsystemBase {
             logCommand = logActiveOverrideCommands("turret0", "turret180");
         }
         return Commands.sequence(
-            m_shooter.setTurretPositionCmd(Rotations.of(degs.in(Rotations))),
+            m_shooter.setTurretPosCmd(Rotations.of(degs.in(Rotations))),
             logCommand
         );
     }
