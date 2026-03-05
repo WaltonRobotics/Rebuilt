@@ -121,6 +121,7 @@ public class Intake extends SubsystemBase {
 
     public Command shimmy() {
         return Commands.repeatingSequence(
+            setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             setIntakeRollersVelocityCmd(RotationsPerSecond.of(0)),
             setIntakeArmPosCmd(IntakeArmPosition.SHIMMY),
             Commands.waitUntil(() -> isIntakeArmAtPos()),

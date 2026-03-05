@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.AutonK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
@@ -15,12 +16,14 @@ public class WaltSimpleAutonFactory {
     private final AutoFactory m_autoFactory;
     private final Intake m_intake;
     private final Shooter m_shooter;
+    private final Swerve m_swerve;
 
-    public WaltSimpleAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter) {
+    public WaltSimpleAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter, Swerve swerve) {
         m_superstructure = superstructure;
         m_autoFactory = autoFactory;
         m_intake = intake;
         m_shooter = shooter;
+        m_swerve = swerve;
     }
 
     private Command homingCmd() {
@@ -34,6 +37,10 @@ public class WaltSimpleAutonFactory {
         return m_superstructure.activateOuttake(ShooterK.kShooterAutonRPS).withTimeout(seconds);
     }
 
+    private Command runTraj(String name, double timeoutSecs) {
+        return m_autoFactory.trajectoryCmd(name).withTimeout(timeoutSecs).andThen(m_swerve.xBrake());
+    }
+
     private Command oneSweep(boolean isLeft) {
         String trajName = isLeft ? "LeftSweep" : "RightSweep";
 
@@ -43,14 +50,21 @@ public class WaltSimpleAutonFactory {
                 Commands.waitUntil(() -> m_shooter.m_isTurretHomed),  //TODO: should probably change this to check if is aiming at target (hub)
                 shootWithTimeout(2)
             ),
-            Commands.parallel(
-                m_autoFactory.trajectoryCmd(trajName),
+            Commands.deadline(
+                runTraj(trajName, AutonK.kOneSweepMaxTime),
                 Commands.sequence(
-                    Commands.waitSeconds(2.5),
-                    m_superstructure.intake(() -> false).withTimeout(7.5)
+                    Commands.waitSeconds(2.17),
+                    m_superstructure.intake(() -> false).withTimeout(7.5),
+                    m_superstructure.unjamCmd()
                 )
-            ).withTimeout(AutonK.kOneSweepMaxTime),
-            shootWithTimeout(12)
+            ),
+            Commands.parallel(
+                shootWithTimeout(12),
+                Commands.sequence(
+                    Commands.waitSeconds(6),
+                    m_superstructure.shimmy()
+                )
+            )
         ).withName(trajName);
     }
 
@@ -64,40 +78,18 @@ public class WaltSimpleAutonFactory {
 
     //OVERALL TODO: clean up code and combine no preload w/ preload (and left/right) into one method
     //TODO: find better name for this
-    public Command rightOneNoPreload() {
+    public Command oneCycleGoInNow(boolean left) {
+        String path = left ? "LeftSweep" : "RightSweep";
         return Commands.sequence(
-            Commands.sequence(
-                homingCmd(),
-                Commands.waitUntil(() -> m_shooter.m_isTurretHomed),
-                shootWithTimeout(2)
-            ),
             Commands.parallel(
-                m_autoFactory.trajectoryCmd("RightSweep"),
-                Commands.sequence(
-                    Commands.waitSeconds(2.5),
+                homingCmd().andThen(
+                    Commands.waitSeconds(0.75),
                     m_superstructure.intake(() -> false).withTimeout(7.5)
-                )
-            ).withTimeout(AutonK.kOneSweepMaxTime),
-            shootWithTimeout(12)
-        ).withName("RightSweep");
-    }
-
-    public Command leftOneNoPreload() {
-        return Commands.sequence(
-            Commands.sequence(
-                homingCmd(),
-                Commands.waitUntil(() -> m_shooter.m_isTurretHomed),
-                shootWithTimeout(2)
+                ),
+                runTraj(path, AutonK.kOneSweepMaxTime)
             ),
-            Commands.parallel(
-                m_autoFactory.trajectoryCmd("LeftSweep"),
-                Commands.sequence(
-                    Commands.waitSeconds(2.5),
-                    m_superstructure.intake(() -> false).withTimeout(7.5)
-                )
-            ).withTimeout(AutonK.kOneSweepMaxTime),
             shootWithTimeout(12)
-        ).withName("LeftSweep");
+        ).withName(path);
     }
 
     public Command rightTwoSweep() {
