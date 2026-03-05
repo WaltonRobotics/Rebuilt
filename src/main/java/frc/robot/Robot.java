@@ -9,14 +9,10 @@ import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.RobotK.*;
 import static frc.robot.Constants.ShooterK.kShooterRPS;
 
-import java.util.HashMap;
 import java.util.Optional;
-import java.util.function.Consumer;
-
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 
-import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -58,14 +54,12 @@ import frc.util.Telemetry;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
-import frc.util.WaltLogger.Pose3dLogger;
 
 public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
     //---CONSTANTS
     private final double kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private final double kMaxAngularRate = RotationsPerSecond.of(0.85).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-    private final double kMaxHighAngularRate = RotationsPerSecond.of(1.5).in(RadiansPerSecond);
 
     private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
     private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger(kLogTab, "VisionSeenLastSec");
@@ -104,10 +98,8 @@ public class Robot extends TimedRobot {
     private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
 
     private final WaltSimpleAutonFactory m_simpleAutonFactory = new WaltSimpleAutonFactory(m_superstructure, m_autoFactory, m_intake, m_shooter);
-
-    Consumer<Command> getAuton = auton -> m_autonomousCommand = auton;
-
     //---VISION
+
     private PowerDistribution m_PDH = new PowerDistribution();
     // private final VisionSim m_visionSim = new VisionSim();
 
@@ -116,7 +108,6 @@ public class Robot extends TimedRobot {
     private Trigger trg_manipOverride = m_manipulator.b();
 
     //---COMMAND SEQUENCE TRIGGERS
-    private Trigger trg_swerveToObject = m_driver.x();
 
     // private Trigger trg_activateIntake = m_manipulator.a().and(trg_manipOverride.negate());
     // private Trigger trg_safeIntake = m_manipulator.x().and(trg_manipOverride.negate());
@@ -132,14 +123,6 @@ public class Robot extends TimedRobot {
     private Trigger trg_shimmy = m_manipulator.leftBumper();
 
     //---OVERRIDE TRIGGERS
-    private Trigger trg_maxShooterOverride = trg_manipOverride.and(m_manipulator.povLeft());
-
-    private Trigger trg_startSpindexerOverride = trg_manipOverride.and(m_manipulator.rightBumper());
-
-    private Trigger trg_startTunnelOverride = trg_manipOverride.and(m_manipulator.leftBumper());
-
-    private Trigger trg_maxRollersOverride = trg_manipOverride.and(m_manipulator.povDown());
-
     private Trigger trg_deployIntakeOverride = trg_manipOverride.and(m_manipulator.rightTrigger());
     private Trigger trg_intakeUpOverride = trg_manipOverride.and(m_manipulator.leftTrigger());
 
@@ -160,20 +143,12 @@ public class Robot extends TimedRobot {
 
     private final BooleanLogger log_manipLeftTrigger = WaltLogger.logBoolean(kLogTab, "Manip Left Trigger");
     private final BooleanLogger log_manipRightTrigger = WaltLogger.logBoolean(kLogTab, "Manip Right Trigger");
-    private final BooleanLogger log_driverLeftTrigger = WaltLogger.logBoolean(kLogTab, "Manip Right Trigger");
-    private final BooleanLogger log_driverRightTrigger = WaltLogger.logBoolean(kLogTab, "Manip Right Trigger");
+    private final BooleanLogger log_driverLeftTrigger = WaltLogger.logBoolean(kLogTab, "Driver Left Trigger");
+    private final BooleanLogger log_driverRightTrigger = WaltLogger.logBoolean(kLogTab, "Driver Right Trigger");
 
     private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble(kLogTab, "MiniPC current");
 
     private final BooleanLogger log_isDisabled = WaltLogger.logBoolean(kLogTab, "is robot disabled");
-
-    // for testing only
-    private final Pose3dLogger log_shooterDirection = WaltLogger.logPose3d(kLogTab, "Shooter Direction");
-
-    // log and replay timestamp and joystick data
-    private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
-        .withTimestampReplay()
-        .withJoystickReplay();
 
     private final Tracer m_periodicTracer = new Tracer();
 
@@ -387,8 +362,8 @@ public class Robot extends TimedRobot {
             .whileTrue(m_shooter.setShooterVelocityCmd(TestingDashboard.sub_shooterVelocityRPS));
         TestingDashboard.trg_letTurretPositionRotsChange
             .whileTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
-        TestingDashboard.trg_letHoodPositionDegsChange
-            .whileTrue(m_shooter.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
+        // TestingDashboard.trg_letHoodPositionDegsChange
+            // .whileTrue(m_shooter.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
 
         TestingDashboard.trg_letSpindexerVelocityRPSChange
             .whileTrue(m_indexer.setSpindexerVelocityCmd(TestingDashboard.sub_spindexerVelocityRPS));
@@ -405,8 +380,6 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         m_periodicTracer.addEpoch("Entry (Unused Time)");
-        m_timeAndJoystickReplay.update();
-        m_periodicTracer.addEpoch("timeJoystickReplay");
         CommandScheduler.getInstance().run(); 
         m_periodicTracer.addEpoch("CommandScheduler");
 
@@ -495,9 +468,7 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         m_autonomousCommand = AutonChooser.m_chooser.getSelected();
-        AutonChooser.m_chooser.onChange(getAuton);
-
-        m_shooter.turretHomingCmd(false); 
+        AutonChooser.cleanup();
 
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);

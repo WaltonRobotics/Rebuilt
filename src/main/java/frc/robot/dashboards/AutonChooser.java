@@ -1,6 +1,7 @@
 package frc.robot.dashboards;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,5 +24,9 @@ public class AutonChooser {
         m_chooser.addOption("Right Depot To Shoot", m_simpleAutonFactory.rightDepotToShoot());
 
         SmartDashboard.putData(m_chooser);
+    }
+
+    public static void cleanup() {
+        SendableRegistry.remove(m_chooser);
     }
 }
