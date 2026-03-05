@@ -1,3 +1,4 @@
+
 package frc.robot.subsystems;
 
 import edu.wpi.first.units.measure.Angle;
@@ -20,6 +21,7 @@ import static frc.robot.Constants.ShooterK;
 import static frc.robot.Constants.IntakeK;
 
 import java.util.HashSet;
+import java.util.function.BooleanSupplier;
 
 public class Superstructure extends SubsystemBase {
     /* SUBSYSTEMS */
@@ -82,7 +84,7 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
-    public Command intake(boolean isPassing) {
+    public Command intake(BooleanSupplier isPassing) {
         return Commands.sequence(
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()).withTimeout(0.25),

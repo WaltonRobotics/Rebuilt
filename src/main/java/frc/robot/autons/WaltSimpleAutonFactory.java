@@ -1,13 +1,16 @@
 package frc.robot.autons;
 
 import choreo.auto.AutoFactory;
+import choreo.util.ChoreoAllianceFlipUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants.AutonK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
+import frc.robot.subsystems.shooter.Shooter;
 
 public class WaltSimpleAutonFactory {
     private final Superstructure m_superstructre;
@@ -22,11 +25,12 @@ public class WaltSimpleAutonFactory {
         m_shooter = shooter;
     }
 
+    //could probably remove this method entirely (unless we plan to add more here in the future?)
     private Command preloadShot() {
         return Commands.sequence(
             // Commands.waitUntil(() -> (m_intake.m_isIntakeArmHomed && m_shooter.m_isTurretHomed)),
-            Commands.waitSeconds(1),    //0.15
-            m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(2)
+            // Commands.waitSeconds(1),    //0.15
+            m_superstructre.activateOuttake(ShooterK.kShooterAutonRPS).withTimeout(2)
         );
     }
 
@@ -37,7 +41,9 @@ public class WaltSimpleAutonFactory {
         );
     }
 
-    public Command rightOneSweep() {
+    private Command oneSweep(boolean isLeft) {
+        String trajName = isLeft ? "LeftSweep" : "RightSweep";
+
         return Commands.sequence(
             Commands.sequence(
                 homingCmd(),
@@ -45,14 +51,22 @@ public class WaltSimpleAutonFactory {
                 preloadShot()
             ),
             Commands.parallel(
-                m_autoFactory.trajectoryCmd("RightSweep"),
+                m_autoFactory.trajectoryCmd(trajName),
                 Commands.sequence(
-                    Commands.waitSeconds(2),
-                    m_superstructre.intake(false).withTimeout(6)
+                    Commands.waitSeconds(2.5),
+                    m_superstructre.intake(() -> false).withTimeout(7.5)
                 )
-            ),
-            m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(1)
-        ).withName("rightOneSweep");
+            ).withTimeout(AutonK.kOneSweepMaxTime),  //should i remove this and j make the last pose in the choreo path 
+            m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(6)
+        ).withName(trajName);
+    }
+
+    public Command rightOneSweep() {
+        return oneSweep(false);
+    }
+
+    public Command leftOneSweep() {
+        return oneSweep(true);
     }
 
     public Command rightTwoSweep() {
@@ -78,15 +92,13 @@ public class WaltSimpleAutonFactory {
                 m_autoFactory.trajectoryCmd("RightToDepot"),
                 Commands.sequence(
                     Commands.waitSeconds(1),
-                    m_superstructre.activateIntake()
+                    m_superstructre.intake(() -> false).withTimeout(2)
                 )
             ),
             m_autoFactory.resetOdometry("RightDepotToShoot"),
-            m_superstructre.deactivateIntake(IntakeArmPosition.SAFE),
             Commands.parallel(
                 m_autoFactory.trajectoryCmd("RightDepotToShoot"),
                 Commands.sequence(
-                    Commands.waitSeconds(1),
                     m_superstructre.activateOuttake(ShooterK.kShooterRPS).withTimeout(2)
                 )
             )
@@ -109,7 +121,7 @@ public class WaltSimpleAutonFactory {
                     Commands.waitSeconds(0.5),
                     m_intake.setIntakeArmPosCmd(IntakeArmPosition.SAFE),
                     Commands.waitSeconds(0.5),
-                    m_superstructre.activateIntake()
+                    m_superstructre.intake(() -> false).withTimeout(2)
                 )
             )
         );

@@ -1,3 +1,4 @@
+
 package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.controls.Follower;
@@ -200,11 +201,11 @@ public class Shooter extends SubsystemBase {
         m_fuelSim = FuelSim.getInstance();
 
         // THIS IS WHERE EVERYTHING ACTUALLY HAPPENS PLS DONT REMOVE
-        trg_turretHomingCompleted.onTrue(Commands.run(() -> {
-            if (m_useShotCalculator) {
-                calculateAndSetShot(m_poseSupplier.get(), true);
-            }
-        }));
+        // trg_turretHomingCompleted.onTrue(Commands.run(() -> {
+        //     if (m_useShotCalculator) {
+        //         calculateAndSetShot(m_poseSupplier.get(), true);
+        //     }
+        // }));
 
         trg_hallTrigger.and(trg_turretHomingCompleted).onTrue(Commands.sequence(
                 Commands.waitSeconds(0.5),
@@ -594,6 +595,9 @@ public class Shooter extends SubsystemBase {
 
         // m_periodicTracer.addEpoch("Turret Visualizer ");
 
+        if (m_isTurretHomed && m_useShotCalculator) {
+            calculateAndSetShot(pose, true);
+        }
         double hoodEncoderAbsDeg = Rotations.of(m_hoodEncoder.getAbsolutePosition().getValueAsDouble()).in(Degrees);
         double hoodServoAngle = m_hood.getAngle();
 
