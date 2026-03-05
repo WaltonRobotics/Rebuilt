@@ -30,8 +30,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.networktables.DoubleSubscriber;
-import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
@@ -58,9 +56,7 @@ import frc.robot.Constants.WpiK;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
 import frc.util.AllianceFlipALWAYSUtil;
 import frc.util.AllianceZoneUtil;
-import frc.util.GobildaServoAngled;
 import frc.util.WaltMotorSim;
-import frc.util.WaltTuner;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -97,11 +93,6 @@ public class Shooter extends SubsystemBase {
     private final PositionVoltage m_PVRequest = new PositionVoltage(0).withEnableFOC(true);
     private final VoltageOut m_VoltageReq = new VoltageOut(0);
     private final StaticBrake m_BrakeReq = new StaticBrake();
-
-    private final GobildaServoAngled m_hood = new GobildaServoAngled(kHoodChannel);
-
-    private boolean m_isTurretCoast = false;
-    private GenericEntry nte_turretCoast = WaltTuner.createBoolToggleSwitch(kLogTab, "TurretCoast", m_isTurretCoast);
 
     private DigitalInput m_turretHomingHall = new DigitalInput(2);
     private final Trigger trg_hallTrigger = new Trigger(shooterEventLoop, () -> !m_turretHomingHall.get());
@@ -151,15 +142,9 @@ public class Shooter extends SubsystemBase {
     private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble("Shooter/Turret", "turretPositionRots");
     private final BooleanLogger log_onLeftSide = WaltLogger.logBoolean(kLogTab, "onLeftSide");
 
-    //---HOOD
-    private final DoubleLogger log_requestedServoPositionDegs = WaltLogger.logDouble("Shooter/Hood", "requestedServoPositionDegs");
-    private final DoubleLogger log_requestedHoodPositionDegs = WaltLogger.logDouble("Shooter/Hood", "requestedHoodPositionDegs");
-
     // private final BooleanLogger log_exitBeamBreak = WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
     private final BooleanLogger log_spunUp = WaltLogger.logBoolean(kLogTab, "spunUp");
 
-    private final DoubleLogger log_hoodServoVoltage = WaltLogger.logDouble("Shooter/Hood", "hoodServoVoltage");
-    private final DoubleLogger log_hoodServoCurrent = WaltLogger.logDouble("Shooter/Hood", "hoodServoCurrent");
     private final DoubleLogger log_shooterClosedLoopError = WaltLogger.logDouble("Shooter/Hood", "shooterClosedLoopError");
 
     private final DoubleLogger log_turretControlPos = WaltLogger.logDouble("Shooter/Turret", "turretControlPos");
@@ -222,14 +207,6 @@ public class Shooter extends SubsystemBase {
         return runOnce(this::zeroTurret).ignoringDisable(true);
     }
 
-    public void zeroHood() {
-        setHoodPosition(Degrees.of(5));
-    }
-
-    public Command zeroHoodCmd() {
-        return runOnce(this::zeroHood).ignoringDisable(true);
-    }
-
     private void stopFlywheel() {
         m_shooterA.setNeutralMode(NeutralModeValue.Coast);
         setShooterVelocity(RotationsPerSecond.of(0.0));
@@ -261,15 +238,6 @@ public class Shooter extends SubsystemBase {
         return isNear;
     }
 
-    //---HOOD (Basic Position Control)
-    public Command setHoodPositionCmd(Angle degs) {
-        return runOnce(() -> setHoodPosition(degs));
-    }
-
-    public void setHoodPosition(Angle degs) {
-        m_hood.setAngle(convertHoodAngleToServoAngle(degs));
-    }
-
     public double convertHoodAngleToServoAngle(Angle hoodAngleDegs) {
         return (1 - (hoodAngleDegs.magnitude() / kHoodAbsoluteMaxDegs.magnitude())) * kHoodServoMaxDegs.magnitude();
     }
@@ -280,11 +248,6 @@ public class Shooter extends SubsystemBase {
 
     public double convertEncoderAngleToServoAngle(Angle encoderAngleDegs) {
         return (1 - (encoderAngleDegs.magnitude() / kHoodEncoderMaxDegs.magnitude())) * kHoodServoMaxDegs.magnitude();
-    }
-
-    //for TestingDashboard
-    public Command setHoodPositionCmd(DoubleSubscriber sub_degs) {
-        return run(() -> setHoodPosition(Degrees.of(sub_degs.getAsDouble())));
     }
 
     // ---TURRET (Motionmagic Angle Control)
@@ -516,7 +479,6 @@ public class Shooter extends SubsystemBase {
         // Sets the TurretPosition to the Calculated TurretAngle
         setTurretPos(azimuthAngle);
         // Sets the HoodPosition to the Calculated HoodAngle
-        setHoodPosition(Degrees.of(28));
         // setHoodPosition(Degrees.of(calculatedShot.getHoodAngle().in(Degrees)));
 
         m_calcTurret = azimuthAngle;
@@ -578,7 +540,6 @@ public class Shooter extends SubsystemBase {
 
         m_periodicTracer.addEpoch("Calculating Shot");
 
-        m_isTurretCoast = WaltTuner.toggleMotorCoast(m_isTurretCoast, nte_turretCoast.getBoolean(false), m_turret);
         m_periodicTracer.addEpoch("Toggling Coast");
 
         //---Loggers
