@@ -22,7 +22,6 @@ import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.networktables.DoubleSubscriber;
-import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -32,7 +31,6 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltMotorSim;
-import frc.util.WaltTuner;
 import frc.robot.Robot;
 import frc.util.WaltLogger;
 
@@ -52,9 +50,6 @@ public class Intake extends SubsystemBase {
 
     private Debouncer m_currentDebouncer = new Debouncer(0.100, DebounceType.kRising);
     private Debouncer m_velocityDebouncer = new Debouncer(0.125, DebounceType.kRising);
-
-    private Boolean m_isIntakeArmCoast = false;
-    private GenericEntry nte_intakeArmCoast = WaltTuner.createBoolToggleSwitch(kLogTab, "IntakeArmCoast", m_isIntakeArmCoast);
 
     /* SIM OBJECTS */
     private final DCMotorSim m_intakeArmSim = new DCMotorSim(
@@ -126,6 +121,7 @@ public class Intake extends SubsystemBase {
 
     public Command shimmy() {
         return Commands.repeatingSequence(
+            setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             setIntakeRollersVelocityCmd(RotationsPerSecond.of(0)),
             setIntakeArmPosCmd(IntakeArmPosition.SHIMMY),
             Commands.waitUntil(() -> isIntakeArmAtPos()),
@@ -220,8 +216,6 @@ public class Intake extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        WaltTuner.toggleMotorCoast(m_isIntakeArmCoast, nte_intakeArmCoast.getBoolean(false), m_intakeArm);
-
         log_targetIntakeArmRots.accept(m_MMVReq.Position);
         // log_targetIntakeArmRots.accept(m_PVReq.Position);
         log_targetIntakeRollersRPS.accept(m_VVReq.Velocity);

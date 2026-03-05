@@ -2,7 +2,6 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
-
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -39,7 +38,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
-import frc.util.AllianceFlipALWAYSUtil;
+import edu.wpi.first.units.measure.Current;
 import frc.util.AllianceFlipUtil;
 import frc.util.VisionUtil;
 import frc.util.WaltLogger;
@@ -84,12 +83,11 @@ public class Constants {
         public static final double kGravity = MetersPerSecondPerSecond.of(9.81).in(InchesPerSecondPerSecond);
 
         //TODO: work out where our passing spots should be..?
-        public static final Translation3d kPassingSpotLeft = new Translation3d(
-                Inches.of(90), Inches.of(FieldConstants.RightBump.midBump), Inches.zero());
-        // public static final Translation3d kPassingSpotCenter = new Translation3d(
-        //         Inches.of(90), FieldConstants.fieldWidthIn.div(2), Inches.zero());
         public static final Translation3d kPassingSpotRight = new Translation3d(
-            Inches.of(90), Inches.of(AllianceFlipALWAYSUtil.applyY(kPassingSpotLeft.getY())), Inches.of(0));
+            Meters.of(2), Meters.of(1.5), Meters.zero());
+        public static final Translation3d kPassingSpotLeft = new Translation3d(
+            Meters.of(2), Meters.of(6.5), Meters.zero());
+        
 
         /* MOTOR CONSTANTS */
         public static final double kShooterMoI = 0.000349 * 2.5;  //J for 5 3" 0.53lb flywheels
@@ -134,6 +132,14 @@ public class Constants {
             24.0855, 
             1
         );
+
+        /* HOMING */
+        public static final Current kWireTugMinAmps = Amps.of(8);
+        public static final double kWireTugMinSecs = 0.125;
+        public static final double kHomingVoltage = -0.75;
+        public static final Angle kHomingRetryReturnRots = Rotations.of(0.2);
+        public static final Angle kHomePosition = Rotations.of(-0.2175);
+        public static final Angle kInitPosition = Rotations.of(-0.145);
 
         /* IDS */
         public static final int kShooterA_CANID = 20;
@@ -418,6 +424,8 @@ public class Constants {
         public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.7);
 
+        public static final AngularVelocity kTunnelMaxRPS = MotorK.kX44FOCMaxVelocity.div(kTunnelGearing);
+        public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(0.65);
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate

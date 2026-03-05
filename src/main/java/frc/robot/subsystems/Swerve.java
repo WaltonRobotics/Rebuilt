@@ -15,6 +15,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
+import com.ctre.phoenix6.swerve.SwerveRequest.SwerveDriveBrake;
 
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory;
@@ -354,6 +355,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 .withWheelForceFeedforwardsX(sample.moduleForcesX())
                 .withWheelForceFeedforwardsY(sample.moduleForcesY())
         );
+    }
+
+    public Command xBrake() {
+        final SwerveRequest.SwerveDriveBrake stopReq = new SwerveDriveBrake();
+        return runOnce(() -> setControl(stopReq));
     }
 
 

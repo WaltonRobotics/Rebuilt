@@ -233,7 +233,7 @@ public class ShotCalculator {
             // }
         }
 
-        m_iterativeTracer.printEpochs();
+        // m_iterativeTracer.printEpochs();
         return shot;
     }
 
@@ -289,11 +289,11 @@ public class ShotCalculator {
         }
 
         public ShotData(AngularVelocity exitVelocity, Angle hoodAngle) {
-            this(exitVelocity, hoodAngle, FieldConstants.Hub.innerCenterPoint);
+            this(exitVelocity, hoodAngle, FieldConstants.Hub.blueInnerCenterPoint);
         }
 
         public ShotData(double exitVelocity, double hoodAngle) {
-            this(exitVelocity, hoodAngle, FieldConstants.Hub.innerCenterPoint);
+            this(exitVelocity, hoodAngle, FieldConstants.Hub.blueInnerCenterPoint);
         }
 
         public ShotData minus(ShotData prevShotData) {

@@ -90,11 +90,15 @@ public class Superstructure extends SubsystemBase {
             Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()).withTimeout(0.25),
             Commands.runEnd(
             () -> {
+                m_shooter.setShotCalc(false);
+                m_shooter.setTurretPos(Rotations.of(-0.250));
                 m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
-                m_indexer.setSpindexerVelocity(isPassing ? Constants.IndexerK.kSpindexerShootRPS : Constants.IndexerK.kSpindexerIntakeRPS);
+                m_indexer.setSpindexerVelocity(isPassing.getAsBoolean() ? Constants.IndexerK.kSpindexerShootRPS : Constants.IndexerK.kSpindexerIntakeRPS);
             }, 
             () -> {
                 if (m_intake.getIntakeArmStatorCurrent() < 40) {
+                    Commands.run(() -> m_shooter.setShotCalcCmd(true));
+                    m_shooter.setShotCalc(true);
                     m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
                     m_indexer.stopSpindexer();
                     // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
@@ -164,7 +168,7 @@ public class Superstructure extends SubsystemBase {
         m_indexer.stopSpindexer();
         m_indexer.stopTunnel();
         m_shooter.setShooterVelocity(ShooterK.kShooterZeroRPS);
-        m_shooter.setHoodPosition(Degrees.of(1));
+        // m_shooter.setHoodPosition(Degrees.of(1));
 
         Commands.sequence(logActiveCommands("deactivateOuttake", "shooting", "emergencyDump"));
     }
@@ -173,7 +177,7 @@ public class Superstructure extends SubsystemBase {
         return Commands.startEnd(
             () -> {
                 m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
-                m_shooter.setHoodPosition(ShooterK.kHoodMaxDegs);
+                // m_shooter.setHoodPosition(ShooterK.kHoodMaxDegs);
                 m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS);
                 m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS);
                 m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
@@ -183,7 +187,7 @@ public class Superstructure extends SubsystemBase {
                 m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));
                 m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
                 m_shooter.setShooterVelocity(RotationsPerSecond.of(0));
-                m_shooter.setHoodPosition(ShooterK.kHoodSafeDegs);
+                // m_shooter.setHoodPosition(ShooterK.kHoodSafeDegs);
                 m_indexer.setSpindexerVelocity(RotationsPerSecond.of(0));
                 m_indexer.setTunnelVelocity(RotationsPerSecond.of(0));
             }
@@ -250,7 +254,7 @@ public class Superstructure extends SubsystemBase {
             logCommand = logActiveOverrideCommands("turret0", "turret180");
         }
         return Commands.sequence(
-            m_shooter.setTurretPositionCmd(Rotations.of(degs.in(Rotations))),
+            m_shooter.setTurretPosCmd(Rotations.of(degs.in(Rotations))),
             logCommand
         );
     }
@@ -262,7 +266,7 @@ public class Superstructure extends SubsystemBase {
      */
     public Command hoodTo(Angle degs) {
         return Commands.sequence(
-            m_shooter.setHoodPositionCmd(degs)
+            // m_shooter.setHoodPositionCmd(degs)
         );
     }
 
