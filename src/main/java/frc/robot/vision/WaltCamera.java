@@ -19,10 +19,16 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
+import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.util.WaltLogger;
+import frc.util.WaltLogger.DoubleArrayLogger;
+import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.IntLogger;
+
 import static frc.robot.Constants.VisionK;
 import static frc.robot.Constants.FieldK;
 
@@ -69,7 +75,8 @@ public class WaltCamera extends PhotonCamera {
 
     private final StructPublisher<Pose2d> log_camPose;
     private final StructPublisher<Transform3d> log_camTransform;
-    private final DoubleArrayPublisher log_stdDevs;
+    private final DoubleArrayLogger log_stdDevs;
+    private final IntLogger log_numResults;
 
     private Matrix<N3, N1> m_curStdDevs;
 
@@ -85,8 +92,8 @@ public class WaltCamera extends PhotonCamera {
             .getStructTopic(ntPrefix + "estRobotPose", Pose2d.struct).publish();
         log_camTransform = NetworkTableInstance.getDefault()
             .getStructTopic(ntPrefix + "transform", Transform3d.struct).publish();
-        log_stdDevs = NetworkTableInstance.getDefault()
-            .getDoubleArrayTopic(ntPrefix + "/stdDevs").publish();
+        log_stdDevs = WaltLogger.logDoubleArray(ntPrefix, "stdDevs");
+        log_numResults = WaltLogger.logInt(ntPrefix, "numResults");
 
         log_camTransform.accept(robotToCam);
     }
@@ -105,6 +112,7 @@ public class WaltCamera extends PhotonCamera {
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
         List<PhotonPipelineResult> unreadCameraResults = this.getAllUnreadResults();
+        log_numResults.accept(unreadCameraResults.size());
 
         for (var change : unreadCameraResults) {
             visionEst = m_estimator.estimateCoprocMultiTagPose(change);
