@@ -505,35 +505,41 @@ public class Robot extends TimedRobot {
     public void testInit() {
         CommandScheduler.getInstance().cancelAll();
         
-        // CommandScheduler.getInstance().schedule(
-        //     Commands.sequence(
-        //         m_drivetrain.runOnce(m_drivetrain::seedFieldCentric),
-        //         Commands.waitSeconds(1),
-        //         m_drivetrain.applyRequest(() ->
-        //             drive.withVelocityX(kMaxTranslationSpeed)
-        //                 .withVelocityY(0)
-        //                 .withRotationalRate(0)
-        //         ),
-        //         Commands.waitSeconds(5),
-        //         m_drivetrain.applyRequest(() ->
-        //             drive.withVelocityX(-kMaxTranslationSpeed)
-        //                 .withVelocityY(0)
-        //                 .withRotationalRate(0)
-        //         ),
-        //         Commands.waitSeconds(5),
-        //         m_drivetrain.applyRequest(() ->
-        //             drive.withVelocityX(0)
-        //                 .withVelocityY(0)
-        //                 .withRotationalRate(kMaxAngularRate)
-        //         ),
-        //         Commands.waitSeconds(5),
-        //         m_drivetrain.applyRequest(() ->
-        //             drive.withVelocityX(0)
-        //                 .withVelocityY(0)
-        //                 .withRotationalRate(0)
-        //         )
-        //     )
-        // );
+        CommandScheduler.getInstance().schedule(
+            Commands.sequence(
+                m_drivetrain.runOnce(m_drivetrain::seedFieldCentric),
+                Commands.waitSeconds(1),
+                m_drivetrain.applyRequest(() ->
+                    drive.withVelocityX(kMaxTranslationSpeed)
+                        .withVelocityY(0)
+                        .withRotationalRate(0)
+                ),
+                Commands.waitSeconds(2.5),
+                m_drivetrain.xBrake(),
+                Commands.waitSeconds(2.5),
+                m_drivetrain.applyRequest(() ->
+                    drive.withVelocityX(kMaxTranslationSpeed.times(-1))
+                        .withVelocityY(0)
+                        .withRotationalRate(0)
+                ),
+                Commands.waitSeconds(2.5),
+                m_drivetrain.xBrake(),
+                Commands.waitSeconds(2.5),
+                m_drivetrain.applyRequest(() ->
+                    drive.withVelocityX(0)
+                        .withVelocityY(0)
+                        .withRotationalRate(kMaxAngularRate)
+                ),
+                Commands.waitSeconds(2.5),
+                m_drivetrain.xBrake(),
+                Commands.waitSeconds(2.5),
+                m_drivetrain.applyRequest(() ->
+                    drive.withVelocityX(0)
+                        .withVelocityY(0)
+                        .withRotationalRate(0)
+                )
+            )
+        );
     }
 
     @Override

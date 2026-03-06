@@ -95,7 +95,7 @@ public class WaltSimpleAutonFactory {
             Commands.deadline(
                 shootWithTimeout(kShooterAuton_EndSweep_RPS, 12),
                 Commands.sequence(
-                    Commands.waitSeconds(6),
+                    Commands.waitSeconds(5),
                     m_superstructure.shimmy()
                 )  
             )
