@@ -1,6 +1,10 @@
 package frc.robot.autons;
 
+import static frc.robot.Constants.ShooterK.kShooterAutonCloseRPS;
+import static frc.robot.Constants.ShooterK.kShooterAuton_EndSweep_RPS;
+
 import choreo.auto.AutoFactory;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.AutonK;
@@ -33,22 +37,22 @@ public class WaltSimpleAutonFactory {
         );
     }
 
-    private Command shootWithTimeout(double seconds) {
-        return m_superstructure.activateOuttake(ShooterK.kShooterAutonRPS).withTimeout(seconds);
+    private Command shootWithTimeout(AngularVelocity speed, double seconds) {
+        return m_superstructure.activateOuttake(speed).withTimeout(seconds);
     }
 
     private Command runTraj(String name, double timeoutSecs) {
         return m_autoFactory.trajectoryCmd(name).withTimeout(timeoutSecs).andThen(m_swerve.xBrake());
     }
 
-    private Command oneSweep(boolean isLeft) {
+    private Command preload_oneSweep(boolean isLeft) {
         String trajName = isLeft ? "LeftSweep" : "RightSweep";
 
         return Commands.sequence(
             Commands.sequence(
                 homingCmd(),
                 Commands.waitUntil(() -> m_shooter.m_isTurretHomed),  //TODO: should probably change this to check if is aiming at target (hub)
-                shootWithTimeout(2)
+                shootWithTimeout(kShooterAutonCloseRPS, 2)
             ),
             Commands.deadline(
                 runTraj(trajName, AutonK.kOneSweepMaxTime),
@@ -59,7 +63,7 @@ public class WaltSimpleAutonFactory {
                 )
             ),
             Commands.parallel(
-                shootWithTimeout(12),
+                shootWithTimeout(kShooterAuton_EndSweep_RPS ,12),
                 Commands.sequence(
                     Commands.waitSeconds(6),
                     m_superstructure.shimmy()
@@ -69,11 +73,11 @@ public class WaltSimpleAutonFactory {
     }
 
     public Command rightOneSweep() {
-        return oneSweep(false);
+        return preload_oneSweep(false);
     }
 
     public Command leftOneSweep() {
-        return oneSweep(true);
+        return preload_oneSweep(true);
     }
 
     //OVERALL TODO: clean up code and combine no preload w/ preload (and left/right) into one method
@@ -88,7 +92,13 @@ public class WaltSimpleAutonFactory {
                 ),
                 runTraj(path, AutonK.kOneSweepMaxTime)
             ),
-            shootWithTimeout(12)
+            Commands.deadline(
+                shootWithTimeout(kShooterAuton_EndSweep_RPS, 12),
+                Commands.sequence(
+                    Commands.waitSeconds(6),
+                    m_superstructure.shimmy()
+                )  
+            )
         ).withName(path);
     }
 
@@ -96,7 +106,7 @@ public class WaltSimpleAutonFactory {
         return Commands.sequence(
             Commands.parallel(
                 m_autoFactory.resetOdometry("RightSweep"),
-                m_superstructure.activateOuttake(ShooterK.kShooterAutonRPS).withTimeout(2)
+                m_superstructure.activateOuttake(kShooterAutonCloseRPS).withTimeout(2)
             ),
             rightOneSweep(),
             m_autoFactory.resetOdometry("RightTurnBack"),
@@ -109,7 +119,7 @@ public class WaltSimpleAutonFactory {
         return Commands.sequence(
             Commands.parallel(
                 m_autoFactory.resetOdometry("RightToDepot"),
-                shootWithTimeout(2)
+                shootWithTimeout(kShooterAutonCloseRPS, 2)
             ),
             Commands.parallel(
                 m_autoFactory.trajectoryCmd("RightToDepot"),
@@ -133,7 +143,7 @@ public class WaltSimpleAutonFactory {
         return Commands.sequence(
             Commands.parallel(
                 m_autoFactory.resetOdometry("RightToOutpost"),
-                shootWithTimeout(2)
+                shootWithTimeout(kShooterAutonCloseRPS, 2)
             ),
             m_autoFactory.resetOdometry("RightOutpostToNeutral"),
             Commands.parallel(
