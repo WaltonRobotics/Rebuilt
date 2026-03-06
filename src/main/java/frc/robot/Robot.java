@@ -294,6 +294,9 @@ public class Robot extends TimedRobot {
             m_superstructure.activateOuttake(kShooterRPS)
         );
 
+        // snapshot on each shoot press
+        trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
+
         trg_intake.and(trg_passLeft.or(trg_passRight)).whileTrue(
             m_superstructure.intake(() -> true)
         );

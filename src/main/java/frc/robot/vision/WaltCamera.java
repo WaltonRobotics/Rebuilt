@@ -39,17 +39,25 @@ public class WaltCamera extends PhotonCamera {
     ));
 
     public static void setFpsLimit(boolean limited) {
+        int fpsLimit = limited ? kGlobalFpsLimit : kGlobalFps;
         for (var cam : AllCameras) {
-            cam.setFPSLimit(limited ? kGlobalFpsLimit : kGlobalFps); 
+            cam.setFPSLimit(fpsLimit); 
+        }
+        System.out.println("FPS Limit: " + limited);
+    }
+
+    public static void takeSnapshot() {
+        for (var cam : AllCameras) {
+            cam.takeOutputSnapshot();
         }
     }
 
+    public static Command takeSnapshotCmd() {
+        return Commands.runOnce(WaltCamera::takeSnapshot);
+    }
+
     public static Command setFpsLimitCmd(boolean limited) {
-        return Commands.runOnce(() -> {
-            for (var cam : AllCameras) {
-                cam.setFPSLimit(limited ? kGlobalFpsLimit : -1); 
-            }
-        }).andThen(Commands.print("FPS Limit: " + limited));
+        return Commands.runOnce(() -> setFpsLimit(limited));
     }
 
     public final PhotonCameraSim m_sim;
