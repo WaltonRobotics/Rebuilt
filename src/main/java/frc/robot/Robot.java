@@ -20,6 +20,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -58,23 +60,20 @@ import frc.util.WaltLogger.DoubleLogger;
 public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
     //---CONSTANTS
-    private final double kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private final double kMaxAngularRate = RotationsPerSecond.of(0.85).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+    private final LinearVelocity kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts; // kSpeedAt12Volts desired top speed
+    private final AngularVelocity kMaxAngularRate = RotationsPerSecond.of(0.95); // 3/4 of a rotation per second max angular velocity
 
     private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
     private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger(kLogTab, "VisionSeenLastSec");
 
-    private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-        .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+        .withDeadband(kMaxTranslationSpeed.times(0.1)).withRotationalDeadband(kMaxAngularRate.times(0.1)) // Add a 10% deadband
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     // private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     // private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
-    private final Telemetry logger = new Telemetry(MaxSpeed);
+    private final Telemetry logger = new Telemetry(kMaxTranslationSpeed.in(MetersPerSecond));
 
     //---CONTROLLERS
     private final CommandXboxController m_driver = new CommandXboxController(0);
@@ -185,16 +184,17 @@ public class Robot extends TimedRobot {
         // and Y is defined as to the left according to WPILib convention.
         // Drivetrain will execute this command periodically
         return m_drivetrain.applyRequest(() -> {
-            var translationSpeed = m_driver.leftTrigger().getAsBoolean() ? 
-            kMaxTranslationSpeed * speedMultiplier : kMaxTranslationSpeed;
+            LinearVelocity translationSpeed = (m_driver.leftTrigger().getAsBoolean() ? 
+                kMaxTranslationSpeed.times(speedMultiplier) :
+                kMaxTranslationSpeed);
         
-            var driverXVelo = -m_driver.getLeftY() * translationSpeed;
-            var driverYVelo = -m_driver.getLeftX() * translationSpeed;
-            var driverYawRate = -m_driver.getRightX() * kMaxAngularRate;
+            var driverXVelo = translationSpeed.times(-m_driver.getLeftY());
+            var driverYVelo = translationSpeed.times(-m_driver.getLeftX());
+            var driverYawRate = kMaxAngularRate.times(-m_driver.getRightX());
 
-            log_stickDesiredFieldX.accept(driverXVelo);
-            log_stickDesiredFieldY.accept(driverYVelo);
-            log_stickDesiredFieldZRot.accept(driverYawRate);
+            log_stickDesiredFieldX.accept(driverXVelo.in(MetersPerSecond));
+            log_stickDesiredFieldY.accept(driverYVelo.in(MetersPerSecond));
+            log_stickDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond));
             
             return drive
                 .withVelocityX(driverXVelo) // Drive forward with Y (forward)
@@ -505,35 +505,35 @@ public class Robot extends TimedRobot {
     public void testInit() {
         CommandScheduler.getInstance().cancelAll();
         
-        CommandScheduler.getInstance().schedule(
-            Commands.sequence(
-                m_drivetrain.runOnce(m_drivetrain::seedFieldCentric),
-                Commands.waitSeconds(1),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(MaxSpeed)
-                        .withVelocityY(0)
-                        .withRotationalRate(0)
-                ),
-                Commands.waitSeconds(5),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(-MaxSpeed)
-                        .withVelocityY(0)
-                        .withRotationalRate(0)
-                ),
-                Commands.waitSeconds(5),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(0)
-                        .withVelocityY(0)
-                        .withRotationalRate(MaxAngularRate)
-                ),
-                Commands.waitSeconds(5),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(0)
-                        .withVelocityY(0)
-                        .withRotationalRate(0)
-                )
-            )
-        );
+        // CommandScheduler.getInstance().schedule(
+        //     Commands.sequence(
+        //         m_drivetrain.runOnce(m_drivetrain::seedFieldCentric),
+        //         Commands.waitSeconds(1),
+        //         m_drivetrain.applyRequest(() ->
+        //             drive.withVelocityX(kMaxTranslationSpeed)
+        //                 .withVelocityY(0)
+        //                 .withRotationalRate(0)
+        //         ),
+        //         Commands.waitSeconds(5),
+        //         m_drivetrain.applyRequest(() ->
+        //             drive.withVelocityX(-kMaxTranslationSpeed)
+        //                 .withVelocityY(0)
+        //                 .withRotationalRate(0)
+        //         ),
+        //         Commands.waitSeconds(5),
+        //         m_drivetrain.applyRequest(() ->
+        //             drive.withVelocityX(0)
+        //                 .withVelocityY(0)
+        //                 .withRotationalRate(kMaxAngularRate)
+        //         ),
+        //         Commands.waitSeconds(5),
+        //         m_drivetrain.applyRequest(() ->
+        //             drive.withVelocityX(0)
+        //                 .withVelocityY(0)
+        //                 .withRotationalRate(0)
+        //         )
+        //     )
+        // );
     }
 
     @Override
