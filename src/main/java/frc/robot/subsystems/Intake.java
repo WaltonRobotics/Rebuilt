@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltMotorSim;
 import frc.robot.Robot;
@@ -50,6 +51,8 @@ public class Intake extends SubsystemBase {
 
     private Debouncer m_currentDebouncer = new Debouncer(0.100, DebounceType.kRising);
     private Debouncer m_velocityDebouncer = new Debouncer(0.125, DebounceType.kRising);
+
+    private boolean m_isIntakeArmHomed = false;
 
     /* SIM OBJECTS */
     private final DCMotorSim m_intakeArmSim = new DCMotorSim(
@@ -77,6 +80,8 @@ public class Intake extends SubsystemBase {
     
     private final DoubleLogger log_intakeRollersRPS = WaltLogger.logDouble(kLogTab, "intakeRollersRPS");
     private final DoubleLogger log_targetIntakeRollersRPS = WaltLogger.logDouble(kLogTab, "targetIntakeRollersRPS");
+
+    private final BooleanLogger log_isIntakeArmHomed = WaltLogger.logBoolean(kLogTab, "isIntakeArmHomed");
 
     /* CONSTRUCTOR */
     public Intake() {
@@ -195,6 +200,9 @@ public class Intake extends SubsystemBase {
     public Command intakeArmCurrentSenseHoming() {
         Runnable init = () -> {
             m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(-3.25));
+
+            m_isIntakeArmHomed = false;
+            log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
         };
 
         Runnable execute = () -> {};
@@ -204,6 +212,9 @@ public class Intake extends SubsystemBase {
             m_intakeArm.setPosition(0);
             removeDefaultCommand();
             setIntakeArmPosCmd(IntakeArmPosition.RETRACTED);
+
+            m_isIntakeArmHomed = true;
+            log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
         };
 
         BooleanSupplier isFinished = () -> 
