@@ -34,7 +34,7 @@ public class WaltCamera extends PhotonCamera {
     public static final List<WaltCamera> AllCameras = Collections.unmodifiableList(Arrays.asList(
         new WaltCamera("FL_HAT", VisionK.kFrontLeftCTR),
         new WaltCamera("FR_HAT", VisionK.kFrontRightCTR),
-        // new WaltCamera("BackLeft", VisionK.kBackLeftCTR),
+        new WaltCamera("BL_HAT", VisionK.kBackLeftCTR),
         new WaltCamera("BR_HAT", VisionK.kBackRightCTR)
     ));
 
