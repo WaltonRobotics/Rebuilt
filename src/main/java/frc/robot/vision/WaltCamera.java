@@ -18,15 +18,12 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.networktables.DoubleArrayPublisher;
-import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleArrayLogger;
-import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.IntLogger;
 
 import static frc.robot.Constants.VisionK;
@@ -115,20 +112,13 @@ public class WaltCamera extends PhotonCamera {
         log_numResults.accept(unreadCameraResults.size());
 
         for (var change : unreadCameraResults) {
+            if (!change.hasTargets()) { continue; }
             visionEst = m_estimator.estimateCoprocMultiTagPose(change);
+            if (visionEst.isEmpty()) {
+                visionEst = m_estimator.estimateLowestAmbiguityPose(change);
+            }
             updateEstimationStdDevs(visionEst, change.getTargets());
             log_stdDevs.accept(m_curStdDevs.getData());
-
-            // if (Robot.isSimulation()) {
-            //     visionEst.ifPresentOrElse(
-            //             est ->
-            //                     m_visionSim.getSimDebugField()
-            //                         .getObject(m_simVisualName)
-            //                         .setPose(est.estimatedPose.toPose2d()),
-            //             () -> {
-            //                 m_visionSim.getSimDebugField().getObject("VisionEstimation").setPoses();
-            //             });
-            // }
         }
 
         if (visionEst.isPresent()) {

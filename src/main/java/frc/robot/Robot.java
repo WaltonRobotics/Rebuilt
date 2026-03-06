@@ -398,6 +398,7 @@ public class Robot extends TimedRobot {
                 var ctreTime = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
                 m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
                 m_visionSeenLastSec = ctreTime;
+                // System.out.println("AddMeasurementFrom: " + camera.getName());
             }
         }
         m_periodicTracer.addEpoch("VisionUpdate");
