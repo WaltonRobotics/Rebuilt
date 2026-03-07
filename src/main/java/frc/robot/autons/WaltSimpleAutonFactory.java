@@ -117,7 +117,7 @@ public class WaltSimpleAutonFactory {
             Commands.parallel(
                 homingCmd().andThen(
                     logState(0.1),
-                    Commands.waitSeconds(0.75),
+                    Commands.waitSeconds(0.0001),
                     logState(0.2),
                     m_superstructure.intake(() -> false).withTimeout(7.5)
                 ),
@@ -131,7 +131,8 @@ public class WaltSimpleAutonFactory {
                     logState(1.1),
                     Commands.waitSeconds(5),
                     logState(1.2),
-                    m_superstructure.shimmy()
+                    // m_superstructure.shimmy()                   
+                    m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
                 )  
             ),
             logState(2)
