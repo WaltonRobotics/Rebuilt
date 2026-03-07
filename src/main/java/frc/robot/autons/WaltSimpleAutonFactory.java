@@ -129,7 +129,7 @@ public class WaltSimpleAutonFactory {
                 shootWithTimeout(kShooterAuton_EndSweep_RPS, 12),
                 Commands.sequence(
                     logState(1.1),
-                    Commands.waitSeconds(5),
+                    Commands.waitSeconds(3), // 5
                     logState(1.2),
                     // m_superstructure.shimmy()                   
                     m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
