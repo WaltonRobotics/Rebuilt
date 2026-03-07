@@ -17,13 +17,17 @@ public class AutonChooser {
         m_simpleAutonFactory = simpleAutonFactory;
 
         m_chooser.setDefaultOption("None Selected", Commands.none());
-        m_chooser.addOption("One Right Neutral Pickup", m_simpleAutonFactory.rightOneSweep());
-        m_chooser.addOption("Fast One Right Neutral Pickup", m_simpleAutonFactory.oneCycleGoInNow(false));
-        m_chooser.addOption("Fast One Left Neutral Pickup", m_simpleAutonFactory.oneCycleGoInNow(true));
-        m_chooser.addOption("One Left Neutral Pickup", m_simpleAutonFactory.leftOneSweep());
-        m_chooser.addOption("Two Right Neutral Pickup", m_simpleAutonFactory.rightTwoSweep());
-        m_chooser.addOption("Right Outpost to Shoot", m_simpleAutonFactory.rightOutpostToShoot());
-        m_chooser.addOption("Right Depot To Shoot", m_simpleAutonFactory.rightDepotToShoot());
+        m_chooser.addOption("Fast One Right Neutral Pickup", m_simpleAutonFactory.oneCycleGoInNow(false, false));
+        m_chooser.addOption("Fast One Left Neutral Pickup", m_simpleAutonFactory.oneCycleGoInNow(false, true));
+        m_chooser.addOption("Fast One Far Right Neutral Pickup", m_simpleAutonFactory.oneCycleGoInNow(true, false));
+        m_chooser.addOption("Fast One Far Left Neutral Pickup", m_simpleAutonFactory.oneCycleGoInNow(true, true));
+
+
+        // m_chooser.addOption("One Right Neutral Pickup", m_simpleAutonFactory.rightOneSweep());
+        // m_chooser.addOption("One Left Neutral Pickup", m_simpleAutonFactory.leftOneSweep());
+        // m_chooser.addOption("Two Right Neutral Pickup", m_simpleAutonFactory.rightTwoSweep());
+        // m_chooser.addOption("Right Outpost to Shoot", m_simpleAutonFactory.rightOutpostToShoot());
+        // m_chooser.addOption("Right Depot To Shoot", m_simpleAutonFactory.rightDepotToShoot());
 
         SmartDashboard.putData(m_chooser);
     }

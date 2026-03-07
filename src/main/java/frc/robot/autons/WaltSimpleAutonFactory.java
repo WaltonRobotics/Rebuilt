@@ -82,8 +82,11 @@ public class WaltSimpleAutonFactory {
 
     //OVERALL TODO: clean up code and combine no preload w/ preload (and left/right) into one method
     //TODO: find better name for this
-    public Command oneCycleGoInNow(boolean left) {
-        String path = left ? "LeftSweep" : "RightSweep";
+    public Command oneCycleGoInNow(boolean isFar, boolean left) {
+        String trajRight = isFar ? "RightFarSweep" : "RightSweep";
+        String trajLeft = isFar ? "LeftFarSweep" : "LeftSweep";
+
+        String path = left ? trajLeft : trajRight;
         return Commands.sequence(
             Commands.parallel(
                 homingCmd().andThen(
