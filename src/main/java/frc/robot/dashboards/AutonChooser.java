@@ -2,7 +2,8 @@ package frc.robot.dashboards;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.sendable.SendableRegistry;
-import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -25,6 +26,7 @@ public class AutonChooser {
         return new WaltPathAndCommand(AutonK.kLeftSweepPathName, simpleAutonFactory.oneCycleGoInNow(true));
     }
 
+    private static Timer s_loadTimer = new Timer();
 
     public static void initialize(WaltSimpleAutonFactory simpleAutonFactory) {
         m_simpleAutonFactory = simpleAutonFactory;
@@ -35,17 +37,34 @@ public class AutonChooser {
 
         SmartDashboard.putData(m_chooser);
         m_chooser.onChange((var pathAndCmd) -> {
-            var now = RobotController.getFPGATime();
-            m_simpleAutonFactory.m_autoFactory.cache().loadTrajectory(pathAndCmd.pathName);
-            var elapsedMs = (RobotController.getFPGATime() - now) / 1000.0;
+            if (pathAndCmd.pathName.equals("")) {
+                System.out.println("Loading no path for empty String");
+                return;
+            }
+
+            s_loadTimer.restart();
+            var theTraj = m_simpleAutonFactory.m_autoFactory.cache().loadTrajectory(pathAndCmd.pathName);
+            s_loadTimer.stop();
+            double elapsedSec = s_loadTimer.get();
+            
+            if (theTraj.isEmpty()) {
+                DriverStation.reportWarning("Loaded path was empty!!!", false);
+                return;
+            }
+
+            var pathTime = theTraj.get().getTotalTime();
+            if (pathTime != 0.0) {
+                System.out.println(String.format("Loaded path lasts %.2f seconds", pathTime));    
+            } else {
+                DriverStation.reportWarning("Loaded path has no time taken!!!", false);
+            }
+ 
             System.out.println("");
             System.out.println("");
             System.out.println("=================================================================================");
             System.out.println("=============== AUTON PATH \"" + pathAndCmd.pathName +  "\" LOADED ==============");
             System.out.println("=================================================================================");
-            var tookStr = System.out.format("Took %.2f ms", elapsedMs);
-            System.out.println(tookStr);
-
+            System.out.println(String.format("Took %.2f msec", elapsedSec / 1000.0));
         });
     }
 
