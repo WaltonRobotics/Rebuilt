@@ -46,7 +46,17 @@ public class WaltCamera extends PhotonCamera {
         for (var cam : AllCameras) {
             cam.setFPSLimit(fpsLimit); 
         }
-        System.out.println("FPS Limit: " + limited);
+        System.out.println("FPS Limit: " + fpsLimit);
+    }
+
+    public static boolean areCamsFpsLimited() {
+        boolean areThey = true;
+        for (var cam : AllCameras) {
+            if (cam.getFPSLimit() != kGlobalFpsLimit) {
+                areThey = false;
+            }
+        }
+        return areThey;
     }
 
     public static void takeSnapshot() {

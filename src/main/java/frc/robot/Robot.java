@@ -461,7 +461,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledPeriodic() {
-        if (m_fpsLimitTimer.hasElapsed(3)) {
+        if (m_fpsLimitTimer.hasElapsed(3) && !WaltCamera.areCamsFpsLimited()) {
             WaltCamera.setFpsLimit(true);
             m_fpsLimitTimer.restart();
         }
