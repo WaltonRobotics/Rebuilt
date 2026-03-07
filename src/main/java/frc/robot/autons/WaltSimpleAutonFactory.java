@@ -12,6 +12,8 @@ import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.util.WaltLogger;
+import frc.util.WaltLogger.DoubleLogger;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 
@@ -21,6 +23,8 @@ public class WaltSimpleAutonFactory {
     private final Intake m_intake;
     private final Shooter m_shooter;
     private final Swerve m_swerve;
+
+    private final DoubleLogger log_autonState = WaltLogger.logDouble("Auton", "State");
 
     public WaltSimpleAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter, Swerve swerve) {
         m_superstructure = superstructure;
@@ -38,6 +42,9 @@ public class WaltSimpleAutonFactory {
             pathName = pathName_;
             autonCommand = autonCommand_;
         }
+    }
+    private Command logState(double state) {
+        return Commands.runOnce(() -> log_autonState.accept(state));
     }
 
     private Command homingCmd() {
@@ -59,23 +66,33 @@ public class WaltSimpleAutonFactory {
         String trajName = isLeft ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
 
         return Commands.sequence(
+            logState(0),
             Commands.sequence(
-                homingCmd(),
+                homingCmd().withName("HomingCmd"),
+                logState(1),
                 Commands.waitUntil(() -> m_shooter.m_isTurretHomed),  //TODO: should probably change this to check if is aiming at target (hub)
-                shootWithTimeout(kShooterAutonCloseRPS, 2)
+                logState(2),
+                shootWithTimeout(kShooterAutonCloseRPS, 2).withName("ShootingCmd")
             ),
+            logState(3),
             Commands.deadline(
-                runTraj(trajName, AutonK.kOneSweepMaxTime),
+                runTraj(trajName, AutonK.kOneSweepMaxTime).withName("RunPath" + trajName),
                 Commands.sequence(
+                    logState(3.1),                
                     Commands.waitSeconds(2.17),
+                    logState(3.2),
                     m_superstructure.intake(() -> false).withTimeout(7.5),
+                    logState(3.3),
                     m_superstructure.unjamCmd()
                 )
             ),
+            logState(4),
             Commands.parallel(
                 shootWithTimeout(kShooterAuton_EndSweep_RPS ,12),
                 Commands.sequence(
+                    logState(4.1),
                     Commands.waitSeconds(6),
+                    logState(4.2),
                     m_superstructure.shimmy()
                 )
             )
