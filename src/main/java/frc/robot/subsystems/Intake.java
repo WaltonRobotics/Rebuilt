@@ -8,6 +8,7 @@ import com.ctre.phoenix6.sim.ChassisReference;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static frc.robot.Constants.IntakeK.*;
 
 import java.util.function.BooleanSupplier;
@@ -23,6 +24,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -101,12 +103,17 @@ public class Intake extends SubsystemBase {
     }
 
     /* COMMANDS */
+    //TODO: make this less jank (too many differing parameter types for no reason)
     public void setIntakeArmPos(IntakeArmPosition rots) {
         setIntakeArmPos(rots.rots, rots == IntakeArmPosition.RETRACTED ? 3 : 1);
     }
 
     public Command setIntakeArmPosCmd(IntakeArmPosition rots) {
         return setIntakeArmPosCmd(rots.rots, rots == IntakeArmPosition.RETRACTED ? 3 : 1);
+    }
+
+    public Command setIntakeArmPosCmd(IntakeArmPosition rots, AngularAcceleration RPSPS) {
+        return setIntakeArmPosCmd(rots.rots, RPSPS.in(RotationsPerSecondPerSecond));
     }
 
     public Command setIntakeArmPosCmd(Angle rots, double RPSPS) {
@@ -127,8 +134,8 @@ public class Intake extends SubsystemBase {
     public Command shimmy() {
         return Commands.repeatingSequence(
             setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
-            setIntakeRollersVelocityCmd(RotationsPerSecond.of(0)),
-            setIntakeArmPosCmd(IntakeArmPosition.SHIMMY),
+            setIntakeRollersVelocityCmd(kIntakeRollersShimmyRPS),
+            setIntakeArmPosCmd(IntakeArmPosition.SHIMMY, RotationsPerSecondPerSecond.of(3)),
             Commands.waitUntil(() -> isIntakeArmAtPos()),
             setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(() -> isIntakeArmAtPos())

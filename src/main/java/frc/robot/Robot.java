@@ -88,7 +88,7 @@ public class Robot extends TimedRobot {
     private final Indexer m_indexer = new Indexer();
 
     // private final WaltVisualSim m_visualSim;
-    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
+    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter, m_drivetrain);
 
     //---AUTONS
     private Command m_autonomousCommand;

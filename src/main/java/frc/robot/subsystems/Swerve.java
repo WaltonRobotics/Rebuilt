@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.Constants.RobotK.*;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -28,6 +29,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -430,6 +432,18 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             fuelLocation.getX(),
             fuelLocation.getY(),
             desiredRotation
+        );
+    }
+
+    public Command swerveShimmy(boolean CCW) {
+        AngularVelocity rotationalRate = CCW ? kSwerveShimmyRotationalRate : kSwerveShimmyRotationalRate.times(-1);
+
+        return this.applyRequest(() -> {
+            return swreq_drive
+                .withVelocityX(MetersPerSecond.of(0))
+                .withVelocityY(MetersPerSecond.of(0))
+                .withRotationalRate(rotationalRate);
+            }
         );
     }
 }

@@ -96,7 +96,8 @@ public class WaltSimpleAutonFactory {
                 shootWithTimeout(kShooterAuton_EndSweep_RPS, 12),
                 Commands.sequence(
                     Commands.waitSeconds(5),
-                    m_superstructure.shimmy()
+                    m_superstructure.shimmy(),
+                    m_superstructure.swerveShimmy()
                 )  
             )
         ).withName(path);

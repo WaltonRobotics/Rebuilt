@@ -324,6 +324,9 @@ public class Constants {
         public static final Distance kRobotFullLength = Inches.of(32.6875);
         public static final Distance kBumperHeight = Inches.of(4.5);
         public static final double kRobotSpeedIntakingLimit = 0.13;
+
+        //---SWERVE CONSTANTS
+        public static final AngularVelocity kSwerveShimmyRotationalRate = RadiansPerSecond.of(RotationsPerSecond.of(1.3).in(RadiansPerSecond));
     }
 
     public static class SuperstructureK {
@@ -340,7 +343,8 @@ public class Constants {
         public static final double kIntakeRollersMOI = 0.0001; // 0.00343880857
         public static final double kIntakeRollersGearing = 12.0/30;
 
-        public static final AngularVelocity kIntakeRollersMaxRPS = RotationsPerSecond.of((5785 / 60) / kIntakeRollersGearing * .8);  //100% RPS
+        public static final AngularVelocity kIntakeRollersMaxRPS = RotationsPerSecond.of((5785 / 60) / kIntakeRollersGearing * (0.8));  //100% RPS
+        public static final AngularVelocity kIntakeRollersShimmyRPS = RotationsPerSecond.of(0);  //intaking RPS
 
         /* IDS */
         public static final int kIntakeArmCANID = 40;
