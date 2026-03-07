@@ -22,6 +22,7 @@ import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -169,7 +170,8 @@ public class Robot extends TimedRobot {
         PhotonCamera.setVersionCheckEnabled(false);
         LiveWindow.disableAllTelemetry();
 
-
+        DataLogManager.start();
+        DriverStation.startDataLog(DataLogManager.getLog());
         addPeriodic(m_shooter::fastPeriodic, 0.0025);
     }
 
@@ -475,11 +477,12 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         m_autonomousCommand = AutonChooser.m_chooser.getSelected();
-        AutonChooser.cleanup();
 
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
         }
+
+        // AutonChooser.cleanup();
     }
 
     @Override
