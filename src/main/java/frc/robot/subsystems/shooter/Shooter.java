@@ -596,6 +596,12 @@ public class Shooter extends SubsystemBase {
         };
 
         Consumer<Boolean> end = (Boolean interrupted) -> {
+            if (interrupted) { 
+                m_turret.setControl(m_BrakeReq);
+                log_turretHomed.accept(m_isTurretHomed);
+                return;
+            }
+
             m_turret.setPosition(kHomePosition); // Flowkirkentologicalexpialibrostatenuinely
             m_turret.setControl(m_BrakeReq);
             removeDefaultCommand();
