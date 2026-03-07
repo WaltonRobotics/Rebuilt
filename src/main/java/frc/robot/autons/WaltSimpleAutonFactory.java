@@ -32,6 +32,7 @@ public class WaltSimpleAutonFactory {
         m_intake = intake;
         m_shooter = shooter;
         m_swerve = swerve;
+        log_autonState.accept(-1.0);
     }
 
     public static final class WaltPathAndCommand {
@@ -112,20 +113,28 @@ public class WaltSimpleAutonFactory {
     public Command oneCycleGoInNow(boolean left) {
         String path = left ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
         return Commands.sequence(
+            logState(0),
             Commands.parallel(
                 homingCmd().andThen(
+                    logState(0.1),
                     Commands.waitSeconds(0.75),
+                    logState(0.2),
                     m_superstructure.intake(() -> false).withTimeout(7.5)
                 ),
                 runTraj(path, AutonK.kOneSweepMaxTime)
+                    .andThen(logState(0.99))
             ),
+            logState(1),
             Commands.deadline(
                 shootWithTimeout(kShooterAuton_EndSweep_RPS, 12),
                 Commands.sequence(
+                    logState(1.1),
                     Commands.waitSeconds(5),
+                    logState(1.2),
                     m_superstructure.shimmy()
                 )  
-            )
+            ),
+            logState(2)
         ).withName(path);
     }
 
