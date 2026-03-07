@@ -17,7 +17,7 @@ import frc.robot.subsystems.Intake.IntakeArmPosition;
 
 public class WaltSimpleAutonFactory {
     private final Superstructure m_superstructure;
-    private final AutoFactory m_autoFactory;
+    public final AutoFactory m_autoFactory;
     private final Intake m_intake;
     private final Shooter m_shooter;
     private final Swerve m_swerve;
@@ -28,6 +28,16 @@ public class WaltSimpleAutonFactory {
         m_intake = intake;
         m_shooter = shooter;
         m_swerve = swerve;
+    }
+
+    public static final class WaltPathAndCommand {
+        public final String pathName;
+        public final Command autonCommand;
+
+        public WaltPathAndCommand(String pathName_, Command autonCommand_) {
+            pathName = pathName_;
+            autonCommand = autonCommand_;
+        }
     }
 
     private Command homingCmd() {
@@ -46,7 +56,7 @@ public class WaltSimpleAutonFactory {
     }
 
     private Command preload_oneSweep(boolean isLeft) {
-        String trajName = isLeft ? "LeftSweep" : "RightSweep";
+        String trajName = isLeft ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
 
         return Commands.sequence(
             Commands.sequence(
@@ -83,7 +93,7 @@ public class WaltSimpleAutonFactory {
     //OVERALL TODO: clean up code and combine no preload w/ preload (and left/right) into one method
     //TODO: find better name for this
     public Command oneCycleGoInNow(boolean left) {
-        String path = left ? "LeftSweep" : "RightSweep";
+        String path = left ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
         return Commands.sequence(
             Commands.parallel(
                 homingCmd().andThen(
@@ -105,7 +115,7 @@ public class WaltSimpleAutonFactory {
     public Command rightTwoSweep() {
         return Commands.sequence(
             Commands.parallel(
-                m_autoFactory.resetOdometry("RightSweep"),
+                m_autoFactory.resetOdometry(AutonK.kRightSweepPathName),
                 m_superstructure.activateOuttake(kShooterAutonCloseRPS).withTimeout(2)
             ),
             rightOneSweep(),

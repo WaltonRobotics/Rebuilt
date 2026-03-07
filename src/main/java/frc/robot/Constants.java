@@ -501,6 +501,7 @@ public class Constants {
             Meters.of(5.437880039215088), new Rotation2d(0));
         
         public static final double kOneSweepMaxTime = 12.5; //in sec
-
+        public static final String kLeftSweepPathName = "LeftSweep";
+        public static final String kRightSweepPathName = "RightSweep";
     }
 }
