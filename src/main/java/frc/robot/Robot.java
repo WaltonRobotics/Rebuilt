@@ -448,8 +448,10 @@ public class Robot extends TimedRobot {
     public void disabledInit() {
         m_fpsLimitTimer.restart();
         WaltCamera.setFpsLimit(true);
-        m_shooter.setTurretNeutralMode(NeutralModeValue.Coast);
-        m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
+        // if (!DriverStation.isFMSAttached()) {
+            // m_shooter.setTurretNeutralMode(NeutralModeValue.Coast);
+            // m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
+        // }
         m_waltAutonFactory.setAlliance(
             DriverStation.getAlliance().isPresent() && 
             DriverStation.getAlliance().get().equals(Alliance.Red)
@@ -469,9 +471,11 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledExit() {
-        System.out.println("Re-enabling motor brakes");
-        m_shooter.setTurretNeutralMode(NeutralModeValue.Brake);
-        m_intake.setIntakeArmNeutralMode(NeutralModeValue.Brake);
+        // if (!DriverStation.isFMSAttached()) {
+            // System.out.println("Re-enabling motor brakes");
+            // m_shooter.setTurretNeutralMode(NeutralModeValue.Brake);
+            // m_intake.setIntakeArmNeutralMode(NeutralModeValue.Brake);
+        // }
     }
 
     @Override
