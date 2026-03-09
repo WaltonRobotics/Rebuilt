@@ -1,16 +1,15 @@
 
 package frc.robot.subsystems.shooter;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.StaticBrake;
-import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
@@ -31,8 +30,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.networktables.DoubleSubscriber;
-import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
@@ -43,6 +40,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Hertz;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
@@ -53,22 +51,17 @@ import java.util.function.Supplier;
 
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
-import frc.robot.Robot;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.WpiK;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
-import frc.util.AllianceFlipALWAYSUtil;
 import frc.util.AllianceFlipUtil;
 import frc.util.AllianceZoneUtil;
-import frc.util.GobildaServoAngled;
 import frc.util.WaltMotorSim;
-import frc.util.WaltTuner;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.Pose2dLogger;
 import frc.util.WaltLogger.Pose3dLogger;
-import frc.util.WaltLogger.StringLogger;
 
 public class Shooter extends SubsystemBase {
     /* VARIABLES */
@@ -89,7 +82,7 @@ public class Shooter extends SubsystemBase {
     private final TurretVisualizer m_turretVisualizer;
     private final FuelSim m_fuelSim;
 
-    public final EventLoop shooterEventLoop = new EventLoop();
+    public final EventLoop homingEventLoop = new EventLoop();
 
     // ---MOTORS + CONTROL REQUESTS
     private final TalonFX m_shooterA = new TalonFX(kShooterA_CANID, Constants.kCanivoreBus); // X60Foc
@@ -101,27 +94,21 @@ public class Shooter extends SubsystemBase {
     private final VoltageOut m_VoltageReq = new VoltageOut(0);
     private final StaticBrake m_BrakeReq = new StaticBrake();
 
-    private final GobildaServoAngled m_hood = new GobildaServoAngled(kHoodChannel);
-    private final CANcoder m_hoodEncoder = new CANcoder(kHoodEncoderCANID, Constants.kCanivoreBus);
-
-    private boolean m_isTurretCoast = false;
-    private GenericEntry nte_turretCoast = WaltTuner.createBoolToggleSwitch(kLogTab, "TurretCoast", m_isTurretCoast);
-
-    private DigitalInput m_turretHomingHall = new DigitalInput(2);
-    private final Trigger trg_hallTrigger = new Trigger(shooterEventLoop, () -> !m_turretHomingHall.get());
+    private final DigitalInput m_turretHomingHall = new DigitalInput(2);
+    private final Trigger trg_homingHallDirect = new Trigger(homingEventLoop, () -> !m_turretHomingHall.get());
     private final BooleanLogger log_turretHomingHall = new BooleanLogger(kLogTab, "turretHomeHall");
 
-    private Angle m_calcHoodAngle = Degrees.of(0);
+
     private Angle m_calcTurret = Rotations.of(0);
     private AngularVelocity m_calcFlywheelVelocity = RotationsPerSecond.of(0);
 
-    private final DoubleLogger log_calcHoodAngle = new DoubleLogger("Shooter/Hood", "calcHoodAngle");
     private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
     private final DoubleLogger log_calcTurretPos = new DoubleLogger("Shooter/Turret", "calcTurretPos");
 
     private final DoubleLogger log_rawDesiredTurretRot = WaltLogger.logDouble("ShotCalc", "rawDesiredTurretRots");
     private final DoubleLogger log_desiredTurretRot = new DoubleLogger("ShotCalc", "desiredTurretRotations");
-    private final Pose3dLogger log_calculatedShotTarget = WaltLogger.logPose3d("ShotCalc", "calculatedShotTarget");
+    private final Pose3dLogger log_globalShotTarget = WaltLogger.logPose3d("ShotCalc", "globalTarget");
+    private final Pose3dLogger log_calculatedShotTarget = WaltLogger.logPose3d("ShotCalc", "shotCalcTarget");
 
     // private static final DoubleLogger log_timeOfFlight = new DoubleLogger("Shooter/Calculator", "timeOfFlight");
 
@@ -138,11 +125,6 @@ public class Shooter extends SubsystemBase {
     //---LOGIC BOOLEANS
     public boolean m_isTurretHomed = false;
 
-    //---TRIGGERS
-    // private final Trigger trg_inAllianceZone = new Trigger(shooterEventLoop, this::inAllianceZone);
-    private final Trigger trg_turretHomingCompleted = new Trigger(shooterEventLoop, () -> m_isTurretHomed);
-    // private final Trigger trg_inAllianceZone = new Trigger(shooterEventLoop, this::inAllianceZone);
-
     /* SIM OBJECTS */
     private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(
             DCMotor.getKrakenX60Foc(2), kShooterMoI, kShooterGearing), DCMotor.getKrakenX60Foc(2) // returns gearbox
@@ -156,41 +138,36 @@ public class Shooter extends SubsystemBase {
     private final DoubleLogger log_shooterVelocityRPS = WaltLogger.logDouble("Shooter/Flywheel", "shooterVelocityRPS");
     private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble("Shooter/Turret", "turretPositionRots");
     private final BooleanLogger log_onLeftSide = WaltLogger.logBoolean(kLogTab, "onLeftSide");
-    private final StringLogger log_shootingGoal = WaltLogger.logString(kLogTab, "currentShootingGoal");
-
-    //---HOOD
-    private final DoubleLogger log_hoodEncoderPositionDegs = WaltLogger.logDouble("Shooter/Hood", "hoodEncoderPositionDegs");
-    private final DoubleLogger log_hoodEncoderVelocityRPS = WaltLogger.logDouble("Shooter/Hood", "hoodEncoderVelocityRPS");
-    private final DoubleLogger log_hoodEncoderError = WaltLogger.logDouble("Shooter/Hood", "hoodEncoderError");
-    private final DoubleLogger log_requestedServoPositionDegs = WaltLogger.logDouble("Shooter/Hood", "requestedServoPositionDegs");
-    private final DoubleLogger log_requestedHoodPositionDegs = WaltLogger.logDouble("Shooter/Hood", "requestedHoodPositionDegs");
 
     // private final BooleanLogger log_exitBeamBreak = WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
     private final BooleanLogger log_spunUp = WaltLogger.logBoolean(kLogTab, "spunUp");
 
-    private final DoubleLogger log_hoodServoVoltage = WaltLogger.logDouble("Shooter/Hood", "hoodServoVoltage");
-    private final DoubleLogger log_hoodServoCurrent = WaltLogger.logDouble("Shooter/Hood", "hoodServoCurrent");
     private final DoubleLogger log_shooterClosedLoopError = WaltLogger.logDouble("Shooter/Hood", "shooterClosedLoopError");
 
     private final DoubleLogger log_turretControlPos = WaltLogger.logDouble("Shooter/Turret", "turretControlPos");
 
     private final Tracer m_periodicTracer = new Tracer();
 
+    StatusSignal<Double> sig_shooterCLErr = m_shooterA.getClosedLoopError();
+
+    private final Command m_homingCommand = turretHomingCmd();
+
     /* CONSTRUCTOR */
     public Shooter(Supplier<Pose2d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
         m_shooterA.getConfigurator().apply(kShooterATalonFXConfiguration);
         m_shooterB.getConfigurator().apply(kShooterBTalonFXConfiguration);
         m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
-        m_hoodEncoder.getConfigurator().apply(kHoodEncoderConfiguration); // if needed, we can add a position offset
 
         m_shooterB.setControl(new Follower(kShooterA_CANID, MotorAlignmentValue.Opposed)); 
+
+        sig_shooterCLErr.setUpdateFrequency(Hertz.of(50));
 
         m_turretTurnPosition = m_turret.getPosition().getValue();
         m_flywheelVelocity = m_shooterA.getVelocity().getValue();
 
         m_poseSupplier = poseSupplier;
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
-        setDefaultCommand(turretHomingCmd(false));
+        setDefaultCommand(m_homingCommand);
 
         m_turretVisualizer = new TurretVisualizer(
                 () -> new Pose3d(m_poseSupplier.get().rotateAround(
@@ -200,16 +177,13 @@ public class Shooter extends SubsystemBase {
 
         m_fuelSim = FuelSim.getInstance();
 
-        // THIS IS WHERE EVERYTHING ACTUALLY HAPPENS PLS DONT REMOVE
-        // trg_turretHomingCompleted.onTrue(Commands.run(() -> {
-        //     if (m_useShotCalculator) {
-        //         calculateAndSetShot(m_poseSupplier.get(), true);
-        //     }
-        // }));
-
-        trg_hallTrigger.and(trg_turretHomingCompleted).onTrue(Commands.sequence(
-                Commands.waitSeconds(0.5),
-                Commands.runOnce(() -> shooterEventLoop.clear())));
+        trg_homingHallDirect.onTrue(Commands.sequence(
+            Commands.runOnce(() -> {
+                m_homingCommand.cancel();
+                System.out.println("FastHoming OK!!!");
+            }),
+            Commands.runOnce(() -> homingEventLoop.clear()))
+        );
 
         m_turret.setPosition(0);
 
@@ -220,6 +194,10 @@ public class Shooter extends SubsystemBase {
         return Commands.runOnce(() -> { m_useShotCalculator = enable; });
     }
 
+    public void setShotCalc(boolean enable) {
+        m_useShotCalculator = enable;
+    }
+
     /* COMMANDS */
     public void zeroTurret() {
         setTurretPos(Rotations.of(0));
@@ -227,14 +205,6 @@ public class Shooter extends SubsystemBase {
 
     public Command zeroTurretCmd() {
         return runOnce(this::zeroTurret).ignoringDisable(true);
-    }
-
-    public void zeroHood() {
-        setHoodPosition(Degrees.of(5));
-    }
-
-    public Command zeroHoodCmd() {
-        return runOnce(this::zeroHood).ignoringDisable(true);
     }
 
     private void stopFlywheel() {
@@ -268,15 +238,6 @@ public class Shooter extends SubsystemBase {
         return isNear;
     }
 
-    //---HOOD (Basic Position Control)
-    public Command setHoodPositionCmd(Angle degs) {
-        return runOnce(() -> setHoodPosition(degs));
-    }
-
-    public void setHoodPosition(Angle degs) {
-        m_hood.setAngle(convertHoodAngleToServoAngle(degs));
-    }
-
     public double convertHoodAngleToServoAngle(Angle hoodAngleDegs) {
         return (1 - (hoodAngleDegs.magnitude() / kHoodAbsoluteMaxDegs.magnitude())) * kHoodServoMaxDegs.magnitude();
     }
@@ -289,17 +250,12 @@ public class Shooter extends SubsystemBase {
         return (1 - (encoderAngleDegs.magnitude() / kHoodEncoderMaxDegs.magnitude())) * kHoodServoMaxDegs.magnitude();
     }
 
-    //for TestingDashboard
-    public Command setHoodPositionCmd(DoubleSubscriber sub_degs) {
-        return run(() -> setHoodPosition(Degrees.of(sub_degs.getAsDouble())));
-    }
-
     // ---TURRET (Motionmagic Angle Control)
-    public Command setTurretPositionCmd(Angle rots) {
+    public Command setTurretPosCmd(Angle rots) {
         return runOnce(() -> setTurretPos(rots));
     }
 
-    private void setTurretPos(Angle rots) {
+    public void setTurretPos(Angle rots) {
         m_turret.setControl(m_PVRequest.withPosition(rots));
         log_turretControlPos.accept(rots.in(Rotations));
     }
@@ -319,7 +275,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Angle getHoodAngle() {
-        return m_hoodEncoder.getAbsolutePosition().getValue();
+        return Degrees.zero();
     }
 
     public Angle getTurretPosition() {
@@ -479,24 +435,20 @@ public class Shooter extends SubsystemBase {
      */
     private Translation3d calculateTarget(Pose2d robotPose) {
         // m_currentTarget = AllianceFlipUtil.apply(target);
-        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-            if (robotPose.getMeasureX().gt(AllianceZoneUtil.redHubCenter.getMeasureX())) {
-                return FieldConstants.Hub.oppInnerCenterPoint;
-            }
-            if (robotPose.getMeasureY().gt(AllianceZoneUtil.centerField_y_pos)) {
-                AllianceFlipALWAYSUtil.apply(ShooterK.kPassingSpotLeft);
-            }
-            return AllianceFlipALWAYSUtil.apply(ShooterK.kPassingSpotRight);
-        }
-        if (robotPose.getMeasureX().lt(AllianceZoneUtil.blueHubCenter.getMeasureX())) {
-            return FieldConstants.Hub.innerCenterPoint;
-        }
-        if (robotPose.getMeasureY().gt(AllianceZoneUtil.centerField_y_pos)) {
-            return ShooterK.kPassingSpotLeft;
-        }
-        return ShooterK.kPassingSpotRight;
+        boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+        Translation3d theTarget = FieldConstants.Hub.blueInnerCenterPoint;
 
+        boolean robotPastOurZoneX = isRed ? 
+            robotPose.getMeasureX().lt(AllianceZoneUtil.redHubCenter.getMeasureX()) : 
+            robotPose.getMeasureX().gt(AllianceZoneUtil.blueHubCenter.getMeasureX());
 
+        if (robotPastOurZoneX) {
+            boolean robotLeftOfCenter = isRed ? 
+                robotPose.getMeasureY().lt(AllianceZoneUtil.centerField_y_pos) :
+                robotPose.getMeasureY().gt(AllianceZoneUtil.centerField_y_pos);
+            theTarget = robotLeftOfCenter ? ShooterK.kPassingSpotLeft : ShooterK.kPassingSpotRight;
+        }
+        return AllianceFlipUtil.apply(theTarget);
     }
 
 
@@ -523,11 +475,9 @@ public class Shooter extends SubsystemBase {
         // Sets the TurretPosition to the Calculated TurretAngle
         setTurretPos(azimuthAngle);
         // Sets the HoodPosition to the Calculated HoodAngle
-        setHoodPosition(Degrees.of(28));
         // setHoodPosition(Degrees.of(calculatedShot.getHoodAngle().in(Degrees)));
 
         m_calcTurret = azimuthAngle;
-        m_calcHoodAngle = calculatedShot.getHoodAngle();
         m_calcFlywheelVelocity = ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius);
         m_periodicTracer.addEpoch("calculateShot/setOutputs");
     }
@@ -583,10 +533,10 @@ public class Shooter extends SubsystemBase {
         //     .onFalse(Commands.runOnce(() -> setGoal(ShooterGoal.PASSING)));
         // trg_inAllianceZone.negate().and(DriverStation::isTeleop).whileTrue(Commands.runOnce(() -> setGoal(ShooterGoal.PASSING)));
         m_currentTarget = calculateTarget(pose);
+        log_globalShotTarget.accept(m_currentTarget);
 
         m_periodicTracer.addEpoch("Calculating Shot");
 
-        m_isTurretCoast = WaltTuner.toggleMotorCoast(m_isTurretCoast, nte_turretCoast.getBoolean(false), m_turret);
         m_periodicTracer.addEpoch("Toggling Coast");
 
         //---Loggers
@@ -598,31 +548,16 @@ public class Shooter extends SubsystemBase {
         if (m_isTurretHomed && m_useShotCalculator) {
             calculateAndSetShot(pose, true);
         }
-        double hoodEncoderAbsDeg = Rotations.of(m_hoodEncoder.getAbsolutePosition().getValueAsDouble()).in(Degrees);
-        double hoodServoAngle = m_hood.getAngle();
 
         log_shooterVelocityRPS.accept(m_flywheelVelocity.in(RotationsPerSecond));
-        log_hoodEncoderPositionDegs.accept(convertServoAngleToHoodAngle(Degrees.of(convertEncoderAngleToServoAngle(Degrees.of(hoodEncoderAbsDeg)))));
-        log_hoodEncoderVelocityRPS.accept(m_hoodEncoder.getVelocity().getValueAsDouble());
-        log_requestedServoPositionDegs.accept(hoodServoAngle);
-        log_requestedHoodPositionDegs.accept(convertServoAngleToHoodAngle(Degrees.of(hoodServoAngle)));
-
-        log_hoodEncoderError.accept(Math.abs(
-                convertServoAngleToHoodAngle(Degrees.of(hoodServoAngle))
-                - convertServoAngleToHoodAngle(Degrees.of(convertEncoderAngleToServoAngle(Degrees.of(hoodEncoderAbsDeg))))));
-
         log_turretPositionRots.accept(m_turretTurnPosition.in(Rotations));
 
         // log_exitBeamBreak.accept(trg_exitBeamBreak);
         log_spunUp.accept(isShooterSpunUp());
-        log_hoodServoVoltage.accept(RobotController.getVoltage6V());
-        log_hoodServoCurrent.accept(RobotController.getCurrent6V());
 
-        log_turretHomingHall.accept(trg_hallTrigger);
         log_onLeftSide.accept(m_onLeftSide);
         // log_inAllianceZone.accept(trg_inAllianceZone);
 
-        log_calcHoodAngle.accept(m_calcHoodAngle.in(Degrees));
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocity.in(RotationsPerSecond));
         log_calcTurretPos.accept(m_calcTurret.in(Rotations));
 
@@ -631,10 +566,14 @@ public class Shooter extends SubsystemBase {
         m_periodicTracer.addEpoch("Logging");
 
         // KEEP AT THE BOTTOM OF PERIODIC
-        shooterEventLoop.poll();
         m_periodicTracer.addEpoch("EventLoop Poll");
 
         // m_periodicTracer.printEpochs();
+    }
+
+    public void fastPeriodic() {
+        homingEventLoop.poll();
+        log_turretHomingHall.accept(trg_homingHallDirect);
     }
 
     @Override
@@ -648,18 +587,26 @@ public class Shooter extends SubsystemBase {
         // WaltMotorSim.updateSimServo(m_hood, m_hoodSim);
     }
 
-    public Command turretHomingCmd(boolean rerun) {
+    public Command turretHomingCmd() {
         Runnable init = () -> {
-            m_turret.setControl(m_VoltageReq.withOutput(-0.75));
+            m_turret.setControl(m_VoltageReq.withOutput(kHomingVoltage));
+            setShotCalc(false);
             m_isTurretHomed = false;
             log_turretHomed.accept(m_isTurretHomed);
         };
 
         Consumer<Boolean> end = (Boolean interrupted) -> {
-            m_turret.setPosition(Rotations.of(-0.2175)); // Flowkirkentologicalexpialibrostatenuinely
+            if (interrupted) { 
+                m_turret.setControl(m_BrakeReq);
+                log_turretHomed.accept(m_isTurretHomed);
+                return;
+            }
+
+            m_turret.setPosition(kHomePosition); // Flowkirkentologicalexpialibrostatenuinely
             m_turret.setControl(m_BrakeReq);
             removeDefaultCommand();
             m_isTurretHomed = true;
+            setShotCalc(true);
             log_turretHomed.accept(m_isTurretHomed);
         };
 
@@ -668,7 +615,7 @@ public class Shooter extends SubsystemBase {
         };
 
         return new FunctionalCommand(init, () ->{}, end, isFinished, this)
-            .until(trg_hallTrigger)
+            .until(trg_homingHallDirect)
             .andThen(
                 Commands.print("========== TURRET HOMING COMPLETE =========="),
                 Commands.waitSeconds(0.1),

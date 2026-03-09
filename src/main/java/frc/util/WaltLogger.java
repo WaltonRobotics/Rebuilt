@@ -17,7 +17,6 @@ import frc.robot.Constants;
 
 public class WaltLogger {
     private WaltLogger() {}
-
     private static final NetworkTableInstance inst = NetworkTableInstance.getDefault();
     private static final NetworkTable logTable = inst.getTable("Robot");
 

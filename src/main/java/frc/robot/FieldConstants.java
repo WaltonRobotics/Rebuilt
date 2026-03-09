@@ -102,7 +102,7 @@ public class FieldConstants {
             kTagLayout.getTagPose(26).get().getX() + width / 2.0,
             fieldWidth / 2.0,
             height);
-    public static final Translation3d innerCenterPoint =
+    public static final Translation3d blueInnerCenterPoint =
         new Translation3d(
             kTagLayout.getTagPose(26).get().getX() + width / 2.0,
             fieldWidth / 2.0,
@@ -123,7 +123,7 @@ public class FieldConstants {
             kTagLayout.getTagPose(4).get().getX() + width / 2.0,
             fieldWidth / 2.0,
             height);
-    public static final Translation3d oppInnerCenterPoint = 
+    public static final Translation3d redInnerCenterPoint = 
         new Translation3d(
             kTagLayout.getTagPose(4).get().getX() + width / 2.0,
             fieldWidth / 2.0,
