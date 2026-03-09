@@ -20,7 +20,7 @@ public class WaltLogger {
     private static final NetworkTableInstance inst = NetworkTableInstance.getDefault();
     private static final NetworkTable logTable = inst.getTable("Robot");
 
-    private static boolean shouldPublishNt() {
+    public static boolean shouldPublishNt() {
         return Constants.kDebugLoggingEnabled;
     }
 
