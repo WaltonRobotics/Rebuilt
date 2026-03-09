@@ -1,65 +1,74 @@
 package frc.robot.dashboards;
 
-import edu.wpi.first.networktables.BooleanPublisher;
-import edu.wpi.first.networktables.BooleanSubscriber;
-import edu.wpi.first.networktables.BooleanTopic;
-import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StringPublisher;
-import edu.wpi.first.networktables.StringSubscriber;
-import edu.wpi.first.networktables.StringTopic;
+import edu.wpi.first.util.sendable.SendableRegistry;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants.AutonK;
+import frc.robot.autons.WaltSimpleAutonFactory;
+import frc.robot.autons.WaltSimpleAutonFactory.WaltPathAndCommand;
 public class AutonChooser {
     public static NetworkTableInstance nte_inst = NetworkTableInstance.getDefault();
-    public static SendableChooser<String> m_chooser = new SendableChooser<>();
+    public static SendableChooser<WaltPathAndCommand> m_chooser = new SendableChooser<>();
+    public static WaltSimpleAutonFactory m_simpleAutonFactory;
+    public static Command m_autonomousCommand;
 
-    /* CLASS VARIABLES */
-    //---AUTON PATH NAMES
-    public static final String oneRightNeutralPickup = "oneRightNeutralPickup";
-    public static final String twoRightNeutralPickup = "twoRightNeutralPickup";
-    public static final String threeRightNeutralPickup = "threeRightNeutralPickup";
-    public static final String oneLeftNeutralPickup = "oneLeftNeutralPickup";
-    public static final String twoLeftNeutralPickup = "twoLeftNeutralPickup";
-    public static final String threeLeftNeutralPickup = "threeLeftNeutralPickup";
+    private static final WaltPathAndCommand auton_none = new WaltPathAndCommand("", Commands.none());
 
-    /* TOPICS */
-    public static NetworkTable nte_autonChooser = nte_inst.getTable("AutonChooser");
+    private static WaltPathAndCommand auton_oneCycleGoInNow_Right(WaltSimpleAutonFactory simpleAutonFactory) {
+        return new WaltPathAndCommand(AutonK.kRightSweepPathName, simpleAutonFactory.oneCycleGoInNow(false));
+    }
+    private static WaltPathAndCommand auton_oneCycleGoInNow_Left(WaltSimpleAutonFactory simpleAutonFactory) {
+        return new WaltPathAndCommand(AutonK.kLeftSweepPathName, simpleAutonFactory.oneCycleGoInNow(true));
+    }
 
-    public static StringTopic ST_autonName = nte_inst.getStringTopic("/AutonChooser/autonName");
-    public static BooleanTopic BT_autonMade = nte_inst.getBooleanTopic("/AutonChooser/autonMade");
-    public static BooleanTopic BT_makeAuton = nte_inst.getBooleanTopic("/AutonChooser/makeAuton");
+    private static Timer s_loadTimer = new Timer();
 
-    /* PUBLISHERS */
-    public static StringPublisher pub_autonName;
-    public static BooleanPublisher pub_autonMade;
-    public static BooleanPublisher pub_makeAuton;
+    public static void initialize(WaltSimpleAutonFactory simpleAutonFactory) {
+        m_simpleAutonFactory = simpleAutonFactory;
 
-    /* SUBSCRIBERS */
-    public static StringSubscriber sub_autonName;
-    public static BooleanSubscriber sub_autonMade;
-    public static BooleanSubscriber sub_makeAuton;
-
-    public static void initialize() {
-        pub_autonName = ST_autonName.publish();
-        pub_autonMade = BT_autonMade.publish();
-        pub_makeAuton = BT_makeAuton.publish();
-
-        pub_autonName.setDefault("No Auton Made");
-        pub_autonMade.setDefault(false);
-
-        sub_autonName = ST_autonName.subscribe("No Auton Made");
-        sub_autonMade = BT_autonMade.subscribe(false);
-        sub_makeAuton = BT_makeAuton.subscribe(false);
-
-        m_chooser.setDefaultOption("One Right Neutral Pickup", oneRightNeutralPickup);
-        m_chooser.addOption("Two Right Neutral Pickup", twoRightNeutralPickup);
-        m_chooser.addOption("Three Right Neutral Pickup", threeRightNeutralPickup);
-        m_chooser.addOption("One Left Neutral Pickup", oneLeftNeutralPickup);
-        m_chooser.addOption("Two Left Neutral Pickup", twoLeftNeutralPickup);
-        m_chooser.addOption("Three Left Neutral Pickup", threeLeftNeutralPickup);
+        m_chooser.setDefaultOption("None Selected", auton_none);
+        m_chooser.addOption("Fast One Right Neutral Pickup", auton_oneCycleGoInNow_Right(m_simpleAutonFactory));
+        m_chooser.addOption("Fast One Left Neutral Pickup", auton_oneCycleGoInNow_Left(m_simpleAutonFactory));
 
         SmartDashboard.putData(m_chooser);
+        m_chooser.onChange((var pathAndCmd) -> {
+            if (pathAndCmd.pathName.equals("")) {
+                System.out.println("Loading no path for empty String");
+                return;
+            }
+
+            s_loadTimer.restart();
+            var theTraj = m_simpleAutonFactory.m_autoFactory.cache().loadTrajectory(pathAndCmd.pathName);
+            s_loadTimer.stop();
+            double elapsedSec = s_loadTimer.get();
+            
+            if (theTraj.isEmpty()) {
+                DriverStation.reportWarning("Loaded path was empty!!!", false);
+                return;
+            }
+
+            var pathTime = theTraj.get().getTotalTime();
+            if (pathTime != 0.0) {
+                System.out.println(String.format("Loaded path lasts %.2f seconds", pathTime));    
+            } else {
+                DriverStation.reportWarning("Loaded path has no time taken!!!", false);
+            }
+ 
+            System.out.println("");
+            System.out.println("");
+            System.out.println("=================================================================================");
+            System.out.println("=============== AUTON PATH \"" + pathAndCmd.pathName +  "\" LOADED ==============");
+            System.out.println("=================================================================================");
+            System.out.println(String.format("Took %.2f msec", elapsedSec / 1000.0));
+        });
+    }
+
+    public static void cleanup() {
+        SendableRegistry.remove(m_chooser);
     }
 }

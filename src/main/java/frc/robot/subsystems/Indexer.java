@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IndexerK.*;
 
@@ -30,6 +29,7 @@ public class Indexer extends SubsystemBase {
 
     private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
     private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
+
 
     /* SIM OBJECTS */
     private final DCMotorSim m_spindexerSim = new DCMotorSim(
@@ -71,27 +71,27 @@ public class Indexer extends SubsystemBase {
     /* COMMANDS */
     //---STARTS AND STOPS
     public Command startSpindexerCmd() {
-        return setSpindexerVelocityCmd(m_spindexerRPS);
+        return setSpindexerVelocityCmd(kSpindexerShootRPS);
     }
 
     public Command stopSpindexerCmd() {
-        return setSpindexerVelocityCmd(RotationsPerSecond.of(0));
+        return setSpindexerVelocityCmd(RotationsPerSecond.zero());
     }
 
     public void stopSpindexer() {
-        setSpindexerVelocity(RotationsPerSecond.of(0));
+        setSpindexerVelocity(RotationsPerSecond.zero());
     }
 
     public Command startTunnelCmd() {
-        return setTunnelVelocityCmd(m_tunnelRPS);
+        return setTunnelVelocityCmd(kTunnelShootRPS);
     }
 
     public Command stopTunnelCmd() {
-        return setTunnelVelocityCmd(RotationsPerSecond.of(0));
+        return setTunnelVelocityCmd(RotationsPerSecond.zero());
     }
 
     public void stopTunnel() {
-        setTunnelVelocity(RotationsPerSecond.of(0));
+        setTunnelVelocity(RotationsPerSecond.zero());
     }
 
     //---SPINDEXER
@@ -105,7 +105,7 @@ public class Indexer extends SubsystemBase {
 
     //for TestingDashboard
     public Command setSpindexerVelocityCmd(DoubleSubscriber sub_RPS) {
-        return run(() -> m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
+        return run(() -> setSpindexerVelocity(RotationsPerSecond.of(sub_RPS.get())));
     }
 
     //---TUNNEL
@@ -119,7 +119,7 @@ public class Indexer extends SubsystemBase {
 
     //for TestingDashboard
     public Command setTunnelVelocityCmd(DoubleSubscriber sub_RPS) {
-        return run(() -> m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
+        return run(() -> setTunnelVelocity(RotationsPerSecond.of(sub_RPS.get())));
     }
 
     /* PERIODICS */

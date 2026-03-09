@@ -38,10 +38,10 @@ public class WaltAutonFactory {
     }
 
     public void setAlliance(boolean isRed) {
-        m_postRightPickupNeutral = isRed ? AllianceFlipUtil.flip(AutonK.rightNeutralPose) : AutonK.rightNeutralPose;
-        m_postPickupDepot = isRed ? AllianceFlipUtil.flip(AutonK.rightDepotPose) : AutonK.rightDepotPose;
+        m_postRightPickupNeutral = isRed ? AllianceFlipUtil.apply(AutonK.kRightNeutralPose) : AutonK.kRightNeutralPose;
+        m_postPickupDepot = isRed ? AllianceFlipUtil.apply(AutonK.kRightDepotPose) : AutonK.kRightDepotPose;
 
-        m_postLeftPickupNeutral = isRed ? AllianceFlipUtil.flip(AutonK.leftNeutralPose) : AutonK.leftNeutralPose;
+        m_postLeftPickupNeutral = isRed ? AllianceFlipUtil.apply(AutonK.kLeftNeutralPose) : AutonK.kLeftNeutralPose;
     }
 
     /* CONSTRUCTOR */

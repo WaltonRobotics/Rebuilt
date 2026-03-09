@@ -19,13 +19,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.util.VisionUtil;
-import frc.robot.Robot;
+import frc.util.WaltLogger;
+import frc.util.WaltLogger.DoubleArrayLogger;
+import frc.util.WaltLogger.IntLogger;
 
 import static frc.robot.Constants.VisionK;
 import static frc.robot.Constants.FieldK;
@@ -33,27 +33,58 @@ import static frc.robot.Constants.FieldK;
 public class WaltCamera extends PhotonCamera {
     /* CLASS VARIABLES */
     private static final int kGlobalFpsLimit = 5;
-    public static final VisionSim m_visionSim = new VisionSim();
+    private static final int kGlobalFps = 30;
 
     public static final List<WaltCamera> AllCameras = Collections.unmodifiableList(Arrays.asList(
-        // new WaltCamera("FrontLeft", VisionK.kFrontLeftCTR, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0)),
-        new WaltCamera("FrontRight", VisionK.kFrontRightRTC, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0)),
-        // new WaltCamera("BackLeft", VisionK.kBackLeftCTR, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0)),
-        new WaltCamera("BackRight", VisionK.kBackRightRTC, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0))
+        new WaltCamera("FL_HAT", VisionK.kFrontLeftCTR),
+        new WaltCamera("FR_HAT", VisionK.kFrontRightCTR),
+        new WaltCamera("BL_HAT", VisionK.kBackLeftCTR),
+        new WaltCamera("BR_HAT", VisionK.kBackRightCTR)
     ));
 
-    //---SIM
-    private final PhotonCameraSim m_sim;
+    public static void setFpsLimit(boolean limited) {
+        int fpsLimit = limited ? kGlobalFpsLimit : kGlobalFps;
+        for (var cam : AllCameras) {
+            cam.setFPSLimit(fpsLimit); 
+        }
+        System.out.println("FPS Limit: " + fpsLimit);
+    }
 
-    private final Transform3d m_robotToCam;
-    private final PhotonPoseEstimator m_estimator;
+    public static boolean areCamsFpsLimited() {
+        boolean areThey = true;
+        for (var cam : AllCameras) {
+            if (cam.getFPSLimit() != kGlobalFpsLimit) {
+                areThey = false;
+            }
+        }
+        return areThey;
+    }
+
+    public static void takeSnapshot() {
+        for (var cam : AllCameras) {
+            cam.takeOutputSnapshot();
+        }
+    }
+
+    public static Command takeSnapshotCmd() {
+        return Commands.runOnce(WaltCamera::takeSnapshot);
+    }
+
+    public static Command setFpsLimitCmd(boolean limited) {
+        return Commands.runOnce(() -> setFpsLimit(limited));
+    }
+
+    public final PhotonCameraSim m_sim;
+    public final Transform3d m_robotToCam;
+    public final PhotonPoseEstimator m_estimator;
     
-    private static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.5, 1.5, 6.24);
-    private static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 6.24);
+    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.0, 1.0, 3); //1.5, 1.5, 6.24
+    public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.25, 0.25, 1.25);  //0.5, 0.5, 5.24
 
     private final StructPublisher<Pose2d> log_camPose;
     private final StructPublisher<Transform3d> log_camTransform;
-    private final DoubleArrayPublisher log_stdDevs;
+    private final DoubleArrayLogger log_stdDevs;
+    private final IntLogger log_numResults;
 
     private Matrix<N3, N1> m_curStdDevs;
 
@@ -68,8 +99,8 @@ public class WaltCamera extends PhotonCamera {
             .getStructTopic(ntPrefix + "estRobotPose", Pose2d.struct).publish();
         log_camTransform = NetworkTableInstance.getDefault()
             .getStructTopic(ntPrefix + "transform", Transform3d.struct).publish();
-        log_stdDevs = NetworkTableInstance.getDefault()
-            .getDoubleArrayTopic(ntPrefix + "/stdDevs").publish();
+        log_stdDevs = WaltLogger.logDoubleArray(ntPrefix, "stdDevs");
+        log_numResults = WaltLogger.logInt(ntPrefix, "numResults");
 
         log_camTransform.accept(robotToCam);
 
@@ -128,9 +159,14 @@ public class WaltCamera extends PhotonCamera {
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
         List<PhotonPipelineResult> unreadCameraResults = this.getAllUnreadResults();
+        log_numResults.accept(unreadCameraResults.size());
 
         for (var change : unreadCameraResults) {
+            if (!change.hasTargets()) { continue; }
             visionEst = m_estimator.estimateCoprocMultiTagPose(change);
+            if (visionEst.isEmpty()) {
+                visionEst = m_estimator.estimateLowestAmbiguityPose(change);
+            }
             updateEstimationStdDevs(visionEst, change.getTargets());
             log_stdDevs.accept(m_curStdDevs.getData());
 

@@ -10,6 +10,7 @@ import com.ctre.phoenix6.swerve.*;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.*;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.*;
@@ -55,7 +56,10 @@ public class TunerConstants {
 
     // Initial configs for the drive and steer motors and the azimuth encoder; these cannot be null.
     // Some configs will be overwritten; check the `with*InitialConfigs()` API documentation.
-    private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration();
+    private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration()
+        .withCurrentLimits(new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(85)
+            .withStatorCurrentLimitEnable(true));
     private static final TalonFXConfiguration steerInitialConfigs = new TalonFXConfiguration()
         .withCurrentLimits(
             new CurrentLimitsConfigs()
@@ -169,6 +173,12 @@ public class TunerConstants {
     private static final Distance kBackRightXPos = Inches.of(-10.5);
     private static final Distance kBackRightYPos = Inches.of(-11);
 
+    public static final Translation2d[] moduleTranslations = {
+        new Translation2d(kFrontRightXPos, kFrontRightYPos),
+        new Translation2d(kFrontLeftXPos, kFrontLeftYPos),
+        new Translation2d(kBackRightXPos, kBackRightYPos),
+        new Translation2d(kBackLeftXPos, kBackLeftYPos)
+    };
 
     public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontLeft =
         ConstantCreator.createModuleConstants(
