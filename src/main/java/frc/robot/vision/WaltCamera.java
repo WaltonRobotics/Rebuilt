@@ -23,6 +23,8 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Robot;
+import frc.util.VisionUtil;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleArrayLogger;
 import frc.util.WaltLogger.IntLogger;
@@ -34,12 +36,13 @@ public class WaltCamera extends PhotonCamera {
     /* CLASS VARIABLES */
     private static final int kGlobalFpsLimit = 5;
     private static final int kGlobalFps = 30;
+    public static final VisionSim m_visionSim = new VisionSim();
 
     public static final List<WaltCamera> AllCameras = Collections.unmodifiableList(Arrays.asList(
-        new WaltCamera("FL_HAT", VisionK.kFrontLeftCTR),
-        new WaltCamera("FR_HAT", VisionK.kFrontRightCTR),
-        new WaltCamera("BL_HAT", VisionK.kBackLeftCTR),
-        new WaltCamera("BR_HAT", VisionK.kBackRightCTR)
+        new WaltCamera("FL_HAT", VisionK.kFrontLeftRTC, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0)),
+        new WaltCamera("FR_HAT", VisionK.kFrontRightRTC, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0)),
+        new WaltCamera("BL_HAT", VisionK.kBackLeftRTC, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0)),
+        new WaltCamera("BR_HAT", VisionK.kBackRightRTC, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0))
     ));
 
     public static void setFpsLimit(boolean limited) {
@@ -131,19 +134,6 @@ public class WaltCamera extends PhotonCamera {
         System.out.println(super.getName() + ": BothSnapshot");
     }
 
-    public static void setFpsLimit(boolean limited) {
-        for (var cam : AllCameras) {
-            cam.setFPSLimit(limited ? kGlobalFpsLimit : -1); 
-        }
-    }
-
-    public static Command setFpsLimitCmd(boolean limited) {
-        return Commands.runOnce(() -> {
-            for (var cam : AllCameras) {
-                cam.setFPSLimit(limited ? kGlobalFpsLimit : -1); 
-            }
-        }).andThen(Commands.print("FPS Limit: " + limited));
-    }
     
     /* VISION ESTIMATION METHODS */
    /**

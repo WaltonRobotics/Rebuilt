@@ -1,4 +1,4 @@
-package frc.robot.autoalign;
+package frc.robot.AutoAlign;
 
 import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.Radians;

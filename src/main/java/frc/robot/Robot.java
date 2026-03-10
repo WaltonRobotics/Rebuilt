@@ -15,6 +15,7 @@ import org.photonvision.PhotonCamera;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -39,7 +40,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.AutoAlignK;
 import frc.robot.Constants.ShooterK;
-import frc.robot.autoalign.MovingAutoAlign;
+import frc.robot.AutoAlign.MovingAutoAlign;
 import frc.robot.dashboards.AutonChooser;
 import frc.robot.Constants.RobotK;
 import frc.robot.subsystems.shooter.FuelSim;
@@ -97,7 +98,8 @@ public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
 
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
-
+    private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
+    
     private final WaltSimpleAutonFactory m_simpleAutonFactory = new WaltSimpleAutonFactory(m_superstructure, m_autoFactory, m_intake, m_shooter, m_drivetrain);
     //---VISION
 
@@ -108,9 +110,6 @@ public class Robot extends TimedRobot {
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
 
-    //---CAMERA TRIGGERS
-    private final Trigger trg_limitFPS = RobotModeTriggers.disabled();
-    private final Trigger trg_unlimitFps = RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop());
     //---AUTO ALIGN TRIGGERS
     private Trigger trg_autoAlignLeft = m_driver.povLeft();
     private Trigger trg_autoAlignClimb = m_driver.povDown();
