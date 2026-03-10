@@ -99,7 +99,7 @@ public class Robot extends TimedRobot {
 
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
     private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
-    
+
     private final WaltSimpleAutonFactory m_simpleAutonFactory = new WaltSimpleAutonFactory(m_superstructure, m_autoFactory, m_intake, m_shooter, m_drivetrain);
     //---VISION
 
@@ -597,7 +597,7 @@ public class Robot extends TimedRobot {
         instance.logFuels();
         instance.updateSim();
 
-        // m_visionSim.simulationPeriodic(robotPose);
+        WaltCamera.m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();
         m_shooter.simulationPeriodic();
         m_intake.simulationPeriodic();
