@@ -555,6 +555,7 @@ public class Shooter extends SubsystemBase {
 
     public void fastPeriodic() {
         homingEventLoop.poll();
+        log_turretHomed.accept(m_isTurretHomed);
         log_turretHomingHall.accept(trg_homingHallDirect);
     }
 
@@ -571,6 +572,7 @@ public class Shooter extends SubsystemBase {
 
     public Command turretHomingCmd() {
         Runnable init = () -> {
+            WaltLogger.timedPrint("TurretHoming BEGIN");
             m_turret.setControl(m_VoltageReq.withOutput(kHomingVoltage));
             setShotCalc(false);
             m_isTurretHomed = false;
@@ -581,6 +583,7 @@ public class Shooter extends SubsystemBase {
             if (interrupted) { 
                 m_turret.setControl(m_BrakeReq);
                 log_turretHomed.accept(m_isTurretHomed);
+                WaltLogger.timedPrint("TurretHoming INTERRUPTED!!!");
                 return;
             }
 
