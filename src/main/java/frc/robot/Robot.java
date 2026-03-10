@@ -544,7 +544,13 @@ public class Robot extends TimedRobot {
                     drive.withVelocityX(0)
                         .withVelocityY(0)
                         .withRotationalRate(0)
-                )
+                ),
+                Commands.waitSeconds(2.5),
+                m_drivetrain.xBrake(),
+                Commands.waitSeconds(2.5),
+                m_superstructure.intake(() -> false).withTimeout(5),
+                Commands.waitSeconds(2.5),
+                m_superstructure.activateOuttake(kShooterRPS).withTimeout(4)
             )
         );
     }
