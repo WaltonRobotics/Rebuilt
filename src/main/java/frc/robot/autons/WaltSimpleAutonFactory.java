@@ -1,7 +1,7 @@
 package frc.robot.autons;
 
-import static frc.robot.Constants.ShooterK.kShooterAutonCloseRPS;
-import static frc.robot.Constants.ShooterK.kShooterAuton_EndSweep_RPS;
+import static frc.robot.Constants.ShooterK.kShooterAutonCloseVel;
+import static frc.robot.Constants.ShooterK.kShooterAutonEndSweepVel;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -73,7 +73,7 @@ public class WaltSimpleAutonFactory {
                 logState(1),
                 Commands.waitUntil(() -> m_shooter.m_isTurretHomed),  //TODO: should probably change this to check if is aiming at target (hub)
                 logState(2),
-                shootWithTimeout(kShooterAutonCloseRPS, 2).withName("ShootingCmd")
+                shootWithTimeout(kShooterAutonCloseVel, 2).withName("ShootingCmd")
             ),
             logState(3),
             Commands.deadline(
@@ -89,7 +89,7 @@ public class WaltSimpleAutonFactory {
             ),
             logState(4),
             Commands.parallel(
-                shootWithTimeout(kShooterAuton_EndSweep_RPS ,12),
+                shootWithTimeout(kShooterAutonEndSweepVel ,12),
                 Commands.sequence(
                     logState(4.1),
                     Commands.waitSeconds(6),
@@ -126,7 +126,7 @@ public class WaltSimpleAutonFactory {
             ),
             logState(1),
             Commands.deadline(
-                shootWithTimeout(kShooterAuton_EndSweep_RPS, 12),
+                shootWithTimeout(kShooterAutonEndSweepVel, 12),
                 Commands.sequence(
                     logState(1.1),
                     Commands.waitSeconds(3), // 5
@@ -143,7 +143,7 @@ public class WaltSimpleAutonFactory {
         return Commands.sequence(
             Commands.parallel(
                 m_autoFactory.resetOdometry(AutonK.kRightSweepPathName),
-                m_superstructure.activateOuttake(kShooterAutonCloseRPS).withTimeout(2)
+                m_superstructure.activateOuttake(kShooterAutonCloseVel).withTimeout(2)
             ),
             rightOneSweep(),
             m_autoFactory.resetOdometry("RightTurnBack"),
@@ -156,7 +156,7 @@ public class WaltSimpleAutonFactory {
         return Commands.sequence(
             Commands.parallel(
                 m_autoFactory.resetOdometry("RightToDepot"),
-                shootWithTimeout(kShooterAutonCloseRPS, 2)
+                shootWithTimeout(kShooterAutonCloseVel, 2)
             ),
             Commands.parallel(
                 m_autoFactory.trajectoryCmd("RightToDepot"),
@@ -169,7 +169,7 @@ public class WaltSimpleAutonFactory {
             Commands.parallel(
                 m_autoFactory.trajectoryCmd("RightDepotToShoot"),
                 Commands.sequence(
-                    m_superstructure.activateOuttake(ShooterK.kShooterRPS).withTimeout(2)
+                    m_superstructure.activateOuttake(ShooterK.kShooterVel).withTimeout(2)
                 )
             )
             
@@ -180,14 +180,14 @@ public class WaltSimpleAutonFactory {
         return Commands.sequence(
             Commands.parallel(
                 m_autoFactory.resetOdometry("RightToOutpost"),
-                shootWithTimeout(kShooterAutonCloseRPS, 2)
+                shootWithTimeout(kShooterAutonCloseVel, 2)
             ),
             m_autoFactory.resetOdometry("RightOutpostToNeutral"),
             Commands.parallel(
                 m_autoFactory.trajectoryCmd("RightOutpostToNeutral"),
                 Commands.sequence(
                     Commands.waitSeconds(0.5),
-                    m_superstructure.activateOuttake(ShooterK.kShooterRPS).withTimeout(2),
+                    m_superstructure.activateOuttake(ShooterK.kShooterVel).withTimeout(2),
                     Commands.waitSeconds(0.5),
                     m_intake.setIntakeArmPosCmd(IntakeArmPosition.SAFE),
                     Commands.waitSeconds(0.5),

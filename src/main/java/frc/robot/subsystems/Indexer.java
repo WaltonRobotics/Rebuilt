@@ -71,7 +71,7 @@ public class Indexer extends SubsystemBase {
     /* COMMANDS */
     //---STARTS AND STOPS
     public Command startSpindexerCmd() {
-        return setSpindexerVelocityCmd(kSpindexerShootRPS);
+        return setSpindexerVelocityCmd(kSpindexerShootVel);
     }
 
     public Command stopSpindexerCmd() {
@@ -83,7 +83,7 @@ public class Indexer extends SubsystemBase {
     }
 
     public Command startTunnelCmd() {
-        return setTunnelVelocityCmd(kTunnelShootRPS);
+        return setTunnelVelocityCmd(kTunnelShootVel);
     }
 
     public Command stopTunnelCmd() {

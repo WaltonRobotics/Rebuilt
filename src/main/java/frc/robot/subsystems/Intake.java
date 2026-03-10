@@ -145,7 +145,7 @@ public class Intake extends SubsystemBase {
     }
 
     public Command startIntakeRollers() {
-        return setIntakeRollersVelocityCmd(kIntakeRollersMaxRPS);
+        return setIntakeRollersVelocityCmd(kIntakeRollersMaxVel);
     }
 
     public Command stopIntakeRollers() {

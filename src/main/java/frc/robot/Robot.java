@@ -7,7 +7,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.RobotK.*;
-import static frc.robot.Constants.ShooterK.kShooterRPS;
+import static frc.robot.Constants.ShooterK.kShooterVel;
 
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
@@ -293,7 +293,7 @@ public class Robot extends TimedRobot {
         //Shooting
         // trg_shoot.and(() -> trg_hubActiveOrPassing.getAsBoolean()).whileTrue(
         trg_shoot.whileTrue(
-            m_superstructure.activateOuttake(kShooterRPS)
+            m_superstructure.activateOuttake(kShooterVel)
         );
 
         // snapshot on each shoot press

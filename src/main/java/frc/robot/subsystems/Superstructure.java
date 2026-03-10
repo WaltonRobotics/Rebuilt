@@ -79,7 +79,7 @@ public class Superstructure extends SubsystemBase {
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()),
             m_intake.startIntakeRollers(),
-            m_indexer.setSpindexerVelocityCmd(Constants.IndexerK.kSpindexerIntakeRPS),
+            m_indexer.setSpindexerVelocityCmd(Constants.IndexerK.kSpindexerIntakeVel),
             logActiveCommands("activateIntake", "safeIntake", "retractIntake")
         );
     }
@@ -92,8 +92,8 @@ public class Superstructure extends SubsystemBase {
             () -> {
                 m_shooter.setShotCalc(false);
                 m_shooter.setTurretPos(Rotations.of(-0.250));
-                m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
-                m_indexer.setSpindexerVelocity(isPassing.getAsBoolean() ? Constants.IndexerK.kSpindexerShootRPS : Constants.IndexerK.kSpindexerIntakeRPS);
+                m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxVel);
+                m_indexer.setSpindexerVelocity(isPassing.getAsBoolean() ? Constants.IndexerK.kSpindexerShootVel : Constants.IndexerK.kSpindexerIntakeVel);
             }, 
             () -> {
                 if (m_intake.getIntakeArmStatorCurrent() < 40) {
@@ -112,7 +112,7 @@ public class Superstructure extends SubsystemBase {
             () -> {
                 m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
                 if (m_intake.isIntakeArmAtPos()) {
-                    m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
+                    m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxVel);
                 }
             }, 
             () -> {
@@ -141,7 +141,7 @@ public class Superstructure extends SubsystemBase {
      */
     public Command activateOuttake(AngularVelocity RPS) {
         Command logCommand;
-        if (RPS == ShooterK.kShooterRPS) {
+        if (RPS == ShooterK.kShooterVel) {
             logCommand = logActiveCommands("shooting", "deactivateOuttake", "emergencyDump");   
         } else {
             logCommand = logActiveCommands("emergencyDump", "shooting", "deactivateOuttake");
@@ -167,7 +167,7 @@ public class Superstructure extends SubsystemBase {
     public void deactivateOuttake() {
         m_indexer.stopSpindexer();
         m_indexer.stopTunnel();
-        m_shooter.setShooterVelocity(ShooterK.kShooterZeroRPS);
+        m_shooter.setShooterVelocity(ShooterK.kShooterZeroVel);
         // m_shooter.setHoodPosition(Degrees.of(1));
 
         Commands.sequence(logActiveCommands("deactivateOuttake", "shooting", "emergencyDump"));
@@ -178,10 +178,10 @@ public class Superstructure extends SubsystemBase {
             () -> {
                 m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
                 // m_shooter.setHoodPosition(ShooterK.kHoodMaxDegs);
-                m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS);
-                m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS);
-                m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
-                m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersMaxRPS.times(-1));
+                m_indexer.setTunnelVelocity(IndexerK.kTunnelShootVel);
+                m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootVel);
+                m_shooter.setShooterVelocity(ShooterK.kShooterBarfVel);
+                m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersMaxVel.times(-1));
             },
             () -> {
                 m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));
@@ -204,7 +204,7 @@ public class Superstructure extends SubsystemBase {
     public Command startPassing() {
         return Commands.sequence(
             activateIntake(),
-            activateOuttake(ShooterK.kShooterRPS),
+            activateOuttake(ShooterK.kShooterVel),
             logActiveCommands("startPassing", "stopPassing")
         );
     }
@@ -226,7 +226,7 @@ public class Superstructure extends SubsystemBase {
      */
     public Command maxShooter() {
         return Commands.sequence(
-            m_shooter.setShooterVelocityCmd(ShooterK.kShooterRPS),
+            m_shooter.setShooterVelocityCmd(ShooterK.kShooterVel),
             // m_shooter.setShooterVelocityCmd(RotationsPerSecond.of(50)),
             logActiveOverrideCommands("maxShooter", "stopShooter")
         );
@@ -237,7 +237,7 @@ public class Superstructure extends SubsystemBase {
      */
     public Command stopShooter() {
         return Commands.sequence(
-            m_shooter.setShooterVelocityCmd(ShooterK.kShooterZeroRPS),
+            m_shooter.setShooterVelocityCmd(ShooterK.kShooterZeroVel),
             logActiveOverrideCommands("stopShooter", "maxShooter")
         );
     }
@@ -293,9 +293,9 @@ public class Superstructure extends SubsystemBase {
     public Command unjamCmd() {
         return Commands.runEnd(
             () -> {
-                m_indexer.setSpindexerVelocity(Constants.IndexerK.kSpindexerShootRPS.times(-1));
-                m_indexer.setTunnelVelocity(Constants.IndexerK.kTunnelShootRPS.times(-1));
-                m_shooter.setShooterVelocity(Constants.ShooterK.kShooterRPS.times(-1));
+                m_indexer.setSpindexerVelocity(Constants.IndexerK.kSpindexerShootVel.times(-1));
+                m_indexer.setTunnelVelocity(Constants.IndexerK.kTunnelShootVel.times(-1));
+                m_shooter.setShooterVelocity(Constants.ShooterK.kShooterVel.times(-1));
             }, () -> {
                 m_indexer.setSpindexerVelocity(RotationsPerSecond.of(0));
                 m_indexer.setTunnelVelocity(RotationsPerSecond.of(0));
