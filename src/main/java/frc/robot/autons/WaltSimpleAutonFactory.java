@@ -172,7 +172,7 @@ public class WaltSimpleAutonFactory {
                     Commands.waitSeconds(0.0001),
                     logState(0.2),
                     tp("goInNow.intake.START"),
-                    // m_superstructure.intake(() -> false).withTimeout(7.5),
+                    m_superstructure.intake(() -> false).asProxy().withTimeout(7.5),
                     tp("goInNow.intake.END")
                 ),
                 Commands.sequence(
@@ -186,13 +186,13 @@ public class WaltSimpleAutonFactory {
             logState(1),
             tp("goInNow.shootDeadline.START"),
             Commands.deadline(
-                shootWithTimeout(kShooterAuton_EndSweep_RPS, 12),
+                shootWithTimeout(kShooterAuton_EndSweep_RPS, 12).asProxy(),
                 Commands.sequence(
                     logState(1.1),
                     Commands.waitSeconds(3), // 5
                     logState(1.2),
                     tp("goInNow.retractIntake.START"),
-                    // m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED),
+                    m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED).asProxy(),
                     tp("goInNow.retractIntake.END")
                 )
             ),
