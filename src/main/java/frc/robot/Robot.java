@@ -328,8 +328,8 @@ public class Robot extends TimedRobot {
 
         // m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
 
-        m_driver.povDown().onTrue(Commands.runOnce(() -> m_shooter.setShotCalcCmd(false)));
-        m_driver.povRight().onTrue(Commands.runOnce(() -> m_shooter.setShotCalcCmd(true)));
+        m_driver.povDown().onTrue(m_shooter.setShotCalcCmd(false));
+        m_driver.povRight().onTrue(m_shooter.setShotCalcCmd(true));
     }
 
     private void configureTestBindings() {
