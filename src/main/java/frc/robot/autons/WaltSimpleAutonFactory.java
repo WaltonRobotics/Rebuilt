@@ -52,6 +52,14 @@ public class WaltSimpleAutonFactory {
         return WaltLogger.timedPrintCmd(message);
     }    
 
+    public Command preheater() {
+        return Commands.sequence(
+            tp("preheat.START"),
+            runTraj("PreHeat", 1.0),
+            tp("preheat.END")
+        );
+    }
+
     private Command homingCmd() {
         return Commands.parallel(
             Commands.sequence(tp("turretHoming.START"), m_shooter.turretHomingCmd(), tp("turretHoming.END")),

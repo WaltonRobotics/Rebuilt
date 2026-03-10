@@ -142,6 +142,7 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_isDisabled = WaltLogger.logBoolean(kLogTab, "is robot disabled");
 
     private final Tracer m_periodicTracer = new Tracer();
+    private final Command m_preheaterCommand;
 
     /* CONSTRUCTOR */
     public Robot() {
@@ -167,6 +168,9 @@ public class Robot extends TimedRobot {
         DataLogManager.start();
         DriverStation.startDataLog(DataLogManager.getLog());
         addPeriodic(m_shooter::fastPeriodic, 0.0025);
+
+        m_preheaterCommand = AutonChooser.getPreheater();
+        CommandScheduler.getInstance().schedule(m_preheaterCommand);
     }
 
     /* COMMANDS */
@@ -428,23 +432,12 @@ public class Robot extends TimedRobot {
 
     private final Timer m_fpsLimitTimer = new Timer();
     private final Timer lastGotTagMsmtTimer = new Timer();
-    private final Timer m_disableInitDelayTimer = new Timer();
+    private final Timer m_disableChangeDelayTimer = new Timer();
 
     @Override
     public void disabledInit() {
-        m_disableInitDelayTimer.restart();
-
-        if (m_disableInitDelayTimer.hasElapsed(3.0)) {
-            m_disableInitDelayTimer.stop();
-            m_fpsLimitTimer.restart();
-            WaltCamera.setFpsLimit(true);
-            m_shooter.setTurretNeutralMode(NeutralModeValue.Coast);
-            m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
-            m_waltAutonFactory.setAlliance(
-                DriverStation.getAlliance().isPresent() && 
-                DriverStation.getAlliance().get().equals(Alliance.Red)
-            );
-        }
+        WaltLogger.timedPrint("Robot::disabledInit");
+        m_disableChangeDelayTimer.restart();
     }
 
 
@@ -453,16 +446,23 @@ public class Robot extends TimedRobot {
         if (m_fpsLimitTimer.hasElapsed(3) && !WaltCamera.areCamsFpsLimited()) {
             WaltCamera.setFpsLimit(true);
             m_fpsLimitTimer.restart();
+            // dumb bullshit to hot-path the Chooser on occasion
+
+        }
+
+        // oneshot on DisabledInit
+        if (m_disableChangeDelayTimer.hasElapsed(3.0)) {
+            m_disableChangeDelayTimer.stop();
+            m_disableChangeDelayTimer.reset();
+            m_shooter.setTurretNeutralMode(NeutralModeValue.Coast);
+            m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
         }
     }
 
     @Override
     public void disabledExit() {
-        // if (!DriverStation.isFMSAttached()) {
-            WaltLogger.timedPrint("Re-enabling motor brakes");
-            m_shooter.setTurretNeutralMode(NeutralModeValue.Brake);
-            m_intake.setIntakeArmNeutralMode(NeutralModeValue.Brake);
-        // }
+        WaltLogger.timedPrint("Robot::disabledExit");
+        m_disableChangeDelayTimer.restart();
     }
 
     @Override
@@ -472,8 +472,6 @@ public class Robot extends TimedRobot {
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
         }
-
-        // AutonChooser.cleanup();
     }
 
     @Override

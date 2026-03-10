@@ -369,7 +369,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      * @return AutoFactory for this drivetrain
      */
     public AutoFactory createAutoFactory() {
-        return createAutoFactory((sample, isStart) -> {});
+        return createAutoFactory((traj, isStart) -> {
+            WaltLogger.timedPrint(String.format("TrajLog - isStart: %b", isStart));
+        });
     }
 
     /**
