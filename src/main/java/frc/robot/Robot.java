@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -106,6 +107,7 @@ public class Robot extends TimedRobot {
     // private final VisionSim m_visionSim = new VisionSim();
 
     /* TRIGGERS */
+    private Trigger trg_optimalPrefireTime = new Trigger(HubShiftUtil.optimalPrefireTime());
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
 
@@ -215,6 +217,11 @@ public class Robot extends TimedRobot {
                 .withRotationalRate(driverYawRate); // Drive counterclockwise with negative X (left)
             }
         );
+    }
+
+    private void setBothRumble(RumbleType type, double intensity) {
+        m_driver.setRumble(type, intensity);
+        m_manipulator.setRumble(type, intensity);
     }
 
     //(nonsotm (just for simulating entire robot)) BLARGHHHHHH get intake dude (alex?) to give me his code (idk if he finished it yet)
@@ -341,8 +348,11 @@ public class Robot extends TimedRobot {
 
         // m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
 
-        m_driver.povDown().onTrue(Commands.runOnce(() -> m_shooter.setShotCalcCmd(false)));
-        m_driver.povRight().onTrue(Commands.runOnce(() -> m_shooter.setShotCalcCmd(true)));
+        trg_optimalPrefireTime.whileTrue(
+            Commands.run(() -> setBothRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> setBothRumble(RumbleType.kBothRumble, 0)));
+
+        m_driver.povDown().onTrue(m_shooter.setShotCalcCmd(false));
+        m_driver.povRight().onTrue(m_shooter.setShotCalcCmd(true));
     }
 
     private void configureTestBindings() {
