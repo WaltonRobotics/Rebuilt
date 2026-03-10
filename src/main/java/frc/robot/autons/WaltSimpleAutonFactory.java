@@ -5,7 +5,6 @@ import static frc.robot.Constants.ShooterK.kShooterAuton_EndSweep_RPS;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.AutonK;
@@ -49,9 +48,9 @@ public class WaltSimpleAutonFactory {
         return Commands.runOnce(() -> log_autonState.accept(state));
     }
 
-    private Command tp(String label) {
-        return Commands.runOnce(() -> System.out.println("[AUTON] " + label + " @ " + Timer.getFPGATimestamp()));
-    }
+    private Command tp(String message) {
+        return WaltLogger.timedPrintCmd(message);
+    }    
 
     private Command homingCmd() {
         return Commands.parallel(
@@ -157,7 +156,7 @@ public class WaltSimpleAutonFactory {
                     Commands.waitSeconds(0.0001),
                     logState(0.2),
                     tp("goInNow.intake.START"),
-                    m_superstructure.intake(() -> false).withTimeout(7.5),
+                    // m_superstructure.intake(() -> false).withTimeout(7.5),
                     tp("goInNow.intake.END")
                 ),
                 Commands.sequence(
@@ -176,9 +175,8 @@ public class WaltSimpleAutonFactory {
                     logState(1.1),
                     Commands.waitSeconds(3), // 5
                     logState(1.2),
-                    // m_superstructure.shimmy()
                     tp("goInNow.retractIntake.START"),
-                    m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED),
+                    // m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED),
                     tp("goInNow.retractIntake.END")
                 )
             ),

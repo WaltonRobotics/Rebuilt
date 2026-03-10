@@ -26,8 +26,6 @@ public class AutonChooser {
         return new WaltPathAndCommand(AutonK.kLeftSweepPathName, simpleAutonFactory.oneCycleGoInNow(true));
     }
 
-    private static Timer s_loadTimer = new Timer();
-
     public static void initialize(WaltSimpleAutonFactory simpleAutonFactory) {
         m_simpleAutonFactory = simpleAutonFactory;
 
@@ -36,36 +34,6 @@ public class AutonChooser {
         m_chooser.addOption("Fast One Left Neutral Pickup", auton_oneCycleGoInNow_Left(m_simpleAutonFactory));
 
         SmartDashboard.putData(m_chooser);
-        m_chooser.onChange((var pathAndCmd) -> {
-            if (pathAndCmd.pathName.equals("")) {
-                System.out.println("Loading no path for empty String");
-                return;
-            }
-
-            s_loadTimer.restart();
-            var theTraj = m_simpleAutonFactory.m_autoFactory.cache().loadTrajectory(pathAndCmd.pathName);
-            s_loadTimer.stop();
-            double elapsedSec = s_loadTimer.get();
-            
-            if (theTraj.isEmpty()) {
-                DriverStation.reportWarning("Loaded path was empty!!!", false);
-                return;
-            }
-
-            var pathTime = theTraj.get().getTotalTime();
-            if (pathTime != 0.0) {
-                System.out.println(String.format("Loaded path lasts %.2f seconds", pathTime));    
-            } else {
-                DriverStation.reportWarning("Loaded path has no time taken!!!", false);
-            }
- 
-            System.out.println("");
-            System.out.println("");
-            System.out.println("=================================================================================");
-            System.out.println("=============== AUTON PATH \"" + pathAndCmd.pathName +  "\" LOADED ==============");
-            System.out.println("=================================================================================");
-            System.out.println(String.format("Took %.2f msec", elapsedSec / 1000.0));
-        });
     }
 
     public static void cleanup() {
