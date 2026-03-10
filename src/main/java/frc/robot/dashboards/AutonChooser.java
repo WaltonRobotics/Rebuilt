@@ -20,10 +20,10 @@ public class AutonChooser {
     private static final WaltPathAndCommand auton_none = new WaltPathAndCommand("", Commands.none());
 
     private static WaltPathAndCommand auton_oneCycleGoInNow_Right(WaltSimpleAutonFactory simpleAutonFactory) {
-        return new WaltPathAndCommand(AutonK.kRightSweepPathName, simpleAutonFactory.oneCycleGoInNow(false));
+        return new WaltPathAndCommand(AutonK.kRightSweepPathName, simpleAutonFactory.noPreload_oneSweep(false));
     }
     private static WaltPathAndCommand auton_oneCycleGoInNow_Left(WaltSimpleAutonFactory simpleAutonFactory) {
-        return new WaltPathAndCommand(AutonK.kLeftSweepPathName, simpleAutonFactory.oneCycleGoInNow(true));
+        return new WaltPathAndCommand(AutonK.kLeftSweepPathName, simpleAutonFactory.noPreload_oneSweep(true));
     }
 
     public static void initialize(WaltSimpleAutonFactory simpleAutonFactory) {

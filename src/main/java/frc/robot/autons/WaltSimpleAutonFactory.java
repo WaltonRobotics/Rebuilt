@@ -44,9 +44,6 @@ public class WaltSimpleAutonFactory {
             autonCommand = autonCommand_;
         }
     }
-    private Command logState(double state) {
-        return Commands.runOnce(() -> log_autonState.accept(state));
-    }
 
     private Command tp(String message) {
         return WaltLogger.timedPrintCmd(message);
@@ -93,125 +90,27 @@ public class WaltSimpleAutonFactory {
         );
     }
 
-    private Command preload_oneSweep(boolean isLeft) {
-        String trajName = isLeft ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
-
-        return Commands.sequence(
-            tp("preload.sequence.START"),
-            logState(0),
-            Commands.sequence(
-                tp("preload.homing.START"),
-                homingCmd().withName("HomingCmd"),
-                tp("preload.homing.END"),
-                logState(1),
-                tp("preload.waitTurretHomed.START"),
-                Commands.waitUntil(m_shooter.turretHomedSupp),  //TODO: should probably change this to check if is aiming at target (hub)
-                tp("preload.waitTurretHomed.END"),
-                logState(2),
-                tp("preload.shoot.START"),
-                shootWithTimeout(kShooterAutonCloseRPS, 2).withName("ShootingCmd"),
-                tp("preload.shoot.END")
-            ),
-            logState(3),
-            tp("preload.deadline.START"),
-            Commands.deadline(
-                runTraj(trajName, AutonK.kOneSweepMaxTime).withName("RunPath" + trajName),
-                Commands.sequence(
-                    logState(3.1),
-                    tp("preload.deadline.waitSeconds.START"),
-                    Commands.waitSeconds(2.17),
-                    tp("preload.deadline.waitSeconds.END"),
-                    logState(3.2),
-                    tp("preload.deadline.intake.START"),
-                    m_superstructure.intake(() -> false).withTimeout(7.5),
-                    tp("preload.deadline.intake.END"),
-                    logState(3.3),
-                    tp("preload.deadline.unjam.START"),
-                    m_superstructure.unjamCmd(),
-                    tp("preload.deadline.unjam.END")
-                )
-            ),
-            tp("preload.deadline.END"),
-            logState(4),
-            tp("preload.endShoot.START"),
-            Commands.parallel(
-                shootWithTimeout(kShooterAuton_EndSweep_RPS ,12),
-                Commands.sequence(
-                    logState(4.1),
-                    Commands.waitSeconds(6),
-                    logState(4.2),
-                    tp("preload.shimmy.START"),
-                    m_superstructure.shimmy(),
-                    tp("preload.shimmy.END")
-                )
-            ),
-            tp("preload.endShoot.END")
-        ).withName(trajName);
-    }
-
-    public Command rightOneSweep() {
-        return preload_oneSweep(false);
-    }
-
-    public Command leftOneSweep() {
-        return preload_oneSweep(true);
-    }
-
-    //OVERALL TODO: clean up code and combine no preload w/ preload (and left/right) into one method
-    //TODO: find better name for this
-    public Command oneCycleGoInNow(boolean left) {
+    public Command noPreload_oneSweep(boolean left) {
         String path = left ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
+
         return Commands.sequence(
-            tp("goInNow.sequence.START"),
-            logState(0),
-            tp("goInNow.parallel.START"),
             Commands.parallel(
                 homingCmd().andThen(
-                    tp("goInNow.homing.END"),
-                    logState(0.1),
                     Commands.waitSeconds(0.0001),
-                    logState(0.2),
-                    tp("goInNow.intake.START"),
-                    // m_superstructure.intake(() -> false).withTimeout(7.5),
-                    tp("goInNow.intake.END")
+                    m_superstructure.intake(() -> false).withTimeout(7.5)
                 ),
                 Commands.sequence(
-                    tp("goInNow.traj.START"),
-                    runTraj(path, AutonK.kOneSweepMaxTime),
-                    tp("goInNow.traj.END"),
-                    logState(0.99)
+                    runTraj(path, AutonK.kOneSweepMaxTime)
                 )
             ),
-            tp("goInNow.parallel.END"),
-            logState(1),
-            tp("goInNow.shootDeadline.START"),
             Commands.deadline(
                 shootWithTimeout(kShooterAuton_EndSweep_RPS, 12),
                 Commands.sequence(
-                    logState(1.1),
-                    Commands.waitSeconds(3), // 5
-                    logState(1.2),
-                    tp("goInNow.retractIntake.START"),
-                    // m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED),
-                    tp("goInNow.retractIntake.END")
+                    Commands.waitSeconds(3),
+                    m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
                 )
-            ),
-            tp("goInNow.shootDeadline.END"),
-            logState(2)
+            )
         ).withName(path);
-    }
-
-    public Command rightTwoSweep() {
-        return Commands.sequence(
-            Commands.parallel(
-                m_autoFactory.resetOdometry(AutonK.kRightSweepPathName),
-                m_superstructure.activateOuttake(kShooterAutonCloseRPS).withTimeout(2)
-            ),
-            rightOneSweep(),
-            m_autoFactory.resetOdometry("RightTurnBack"),
-            m_autoFactory.trajectoryCmd("RightTurnBack"),
-            rightOneSweep()
-        );
     }
 
     public Command rightDepotToShoot() {
@@ -257,5 +156,31 @@ public class WaltSimpleAutonFactory {
                 )
             )
         );
+    }
+
+    private Command preload_oneSweep(boolean isLeft) {
+        String trajName = isLeft ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
+
+        return Commands.sequence(
+            Commands.sequence(
+                homingCmd().withName("HomingCmd"),
+                Commands.waitUntil(m_shooter.turretHomedSupp),
+                shootWithTimeout(kShooterAutonCloseRPS, 2).withName("ShootingCmd")
+            ),
+            Commands.deadline(
+                runTraj(trajName, AutonK.kOneSweepMaxTime).withName("RunPath" + trajName),
+                Commands.sequence(
+                    Commands.waitSeconds(2.17),
+                    m_superstructure.intake(() -> false).withTimeout(7.5),
+                    m_superstructure.unjamCmd()
+                )
+            ),
+            Commands.parallel(
+                shootWithTimeout(kShooterAuton_EndSweep_RPS ,12),
+                Commands.sequence(
+                    Commands.waitSeconds(6),
+                    m_superstructure.shimmy()
+                )
+        ).withName(trajName));
     }
 }

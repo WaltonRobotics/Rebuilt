@@ -43,7 +43,6 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.Constants.RobotK;
 import frc.robot.dashboards.AutonChooser;
 import frc.robot.dashboards.TestingDashboard;
-import frc.robot.autons.WaltAutonFactory;
 import frc.robot.autons.WaltSimpleAutonFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
@@ -95,9 +94,8 @@ public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
 
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
-    private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
 
-    private final WaltSimpleAutonFactory m_simpleAutonFactory = new WaltSimpleAutonFactory(m_superstructure, m_autoFactory, m_intake, m_shooter, m_drivetrain);
+    private final WaltSimpleAutonFactory m_waltAutonFactory = new WaltSimpleAutonFactory(m_superstructure, m_autoFactory, m_intake, m_shooter, m_drivetrain);
     //---VISION
 
     private PowerDistribution m_PDH = new PowerDistribution();
@@ -156,7 +154,7 @@ public class Robot extends TimedRobot {
             // FuelSim.getInstance().enableAirResistance();
         }
 
-        AutonChooser.initialize(m_simpleAutonFactory);
+        AutonChooser.initialize(m_waltAutonFactory);
 
         // set FPS limit on boot
         WaltCamera.setFpsLimit(true);
