@@ -60,11 +60,19 @@ public class WaltSimpleAutonFactory {
         );
     }
 
+    private Command waitTurretHomedCmd() {
+        return Commands.waitUntil(m_shooter.turretHomedSupp);
+    }
+
+    private Command waitIntakeHomedCmd() {
+        return Commands.waitUntil(m_intake.intakeHomedSupp);
+    }
+
     private Command homingCmd() {
         return Commands.parallel(
-            Commands.sequence(tp("turretHoming.START"), m_shooter.turretHomingCmd(), tp("turretHoming.END")),
-            Commands.sequence(tp("intakeArmHoming.START"), m_intake.intakeArmCurrentSenseHoming(), tp("intakeArmHoming.END"))
-        );
+            Commands.sequence(tp("turretHoming.START"), waitTurretHomedCmd(), tp("turretHoming.END")),
+            Commands.sequence(tp("intakeArmHoming.START"), waitIntakeHomedCmd(), tp("intakeArmHoming.END"))
+        ).withTimeout(5);
     }
 
     private Command shootWithTimeout(AngularVelocity speed, double seconds) {
@@ -97,7 +105,7 @@ public class WaltSimpleAutonFactory {
                 tp("preload.homing.END"),
                 logState(1),
                 tp("preload.waitTurretHomed.START"),
-                Commands.waitUntil(() -> m_shooter.m_isTurretHomed),  //TODO: should probably change this to check if is aiming at target (hub)
+                Commands.waitUntil(m_shooter.turretHomedSupp),  //TODO: should probably change this to check if is aiming at target (hub)
                 tp("preload.waitTurretHomed.END"),
                 logState(2),
                 tp("preload.shoot.START"),

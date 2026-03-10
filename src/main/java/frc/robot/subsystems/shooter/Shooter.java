@@ -128,7 +128,8 @@ public class Shooter extends SubsystemBase {
 
     
     //---LOGIC BOOLEANS
-    public boolean m_isTurretHomed = false;
+    private boolean m_isTurretHomed = false;
+    public BooleanSupplier turretHomedSupp = () -> m_isTurretHomed;
 
     /* SIM OBJECTS */
     private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(
@@ -190,7 +191,7 @@ public class Shooter extends SubsystemBase {
             Commands.runOnce(() -> homingEventLoop.clear()))
         );
 
-        m_turret.setPosition(0);
+        m_turret.setPosition(kInitPosition);
 
         initSim();
     }
