@@ -107,8 +107,7 @@ public class Constants {
         public static final AngularVelocity kShooterAutonCloseRPS = kShooterMaxRPS.times(0.60);  //auton pose is closer to the hub than teleop scoring
         public static final AngularVelocity kShooterAuton_EndSweep_RPS = kShooterMaxRPS.times(0.70); // end of sweep paths
 
-        
-        public static final AngularVelocity kShooterBarfRPS = RotationsPerSecond.of((5785/60) * (0.2) / kShooterGearing);
+        public static final AngularVelocity kShooterBarfRPS = MotorK.kX60MaxVelocity.times(0.2).div(kShooterGearing);
         public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.of(/* 0/60 * (0.9) / kShooterGearing */ 0);
 
         //---HOOD CONSTANTS
@@ -340,7 +339,7 @@ public class Constants {
         public static final double kIntakeRollersMOI = 0.0001; // 0.00343880857
         public static final double kIntakeRollersGearing = 12.0/30;
 
-        public static final AngularVelocity kIntakeRollersMaxRPS = RotationsPerSecond.of((5785 / 60) / kIntakeRollersGearing * .8);  //100% RPS
+        public static final AngularVelocity kIntakeRollersMaxRPS = MotorK.kX60FOCMaxVelocity.div(kIntakeRollersGearing).times(0.8);  //100% RPS
 
         /* IDS */
         public static final int kIntakeArmCANID = 40;
@@ -425,7 +424,7 @@ public class Constants {
         public static final double kTunnelMOI = 0.000215968064;
       
         public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60FOCMaxVelocity.div(kSpindexerGearing);
-        public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
+        public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.2);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.7);
 
         public static final AngularVelocity kTunnelMaxRPS = MotorK.kX44FOCMaxVelocity.div(kTunnelGearing);
