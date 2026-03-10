@@ -136,15 +136,6 @@ public class Robot extends TimedRobot {
     private final DoubleLogger log_stickDesiredFieldX = WaltLogger.logDouble("Swerve", "stick desired teleop x");
     private final DoubleLogger log_stickDesiredFieldY = WaltLogger.logDouble("Swerve", "stick desired teleop y");
     private final DoubleLogger log_stickDesiredFieldZRot = WaltLogger.logDouble("Swerve", "stick desired teleop z rot");
-    private final BooleanLogger log_povUp = WaltLogger.logBoolean(kLogTab, "Pov Up");
-    private final BooleanLogger log_povRight = WaltLogger.logBoolean(kLogTab, "Pov Right");
-    private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
-    private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
-
-    private final BooleanLogger log_manipLeftTrigger = WaltLogger.logBoolean(kLogTab, "Manip Left Trigger");
-    private final BooleanLogger log_manipRightTrigger = WaltLogger.logBoolean(kLogTab, "Manip Right Trigger");
-    private final BooleanLogger log_driverLeftTrigger = WaltLogger.logBoolean(kLogTab, "Driver Left Trigger");
-    private final BooleanLogger log_driverRightTrigger = WaltLogger.logBoolean(kLogTab, "Driver Right Trigger");
 
     private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble(kLogTab, "MiniPC current");
 
@@ -163,6 +154,9 @@ public class Robot extends TimedRobot {
             configureFuelSim();
             // FuelSim.getInstance().enableAirResistance();
         }
+
+        AutonChooser.initialize(m_simpleAutonFactory);
+
         // set FPS limit on boot
         WaltCamera.setFpsLimit(true);
 
@@ -405,15 +399,6 @@ public class Robot extends TimedRobot {
         }
         m_periodicTracer.addEpoch("VisionUpdate");
 
-        log_povUp.accept(m_driver.povUp());
-        log_povDown.accept(m_driver.povDown());
-        log_povLeft.accept(m_driver.povLeft());
-        log_povRight.accept(m_driver.povRight());
-        log_manipLeftTrigger.accept(m_manipulator.leftTrigger());
-        log_manipRightTrigger.accept(m_manipulator.rightTrigger());
-        log_driverLeftTrigger.accept(m_driver.leftTrigger());
-        log_driverLeftTrigger.accept(m_driver.leftTrigger());
-
         log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
         log_isDisabled.accept(trg_limitFPS);
         m_periodicTracer.addEpoch("Logging");
@@ -443,21 +428,23 @@ public class Robot extends TimedRobot {
 
     private final Timer m_fpsLimitTimer = new Timer();
     private final Timer lastGotTagMsmtTimer = new Timer();
+    private final Timer m_disableInitDelayTimer = new Timer();
 
     @Override
     public void disabledInit() {
-        m_fpsLimitTimer.restart();
-        WaltCamera.setFpsLimit(true);
-        // if (!DriverStation.isFMSAttached()) {
-            // m_shooter.setTurretNeutralMode(NeutralModeValue.Coast);
-            // m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
-        // }
-        m_waltAutonFactory.setAlliance(
-            DriverStation.getAlliance().isPresent() && 
-            DriverStation.getAlliance().get().equals(Alliance.Red)
-        );
+        m_disableInitDelayTimer.restart();
 
-        AutonChooser.initialize(m_simpleAutonFactory);
+        if (m_disableInitDelayTimer.hasElapsed(3.0)) {
+            m_disableInitDelayTimer.stop();
+            m_fpsLimitTimer.restart();
+            WaltCamera.setFpsLimit(true);
+            m_shooter.setTurretNeutralMode(NeutralModeValue.Coast);
+            m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
+            m_waltAutonFactory.setAlliance(
+                DriverStation.getAlliance().isPresent() && 
+                DriverStation.getAlliance().get().equals(Alliance.Red)
+            );
+        }
     }
 
 
@@ -472,9 +459,9 @@ public class Robot extends TimedRobot {
     @Override
     public void disabledExit() {
         // if (!DriverStation.isFMSAttached()) {
-            // System.out.println("Re-enabling motor brakes");
-            // m_shooter.setTurretNeutralMode(NeutralModeValue.Brake);
-            // m_intake.setIntakeArmNeutralMode(NeutralModeValue.Brake);
+            WaltLogger.timedPrint("Re-enabling motor brakes");
+            m_shooter.setTurretNeutralMode(NeutralModeValue.Brake);
+            m_intake.setIntakeArmNeutralMode(NeutralModeValue.Brake);
         // }
     }
 
