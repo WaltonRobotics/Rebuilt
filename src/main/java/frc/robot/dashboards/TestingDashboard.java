@@ -39,6 +39,9 @@ public class TestingDashboard {
     public static BooleanTopic BT_letIntakeArmPositionRotsChange = nte_inst.getBooleanTopic("/TestingDashboard/letIntakeArmPositionRotsChange");
     public static BooleanTopic BT_letIntakeRollersVelocityRPSChange = nte_inst.getBooleanTopic("/TestingDashboard/letIntakeRollersVelocityRPSChange");
 
+    //---SELECT OPS CHECK SWITCHES
+    public static BooleanTopic BT_letOpsCheckBeLong = nte_inst.getBooleanTopic("/TestingDashboard/letOpsCheckBeLong");
+
     /* PUBLISHERS */
     //---SHOOTER
     public static DoublePublisher pub_shooterVelocityRPS;
@@ -63,6 +66,9 @@ public class TestingDashboard {
 
     public static BooleanPublisher pub_letIntakeArmPositionRotsChange;
     public static BooleanPublisher pub_letIntakeRollersVelocityRPSChange;
+
+    //---SELECT OPS CHECK SWITCHES
+    public static BooleanPublisher pub_letOpsCheckBeLong;
 
     /* SUBSCRIBERS */
     //---SHOOTER
@@ -89,6 +95,9 @@ public class TestingDashboard {
     public static BooleanSubscriber sub_letIntakeArmPositionRotsChange;
     public static BooleanSubscriber sub_letIntakeRollersVelocityRPSChange;
 
+    //---SELECT OPS CHECK SWITCHES
+    public static BooleanSubscriber sub_letOpsCheckBeLong;
+
     /* TRIGGERS */
     public static Trigger trg_letShooterVelocityRPSChange;
     public static Trigger trg_letTurretPositionRotsChange;
@@ -99,6 +108,8 @@ public class TestingDashboard {
 
     public static Trigger trg_letIntakeArmPositionRotsChange;
     public static Trigger trg_letIntakeRollersVelocityRPSChange;
+
+    public static Trigger trg_letOpsCheckBeLong;
 
     public static void initialize() {
         //---SHOOTER
@@ -159,6 +170,13 @@ public class TestingDashboard {
         sub_letIntakeArmPositionRotsChange = BT_letIntakeArmPositionRotsChange.subscribe(false);
         sub_letIntakeRollersVelocityRPSChange = BT_letIntakeRollersVelocityRPSChange.subscribe(false);
 
+        //--SELECT OPS CHECK SWITCHES
+        pub_letOpsCheckBeLong = BT_letOpsCheckBeLong.publish();
+
+        pub_letOpsCheckBeLong.setDefault(false);
+
+        sub_letOpsCheckBeLong = BT_letOpsCheckBeLong.subscribe(false);
+
         //---TRIGGERS
         trg_letShooterVelocityRPSChange = new Trigger(() -> sub_letShooterVelocityRPSChange.get());
         trg_letTurretPositionRotsChange = new Trigger(() -> sub_letTurretPositionRotsChange.get());
@@ -169,5 +187,7 @@ public class TestingDashboard {
 
         trg_letIntakeArmPositionRotsChange = new Trigger(() -> sub_letIntakeArmPositionRotsChange.get());
         trg_letIntakeRollersVelocityRPSChange = new Trigger(() -> sub_letIntakeRollersVelocityRPSChange.get());
+
+        trg_letOpsCheckBeLong = new Trigger(() -> sub_letOpsCheckBeLong.get());
     }
 }
