@@ -165,7 +165,6 @@ public class Constants {
         private static final CurrentLimitsConfigs kShooterACurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(80)
             .withSupplyCurrentLimit(50)
-            .withSupplyCurrentLowerTime(0)
             .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kShooterAOutputConfigs = new MotorOutputConfigs()
