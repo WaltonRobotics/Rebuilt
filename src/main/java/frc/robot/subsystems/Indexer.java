@@ -17,6 +17,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IndexerK.*;
 
 import frc.robot.Constants;
+import frc.robot.Constants.MotorK;
 import frc.util.WaltMotorSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -27,8 +28,8 @@ public class Indexer extends SubsystemBase {
     private final TalonFX m_spindexer = new TalonFX(kSpindexerCANID, Constants.kCanivoreBus); // X60Foc
     private final TalonFX m_tunnel = new TalonFX(kTunnelCANID, Constants.kCanivoreBus); // X60Foc
 
-    private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
-    private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
+    private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(MotorK.kZeroVel).withEnableFOC(true);
+    private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(MotorK.kZeroVel).withEnableFOC(true);
 
 
     /* SIM OBJECTS */
@@ -75,11 +76,11 @@ public class Indexer extends SubsystemBase {
     }
 
     public Command stopSpindexerCmd() {
-        return setSpindexerVelocityCmd(RotationsPerSecond.zero());
+        return setSpindexerVelocityCmd(MotorK.kZeroVel);
     }
 
     public void stopSpindexer() {
-        setSpindexerVelocity(RotationsPerSecond.zero());
+        setSpindexerVelocity(MotorK.kZeroVel);
     }
 
     public Command startTunnelCmd() {
@@ -87,11 +88,11 @@ public class Indexer extends SubsystemBase {
     }
 
     public Command stopTunnelCmd() {
-        return setTunnelVelocityCmd(RotationsPerSecond.zero());
+        return setTunnelVelocityCmd(MotorK.kZeroVel);
     }
 
     public void stopTunnel() {
-        setTunnelVelocity(RotationsPerSecond.zero());
+        setTunnelVelocity(MotorK.kZeroVel);
     }
 
     //---SPINDEXER

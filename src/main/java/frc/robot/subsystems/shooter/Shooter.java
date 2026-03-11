@@ -51,6 +51,7 @@ import java.util.function.Supplier;
 
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
+import frc.robot.Constants.MotorK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.WpiK;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
@@ -87,7 +88,7 @@ public class Shooter extends SubsystemBase {
     // ---MOTORS + CONTROL REQUESTS
     private final TalonFX m_shooterA = new TalonFX(kShooterA_CANID, Constants.kCanivoreBus); // X60Foc
     private final TalonFX m_shooterB = new TalonFX(kShooterB_CANID, Constants.kCanivoreBus); // X60Foc
-    private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(false);
+    private final VelocityVoltage m_velocityRequest = new VelocityVoltage(MotorK.kZeroVel).withEnableFOC(false);
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); // X44Foc
     private final PositionVoltage m_PVRequest = new PositionVoltage(0).withEnableFOC(true);
@@ -100,7 +101,7 @@ public class Shooter extends SubsystemBase {
 
 
     private Angle m_calcTurret = Rotations.of(0);
-    private AngularVelocity m_calcFlywheelVelocity = RotationsPerSecond.of(0);
+    private AngularVelocity m_calcFlywheelVelocity = MotorK.kZeroVel;
 
     private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
     private final DoubleLogger log_calcTurretPos = new DoubleLogger("Shooter/Turret", "calcTurretPos");
@@ -209,7 +210,7 @@ public class Shooter extends SubsystemBase {
 
     private void stopFlywheel() {
         m_shooterA.setNeutralMode(NeutralModeValue.Coast);
-        setShooterVelocity(RotationsPerSecond.of(0.0));
+        setShooterVelocity(MotorK.kZeroVel);
     }
 
     public Command zeroFlywheelCmd() {

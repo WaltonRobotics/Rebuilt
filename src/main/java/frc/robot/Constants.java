@@ -60,6 +60,8 @@ public class Constants {
         public static final AngularVelocity kX44MaxVelocity = RadiansPerSecond.of(kX44MaxRadPerSec);
         public static final double kX44FOCMaxRadPerSec = DCMotor.getKrakenX44Foc(1).freeSpeedRadPerSec;
         public static final AngularVelocity kX44FOCMaxVelocity = RadiansPerSecond.of(kX44MaxRadPerSec);
+
+        public static final AngularVelocity kZeroVel = RadiansPerSecond.zero();
     }
     public static class WpiK {
         public static final ChassisSpeeds kZeroChassisSpeeds = new ChassisSpeeds(0, 0, 0);
@@ -107,8 +109,8 @@ public class Constants {
         public static final AngularVelocity kShooterAutonCloseVel = kShooterMaxVel.times(0.60);  //auton pose is closer to the hub than teleop scoring
         public static final AngularVelocity kShooterAutonEndSweepVel = kShooterMaxVel.times(0.70); // end of sweep paths
 
-        public static final AngularVelocity kShooterBarfVel = MotorK.kX60MaxVelocity.times(0.2).div(kShooterGearing);
-        public static final AngularVelocity kShooterZeroVel = RotationsPerSecond.of(/* 0/60 * (0.9) / kShooterGearing */ 0);
+        public static final AngularVelocity kShooterBarfVel = kShooterMaxVel.times(0.2);
+        public static final AngularVelocity kShooterZeroVel = MotorK.kZeroVel;
 
         //---HOOD CONSTANTS
         public static final double kHoodMoI = 0.00027505;

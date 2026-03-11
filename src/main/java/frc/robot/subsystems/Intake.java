@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltMotorSim;
+import frc.robot.Constants.MotorK;
 import frc.robot.Robot;
 import frc.util.WaltLogger;
 
@@ -42,7 +43,7 @@ public class Intake extends SubsystemBase {
     private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID); //x60Foc
 
     private DynamicMotionMagicVoltage m_MMVReq = new DynamicMotionMagicVoltage(0, 1, 1).withEnableFOC(true);
-    private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
+    private VelocityVoltage m_VVReq = new VelocityVoltage(MotorK.kZeroVel).withEnableFOC(true);
 
     private BooleanSupplier m_currentSpike = () -> m_intakeArm.getStatorCurrent().getValueAsDouble() > 5.0;
     private BooleanSupplier m_veloIsNearZero = () -> Math.abs(m_intakeArm.getVelocity().getValueAsDouble()) < 0.005;

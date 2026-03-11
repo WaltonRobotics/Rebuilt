@@ -8,6 +8,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.IndexerK;
+import frc.robot.Constants.IntakeK;
+import frc.robot.Constants.MotorK;
+import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
@@ -99,7 +102,7 @@ public class Superstructure extends SubsystemBase {
                 if (m_intake.getIntakeArmStatorCurrent() < 40) {
                     Commands.run(() -> m_shooter.setShotCalcCmd(true));
                     m_shooter.setShotCalc(true);
-                    m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
+                    m_intake.setIntakeRollersVelocity(MotorK.kZeroVel);   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
                     m_indexer.stopSpindexer();
                     // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
                 }
@@ -117,7 +120,7 @@ public class Superstructure extends SubsystemBase {
             }, 
             () -> {
                 if (m_intake.getIntakeArmStatorCurrent() < 40) {
-                    m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
+                    m_intake.setIntakeRollersVelocity(MotorK.kZeroVel);   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
                     // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
                 }
             }
@@ -184,12 +187,12 @@ public class Superstructure extends SubsystemBase {
                 m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersMaxVel.times(-1));
             },
             () -> {
-                m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));
+                m_intake.setIntakeRollersVelocity(MotorK.kZeroVel);
                 m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
-                m_shooter.setShooterVelocity(RotationsPerSecond.of(0));
+                m_shooter.setShooterVelocity(MotorK.kZeroVel);
                 // m_shooter.setHoodPosition(ShooterK.kHoodSafeDegs);
-                m_indexer.setSpindexerVelocity(RotationsPerSecond.of(0));
-                m_indexer.setTunnelVelocity(RotationsPerSecond.of(0));
+                m_indexer.setSpindexerVelocity(MotorK.kZeroVel);
+                m_indexer.setTunnelVelocity(MotorK.kZeroVel);
             }
         );
     }
@@ -297,9 +300,9 @@ public class Superstructure extends SubsystemBase {
                 m_indexer.setTunnelVelocity(Constants.IndexerK.kTunnelShootVel.times(-1));
                 m_shooter.setShooterVelocity(Constants.ShooterK.kShooterVel.times(-1));
             }, () -> {
-                m_indexer.setSpindexerVelocity(RotationsPerSecond.of(0));
-                m_indexer.setTunnelVelocity(RotationsPerSecond.of(0));
-                m_shooter.setShooterVelocity(RotationsPerSecond.of(0));
+                m_indexer.setSpindexerVelocity(MotorK.kZeroVel);
+                m_indexer.setTunnelVelocity(MotorK.kZeroVel);
+                m_shooter.setShooterVelocity(MotorK.kZeroVel);
             }
         );
     }
