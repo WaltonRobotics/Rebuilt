@@ -503,5 +503,8 @@ public class Constants {
         public static final double kOneSweepMaxTime = 12.5; //in sec
         public static final String kLeftSweepPathName = "LeftSweep";
         public static final String kRightSweepPathName = "RightSweep";
+
+        public static final double kIntakeTimeout = 7.5; //in sec
+        public static final double kShootingTimeout = 12; //in sec
     }
 }

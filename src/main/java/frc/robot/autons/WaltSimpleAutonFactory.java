@@ -119,14 +119,14 @@ public class WaltSimpleAutonFactory {
                     logState(0.1),
                     Commands.waitSeconds(0.0001),
                     logState(0.2),
-                    m_superstructure.intake(() -> false).withTimeout(7.5)
+                    m_superstructure.intake(() -> false).withTimeout(AutonK.kIntakeTimeout)
                 ),
                 runTraj(path, AutonK.kOneSweepMaxTime)
                     .andThen(logState(0.99))
             ),
             logState(1),
             Commands.deadline(
-                shootWithTimeout(kShooterAuton_EndSweep_RPS, 12),
+                shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout),
                 Commands.sequence(
                     logState(1.1),
                     Commands.waitSeconds(3), // 5
