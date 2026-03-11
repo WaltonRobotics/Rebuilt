@@ -165,6 +165,7 @@ public class Constants {
         private static final CurrentLimitsConfigs kShooterACurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(80)
             .withSupplyCurrentLimit(50)
+            .withSupplyCurrentLowerTime(0)
             .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kShooterAOutputConfigs = new MotorOutputConfigs()
@@ -384,6 +385,7 @@ public class Constants {
         private static final CurrentLimitsConfigs kIntakeRollersCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(120)
             .withSupplyCurrentLimit(50)
+            .withSupplyCurrentLowerTime(0)
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
         private static final Slot0Configs kIntakeRollersSlot0Configs = new Slot0Configs()
@@ -471,6 +473,7 @@ public class Constants {
         private static final CurrentLimitsConfigs kTunnelCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(60)
             .withSupplyCurrentLimit(30)
+            .withSupplyCurrentLowerTime(0)
             .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
