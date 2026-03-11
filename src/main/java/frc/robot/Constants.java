@@ -434,10 +434,10 @@ public class Constants {
         /* CONFIGS */
         //TODO: Make transfer configs accurate
         private static final Slot0Configs kSpindexerSlot0Configs = new Slot0Configs()
-            .withKS(0.25)
-            .withKV(0.12)
+            .withKS(0.2)
+            .withKV(0.545)
             .withKA(0)
-            .withKP(0.5)
+            .withKP(0.75)
             .withKI(0)
             .withKD(0);
         private static final CurrentLimitsConfigs kSpindexerCurrentLimitConfigs = new CurrentLimitsConfigs()
