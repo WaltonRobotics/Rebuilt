@@ -56,7 +56,7 @@ public class WaltSimpleAutonFactory {
     }
 
     private Command shootWithTimeout(AngularVelocity speed, double seconds) {
-        return m_superstructure.activateOuttake(speed).withTimeout(seconds);
+        return m_superstructure.shoot(speed).withTimeout(seconds);
     }
 
     private Command runTraj(String name, double timeoutSecs) {
@@ -143,7 +143,7 @@ public class WaltSimpleAutonFactory {
         return Commands.sequence(
             Commands.parallel(
                 m_autoFactory.resetOdometry(AutonK.kRightSweepPathName),
-                m_superstructure.activateOuttake(kShooterAutonCloseRPS).withTimeout(2)
+                m_superstructure.shoot(kShooterAutonCloseRPS).withTimeout(2)
             ),
             rightOneSweep(),
             m_autoFactory.resetOdometry("RightTurnBack"),
@@ -169,7 +169,7 @@ public class WaltSimpleAutonFactory {
             Commands.parallel(
                 m_autoFactory.trajectoryCmd("RightDepotToShoot"),
                 Commands.sequence(
-                    m_superstructure.activateOuttake(ShooterK.kShooterRPS).withTimeout(2)
+                    m_superstructure.shoot(ShooterK.kShooterRPS).withTimeout(2)
                 )
             )
             
@@ -187,7 +187,7 @@ public class WaltSimpleAutonFactory {
                 m_autoFactory.trajectoryCmd("RightOutpostToNeutral"),
                 Commands.sequence(
                     Commands.waitSeconds(0.5),
-                    m_superstructure.activateOuttake(ShooterK.kShooterRPS).withTimeout(2),
+                    m_superstructure.shoot(ShooterK.kShooterRPS).withTimeout(2),
                     Commands.waitSeconds(0.5),
                     m_intake.setIntakeArmPosCmd(IntakeArmPosition.SAFE),
                     Commands.waitSeconds(0.5),

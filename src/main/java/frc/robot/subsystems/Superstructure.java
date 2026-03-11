@@ -42,34 +42,10 @@ public class Superstructure extends SubsystemBase {
     }
 
     /* BUTTON BIND SEQUENCES */
-
-    /**
-     * Turns off rollers and spinner and moves deploy to given pos.
-     * @param pos the position to move deploy to.
-     */
-    public Command deactivateIntake(IntakeArmPosition pos) {
-        return Commands.sequence(
-            m_intake.stopIntakeRollers(),
-            m_intake.setIntakeArmPosCmd(pos),
-            m_indexer.stopSpindexerCmd()
-        );
-    }
-
-    /**
-     * Turns on rollers and spinner moves deploy to deployed positon.
-     */
-    public Command activateIntake() {
-        return Commands.sequence(
-            m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
-            Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()),
-            m_intake.startIntakeRollers(),
-            m_indexer.setSpindexerVelocityCmd(Constants.IndexerK.kSpindexerIntakeRPS)
-        );
-    }
-
+    //---NORMAL BINDS
     public Command intake(BooleanSupplier isPassing) {
         return Commands.sequence(
-            m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
+            intakeArmToPos(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()).withTimeout(0.25),
             Commands.runEnd(
             () -> {
@@ -79,40 +55,23 @@ public class Superstructure extends SubsystemBase {
                 m_indexer.setSpindexerVelocity(isPassing.getAsBoolean() ? Constants.IndexerK.kSpindexerShootRPS : Constants.IndexerK.kSpindexerIntakeRPS);
             }, 
             () -> {
-                if (m_intake.getIntakeArmStatorCurrent() < 40) {
-                    Commands.run(() -> m_shooter.setShotCalcCmd(true));
-                    m_shooter.setShotCalc(true);
-                    m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
-                    m_indexer.stopSpindexer();
-                    // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
-                }
+                Commands.run(() -> m_shooter.setShotCalcCmd(true));
+                m_shooter.setShotCalc(true);
+                m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
+                m_indexer.stopSpindexer();
+                // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
             })
         );
     }
 
-    public Command intakeWhilePassing() {
-        return Commands.runEnd(
-            () -> {
-                m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
-                if (m_intake.isIntakeArmAtPos()) {
-                    m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
-                }
-            }, 
-            () -> {
-                if (m_intake.getIntakeArmStatorCurrent() < 40) {
-                    m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
-                    // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
-                }
-            }
-        );
-    }
-
-    public Command startShootSequence(AngularVelocity RPS) {
+    /**
+     * Turns off rollers and spinner and moves deploy to RETRACTED.
+     */
+    public Command retractIntake() {
         return Commands.sequence(
-            m_shooter.setShooterVelocityCmd(RPS),
-            Commands.waitUntil(() -> m_shooter.isShooterSpunUp()).withTimeout(3),
-            m_indexer.startTunnelCmd(),
-            m_indexer.startSpindexerCmd()
+            m_intake.stopIntakeRollers(),
+            intakeArmToPos(IntakeArmPosition.RETRACTED),
+            m_indexer.stopSpindexerCmd()
         );
     }
 
@@ -122,15 +81,28 @@ public class Superstructure extends SubsystemBase {
      * Note: does not move turret or hood.
      * @param RPS the speed for the shooter
      */
-    public Command activateOuttake(AngularVelocity RPS) {
+    public Command shoot(AngularVelocity RPS) {
         return Commands.parallel(
-            startShootSequence(RPS)
+            startShootingSequence(RPS)
                 .onlyWhile(() -> m_shooter.isShooterSpunUp())
                 .andThen(Commands.waitUntil(() -> m_shooter.isShooterSpunUp()))
                 .repeatedly()
             // m_intake.shimmy()
         ).finallyDo(
-            () -> deactivateOuttake()
+            () -> stopShooting()
+        );
+    }
+
+    /**
+     * Starts shooting by waiting until the shooter flywheel is spun up, then turning on the tunnel and spindexer.
+     * @param RPS RPS to set shooter velocity to.
+     */
+    public Command startShootingSequence(AngularVelocity RPS) {
+        return Commands.sequence(
+            m_shooter.setShooterVelocityCmd(RPS),
+            Commands.waitUntil(() -> m_shooter.isShooterSpunUp()).withTimeout(3),
+            m_indexer.startTunnelCmd(),
+            m_indexer.startSpindexerCmd()
         );
     }
 
@@ -139,13 +111,16 @@ public class Superstructure extends SubsystemBase {
      * <p>
      * Note: does not move turret or hood.
      */
-    public void deactivateOuttake() {
+    public void stopShooting() {
         m_indexer.stopSpindexer();
         m_indexer.stopTunnel();
         m_shooter.setShooterVelocity(ShooterK.kShooterZeroRPS);
         // m_shooter.setHoodPosition(Degrees.of(1));
     }
 
+    /**
+     * Ejects fuel out of the intake and shooter in a controlled yet rapid rate.
+     */
     public Command emergencyBarf() {
         return Commands.startEnd(
             () -> {
@@ -167,19 +142,23 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
+    /**
+     * Oscillates the intake back and forth to unstick balls stuck in the intake.
+     */
     public Command shimmy() {
        return m_intake.shimmy();
     }
 
-    /**
-     * Initiates passing by activating intake and outtake.
-     */
-    public Command startPassing() {
-        return Commands.sequence(
-            activateIntake(),
-            activateOuttake(ShooterK.kShooterRPS)
-        );
-    }
+    // TODO: potentially delete following 4 commands as they currently are useless and probably will stay useless
+    // /**
+    //  * Initiates passing by activating intake and outtake.
+    //  */
+    // public Command startPassing() {
+    //     return Commands.sequence(
+    //         activateIntake(),
+    //         activateOuttake(ShooterK.kShooterRPS)
+    //     );
+    // }
 
     /**
      * Exits passing mode by deactivating intake with deploy to SAFE and deactivating outtake.
@@ -188,11 +167,37 @@ public class Superstructure extends SubsystemBase {
     //     return Commands.sequence(
     //         deactivateIntake(IntakeArmPosition.SAFE),
     //         deactivateOuttake(),
-    //         logActiveCommands("stopPassing", "startPassing")
     //     );
     // }
 
-    // Override commands
+    // public Command intakeWhilePassing() {
+    //     return Commands.runEnd(
+    //         () -> {
+    //             m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
+    //             if (m_intake.isIntakeArmAtPos()) {
+    //                 m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
+    //             }
+    //         }, 
+    //         () -> {
+    //             m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
+    //             // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
+    //         }
+    //     );
+    // }
+
+    // /**
+    //  * Turns on rollers and spinner moves deploy to deployed positon.
+    //  */
+    // public Command activateIntake() {
+    //     return Commands.sequence(
+    //         m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
+    //         Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()),
+    //         m_intake.startIntakeRollers(),
+    //         m_indexer.setSpindexerVelocityCmd(Constants.IndexerK.kSpindexerIntakeRPS)
+    //     );
+    // }
+
+    //---OVERRIDE BINDS
     /**
      * Sets the shooter speed to max.
      */
@@ -230,19 +235,22 @@ public class Superstructure extends SubsystemBase {
     }
 
     /**
-     * Starts the indexer spinner.
+     * Starts the indexer spindexer.
      */
     public Command startSpindexerCmd() {
         return m_indexer.startSpindexerCmd();
     }
 
     /**
-     * Stops the indexer spinner.
+     * Stops the indexer spindexer.
      */
     public Command stopSpindexerCmd() {
         return m_indexer.stopSpindexerCmd();
     }
 
+    /**
+     * Runs the shooter, tunnel, and spindexer in reverse direction to unjam any balls potentially stuck in the shooting system.
+     */
     public Command unjamCmd() {
         return Commands.runEnd(
             () -> {
@@ -258,14 +266,14 @@ public class Superstructure extends SubsystemBase {
     }
 
     /**
-     * Starts the indexer exhaust.
+     * Starts the indexer tunnel.
      */
     public Command startTunnelCmd() {
         return m_indexer.startTunnelCmd();
     }
 
     /**
-     * Stops the indexer exhaust.
+     * Stops the indexer tunnel.
      */
     public Command stopTunnelCmd() {
         return m_indexer.stopTunnelCmd();
@@ -286,11 +294,11 @@ public class Superstructure extends SubsystemBase {
     }
 
     /**
-     * Deploys the intake to the given pos.
+     * Deploys the intake arm to the given pos.
      * @param pos position to deploy to.
      * @return
      */
-    public Command intakeTo(IntakeArmPosition pos) {
+    public Command intakeArmToPos(IntakeArmPosition pos) {
         return m_intake.setIntakeArmPosCmd(pos);
     }
 
@@ -306,6 +314,7 @@ public class Superstructure extends SubsystemBase {
         RETRACTED,
         DEPLOYED,
         HOMING,
+        HOMED,
         SHIMMYING
     }
 
@@ -316,7 +325,7 @@ public class Superstructure extends SubsystemBase {
         IDLE
     }
 
-    // for later once shooter gets disassembled
+    // for later once shooter gets disassembled and reassembled
     private enum ShooterState {
 
     }
