@@ -68,6 +68,13 @@ public class AutonChooser {
         });
     }
 
+    public static Command getPreheater() {
+        if (m_simpleAutonFactory == null) {
+            return Commands.print("Tried to preheat before factory init!");
+        }
+        return m_simpleAutonFactory.preheater().ignoringDisable(true);
+    }
+
     public static void cleanup() {
         SendableRegistry.remove(m_chooser);
     }

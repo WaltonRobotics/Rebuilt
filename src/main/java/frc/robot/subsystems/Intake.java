@@ -53,6 +53,7 @@ public class Intake extends SubsystemBase {
     private Debouncer m_velocityDebouncer = new Debouncer(0.125, DebounceType.kRising);
 
     private boolean m_isIntakeArmHomed = false;
+    public final BooleanSupplier intakeHomedSupp = () -> m_isIntakeArmHomed;
 
     /* SIM OBJECTS */
     private final DCMotorSim m_intakeArmSim = new DCMotorSim(
