@@ -10,6 +10,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.IndexerK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.util.WaltLogger.StringLogger;
 
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -26,7 +27,13 @@ public class Superstructure extends SubsystemBase {
     private final Shooter m_shooter;
 
     /* LOGGERS */
-    
+    StringLogger log_intakeState = new StringLogger(kLogTab, "intakeState");
+    StringLogger log_indexerState = new StringLogger(kLogTab, "indexerState");
+    StringLogger log_shooterState = new StringLogger(kLogTab, "shooterState");
+
+    IntakeState m_intakeState = IntakeState.RETRACTED;
+    IndexerState m_IndexerState = IndexerState.IDLE;
+
     /* CONSTRUCTOR */
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
         m_intake = intake;
@@ -285,5 +292,32 @@ public class Superstructure extends SubsystemBase {
      */
     public Command intakeTo(IntakeArmPosition pos) {
         return m_intake.setIntakeArmPosCmd(pos);
+    }
+
+    @Override
+    public void periodic() {
+        log_intakeState.accept(m_intakeState.name());
+        log_indexerState.accept(m_IndexerState.name());
+        // log_shooterState.accept();
+    }
+
+    /* STATE ENUMS */
+    private enum IntakeState {
+        RETRACTED,
+        DEPLOYED,
+        HOMING,
+        SHIMMYING
+    }
+
+    private enum IndexerState {
+        INTAKING,
+        SHOOTING,
+        UNJAMMING,
+        IDLE
+    }
+
+    // for later once shooter gets disassembled
+    private enum ShooterState {
+
     }
 }
