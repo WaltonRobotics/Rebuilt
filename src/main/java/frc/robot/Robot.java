@@ -117,9 +117,6 @@ public class Robot extends TimedRobot {
     private Trigger trg_shoot = m_driver.rightTrigger().and(trg_driverOverride.negate());
     private Trigger trg_emergencyBarf = m_driver.rightTrigger().and(trg_driverOverride);
 
-    private Trigger trg_passLeft = m_manipulator.povLeft().and(trg_driverOverride.negate());
-    private Trigger trg_passRight = m_manipulator.povRight().and(trg_driverOverride.negate()).and(trg_passLeft.negate());
-
     private Trigger trg_shimmy = m_manipulator.leftBumper();
 
     //---OVERRIDE TRIGGERS
@@ -281,23 +278,24 @@ public class Robot extends TimedRobot {
 
         //---NORMAL SEQUENCES
         //Intake
-        trg_intake.and((trg_passLeft.or(trg_passRight)).negate()).whileTrue(
+        trg_intake.and(trg_shoot.negate()).whileTrue(
             m_superstructure.intake(() -> false)
         );
+
         trg_retractIntake.onTrue(
             m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
         );
 
         //Shooting
         // trg_shoot.and(() -> trg_hubActiveOrPassing.getAsBoolean()).whileTrue(
-        trg_shoot.whileTrue(
+        trg_shoot.and(trg_intake.negate()).whileTrue(
             m_superstructure.activateOuttake(kShooterRPS)
         );
 
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
 
-        trg_intake.and(trg_passLeft.or(trg_passRight)).whileTrue(
+        trg_intake.and(trg_shoot).whileTrue(
             m_superstructure.intake(() -> true)
         );
 

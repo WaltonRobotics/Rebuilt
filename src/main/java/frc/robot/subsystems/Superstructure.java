@@ -72,55 +72,36 @@ public class Superstructure extends SubsystemBase {
     }
 
     /**
-     * Turns on rollers and spinner moves deploy to deployed positon.
+     * 
+     * @param isPassing
+     * @return
      */
-    public Command activateIntake() {
-        return Commands.sequence(
-            m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
-            Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()),
-            m_intake.startIntakeRollers(),
-            m_indexer.setSpindexerVelocityCmd(Constants.IndexerK.kSpindexerIntakeRPS),
-            logActiveCommands("activateIntake", "safeIntake", "retractIntake")
-        );
-    }
-
     public Command intake(BooleanSupplier isPassing) {
         return Commands.sequence(
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()).withTimeout(0.25),
             Commands.runEnd(
             () -> {
-                m_shooter.setShotCalc(false);
-                m_shooter.setTurretPos(Rotations.of(-0.250));
+                boolean passing = isPassing.getAsBoolean();
+                m_shooter.setShotCalc(passing);
+                if(!passing) m_shooter.setTurretPos(Rotations.of(-0.250));
                 m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
-                m_indexer.setSpindexerVelocity(isPassing.getAsBoolean() ? Constants.IndexerK.kSpindexerShootRPS : Constants.IndexerK.kSpindexerIntakeRPS);
+                m_indexer.setSpindexerVelocity(passing ? IndexerK.kSpindexerShootRPS : IndexerK.kSpindexerIntakeRPS);
+                if (passing) {
+                    m_shooter.setShooterVelocity(ShooterK.kShooterRPS);
+                    m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS);
+                }
             }, 
             () -> {
                 if (m_intake.getIntakeArmStatorCurrent() < 40) {
-                    Commands.run(() -> m_shooter.setShotCalcCmd(true));
                     m_shooter.setShotCalc(true);
                     m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
                     m_indexer.stopSpindexer();
+                    m_indexer.stopTunnel();
+                    m_shooter.setShooterVelocity(ShooterK.kShooterZeroRPS);
                     // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
                 }
             })
-        );
-    }
-
-    public Command intakeWhilePassing() {
-        return Commands.runEnd(
-            () -> {
-                m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
-                if (m_intake.isIntakeArmAtPos()) {
-                    m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
-                }
-            }, 
-            () -> {
-                if (m_intake.getIntakeArmStatorCurrent() < 40) {
-                    m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
-                    // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
-                }
-            }
         );
     }
 
@@ -197,28 +178,6 @@ public class Superstructure extends SubsystemBase {
     public Command shimmy() {
        return m_intake.shimmy();
     }
-
-    /**
-     * Initiates passing by activating intake and outtake.
-     */
-    public Command startPassing() {
-        return Commands.sequence(
-            activateIntake(),
-            activateOuttake(ShooterK.kShooterRPS),
-            logActiveCommands("startPassing", "stopPassing")
-        );
-    }
-
-    /**
-     * Exits passing mode by deactivating intake with deploy to SAFE and deactivating outtake.
-     */
-    // public Command stopPassing() {
-    //     return Commands.sequence(
-    //         deactivateIntake(IntakeArmPosition.SAFE),
-    //         deactivateOuttake(),
-    //         logActiveCommands("stopPassing", "startPassing")
-    //     );
-    // }
 
     // Override commands
     /**
