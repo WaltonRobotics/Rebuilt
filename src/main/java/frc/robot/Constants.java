@@ -107,7 +107,6 @@ public class Constants {
         public static final AngularVelocity kShooterAutonCloseRPS = kShooterMaxRPS.times(0.60);  //auton pose is closer to the hub than teleop scoring
         public static final AngularVelocity kShooterAuton_EndSweep_RPS = kShooterMaxRPS.times(0.70); // end of sweep paths
 
-        
         public static final AngularVelocity kShooterBarfRPS = RotationsPerSecond.of((5785/60) * (0.2) / kShooterGearing);
         public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.of(/* 0/60 * (0.9) / kShooterGearing */ 0);
 
@@ -340,7 +339,7 @@ public class Constants {
         public static final double kIntakeRollersMOI = 0.0001; // 0.00343880857
         public static final double kIntakeRollersGearing = 12.0/30;
 
-        public static final AngularVelocity kIntakeRollersMaxRPS = RotationsPerSecond.of((5785 / 60) / kIntakeRollersGearing * .8);  //100% RPS
+        public static final AngularVelocity kIntakeRollersMaxRPS = RotationsPerSecond.of((5785 / 60) / kIntakeRollersGearing * 1.0);  //0.8
 
         /* IDS */
         public static final int kIntakeArmCANID = 40;
@@ -426,20 +425,20 @@ public class Constants {
       
         public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60FOCMaxVelocity.div(kSpindexerGearing);
         public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
-        public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.7);
+        public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(1.0);   //0.7
 
         public static final AngularVelocity kTunnelMaxRPS = MotorK.kX44FOCMaxVelocity.div(kTunnelGearing);
-        public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(0.65);
+        public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(1.0); //0.65
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
         private static final Slot0Configs kSpindexerSlot0Configs = new Slot0Configs()
-            .withKS(0.012)
-            .withKV(0.371)
+            .withKS(0.25)
+            .withKV(0.12)
             .withKA(0)
-            .withKP(0.1)
+            .withKP(0.5)
             .withKI(0)
-            .withKD(0.03);
+            .withKD(0);
         private static final CurrentLimitsConfigs kSpindexerCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(65)
             .withSupplyCurrentLimit(30)
@@ -448,13 +447,13 @@ public class Constants {
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kSpindexerMotorOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: CW or CCW?
+            .withInverted(InvertedValue.CounterClockwise_Positive)
             .withNeutralMode(NeutralModeValue.Coast);
         private static final FeedbackConfigs kSpindexerFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kSpindexerGearing);
         private static final VoltageConfigs kSpindexerVoltageConfigs = new VoltageConfigs()
-            .withPeakForwardVoltage(6)    //1.2
-            .withPeakReverseVoltage(-6);  //-1.2
+            .withPeakForwardVoltage(16)    //1.2
+            .withPeakReverseVoltage(-16);  //-1.2
         public static final TalonFXConfiguration kSpindexerTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kSpindexerSlot0Configs)
             .withCurrentLimits(kSpindexerCurrentLimitConfigs)
@@ -481,8 +480,8 @@ public class Constants {
         private static final FeedbackConfigs kTunnelFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kTunnelGearing);
         private static final VoltageConfigs kTunnelVoltageConfigs = new VoltageConfigs()
-            .withPeakForwardVoltage(6)  //1.2
-            .withPeakReverseVoltage(-6);    //-1.2
+            .withPeakForwardVoltage(16)  //1.2
+            .withPeakReverseVoltage(-16);    //-1.2
         public static final TalonFXConfiguration kTunnelTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kTunnelSlot0Configs)
             .withCurrentLimits(kTunnelCurrentLimitConfigs)
