@@ -248,6 +248,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public boolean isShooterSpunUp() {
+        sig_shooterCLErr.refresh();
         log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
         boolean isNear = sig_shooterCLErr.isNear(0, 3);
         log_spunUp.accept(isNear);
