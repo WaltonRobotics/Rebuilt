@@ -62,14 +62,14 @@ public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
     //---CONSTANTS
     private final LinearVelocity kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts; // kSpeedAt12Volts desired top speed
-    private final AngularVelocity kMaxAngularRate = RotationsPerSecond.of(1.05); // 3/4 of a rotation per second max angular velocity
+    private final AngularVelocity kDriverMaxAngularRate = RotationsPerSecond.of(1.05); // 3/4 of a rotation per second max angular velocity
 
     private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
     private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger(kLogTab, "VisionSeenLastSec");
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-        .withDeadband(kMaxTranslationSpeed.times(0.1)).withRotationalDeadband(kMaxAngularRate.times(0.1)) // Add a 10% deadband
+        .withDeadband(kMaxTranslationSpeed.times(0.1)).withRotationalDeadband(kDriverMaxAngularRate.times(0.1)) // Add a 10% deadband
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     // private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     // private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -89,7 +89,7 @@ public class Robot extends TimedRobot {
     private final Indexer m_indexer = new Indexer();
 
     // private final WaltVisualSim m_visualSim;
-    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
+    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter, m_drivetrain);
 
     //---AUTONS
     private Command m_autonomousCommand;
@@ -121,6 +121,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_passRight = m_manipulator.povRight().and(trg_driverOverride.negate()).and(trg_passLeft.negate());
 
     private Trigger trg_shimmy = m_manipulator.leftBumper();
+    private Trigger trg_swerveShimmy = m_driver.povLeft();
 
     //---OVERRIDE TRIGGERS
     private Trigger trg_deployIntakeOverride = trg_manipOverride.and(m_manipulator.rightTrigger());
@@ -192,7 +193,7 @@ public class Robot extends TimedRobot {
         
             var driverXVelo = translationSpeed.times(-m_driver.getLeftY());
             var driverYVelo = translationSpeed.times(-m_driver.getLeftX());
-            var driverYawRate = kMaxAngularRate.times(-m_driver.getRightX());
+            var driverYawRate = kDriverMaxAngularRate.times(-m_driver.getRightX());
 
             log_stickDesiredFieldX.accept(driverXVelo.in(MetersPerSecond));
             log_stickDesiredFieldY.accept(driverYVelo.in(MetersPerSecond));
@@ -307,7 +308,11 @@ public class Robot extends TimedRobot {
             m_superstructure.emergencyBarf()
         );
         
-        trg_shimmy.whileTrue(m_superstructure.shimmy());
+        trg_shimmy.whileTrue(m_superstructure.intakeArmShimmy());
+
+        trg_swerveShimmy.whileTrue(m_superstructure.swerveShimmy());
+
+
 
         trg_unjam.whileTrue(
             m_superstructure.unjamCmd()
@@ -535,7 +540,7 @@ public class Robot extends TimedRobot {
                 m_drivetrain.applyRequest(() ->
                     drive.withVelocityX(0)
                         .withVelocityY(0)
-                        .withRotationalRate(kMaxAngularRate)
+                        .withRotationalRate(kDriverMaxAngularRate)
                 ),
                 Commands.waitSeconds(2.5),
                 m_drivetrain.xBrake(),

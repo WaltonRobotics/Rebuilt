@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.*;
 
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -28,6 +29,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -39,6 +42,10 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.vision.Detection;
 
+import frc.util.WaltLogger;
+import frc.util.WaltLogger.BooleanLogger;
+import frc.util.WaltLogger.DoubleLogger;
+
 /**
  * CommandSwerveDrivetrain: Class that extends the Phoenix 6 SwerveDrivetrain class 
  * and implements Subsystem so it can easily be used in command-based projects.
@@ -48,6 +55,7 @@ import frc.robot.vision.Detection;
  */
 public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private static final double kSimLoopPeriod = 0.004; // 4 ms
+    private final AngularVelocity kSwerveShimmyAngularRate = RotationsPerSecond.of(1.3);
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
 
@@ -73,6 +81,12 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         .withSteerRequestType(SteerRequestType.Position);
 
     private final Detection detection = new Detection();
+
+    private final BooleanLogger log_swerveShimmyCCW = WaltLogger.logBoolean("Swerve", "swerveShimmyCCW");
+    private final DoubleLogger log_swerveShimmyYawRate = WaltLogger.logDouble("Swerve", "swerveShimmyYawRate");
+
+    private double m_swerveShimmyYawRate;
+    private boolean m_swerveShimmyCCW;
 
     private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
@@ -266,6 +280,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+
+        log_swerveShimmyCCW.accept(m_swerveShimmyCCW);
+        log_swerveShimmyYawRate.accept(m_swerveShimmyYawRate);
     }
 
     private void startSimThread() {
@@ -362,6 +379,29 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         return runOnce(() -> setControl(stopReq));
     }
 
+
+
+    public Command swerveShimmyRotate(boolean CCW) {
+        return this.applyRequest(() -> {
+            var yawRate = CCW ? kSwerveShimmyAngularRate : kSwerveShimmyAngularRate.unaryMinus();
+
+            m_swerveShimmyCCW = CCW;
+            m_swerveShimmyYawRate = yawRate.magnitude();
+
+            return swreq_drive
+                .withRotationalRate(yawRate); // Drive counterclockwise with negative X (left)
+            }
+        );
+    }
+
+    public Command swerveShimmy() {
+        return Commands.repeatingSequence(
+            this.swerveShimmyRotate(true),
+            Commands.waitSeconds(0.4),
+            this.swerveShimmyRotate(false),
+            Commands.waitSeconds(0.4)
+        ).finallyDo(() -> this.xBrake());
+    }
 
     /**
      * Creates a new auto factory for this drivetrain.

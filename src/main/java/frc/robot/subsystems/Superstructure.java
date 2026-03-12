@@ -8,6 +8,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.IndexerK;
+import frc.robot.Constants.IntakeK;
+import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
@@ -28,6 +30,7 @@ public class Superstructure extends SubsystemBase {
     private final Intake m_intake;
     private final Indexer m_indexer;
     private final Shooter m_shooter;
+    private final Swerve m_swerve;
 
     /* LOGGERS */
     private HashSet<String> m_activeCommands = new HashSet<>();
@@ -37,10 +40,11 @@ public class Superstructure extends SubsystemBase {
     private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
     
     /* CONSTRUCTOR */
-    public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
+    public Superstructure(Intake intake, Indexer indexer, Shooter shooter, Swerve swerve) {
         m_intake = intake;
         m_indexer = indexer;
         m_shooter = shooter;
+        m_swerve = swerve;
     }
 
     /* BUTTON BIND SEQUENCES */
@@ -152,7 +156,7 @@ public class Superstructure extends SubsystemBase {
                 .onlyWhile(() -> m_shooter.isShooterSpunUp())
                 .andThen(Commands.waitUntil(() -> m_shooter.isShooterSpunUp()))
                 .repeatedly(),
-            // m_intake.shimmy(),
+            // m_intake.\my(),
             logCommand
         ).finallyDo(
             () -> deactivateOuttake()
@@ -194,8 +198,12 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
-    public Command shimmy() {
+    public Command intakeArmShimmy() {
        return m_intake.shimmy();
+    }
+
+    public Command swerveShimmy() {
+        return m_swerve.swerveShimmy();
     }
 
     /**

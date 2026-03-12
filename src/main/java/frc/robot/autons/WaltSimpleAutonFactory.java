@@ -94,7 +94,7 @@ public class WaltSimpleAutonFactory {
                     logState(4.1),
                     Commands.waitSeconds(6),
                     logState(4.2),
-                    m_superstructure.shimmy()
+                    m_superstructure.intakeArmShimmy()
                 )
             )
         ).withName(trajName);
