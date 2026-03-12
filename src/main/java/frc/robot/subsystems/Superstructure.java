@@ -32,7 +32,7 @@ public class Superstructure extends SubsystemBase {
     StringLogger log_shooterState = new StringLogger(kLogTab, "shooterState");
 
     IntakeState m_intakeState = IntakeState.RETRACTED;
-    IndexerState m_IndexerState = IndexerState.IDLE;
+    IndexerState m_indexerState = IndexerState.IDLE;
 
     /* CONSTRUCTOR */
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
@@ -53,12 +53,16 @@ public class Superstructure extends SubsystemBase {
                 m_shooter.setTurretPos(Rotations.of(-0.250));
                 m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
                 m_indexer.setSpindexerVelocity(isPassing.getAsBoolean() ? Constants.IndexerK.kSpindexerShootRPS : Constants.IndexerK.kSpindexerIntakeRPS);
+                m_intakeState = IntakeState.DEPLOYED;
+                m_indexerState = isPassing.getAsBoolean() ? IndexerState.SHOOTING : IndexerState.INTAKING;
             }, 
             () -> {
                 Commands.run(() -> m_shooter.setShotCalcCmd(true));
                 m_shooter.setShotCalc(true);
                 m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
                 m_indexer.stopSpindexer();
+                m_intakeState = IntakeState.PREPPED;
+                m_indexerState = IndexerState.IDLE;
                 // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
             })
         );
@@ -71,14 +75,17 @@ public class Superstructure extends SubsystemBase {
         return Commands.sequence(
             m_intake.stopIntakeRollers(),
             intakeArmToPos(IntakeArmPosition.RETRACTED),
-            m_indexer.stopSpindexerCmd()
+            m_indexer.stopSpindexerCmd(),
+            Commands.runOnce(
+            () -> {
+                m_intakeState = IntakeState.RETRACTED;
+                m_indexerState = IndexerState.IDLE;
+            })
         );
     }
 
     /**
-     * Turns on spinner and exhaust and sets shooter speed to RPS.
-     * <p>
-     * Note: does not move turret or hood.
+     * Turns on spindexer and tunnel and sets shooter speed to RPS.
      * @param RPS the speed for the shooter
      */
     public Command shoot(AngularVelocity RPS) {
@@ -102,12 +109,13 @@ public class Superstructure extends SubsystemBase {
             m_shooter.setShooterVelocityCmd(RPS),
             Commands.waitUntil(() -> m_shooter.isShooterSpunUp()).withTimeout(3),
             m_indexer.startTunnelCmd(),
-            m_indexer.startSpindexerCmd()
+            m_indexer.startSpindexerCmd(),
+            Commands.runOnce(() -> m_indexerState = IndexerState.SHOOTING)
         );
     }
 
     /**
-     * Turns off spinner, exhaust, and shooter.
+     * Turns off spindexer, tunnel, and shooter.
      * <p>
      * Note: does not move turret or hood.
      */
@@ -115,6 +123,7 @@ public class Superstructure extends SubsystemBase {
         m_indexer.stopSpindexer();
         m_indexer.stopTunnel();
         m_shooter.setShooterVelocity(ShooterK.kShooterZeroRPS);
+        m_indexerState = IndexerState.IDLE;
         // m_shooter.setHoodPosition(Degrees.of(1));
     }
 
@@ -130,6 +139,8 @@ public class Superstructure extends SubsystemBase {
                 m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS);
                 m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
                 m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersMaxRPS.times(-1));
+                m_intakeState = IntakeState.BARFING;
+                m_indexerState = IndexerState.BARFING;
             },
             () -> {
                 m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));
@@ -138,6 +149,8 @@ public class Superstructure extends SubsystemBase {
                 // m_shooter.setHoodPosition(ShooterK.kHoodSafeDegs);
                 m_indexer.setSpindexerVelocity(RotationsPerSecond.of(0));
                 m_indexer.setTunnelVelocity(RotationsPerSecond.of(0));
+                m_intakeState = IntakeState.PREPPED;
+                m_indexerState = IndexerState.IDLE;
             }
         );
     }
@@ -146,7 +159,11 @@ public class Superstructure extends SubsystemBase {
      * Oscillates the intake back and forth to unstick balls stuck in the intake.
      */
     public Command shimmy() {
-       return m_intake.shimmy();
+       return m_intake.shimmy().alongWith(Commands.runOnce(
+        () -> m_intakeState = IntakeState.SHIMMYING
+       )).finallyDo(
+        () -> m_intakeState = IntakeState.PREPPED
+       );
     }
 
     // TODO: potentially delete following 4 commands as they currently are useless and probably will stay useless
@@ -257,10 +274,12 @@ public class Superstructure extends SubsystemBase {
                 m_indexer.setSpindexerVelocity(Constants.IndexerK.kSpindexerShootRPS.times(-1));
                 m_indexer.setTunnelVelocity(Constants.IndexerK.kTunnelShootRPS.times(-1));
                 m_shooter.setShooterVelocity(Constants.ShooterK.kShooterRPS.times(-1));
+                m_indexerState = IndexerState.UNJAMMING;
             }, () -> {
                 m_indexer.setSpindexerVelocity(RotationsPerSecond.of(0));
                 m_indexer.setTunnelVelocity(RotationsPerSecond.of(0));
                 m_shooter.setShooterVelocity(RotationsPerSecond.of(0));
+                m_indexerState = IndexerState.IDLE;
             }
         );
     }
@@ -305,24 +324,25 @@ public class Superstructure extends SubsystemBase {
     @Override
     public void periodic() {
         log_intakeState.accept(m_intakeState.name());
-        log_indexerState.accept(m_IndexerState.name());
+        log_indexerState.accept(m_indexerState.name());
         // log_shooterState.accept();
     }
 
     /* STATE ENUMS */
     private enum IntakeState {
         RETRACTED,
+        PREPPED,
         DEPLOYED,
-        HOMING,
-        HOMED,
-        SHIMMYING
+        SHIMMYING,
+        BARFING
     }
 
     private enum IndexerState {
         INTAKING,
         SHOOTING,
         UNJAMMING,
-        IDLE
+        IDLE,
+        BARFING
     }
 
     // for later once shooter gets disassembled and reassembled
