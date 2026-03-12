@@ -110,8 +110,12 @@ public class WaltSimpleAutonFactory {
 
     //OVERALL TODO: clean up code and combine no preload w/ preload (and left/right) into one method
     //TODO: find better name for this
-    public Command oneCycleGoInNow(boolean left) {
-        String path = left ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
+    public Command oneCycleGoInNow(boolean left, boolean optimized) {
+        String regPath = left ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
+        String optPath = left ? AutonK.kLeftOptimizedSweepPathName : AutonK.kRightOptimizedSweepPathName;
+
+        String path = optimized ? optPath : regPath;
+        
         return Commands.sequence(
             logState(0),
             Commands.parallel(
