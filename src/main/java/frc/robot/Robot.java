@@ -23,6 +23,8 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -50,11 +52,13 @@ import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.WaltCamera;
+import frc.util.HubShiftUtil;
 import frc.util.Telemetry;
 // import frc.util.WaltVisualSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.StringLogger;
 
 public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
@@ -102,6 +106,7 @@ public class Robot extends TimedRobot {
     // private final VisionSim m_visionSim = new VisionSim();
 
     /* TRIGGERS */
+    private Trigger trg_optimalPrefireTime = new Trigger(HubShiftUtil.optimalPrefireTime());
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
 
@@ -135,6 +140,15 @@ public class Robot extends TimedRobot {
     private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble(kLogTab, "MiniPC current");
 
     private final BooleanLogger log_isDisabled = WaltLogger.logBoolean(kLogTab, "is robot disabled");
+
+    private final StringLogger log_currentShift = WaltLogger.logString("Util/Shift", "currentShift");
+    private final DoubleLogger log_elapsedTime = WaltLogger.logDouble("Util/Shift", "elapsedTime");
+    private final DoubleLogger log_remainingTime = WaltLogger.logDouble("Util/Shift", "currentTime");
+    private final BooleanLogger log_isActive = WaltLogger.logBoolean("Util/Shift", "isActive");
+    private final StringLogger log_currentFudgedShift = WaltLogger.logString("Util/Shift", "currentFudgedShift");
+    private final DoubleLogger log_elapsedFudgedTime = WaltLogger.logDouble("Util/Shift", "elapsedFudgedTime");
+    private final DoubleLogger log_remainingFudgedTime = WaltLogger.logDouble("Util/Shift", "currentFudgedTime");
+    private final BooleanLogger log_isActiveFudged = WaltLogger.logBoolean("Util/Shift", "isActiveFudged");
 
     private final Tracer m_periodicTracer = new Tracer();
     private final Command m_preheaterCommand;
@@ -197,6 +211,11 @@ public class Robot extends TimedRobot {
                 .withRotationalRate(driverYawRate); // Drive counterclockwise with negative X (left)
             }
         );
+    }
+
+    private void setBothRumble(RumbleType type, double intensity) {
+        m_driver.setRumble(type, intensity);
+        m_manipulator.setRumble(type, intensity);
     }
 
     //(nonsotm (just for simulating entire robot)) BLARGHHHHHH get intake dude (alex?) to give me his code (idk if he finished it yet)
@@ -325,6 +344,9 @@ public class Robot extends TimedRobot {
 
         m_driver.povDown().onTrue(m_shooter.setTurretLockCmd(false));
         m_driver.povRight().onTrue(m_shooter.setTurretLockCmd(true));
+
+        trg_optimalPrefireTime.whileTrue(
+            Commands.run(() -> setBothRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> setBothRumble(RumbleType.kBothRumble, 0)));
     }
 
     private void configureTestBindings() {
@@ -404,6 +426,15 @@ public class Robot extends TimedRobot {
 
         log_miniPCCurrent.accept(m_PDH.getCurrent(kMiniPCChannel));
 
+        log_currentShift.accept(HubShiftUtil.getOfficialShiftInfo().currentShift().toString());
+        log_currentFudgedShift.accept(HubShiftUtil.getShiftedShiftInfo().currentShift().toString());
+        log_elapsedTime.accept(Math.floor(HubShiftUtil.getOfficialShiftInfo().elapsedTime() * 100) / 100.0);
+        log_elapsedFudgedTime.accept((Math.floor(HubShiftUtil.getShiftedShiftInfo().elapsedTime() * 100) / 100.0));
+        log_remainingTime.accept((Math.floor(HubShiftUtil.getOfficialShiftInfo().remainingTime() * 100) / 100.0));
+        log_remainingFudgedTime.accept((Math.floor(HubShiftUtil.getShiftedShiftInfo().remainingTime() * 100) / 100.0));
+        log_isActive.accept(() -> HubShiftUtil.getOfficialShiftInfo().active());
+        log_isActiveFudged.accept(() -> HubShiftUtil.getShiftedShiftInfo().active());
+
         // log_shooterDirection.accept(
         //     new Pose3d(
         //         m_drivetrain.getState().Pose
@@ -480,6 +511,7 @@ public class Robot extends TimedRobot {
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().cancel(m_autonomousCommand);
         }
+        HubShiftUtil.initialize();
     }
 
     @Override

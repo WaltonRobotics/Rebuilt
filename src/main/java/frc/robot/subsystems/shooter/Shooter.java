@@ -355,9 +355,7 @@ public class Shooter extends SubsystemBase {
 
     /* ShootOnTheMove™ */
 
-    public static record AzimuthCalcDetails(Pose3d desiredAimPose, Pose3d currentAimPose, double rawDesiredRotations,
-            double safeDesiredRotations) {
-    }
+    public record AzimuthCalcDetails(Pose3d desiredAimPose, Pose3d currentAimPose, double rawDesiredRotations, double safeDesiredRotations) {}
 
     /**
      * Calculates the turret's *TARGET* angle while ensuring it stays within
@@ -628,7 +626,6 @@ public class Shooter extends SubsystemBase {
             return !m_turretHomingHall.get() || m_isTurretHomed;
         };
 
-        return new FunctionalCommand(init, () -> {
-        }, end, isFinished, this);
+        return new FunctionalCommand(init, () ->{}, end, isFinished, this);
     }
 }
