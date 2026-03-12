@@ -7,8 +7,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.RobotK.*;
-import static frc.robot.Constants.ShooterK.kShooterRPS;
-
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -25,7 +23,6 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -41,6 +38,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.shooter.FuelSim;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.Constants.RobotK;
+import frc.robot.Constants.ShooterK;
 import frc.robot.dashboards.AutonChooser;
 import frc.robot.dashboards.TestingDashboard;
 import frc.robot.autons.WaltAutonFactory;
@@ -283,14 +281,13 @@ public class Robot extends TimedRobot {
         );
 
         trg_retractIntake.onTrue(
-            m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
+            m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
         );
 
         //Shooting
-        // trg_shoot.and(() -> trg_hubActiveOrPassing.getAsBoolean()).whileTrue(
-        trg_shoot.and(trg_intake.negate()).whileTrue(
-            m_superstructure.activateOuttake(kShooterRPS)
-        );
+        // NORMAL FIXED SHOT
+        trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> ShooterK.kShooterRPS));
+        // trg_shoot.whileTrue(m_superstructure.activateOuttakeCalc());
 
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
@@ -326,8 +323,8 @@ public class Robot extends TimedRobot {
 
         // m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
 
-        m_driver.povDown().onTrue(m_shooter.setShotCalcCmd(false));
-        m_driver.povRight().onTrue(m_shooter.setShotCalcCmd(true));
+        m_driver.povDown().onTrue(m_shooter.setTurretLockCmd(false));
+        m_driver.povRight().onTrue(m_shooter.setTurretLockCmd(true));
     }
 
     private void configureTestBindings() {

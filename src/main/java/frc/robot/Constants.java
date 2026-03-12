@@ -165,7 +165,6 @@ public class Constants {
         private static final CurrentLimitsConfigs kShooterACurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(80)
             .withSupplyCurrentLimit(50)
-            .withSupplyCurrentLowerTime(0)
             .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kShooterAOutputConfigs = new MotorOutputConfigs()
@@ -425,20 +424,20 @@ public class Constants {
         public static final double kSpindexerMOI = 0.00166190059;
         public static final double kTunnelMOI = 0.000215968064;
       
-        public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60FOCMaxVelocity.div(kSpindexerGearing);
+        public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60MaxVelocity.div(kSpindexerGearing);
         public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(1.0);   //0.7
 
-        public static final AngularVelocity kTunnelMaxRPS = MotorK.kX44FOCMaxVelocity.div(kTunnelGearing);
+        public static final AngularVelocity kTunnelMaxRPS = MotorK.kX44MaxVelocity.div(kTunnelGearing);
         public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(1.0); //0.65
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
         private static final Slot0Configs kSpindexerSlot0Configs = new Slot0Configs()
-            .withKS(0.25)
-            .withKV(0.12)
+            .withKS(0.2)
+            .withKV(0.545)
             .withKA(0)
-            .withKP(0.5)
+            .withKP(0.75)
             .withKI(0)
             .withKD(0);
         private static final CurrentLimitsConfigs kSpindexerCurrentLimitConfigs = new CurrentLimitsConfigs()
