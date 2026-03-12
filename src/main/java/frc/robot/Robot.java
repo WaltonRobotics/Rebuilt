@@ -345,8 +345,8 @@ public class Robot extends TimedRobot {
         m_driver.povDown().onTrue(m_shooter.setTurretLockCmd(false));
         m_driver.povRight().onTrue(m_shooter.setTurretLockCmd(true));
 
-        trg_optimalPrefireTime.whileTrue(
-            Commands.run(() -> setBothRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> setBothRumble(RumbleType.kBothRumble, 0)));
+        // trg_optimalPrefireTime.whileTrue(
+        //     Commands.run(() -> setBothRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> setBothRumble(RumbleType.kBothRumble, 0)));
     }
 
     private void configureTestBindings() {
