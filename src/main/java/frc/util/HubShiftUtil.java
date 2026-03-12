@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import frc.robot.subsystems.shooter.ShotCalculator;
 
@@ -195,5 +196,18 @@ public class HubShiftUtil {
     };
     return getShiftInfo(shiftSchedule, shiftedShiftStartTimes, shiftedShiftEndTimes);
     // }
+  }
+  /**
+   * Determines whether the robot can prefire optimally in such a manner that you shoot before the hub turns active,
+   * and the fuel will count as scored
+   * <p> Meant to be used as a Rumble Trigger, so that the drivers will get rumble when optimal shooting.
+   * @return true if optimal prefire time
+   */
+  public static BooleanSupplier optimalPrefireTime() {
+   return () -> {
+        boolean shiftedActive = getShiftedShiftInfo().active;
+        boolean realActive = getOfficialShiftInfo().active;
+        return shiftedActive && !realActive;
+    };
   }
 }

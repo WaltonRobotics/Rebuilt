@@ -8,28 +8,27 @@
         "layouts": [],
         "containers": [
           {
-            "title": "autonName",
-            "x": 375.0,
-            "y": 375.0,
-            "width": 250.0,
-            "height": 125.0,
-            "type": "Text Display",
+            "title": "AutonChooser",
+            "x": 500.0,
+            "y": 0.0,
+            "width": 625.0,
+            "height": 250.0,
+            "type": "ComboBox Chooser",
             "properties": {
-              "topic": "/AutonChooser/autonName",
+              "topic": "/SmartDashboard/SendableChooser[0]",
               "period": 0.06,
-              "data_type": "string",
-              "show_submit_button": false
+              "sort_options": false
             }
           },
           {
-            "title": "autonMade",
+            "title": "isActive",
             "x": 0.0,
-            "y": 0.0,
-            "width": 875.0,
+            "y": 375.0,
+            "width": 625.0,
             "height": 375.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AutonChooser/autonMade",
+              "topic": "/Robot/Util/Shift/isActive",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
@@ -39,29 +38,78 @@
             }
           },
           {
-            "title": "makeAuton",
+            "title": "currentTime",
             "x": 625.0,
             "y": 375.0,
-            "width": 250.0,
-            "height": 125.0,
-            "type": "Toggle Button",
+            "width": 500.0,
+            "height": 375.0,
+            "type": "Match Time",
             "properties": {
-              "topic": "/AutonChooser/makeAuton",
+              "topic": "/Robot/Util/Shift/currentTime",
               "period": 0.06,
-              "data_type": "boolean"
+              "data_type": "double",
+              "time_display_mode": "Minutes and Seconds",
+              "red_start_time": 5,
+              "yellow_start_time": 15
             }
           },
           {
-            "title": "SendableChooser[0]",
-            "x": 0.0,
+            "title": "currentShift",
+            "x": 1125.0,
             "y": 375.0,
-            "width": 375.0,
-            "height": 125.0,
-            "type": "ComboBox Chooser",
+            "width": 500.0,
+            "height": 375.0,
+            "type": "Large Text Display",
             "properties": {
-              "topic": "/SmartDashboard/SendableChooser[0]",
+              "topic": "/Robot/Util/Shift/currentShift",
               "period": 0.06,
-              "sort_options": false
+              "data_type": "string"
+            }
+          },
+          {
+            "title": "currentFudgedShift",
+            "x": 1125.0,
+            "y": 750.0,
+            "width": 500.0,
+            "height": 250.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/Robot/Util/Shift/currentFudgedShift",
+              "period": 0.06,
+              "data_type": "string"
+            }
+          },
+          {
+            "title": "currentFudgedTime",
+            "x": 625.0,
+            "y": 750.0,
+            "width": 500.0,
+            "height": 250.0,
+            "type": "Match Time",
+            "properties": {
+              "topic": "/Robot/Util/Shift/currentFudgedTime",
+              "period": 0.06,
+              "data_type": "double",
+              "time_display_mode": "Minutes and Seconds",
+              "red_start_time": 5,
+              "yellow_start_time": 15
+            }
+          },
+          {
+            "title": "isActiveFudged",
+            "x": 0.0,
+            "y": 750.0,
+            "width": 625.0,
+            "height": 250.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/Robot/Util/Shift/isActiveFudged",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
             }
           }
         ]

@@ -107,7 +107,7 @@ public class Superstructure extends SubsystemBase {
 
     public Command startShootSequence(Supplier<AngularVelocity> RPS) {
         return Commands.parallel(
-            m_shooter.setShooterVelocityCmd(RPS.get()).repeatedly(),
+            Commands.run(() -> m_shooter.setShooterVelocity(RPS.get())),
             Commands.sequence(
                 Commands.waitUntil(() -> m_shooter.isShooterSpunUp()).withTimeout(3),
                 m_indexer.startTunnelCmd(),
