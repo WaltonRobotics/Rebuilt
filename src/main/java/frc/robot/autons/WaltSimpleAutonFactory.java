@@ -159,8 +159,12 @@ public class WaltSimpleAutonFactory {
 
     //OVERALL TODO: clean up code and combine no preload w/ preload (and left/right) into one method
     //TODO: find better name for this
-    public Command oneCycleGoInNow(boolean left) {
-        String path = left ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
+    public Command oneCycleGoInNow(boolean left, boolean optimized) {
+        String regPath = left ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
+        String optPath = left ? AutonK.kLeftOptimizedSweepPathName : AutonK.kRightOptimizedSweepPathName;
+
+        String path = optimized ? optPath : regPath;
+        
         return Commands.sequence(
             tp("goInNow.sequence.START"),
             logState(0),
@@ -172,7 +176,7 @@ public class WaltSimpleAutonFactory {
                     Commands.waitSeconds(0.0001),
                     logState(0.2),
                     tp("goInNow.intake.START"),
-                    m_superstructure.intake(() -> false).asProxy().withTimeout(7.5),
+                    m_superstructure.intake(() -> false).withTimeout(AutonK.kIntakeTimeout).asProxy(),
                     tp("goInNow.intake.END")
                 ),
                 Commands.sequence(
@@ -186,7 +190,7 @@ public class WaltSimpleAutonFactory {
             logState(1),
             tp("goInNow.shootDeadline.START"),
             Commands.deadline(
-                shootWithTimeout(kShooterAuton_EndSweep_RPS, 12).asProxy(),
+                shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout).asProxy(),
                 Commands.sequence(
                     logState(1.1),
                     Commands.waitSeconds(3), // 5
