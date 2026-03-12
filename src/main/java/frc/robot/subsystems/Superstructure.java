@@ -202,10 +202,6 @@ public class Superstructure extends SubsystemBase {
        return m_intake.shimmy();
     }
 
-    public Command swerveShimmy() {
-        return m_swerve.swerveShimmy();
-    }
-
     /**
      * Initiates passing by activating intake and outtake.
      */

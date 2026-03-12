@@ -377,29 +377,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         return runOnce(() -> setControl(stopReq));
     }
 
-    public Command swerveShimmyRotate(boolean CCW) {
-        return applyRequest(() -> {
-            var yawRate = kSwerveShimmyAngularRate.times(CCW ? 1 : -1);
-
-            log_swerveShimmyCCW.accept(CCW);
-            log_swerveShimmyYawRate.accept(yawRate.magnitude());
-
-            return swreq_drive
-                .withRotationalRate(yawRate); // Drive counterclockwise with negative X (left)
-            }
-        );
-    }
-
-    public Command swerveShimmy() {
-        return Commands.repeatingSequence(
-            Commands.print("Robot is now rotating counter clockwise"),
-            swerveShimmyRotate(true).withTimeout(0.113),
-            Commands.print("Robot is now rotating clockwise"),
-            swerveShimmyRotate(false).withTimeout(0.1),
-            Commands.print("Robot swerveShimmy cycle ended")
-        );
-    }
-
     /**
      * Creates a new auto factory for this drivetrain.
      *

@@ -63,6 +63,7 @@ public class Robot extends TimedRobot {
     //---CONSTANTS
     private final LinearVelocity kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts; // kSpeedAt12Volts desired top speed
     private final AngularVelocity kDriverMaxAngularRate = RotationsPerSecond.of(1.05); // 3/4 of a rotation per second max angular velocity
+    private final AngularVelocity kSwerveShimmyAngularRate = RotationsPerSecond.of(1.3 / 2);
 
     private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
     private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger(kLogTab, "VisionSeenLastSec");
@@ -179,7 +180,7 @@ public class Robot extends TimedRobot {
     /* COMMANDS */
     /**
      * 
-     * @param speedMultiplier how much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
+     * @param speedMultiplier How much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
      * @return swerve drive command
      */
     private Command driveCommand(double speedMultiplier) {
@@ -190,7 +191,7 @@ public class Robot extends TimedRobot {
             LinearVelocity translationSpeed = (m_driver.leftTrigger().getAsBoolean() ? 
                 kMaxTranslationSpeed.times(speedMultiplier) :
                 kMaxTranslationSpeed);
-        
+            
             var driverXVelo = translationSpeed.times(-m_driver.getLeftY());
             var driverYVelo = translationSpeed.times(-m_driver.getLeftX());
             var driverYawRate = kDriverMaxAngularRate.times(-m_driver.getRightX());
@@ -198,12 +199,58 @@ public class Robot extends TimedRobot {
             log_stickDesiredFieldX.accept(driverXVelo.in(MetersPerSecond));
             log_stickDesiredFieldY.accept(driverYVelo.in(MetersPerSecond));
             log_stickDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond));
-            
+                
             return drive
                 .withVelocityX(driverXVelo) // Drive forward with Y (forward)
                 .withVelocityY(driverYVelo) // Drive left with X (left)
                 .withRotationalRate(driverYawRate); // Drive counterclockwise with negative X (left)
             }
+        );
+    }
+    /**
+     * Returns a modified swerveRequest which uses swerveShimmy's rotational value instead of the driver's stick's.
+     * Does not move the robot, only returns a swerveRequest.
+     * @param speedMultiplier How much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
+     * @param shimmyCCW If the shimmy direction is CCW
+     * @return A swerveRequest with shimmying rotational values
+     */
+    private Command swerveRequestWithSwerveShimmy(double speedMultiplier, boolean shimmyCCW) {
+        // Note that X is defined as forward according to WPILib convention,
+        // and Y is defined as to the left according to WPILib convention.
+        // Drivetrain will execute this command periodically
+        return m_drivetrain.applyRequest(() -> {
+            LinearVelocity translationSpeed = (m_driver.leftTrigger().getAsBoolean() ? 
+                kMaxTranslationSpeed.times(speedMultiplier) :
+                kMaxTranslationSpeed);
+            
+            var driverXVelo = translationSpeed.times(-m_driver.getLeftY());
+            var driverYVelo = translationSpeed.times(-m_driver.getLeftX());
+            var yawRate = kSwerveShimmyAngularRate.times(shimmyCCW ? 1 : -1);
+
+            log_stickDesiredFieldX.accept(driverXVelo.in(MetersPerSecond));
+            log_stickDesiredFieldY.accept(driverYVelo.in(MetersPerSecond));
+            log_stickDesiredFieldZRot.accept(yawRate.in(RotationsPerSecond)); // TODO: Change loggers later
+                
+            return drive
+                .withVelocityX(driverXVelo) // Drive forward with Y (forward)
+                .withVelocityY(driverYVelo) // Drive left with X (left)
+                .withRotationalRate(yawRate); // Drive counterclockwise with negative X (left)
+            }
+        );
+    }
+    /**
+     * A modified driveCommand that utilizes the swerveShimmy rotational value instead of what the driver requests.
+     * Translational control should not be affected. Regular driveCommand is used as defaultCommand.
+     * @param speedMultiplier How much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
+     * @return Swerve driveCommand with swerveShimmy rotational values
+     */
+    private Command driveCommandWithSwerveShimmying(double speedMultiplier) {
+        // Note that X is defined as forward according to WPILib convention,
+        // and Y is defined as to the left according to WPILib convention.
+        // Drivetrain will execute this command periodically
+        return Commands.repeatingSequence(
+            swerveRequestWithSwerveShimmy(speedMultiplier, true).withTimeout(0.113),
+            swerveRequestWithSwerveShimmy(speedMultiplier, false).withTimeout(0.1)
         );
     }
 
@@ -310,7 +357,7 @@ public class Robot extends TimedRobot {
         
         trg_shimmy.whileTrue(m_superstructure.intakeArmShimmy());
 
-        trg_swerveShimmy.whileTrue(m_superstructure.swerveShimmy());
+        trg_swerveShimmy.whileTrue(driveCommandWithSwerveShimmying(RobotK.kRobotSpeedIntakingLimit));
 
         trg_swerveShimmy.onFalse(Commands.print("Robot swerveShimmy stopped"));
 
