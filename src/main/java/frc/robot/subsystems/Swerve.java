@@ -55,7 +55,7 @@ import frc.util.WaltLogger.DoubleLogger;
  */
 public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private static final double kSimLoopPeriod = 0.004; // 4 ms
-    private final AngularVelocity kSwerveShimmyAngularRate = RotationsPerSecond.of(1.3);
+    private final AngularVelocity kSwerveShimmyAngularRate = RotationsPerSecond.of(1.3 / 2);
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
 
@@ -377,11 +377,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         return runOnce(() -> setControl(stopReq));
     }
 
-    public Command swerveShimmyRotate(boolean ccw) {
+    public Command swerveShimmyRotate(boolean CCW) {
         return applyRequest(() -> {
-            var yawRate = kSwerveShimmyAngularRate.times(ccw ? 1 : -1);
+            var yawRate = kSwerveShimmyAngularRate.times(CCW ? 1 : -1);
 
-            log_swerveShimmyCCW.accept(ccw);
+            log_swerveShimmyCCW.accept(CCW);
             log_swerveShimmyYawRate.accept(yawRate.magnitude());
 
             return swreq_drive
@@ -392,9 +392,12 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     public Command swerveShimmy() {
         return Commands.repeatingSequence(
-            swerveShimmyRotate(true).withTimeout(0.4),
-            swerveShimmyRotate(false).withTimeout(0.4)
-        ).finallyDo(() -> this.xBrake());
+            Commands.print("Robot is now rotating counter clockwise"),
+            swerveShimmyRotate(true).withTimeout(0.113),
+            Commands.print("Robot is now rotating clockwise"),
+            swerveShimmyRotate(false).withTimeout(0.1),
+            Commands.print("Robot swerveShimmy cycle ended")
+        );
     }
 
     /**
