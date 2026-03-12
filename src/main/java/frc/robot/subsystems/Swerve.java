@@ -85,9 +85,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private final BooleanLogger log_swerveShimmyCCW = WaltLogger.logBoolean("Swerve", "swerveShimmyCCW");
     private final DoubleLogger log_swerveShimmyYawRate = WaltLogger.logDouble("Swerve", "swerveShimmyYawRate");
 
-    private double m_swerveShimmyYawRate;
-    private boolean m_swerveShimmyCCW;
-
     private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
 
@@ -280,9 +277,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+    }
 
-        log_swerveShimmyCCW.accept(m_swerveShimmyCCW);
-        log_swerveShimmyYawRate.accept(m_swerveShimmyYawRate);
+    @Override
+    public void simulationPeriodic() {
     }
 
     private void startSimThread() {
@@ -379,14 +377,12 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         return runOnce(() -> setControl(stopReq));
     }
 
+    public Command swerveShimmyRotate(boolean ccw) {
+        return applyRequest(() -> {
+            var yawRate = kSwerveShimmyAngularRate.times(ccw ? 1 : -1);
 
-
-    public Command swerveShimmyRotate(boolean CCW) {
-        return this.applyRequest(() -> {
-            var yawRate = CCW ? kSwerveShimmyAngularRate : kSwerveShimmyAngularRate.unaryMinus();
-
-            m_swerveShimmyCCW = CCW;
-            m_swerveShimmyYawRate = yawRate.magnitude();
+            log_swerveShimmyCCW.accept(ccw);
+            log_swerveShimmyYawRate.accept(yawRate.magnitude());
 
             return swreq_drive
                 .withRotationalRate(yawRate); // Drive counterclockwise with negative X (left)
@@ -396,10 +392,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     public Command swerveShimmy() {
         return Commands.repeatingSequence(
-            this.swerveShimmyRotate(true),
-            Commands.waitSeconds(0.4),
-            this.swerveShimmyRotate(false),
-            Commands.waitSeconds(0.4)
+            swerveShimmyRotate(true).withTimeout(0.4),
+            swerveShimmyRotate(false).withTimeout(0.4)
         ).finallyDo(() -> this.xBrake());
     }
 

@@ -312,8 +312,6 @@ public class Robot extends TimedRobot {
 
         trg_swerveShimmy.whileTrue(m_superstructure.swerveShimmy());
 
-
-
         trg_unjam.whileTrue(
             m_superstructure.unjamCmd()
         );
