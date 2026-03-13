@@ -197,7 +197,7 @@ public class Robot extends TimedRobot {
         // and Y is defined as to the left according to WPILib convention.
         // Drivetrain will execute this command periodically
         return m_drivetrain.applyRequest(() -> {
-            LinearVelocity translationSpeed = (m_driver.leftTrigger().getAsBoolean() ? 
+            LinearVelocity translationSpeed = (m_driver.leftTrigger().getAsBoolean() ?
                 kMaxTranslationSpeed.times(speedMultiplier) :
                 kMaxTranslationSpeed);
 
@@ -230,7 +230,7 @@ public class Robot extends TimedRobot {
         // and Y is defined as to the left according to WPILib convention.
         // Drivetrain will NOT execute this command periodically
         return m_drivetrain.applyRequest(() -> {
-            LinearVelocity translationSpeed = (m_driver.leftTrigger().getAsBoolean() ? 
+            LinearVelocity translationSpeed = (m_driver.leftTrigger().getAsBoolean() ?
                 kMaxTranslationSpeed.times(speedMultiplier) :
                 kMaxTranslationSpeed);
 
@@ -451,7 +451,7 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         m_periodicTracer.addEpoch("Entry (Unused Time)");
-        CommandScheduler.getInstance().run(); 
+        CommandScheduler.getInstance().run();
         m_periodicTracer.addEpoch("CommandScheduler");
 
 
@@ -491,7 +491,7 @@ public class Robot extends TimedRobot {
         // );
 
         /* for the mechanism2D in 3D, drag all 3 mechanisms2ds onto the robot pose
-        and also log the shooter position pose */ 
+        and also log the shooter position pose */
         // m_periodicTracer.printEpochs();
     }
 
@@ -561,7 +561,7 @@ public class Robot extends TimedRobot {
     @Override
     public void testInit() {
         CommandScheduler.getInstance().cancelAll();
-        
+
         CommandScheduler.getInstance().schedule(
             Commands.sequence(
                 m_drivetrain.runOnce(m_drivetrain::seedFieldCentric),

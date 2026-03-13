@@ -8,8 +8,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.IndexerK;
-import frc.robot.Constants.IntakeK;
-import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
@@ -37,7 +35,7 @@ public class Superstructure extends SubsystemBase {
 
     private HashSet<String> m_activeOverrideCommands = new HashSet<>();
     private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
-    
+
     /* CONSTRUCTOR */
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
         m_intake = intake;
@@ -96,7 +94,7 @@ public class Superstructure extends SubsystemBase {
                 m_shooter.setTurretPos(Rotations.of(-0.250));
                 m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
                 m_indexer.setSpindexerVelocity(isPassing.getAsBoolean() ? Constants.IndexerK.kSpindexerShootRPS : Constants.IndexerK.kSpindexerIntakeRPS);
-            }, 
+            },
             () -> {
                 if (m_intake.getIntakeArmStatorCurrent() < 40) {
                     Commands.run(() -> m_shooter.setShotCalcCmd(true));
@@ -144,7 +142,7 @@ public class Superstructure extends SubsystemBase {
     public Command activateOuttake(AngularVelocity RPS) {
         Command logCommand;
         if (RPS == ShooterK.kShooterRPS) {
-            logCommand = logActiveCommands("shooting", "deactivateOuttake", "emergencyDump");   
+            logCommand = logActiveCommands("shooting", "deactivateOuttake", "emergencyDump");
         } else {
             logCommand = logActiveCommands("emergencyDump", "shooting", "deactivateOuttake");
         }
