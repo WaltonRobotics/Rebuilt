@@ -9,6 +9,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.IndexerK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
+
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK;
 import static frc.robot.Constants.IntakeK;
@@ -23,11 +24,21 @@ public class Superstructure extends SubsystemBase {
     private final Shooter m_shooter;
 
     /* LOGIC BOOLEANS */
-    private BooleanSupplier supp_canShoot = () -> (false);
-    private BooleanSupplier supp_canUnjam = () -> (false);
-    private BooleanSupplier supp_canIntake = () -> (false);
-    private BooleanSupplier supp_canShimmy = () -> (false);
-    private BooleanSupplier supp_canRetractIntakeArm = () -> (false);
+    private BooleanSupplier supp_canShoot = () -> (
+        false
+    );
+    private BooleanSupplier supp_canUnjam = () -> (
+        false
+    );
+    private BooleanSupplier supp_canIntake = () -> (
+        false
+    );
+    private BooleanSupplier supp_canShimmy = () -> (
+        false
+    );
+    private BooleanSupplier supp_canRetractIntakeArm = () -> (
+        false
+    );
 
     private BooleanSupplier supp_isTurretDriverLocked = () -> (false);
     
@@ -36,6 +47,23 @@ public class Superstructure extends SubsystemBase {
         m_intake = intake;
         m_indexer = indexer;
         m_shooter = shooter;
+
+        //REDEFINE SUPPS
+        supp_canShoot = () -> (
+            false
+        );
+        supp_canUnjam = () -> (
+            false
+        );
+        supp_canIntake = () -> (
+            false
+        );
+        supp_canShimmy = () -> (
+            false
+        );
+        supp_canRetractIntakeArm = () -> (
+            false
+        );
     }
 
     /* INTAKING COMMANDS */
