@@ -41,6 +41,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.vision.Detection;
+import frc.util.WaltLogger;
 
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
@@ -379,7 +380,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      * @return AutoFactory for this drivetrain
      */
     public AutoFactory createAutoFactory() {
-        return createAutoFactory((sample, isStart) -> {});
+        return createAutoFactory((traj, isStart) -> {
+            WaltLogger.timedPrint(String.format("TrajLog - isStart: %b", isStart));
+        });
     }
 
     /**
