@@ -20,6 +20,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -63,7 +65,7 @@ public class Robot extends TimedRobot {
     //---CONSTANTS
     private final LinearVelocity kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts; // kSpeedAt12Volts desired top speed
     private final AngularVelocity kDriverMaxAngularRate = RotationsPerSecond.of(1.05); // 3/4 of a rotation per second max angular velocity
-    private final AngularVelocity kSwerveShimmyAngularRate = RotationsPerSecond.of(1.3 / 2);
+    private final AngularVelocity kSwerveShimmyAngularRate = RotationsPerSecond.of(1.3 / 3);
 
     private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
     private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger(kLogTab, "VisionSeenLastSec");
@@ -397,29 +399,13 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
-        /* GENERATED SWERVE BINDS */
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
-        m_drivetrain.setDefaultCommand(driveCommand(RobotK.kRobotSpeedIntakingLimit));
+        Pose2d testPose2d = new Pose2d();
+        Angle rotationDegrees = Angle.ofBaseUnits(60, Degree);
+        testPose2d.rotateBy(new Rotation2d(rotationDegrees));
 
-        // Idle while the robot is disabled. This ensures the configured
-        // neutral mode is applied to the drive motors while disabled.
-        final var idle = new SwerveRequest.Idle();
-        RobotModeTriggers.disabled().whileTrue(
-            m_drivetrain.applyRequest(() -> idle).ignoringDisable(true)
-        );
+        m_driver.povUp().whileTrue(m_drivetrain.toPose(testPose2d));
 
-        // Reset the field-centric heading on left bumper press.
-        m_driver.leftBumper().and(trg_manipOverride.negate()).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
-
-        m_drivetrain.registerTelemetry(logger::telemeterize);
-
-        // Run SysId routines when holding back/start and X/Y.
-        // Note that each routine should be run exactly once in a single log.
-        // m_driver.back().and(m_driver.y()).whileTrue(m_drivetrain.sysIdDynamic(Direction.kForward));
-        // m_driver.back().and(m_driver.x()).whileTrue(m_drivetrain.sysIdDynamic(Direction.kReverse));
-        // m_driver.start().and(m_driver.y()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kForward));
-        // m_driver.start().and(m_driver.x()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kReverse));
+        configureBindings();
     }
 
     private void configureTestingDashboard() {
