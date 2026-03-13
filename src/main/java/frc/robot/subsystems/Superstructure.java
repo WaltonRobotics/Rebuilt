@@ -154,7 +154,7 @@ public class Superstructure extends SubsystemBase {
                 .onlyWhile(() -> m_shooter.isShooterSpunUp())
                 .andThen(Commands.waitUntil(() -> m_shooter.isShooterSpunUp()))
                 .repeatedly(),
-            // m_intake.\my(),
+            // m_intake.shimmy(),
             logCommand
         ).finallyDo(
             () -> deactivateOuttake()
