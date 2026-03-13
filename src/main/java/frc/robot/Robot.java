@@ -61,8 +61,6 @@ import frc.util.WaltLogger.DoubleLogger;
 public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
     //---CONSTANTS
-    private final LinearVelocity kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts; // kSpeedAt12Volts desired top speed
-    private final AngularVelocity kMaxAngularRate = RotationsPerSecond.of(1.05); // 3/4 of a rotation per second max angular velocity
 
     private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
     private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger(kLogTab, "VisionSeenLastSec");
@@ -89,7 +87,7 @@ public class Robot extends TimedRobot {
     private final Indexer m_indexer = new Indexer();
 
     // private final WaltVisualSim m_visualSim;
-    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
+    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter, m_drivetrain);
 
     //---AUTONS
     private Command m_autonomousCommand;
@@ -496,42 +494,54 @@ public class Robot extends TimedRobot {
     @Override
     public void testInit() {
         CommandScheduler.getInstance().cancelAll();
-        
-        CommandScheduler.getInstance().schedule(
-            Commands.sequence(
-                m_drivetrain.runOnce(m_drivetrain::seedFieldCentric),
-                Commands.waitSeconds(1),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(kMaxTranslationSpeed)
-                        .withVelocityY(0)
-                        .withRotationalRate(0)
-                ),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.xBrake(),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(kMaxTranslationSpeed.times(-1))
-                        .withVelocityY(0)
-                        .withRotationalRate(0)
-                ),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.xBrake(),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(0)
-                        .withVelocityY(0)
-                        .withRotationalRate(kMaxAngularRate)
-                ),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.xBrake(),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(0)
-                        .withVelocityY(0)
-                        .withRotationalRate(0)
-                )
-            )
-        );
+
+        TestingDashboard.initialize();
+
+        TestingDashboard.trg_letOpsCheckBeLong
+            .onTrue(m_superstructure.longOpsCheck())
+            .onFalse(m_superstructure.shortOpsCheck());
+
+        // CommandScheduler.getInstance().schedule(
+        //     Commands.sequence(
+        //         m_drivetrain.runOnce(m_drivetrain::seedFieldCentric),
+        //         Commands.waitSeconds(1),
+        //         m_drivetrain.applyRequest(() ->
+        //             drive.withVelocityX(kMaxTranslationSpeed)
+        //                 .withVelocityY(0)
+        //                 .withRotationalRate(0)
+        //         ),
+        //         Commands.waitSeconds(2.5),
+        //         m_drivetrain.xBrake(),
+        //         Commands.waitSeconds(2.5),
+        //         m_drivetrain.applyRequest(() ->
+        //             drive.withVelocityX(kMaxTranslationSpeed.times(-1))
+        //                 .withVelocityY(0)
+        //                 .withRotationalRate(0)
+        //         ),
+        //         Commands.waitSeconds(2.5),
+        //         m_drivetrain.xBrake(),
+        //         Commands.waitSeconds(2.5),
+        //         m_drivetrain.applyRequest(() ->
+        //             drive.withVelocityX(0)
+        //                 .withVelocityY(0)
+        //                 .withRotationalRate(kMaxAngularRate)
+        //         ),
+        //         Commands.waitSeconds(2.5),
+        //         m_drivetrain.xBrake(),
+        //         Commands.waitSeconds(2.5),
+        //         m_drivetrain.applyRequest(() ->
+        //             drive.withVelocityX(0)
+        //                 .withVelocityY(0)
+        //                 .withRotationalRate(0)
+        //         ),
+        //         Commands.waitSeconds(2.5),
+        //         m_drivetrain.xBrake(),
+        //         Commands.waitSeconds(2.5),
+        //         m_superstructure.intake(() -> false).withTimeout(5),
+        //         Commands.waitSeconds(2.5),
+        //         m_superstructure.activateOuttake(kShooterRPS).withTimeout(4)
+        //     )
+        // );
     }
 
     @Override
