@@ -97,7 +97,7 @@ public class Superstructure extends SubsystemBase {
      * @param RPS is the desired shooter speed
      * @return a Command that starts the overall shooting sequence
      */
-    public Command startShootSequence(Supplier<AngularVelocity> RPS) {
+    public Command shoot(Supplier<AngularVelocity> RPS) {
         return Commands.parallel(
             m_shooter.setShooterVelocityCmdSupp(RPS),
             Commands.sequence(
@@ -107,13 +107,13 @@ public class Superstructure extends SubsystemBase {
             )
         )
         .onlyIf(supp_canShoot)
-        .finallyDo(() -> deactivateOuttake());
+        .finallyDo(() -> stopShooting());
     }
 
     /**
      * @return a Command that starts the overall shooting sequence; uses shotcalculator value directly
      */
-    public Command startShootSequenceCalc() {
+    public Command shootWithShotCalc() {
         return Commands.parallel(
             m_shooter.shootFromCalc(),
             Commands.sequence(
@@ -123,31 +123,31 @@ public class Superstructure extends SubsystemBase {
             )
         )
         .onlyIf(supp_canShoot)
-        .finallyDo(() -> deactivateOuttake());
+        .finallyDo(() -> stopShooting());
     }
 
     /**
      * TO BE USED ONLY WITH THE SHOOTER RPS TESTINGWIDGET
      * @return a Command that just starts up the spindexer and tunnel
      */
-    public Command startShootSequenceNOSHOOT() {
+    public Command shoot_TestingWidget() {
         return Commands.sequence(
             m_indexer.startTunnelCmd(),
             m_indexer.startSpindexerCmd()
         )
         .onlyIf(supp_canShoot)
-        .finallyDo(() -> deactivateOuttakeNOSHOOT());
+        .finallyDo(() -> stopShooting_TestingWidget());
     }
 
     //---DEACTIVATE SHOOTING METHODS
-    private void deactivateOuttake() {
+    private void stopShooting() {
         m_indexer.stopSpindexer();
         m_indexer.stopTunnel();
         m_shooter.setShooterVelocity(ShooterK.kShooterZeroRPS);
         // m_shooter.setHoodPosition(Degrees.of(1));
     }
 
-    private void deactivateOuttakeNOSHOOT() {
+    private void stopShooting_TestingWidget() {
         m_indexer.stopSpindexer();
         m_indexer.stopTunnel();
         // m_shooter.setHoodPosition(Degrees.of(1));

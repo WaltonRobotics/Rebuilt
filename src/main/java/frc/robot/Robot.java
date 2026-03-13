@@ -305,7 +305,7 @@ public class Robot extends TimedRobot {
 
         //Shooting
         // NORMAL FIXED SHOT
-        trg_shoot.whileTrue(m_superstructure.startShootSequence(() -> ShooterK.kShooterRPS));
+        trg_shoot.whileTrue(m_superstructure.shoot(() -> ShooterK.kShooterRPS));
         // trg_shoot.whileTrue(m_superstructure.activateOuttakeCalc());
 
         // snapshot on each shoot press
@@ -349,7 +349,7 @@ public class Robot extends TimedRobot {
         m_driver.povDown().onTrue(m_shooter.setTurretLockCmd(false));
         m_driver.povRight().onTrue(m_shooter.setTurretLockCmd(true));
 
-        m_driver.povLeft().whileTrue(m_superstructure.startShootSequenceNOSHOOT());
+        m_driver.povLeft().whileTrue(m_superstructure.shoot_TestingWidget());
 
         // trg_optimalPrefireTime.whileTrue(
         //     Commands.run(() -> setBothRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> setBothRumble(RumbleType.kBothRumble, 0)));
