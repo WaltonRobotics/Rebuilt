@@ -127,7 +127,7 @@ public class WaltSimpleAutonFactory {
                     tp("preload.deadline.intake.END"),
                     logState(3.3),
                     tp("preload.deadline.unjam.START"),
-                    m_superstructure.unjamCmd(),
+                    m_superstructure.unjamCmd(() -> false),
                     tp("preload.deadline.unjam.END")
                 )
             ),

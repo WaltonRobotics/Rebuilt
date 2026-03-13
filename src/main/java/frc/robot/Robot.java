@@ -321,8 +321,12 @@ public class Robot extends TimedRobot {
         
         trg_shimmy.whileTrue(m_superstructure.shimmy());
 
+        trg_unjam.and(trg_shoot.negate()).whileTrue(
+            m_superstructure.unjamCmd(() -> false)
+        );
+
         trg_unjam.whileTrue(
-            m_superstructure.unjamCmd()
+            m_superstructure.unjamCmd(()-> true)
         );
 
         //---OVERRIDE COMMANDS

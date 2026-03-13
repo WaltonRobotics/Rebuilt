@@ -86,20 +86,20 @@ public class Superstructure extends SubsystemBase {
             Commands.runEnd(
             () -> {
                 boolean shooting = isShooting.getAsBoolean();
+
                 m_shooter.setIntaking(!shooting);
                 m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
                 m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPS : IndexerK.kSpindexerIntakeRPS);
-                if (shooting) {
-                    m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS);
-                }
             }, 
             () -> {
+                boolean shooting = isShooting.getAsBoolean();
+
                 if (m_intake.getIntakeArmStatorCurrent() < 40) {
                     m_shooter.setIntaking(false);
                     m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
-                    m_indexer.stopSpindexer();
-                    m_indexer.stopTunnel();
-                    // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
+                    if (!shooting) {
+                        m_indexer.setSpindexerVelocityCmd(RotationsPerSecond.of(0));
+                    }
                 }
             })
         );
@@ -119,7 +119,6 @@ public class Superstructure extends SubsystemBase {
     public Command startShootSequenceNOSHOOT() {
         return Commands.parallel(
             Commands.sequence(
-                Commands.waitUntil(() -> m_shooter.isShooterSpunUp()).withTimeout(ShooterK.kShooterTimeout),
                 m_indexer.startTunnelCmd(),
                 m_indexer.startSpindexerCmd()
             )
@@ -270,16 +269,23 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
-    public Command unjamCmd() {
+    public Command unjamCmd(BooleanSupplier isShooting) {
         return Commands.runEnd(
             () -> {
-                m_indexer.setSpindexerVelocity(Constants.IndexerK.kSpindexerShootRPS.times(-1));
-                m_indexer.setTunnelVelocity(Constants.IndexerK.kTunnelShootRPS.times(-1));
-                m_shooter.setShooterVelocity(Constants.ShooterK.kShooterRPS.times(-1));
+                m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS.times(-1));
+                m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS.times(-1));
+                if (!isShooting.getAsBoolean()) {
+                    m_shooter.setShooterVelocity(ShooterK.kShooterRPS.times(-1));
+                }
             }, () -> {
-                m_indexer.setSpindexerVelocity(RotationsPerSecond.of(0));
-                m_indexer.setTunnelVelocity(RotationsPerSecond.of(0));
-                m_shooter.setShooterVelocity(RotationsPerSecond.of(0));
+                if (!isShooting.getAsBoolean()) {
+                    m_shooter.setShooterVelocity(RotationsPerSecond.of(0));
+                    m_indexer.setSpindexerVelocity(RotationsPerSecond.of(0));
+                    m_indexer.setTunnelVelocity(RotationsPerSecond.of(0));
+                }
+                else if (isShooting.getAsBoolean()) {
+                    m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS);
+                }
             }
         );
     }
