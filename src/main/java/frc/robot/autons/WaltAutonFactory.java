@@ -2,6 +2,7 @@ package frc.robot.autons;
 
 import java.util.ArrayList;
 
+import choreo.Choreo;
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -26,6 +27,8 @@ public class WaltAutonFactory {
 
     private String[] neutralCycle;
     private AutonSide m_side;
+
+    //trajectory logger
 
     public void setAutonSide(AutonSide side) {
         if (m_side != side) {
@@ -56,6 +59,10 @@ public class WaltAutonFactory {
     //---AUTON CONSTRUCTION
     public Command runTrajCmd(String traj) {
         return Commands.sequence(
+            Commands.runOnce(() -> {
+                var trajectory = Choreo.loadTrajectory(traj);
+                trajectory.get().getPoses();
+            }),
             m_autoFactory.resetOdometry(traj),
             m_autoFactory.trajectoryCmd(traj)
         );
