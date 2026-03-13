@@ -78,7 +78,7 @@ public class WaltSimpleAutonFactory {
     private Command shootWithTimeout(AngularVelocity speed, double seconds) {
         return Commands.sequence(
             tp("shootWithTimeout.START(" + speed + "," + seconds + ")"),
-            m_superstructure.activateOuttake(() -> speed).withTimeout(seconds),
+            m_superstructure.startShootSequence(() -> speed).withTimeout(seconds),
             tp("shootWithTimeout.END")
         );
     }
@@ -141,7 +141,7 @@ public class WaltSimpleAutonFactory {
                     Commands.waitSeconds(6),
                     logState(4.2),
                     tp("preload.shimmy.START"),
-                    m_superstructure.shimmy(),
+                    m_superstructure.intakeArmShimmy(),
                     tp("preload.shimmy.END")
                 )
             ),
@@ -209,7 +209,7 @@ public class WaltSimpleAutonFactory {
         return Commands.sequence(
             Commands.parallel(
                 m_autoFactory.resetOdometry(AutonK.kRightSweepPathName),
-                m_superstructure.activateOuttake(() -> kShooterAutonCloseRPS).withTimeout(2)
+                m_superstructure.startShootSequence(() -> kShooterAutonCloseRPS).withTimeout(2)
             ),
             rightOneSweep(),
             m_autoFactory.resetOdometry("RightTurnBack"),
@@ -235,7 +235,7 @@ public class WaltSimpleAutonFactory {
             Commands.parallel(
                 m_autoFactory.trajectoryCmd("RightDepotToShoot"),
                 Commands.sequence(
-                    m_superstructure.activateOuttake(() -> ShooterK.kShooterRPS).withTimeout(2)
+                    m_superstructure.startShootSequence(() -> ShooterK.kShooterRPS).withTimeout(2)
                 )
             )
 
@@ -253,7 +253,7 @@ public class WaltSimpleAutonFactory {
                 m_autoFactory.trajectoryCmd("RightOutpostToNeutral"),
                 Commands.sequence(
                     Commands.waitSeconds(0.5),
-                    m_superstructure.activateOuttake(() -> ShooterK.kShooterRPS).withTimeout(2),
+                    m_superstructure.startShootSequence(() -> ShooterK.kShooterRPS).withTimeout(2),
                     Commands.waitSeconds(0.5),
                     m_intake.setIntakeArmPosCmd(IntakeArmPosition.SAFE),
                     Commands.waitSeconds(0.5),

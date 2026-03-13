@@ -305,7 +305,7 @@ public class Robot extends TimedRobot {
 
         //Shooting
         // NORMAL FIXED SHOT
-        trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> ShooterK.kShooterRPS));
+        trg_shoot.whileTrue(m_superstructure.startShootSequence(() -> ShooterK.kShooterRPS));
         // trg_shoot.whileTrue(m_superstructure.activateOuttakeCalc());
 
         // snapshot on each shoot press
@@ -319,7 +319,7 @@ public class Robot extends TimedRobot {
             m_superstructure.emergencyBarf()
         );
         
-        trg_shimmy.whileTrue(m_superstructure.shimmy());
+        trg_shimmy.whileTrue(m_superstructure.intakeArmShimmy());
 
         trg_unjam.and(trg_shoot.negate()).whileTrue(
             m_superstructure.unjamCmd(() -> false)
@@ -336,12 +336,12 @@ public class Robot extends TimedRobot {
         // m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(1)));
 
         trg_deployIntakeOverride.onTrue(
-            m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)
+            m_superstructure.overrideIntakeArm(IntakeArmPosition.DEPLOYED)
         ).onFalse(
-            m_superstructure.intakeTo(IntakeArmPosition.SAFE)
+            m_superstructure.overrideIntakeArm(IntakeArmPosition.SAFE)
         );
         trg_intakeUpOverride.onTrue(
-            m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
+            m_superstructure.overrideIntakeArm(IntakeArmPosition.RETRACTED)
         );
 
         // m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
@@ -349,7 +349,7 @@ public class Robot extends TimedRobot {
         m_driver.povDown().onTrue(m_shooter.setTurretLockCmd(false));
         m_driver.povRight().onTrue(m_shooter.setTurretLockCmd(true));
 
-        m_driver.povLeft().whileTrue(m_superstructure.activateOuttakeNOSHOOT());
+        m_driver.povLeft().whileTrue(m_superstructure.startShootSequenceNOSHOOT());
 
         // trg_optimalPrefireTime.whileTrue(
         //     Commands.run(() -> setBothRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> setBothRumble(RumbleType.kBothRumble, 0)));
