@@ -10,17 +10,14 @@ import frc.robot.Constants;
 import frc.robot.Constants.IndexerK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.util.WaltLogger;
-import frc.util.WaltLogger.StringArrayLogger;
+import frc.util.WaltLogger.StringLogger;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.SuperstructureK.*;
 import static frc.robot.Constants.ShooterK;
 import static frc.robot.Constants.IntakeK;
 
-import java.util.HashSet;
 import java.util.function.BooleanSupplier;
 
 public class Superstructure extends SubsystemBase {
@@ -30,12 +27,13 @@ public class Superstructure extends SubsystemBase {
     private final Shooter m_shooter;
 
     /* LOGGERS */
-    private HashSet<String> m_activeCommands = new HashSet<>();
-    private final StringArrayLogger log_activeCommands = WaltLogger.logStringArray(kLogTab, "Active Commands");
+    StringLogger log_intakeState = new StringLogger(kLogTab, "intakeState");
+    StringLogger log_indexerState = new StringLogger(kLogTab, "indexerState");
+    StringLogger log_shooterState = new StringLogger(kLogTab, "shooterState");
 
-    private HashSet<String> m_activeOverrideCommands = new HashSet<>();
-    private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
-    
+    IntakeState m_intakeState = IntakeState.RETRACTED;
+    IndexerState m_indexerState = IndexerState.IDLE;
+
     /* CONSTRUCTOR */
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
         m_intake = intake;
@@ -44,49 +42,10 @@ public class Superstructure extends SubsystemBase {
     }
 
     /* BUTTON BIND SEQUENCES */
-
-    /**
-     * Turns off rollers and spinner and moves deploy to given pos.
-     * @param pos the position to move deploy to.
-     */
-    public Command deactivateIntake(IntakeArmPosition pos) {
-        Command logCommand;
-        switch (pos) {
-            case SAFE:
-                if (m_intake.getIntakeArmStatorCurrent() < 40) {
-                    logCommand = logActiveCommands("safeIntake", "activateIntake", "retractIntake");
-                } else {
-                    return Commands.none();
-                }
-                break;
-            default:
-                logCommand = logActiveCommands("retractIntake", "activateIntake", "safeIntake");
-                break;
-        }
-        return Commands.sequence(
-            m_intake.stopIntakeRollers(),
-            m_intake.setIntakeArmPosCmd(pos),
-            m_indexer.stopSpindexerCmd(),
-            logCommand
-        );
-    }
-
-    /**
-     * Turns on rollers and spinner moves deploy to deployed positon.
-     */
-    public Command activateIntake() {
-        return Commands.sequence(
-            m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
-            Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()),
-            m_intake.startIntakeRollers(),
-            m_indexer.setSpindexerVelocityCmd(Constants.IndexerK.kSpindexerIntakeRPS),
-            logActiveCommands("activateIntake", "safeIntake", "retractIntake")
-        );
-    }
-
+    //---NORMAL BINDS
     public Command intake(BooleanSupplier isPassing) {
         return Commands.sequence(
-            m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
+            intakeArmToPos(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()).withTimeout(0.25),
             Commands.runEnd(
             () -> {
@@ -94,85 +53,83 @@ public class Superstructure extends SubsystemBase {
                 m_shooter.setTurretPos(Rotations.of(-0.250));
                 m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
                 m_indexer.setSpindexerVelocity(isPassing.getAsBoolean() ? Constants.IndexerK.kSpindexerShootRPS : Constants.IndexerK.kSpindexerIntakeRPS);
+                m_intakeState = IntakeState.DEPLOYED;
+                m_indexerState = isPassing.getAsBoolean() ? IndexerState.SHOOTING : IndexerState.INTAKING;
             }, 
             () -> {
-                if (m_intake.getIntakeArmStatorCurrent() < 40) {
-                    Commands.run(() -> m_shooter.setShotCalcCmd(true));
-                    m_shooter.setShotCalc(true);
-                    m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
-                    m_indexer.stopSpindexer();
-                    // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
-                }
+                Commands.run(() -> m_shooter.setShotCalcCmd(true));
+                m_shooter.setShotCalc(true);
+                m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
+                m_indexer.stopSpindexer();
+                m_intakeState = IntakeState.PREPPED;
+                m_indexerState = IndexerState.IDLE;
+                // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
             })
         );
     }
 
-    public Command intakeWhilePassing() {
-        return Commands.runEnd(
+    /**
+     * Turns off rollers and spinner and moves deploy to RETRACTED.
+     */
+    public Command retractIntake() {
+        return Commands.sequence(
+            m_intake.stopIntakeRollers(),
+            intakeArmToPos(IntakeArmPosition.RETRACTED),
+            m_indexer.stopSpindexerCmd(),
+            Commands.runOnce(
             () -> {
-                m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
-                if (m_intake.isIntakeArmAtPos()) {
-                    m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
-                }
-            }, 
-            () -> {
-                if (m_intake.getIntakeArmStatorCurrent() < 40) {
-                    m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
-                    // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
-                }
-            }
+                m_intakeState = IntakeState.RETRACTED;
+                m_indexerState = IndexerState.IDLE;
+            })
         );
     }
 
-    public Command startShootSequence(AngularVelocity RPS) {
+    /**
+     * Turns on spindexer and tunnel and sets shooter speed to RPS.
+     * @param RPS the speed for the shooter
+     */
+    public Command shoot(AngularVelocity RPS) {
+        return Commands.parallel(
+            startShootingSequence(RPS)
+                .onlyWhile(() -> m_shooter.isShooterSpunUp())
+                .andThen(Commands.waitUntil(() -> m_shooter.isShooterSpunUp()))
+                .repeatedly()
+            // m_intake.shimmy()
+        ).finallyDo(
+            () -> stopShooting()
+        );
+    }
+
+    /**
+     * Starts shooting by waiting until the shooter flywheel is spun up, then turning on the tunnel and spindexer.
+     * @param RPS RPS to set shooter velocity to.
+     */
+    public Command startShootingSequence(AngularVelocity RPS) {
         return Commands.sequence(
             m_shooter.setShooterVelocityCmd(RPS),
             Commands.waitUntil(() -> m_shooter.isShooterSpunUp()).withTimeout(3),
             m_indexer.startTunnelCmd(),
-            m_indexer.startSpindexerCmd()
+            m_indexer.startSpindexerCmd(),
+            Commands.runOnce(() -> m_indexerState = IndexerState.SHOOTING)
         );
     }
 
     /**
-     * Turns on spinner and exhaust and sets shooter speed to RPS.
-     * <p>
-     * Note: does not move turret or hood.
-     * @param RPS the speed for the shooter
-     */
-    public Command activateOuttake(AngularVelocity RPS) {
-        Command logCommand;
-        if (RPS == ShooterK.kShooterRPS) {
-            logCommand = logActiveCommands("shooting", "deactivateOuttake", "emergencyDump");   
-        } else {
-            logCommand = logActiveCommands("emergencyDump", "shooting", "deactivateOuttake");
-        }
-
-        return Commands.parallel(
-            startShootSequence(RPS)
-                .onlyWhile(() -> m_shooter.isShooterSpunUp())
-                .andThen(Commands.waitUntil(() -> m_shooter.isShooterSpunUp()))
-                .repeatedly(),
-            // m_intake.shimmy(),
-            logCommand
-        ).finallyDo(
-            () -> deactivateOuttake()
-        );
-    }
-
-    /**
-     * Turns off spinner, exhaust, and shooter.
+     * Turns off spindexer, tunnel, and shooter.
      * <p>
      * Note: does not move turret or hood.
      */
-    public void deactivateOuttake() {
+    public void stopShooting() {
         m_indexer.stopSpindexer();
         m_indexer.stopTunnel();
         m_shooter.setShooterVelocity(ShooterK.kShooterZeroRPS);
+        m_indexerState = IndexerState.IDLE;
         // m_shooter.setHoodPosition(Degrees.of(1));
-
-        Commands.sequence(logActiveCommands("deactivateOuttake", "shooting", "emergencyDump"));
     }
 
+    /**
+     * Ejects fuel out of the intake and shooter in a controlled yet rapid rate.
+     */
     public Command emergencyBarf() {
         return Commands.startEnd(
             () -> {
@@ -182,6 +139,8 @@ public class Superstructure extends SubsystemBase {
                 m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS);
                 m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
                 m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersMaxRPS.times(-1));
+                m_intakeState = IntakeState.BARFING;
+                m_indexerState = IndexerState.BARFING;
             },
             () -> {
                 m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));
@@ -190,24 +149,33 @@ public class Superstructure extends SubsystemBase {
                 // m_shooter.setHoodPosition(ShooterK.kHoodSafeDegs);
                 m_indexer.setSpindexerVelocity(RotationsPerSecond.of(0));
                 m_indexer.setTunnelVelocity(RotationsPerSecond.of(0));
+                m_intakeState = IntakeState.PREPPED;
+                m_indexerState = IndexerState.IDLE;
             }
         );
     }
 
+    /**
+     * Oscillates the intake back and forth to unstick balls stuck in the intake.
+     */
     public Command shimmy() {
-       return m_intake.shimmy();
+       return m_intake.shimmy().alongWith(Commands.runOnce(
+        () -> m_intakeState = IntakeState.SHIMMYING
+       )).finallyDo(
+        () -> m_intakeState = IntakeState.PREPPED
+       );
     }
 
-    /**
-     * Initiates passing by activating intake and outtake.
-     */
-    public Command startPassing() {
-        return Commands.sequence(
-            activateIntake(),
-            activateOuttake(ShooterK.kShooterRPS),
-            logActiveCommands("startPassing", "stopPassing")
-        );
-    }
+    // TODO: potentially delete following 4 commands as they currently are useless and probably will stay useless
+    // /**
+    //  * Initiates passing by activating intake and outtake.
+    //  */
+    // public Command startPassing() {
+    //     return Commands.sequence(
+    //         activateIntake(),
+    //         activateOuttake(ShooterK.kShooterRPS)
+    //     );
+    // }
 
     /**
      * Exits passing mode by deactivating intake with deploy to SAFE and deactivating outtake.
@@ -216,19 +184,44 @@ public class Superstructure extends SubsystemBase {
     //     return Commands.sequence(
     //         deactivateIntake(IntakeArmPosition.SAFE),
     //         deactivateOuttake(),
-    //         logActiveCommands("stopPassing", "startPassing")
     //     );
     // }
 
-    // Override commands
+    // public Command intakeWhilePassing() {
+    //     return Commands.runEnd(
+    //         () -> {
+    //             m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
+    //             if (m_intake.isIntakeArmAtPos()) {
+    //                 m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
+    //             }
+    //         }, 
+    //         () -> {
+    //             m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
+    //             // m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
+    //         }
+    //     );
+    // }
+
+    // /**
+    //  * Turns on rollers and spinner moves deploy to deployed positon.
+    //  */
+    // public Command activateIntake() {
+    //     return Commands.sequence(
+    //         m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
+    //         Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()),
+    //         m_intake.startIntakeRollers(),
+    //         m_indexer.setSpindexerVelocityCmd(Constants.IndexerK.kSpindexerIntakeRPS)
+    //     );
+    // }
+
+    //---OVERRIDE BINDS
     /**
      * Sets the shooter speed to max.
      */
     public Command maxShooter() {
         return Commands.sequence(
-            m_shooter.setShooterVelocityCmd(ShooterK.kShooterRPS),
+            m_shooter.setShooterVelocityCmd(ShooterK.kShooterRPS)
             // m_shooter.setShooterVelocityCmd(RotationsPerSecond.of(50)),
-            logActiveOverrideCommands("maxShooter", "stopShooter")
         );
     }
 
@@ -236,10 +229,7 @@ public class Superstructure extends SubsystemBase {
      * Stops the shooter.
      */
     public Command stopShooter() {
-        return Commands.sequence(
-            m_shooter.setShooterVelocityCmd(ShooterK.kShooterZeroRPS),
-            logActiveOverrideCommands("stopShooter", "maxShooter")
-        );
+        return m_shooter.setShooterVelocityCmd(ShooterK.kShooterZeroRPS);
     }
 
     /**
@@ -247,16 +237,7 @@ public class Superstructure extends SubsystemBase {
      * @param degs degrees to rotate to.
      */
     public Command turretTo(Angle degs) {
-        Command logCommand;
-        if (degs.magnitude() == 180) {
-            logCommand = logActiveOverrideCommands("turret180", "turret0");
-        } else {
-            logCommand = logActiveOverrideCommands("turret0", "turret180");
-        }
-        return Commands.sequence(
-            m_shooter.setTurretPosCmd(Rotations.of(degs.in(Rotations))),
-            logCommand
-        );
+        return m_shooter.setTurretPosCmd(Rotations.of(degs.in(Rotations)));
     }
 
     /**
@@ -271,159 +252,101 @@ public class Superstructure extends SubsystemBase {
     }
 
     /**
-     * Starts the indexer spinner.
+     * Starts the indexer spindexer.
      */
     public Command startSpindexerCmd() {
-        return Commands.sequence(
-            m_indexer.startSpindexerCmd(),
-            logActiveOverrideCommands("startSpindexerCmd", "stopSpindexerCmd")
-        );
+        return m_indexer.startSpindexerCmd();
     }
 
     /**
-     * Stops the indexer spinner.
+     * Stops the indexer spindexer.
      */
     public Command stopSpindexerCmd() {
-        return Commands.sequence(
-            m_indexer.stopSpindexerCmd(),
-            logActiveOverrideCommands("stopSpindexerCmd", "startSpindexerCmd")
-        );
+        return m_indexer.stopSpindexerCmd();
     }
 
+    /**
+     * Runs the shooter, tunnel, and spindexer in reverse direction to unjam any balls potentially stuck in the shooting system.
+     */
     public Command unjamCmd() {
         return Commands.runEnd(
             () -> {
                 m_indexer.setSpindexerVelocity(Constants.IndexerK.kSpindexerShootRPS.times(-1));
                 m_indexer.setTunnelVelocity(Constants.IndexerK.kTunnelShootRPS.times(-1));
                 m_shooter.setShooterVelocity(Constants.ShooterK.kShooterRPS.times(-1));
+                m_indexerState = IndexerState.UNJAMMING;
             }, () -> {
                 m_indexer.setSpindexerVelocity(RotationsPerSecond.of(0));
                 m_indexer.setTunnelVelocity(RotationsPerSecond.of(0));
                 m_shooter.setShooterVelocity(RotationsPerSecond.of(0));
+                m_indexerState = IndexerState.IDLE;
             }
         );
     }
 
     /**
-     * Starts the indexer exhaust.
+     * Starts the indexer tunnel.
      */
     public Command startTunnelCmd() {
-        return Commands.sequence(
-            m_indexer.startTunnelCmd(),
-            logActiveOverrideCommands("startTunnelCmd", "stopTunnelCmd")
-        );
+        return m_indexer.startTunnelCmd();
     }
 
     /**
-     * Stops the indexer exhaust.
+     * Stops the indexer tunnel.
      */
     public Command stopTunnelCmd() {
-        return Commands.sequence(
-            m_indexer.stopTunnelCmd(),
-            logActiveOverrideCommands("stopTunnelCmd", "startTunnelCmd")
-        );
+        return m_indexer.stopTunnelCmd();
     }
 
     /**
      * Starts the intake rollers.
      */
     public Command startIntakeRollers() {
-        return Commands.sequence(
-            m_intake.startIntakeRollers(),
-            logActiveOverrideCommands("startIntakeRollers", "stopIntakeRollers")
-        );
+        return m_intake.startIntakeRollers();
     }
 
     /**
      * Stops the intake rollers.
      */
     public Command stopIntakeRollers() {
-        return Commands.sequence(
-            m_intake.stopIntakeRollers(),
-            logActiveOverrideCommands("stopIntakeRollers", "startIntakeRollers")
-        );
+        return m_intake.stopIntakeRollers();
     }
 
     /**
-     * Deploys the intake to the given pos.
+     * Deploys the intake arm to the given pos.
      * @param pos position to deploy to.
      * @return
      */
-    public Command intakeTo(IntakeArmPosition pos) {
-        Command logCommand;
-        switch (pos) {
-            case DEPLOYED:
-                logCommand = logActiveOverrideCommands("deployIntake", "safeIntake", "intakeUp");
-                break;
-            case SAFE:
-                logCommand = logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp");
-                break;
-            default:
-                if (m_intake.getIntakeArmStatorCurrent() < 40) {
-                    logCommand = logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake");
-                }
-                else {
-                   return Commands.none();
-                }
-                break;
-        }
-        return logCommand = Commands.sequence(
-            m_intake.setIntakeArmPosCmd(pos),
-            logCommand
-        );
+    public Command intakeArmToPos(IntakeArmPosition pos) {
+        return m_intake.setIntakeArmPosCmd(pos);
     }
 
-    /**
-     * Adds and removes specified Command names from the ActiveCommands ArrayList, then logs the ArrayList.
-     * @param toAdd Command name to add.
-     * @param toRemove Command names to remove.
-     */
-    private Command logActiveCommands(String toAdd, String... toRemove) {
-        Command addTo = Commands.runOnce(
-            () -> m_activeCommands.add(toAdd)
-        );
-        Command removeFrom = Commands.runOnce(
-            () -> {
-                for (String s : toRemove) {
-                    m_activeCommands.remove(s);
-                }
-            }
-        );
-        Command updateLog = Commands.runOnce(
-            () -> log_activeCommands.accept(m_activeCommands.toArray(new String[m_activeCommands.size()]))
-        );
-
-        return Commands.sequence(
-            addTo,
-            removeFrom,
-            updateLog
-        );
+    @Override
+    public void periodic() {
+        log_intakeState.accept(m_intakeState.name());
+        log_indexerState.accept(m_indexerState.name());
+        // log_shooterState.accept();
     }
 
-    /**
-     * Adds and removes specified override Command names from the activeOverridesCommands ArrayList, then logs the ArrayList.
-     * @param toAdd override Command name to add.
-     * @param toRemove override Command names to remove.
-     */
-    private Command logActiveOverrideCommands(String toAdd, String... toRemove) {
-        Command addTo = Commands.runOnce(
-            () -> m_activeOverrideCommands.add(toAdd)   
-        );
-        Command removeFrom = Commands.runOnce(
-            () -> {
-                for (String s : toRemove) {
-                    m_activeOverrideCommands.remove(s);
-                }
-            }
-        );
-        Command updateLog = Commands.runOnce(
-            () -> log_activeOverrideCommands.accept(m_activeOverrideCommands.toArray(new String[m_activeOverrideCommands.size()]))
-        );
+    /* STATE ENUMS */
+    private enum IntakeState {
+        RETRACTED,
+        PREPPED,
+        DEPLOYED,
+        SHIMMYING,
+        BARFING
+    }
 
-        return Commands.sequence(
-            addTo,
-            removeFrom,
-            updateLog
-        );
+    private enum IndexerState {
+        INTAKING,
+        SHOOTING,
+        UNJAMMING,
+        IDLE,
+        BARFING
+    }
+
+    // for later once shooter gets disassembled and reassembled
+    private enum ShooterState {
+
     }
 }

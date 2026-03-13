@@ -285,13 +285,13 @@ public class Robot extends TimedRobot {
             m_superstructure.intake(() -> false)
         );
         trg_retractIntake.onTrue(
-            m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
+            m_superstructure.retractIntake()
         );
 
         //Shooting
         // trg_shoot.and(() -> trg_hubActiveOrPassing.getAsBoolean()).whileTrue(
         trg_shoot.whileTrue(
-            m_superstructure.activateOuttake(kShooterRPS)
+            m_superstructure.shoot(kShooterRPS)
         );
 
         // snapshot on each shoot press
@@ -318,12 +318,12 @@ public class Robot extends TimedRobot {
         // m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(1)));
 
         trg_deployIntakeOverride.onTrue(
-            m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)
+            m_superstructure.intakeArmToPos(IntakeArmPosition.DEPLOYED)
         ).onFalse(
-            m_superstructure.intakeTo(IntakeArmPosition.SAFE)
+            m_superstructure.intakeArmToPos(IntakeArmPosition.SAFE)
         );
         trg_intakeUpOverride.onTrue(
-            m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
+            m_superstructure.intakeArmToPos(IntakeArmPosition.RETRACTED)
         );
 
         // m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
