@@ -48,55 +48,102 @@ public class WaltSimpleAutonFactory {
         return Commands.runOnce(() -> log_autonState.accept(state));
     }
 
-    private Command homingCmd() {
-        return Commands.parallel(
-            m_shooter.turretHomingCmd(),
-            m_intake.intakeArmCurrentSenseHoming()
+    private Command tp(String message) {
+        return WaltLogger.timedPrintCmd(message);
+    }    
+
+    public Command preheater() {
+        return Commands.sequence(
+            tp("preheat.START"),
+            runTraj("PreHeat", 1.0),
+            tp("preheat.END")
         );
     }
 
+    private Command waitTurretHomedCmd() {
+        return Commands.waitUntil(m_shooter.turretHomedSupp);
+    }
+
+    private Command waitIntakeHomedCmd() {
+        return Commands.waitUntil(m_intake.intakeHomedSupp);
+    }
+
+    private Command homingCmd() {
+        return Commands.parallel(
+            Commands.sequence(tp("turretHoming.START"), waitTurretHomedCmd(), tp("turretHoming.END")),
+            Commands.sequence(tp("intakeArmHoming.START"), waitIntakeHomedCmd(), tp("intakeArmHoming.END"))
+        ).withTimeout(5);
+    }
+
     private Command shootWithTimeout(AngularVelocity speed, double seconds) {
-        return m_superstructure.activateOuttake(speed).withTimeout(seconds);
+        return Commands.sequence(
+            tp("shootWithTimeout.START(" + speed + "," + seconds + ")"),
+            m_superstructure.activateOuttake(speed).withTimeout(seconds),
+            tp("shootWithTimeout.END")
+        );
     }
 
     private Command runTraj(String name, double timeoutSecs) {
-        return m_autoFactory.trajectoryCmd(name).withTimeout(timeoutSecs).andThen(m_swerve.xBrake());
+        return Commands.sequence(
+            tp("runTraj.START(" + name + ")"),
+            m_autoFactory.trajectoryCmd(name).withTimeout(timeoutSecs),
+            tp("runTraj.END(" + name + ")"),
+            m_swerve.xBrake(),
+            tp("xBrake.END")
+        );
     }
 
     private Command preload_oneSweep(boolean isLeft) {
         String trajName = isLeft ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
 
         return Commands.sequence(
+            tp("preload.sequence.START"),
             logState(0),
             Commands.sequence(
+                tp("preload.homing.START"),
                 homingCmd().withName("HomingCmd"),
+                tp("preload.homing.END"),
                 logState(1),
-                Commands.waitUntil(() -> m_shooter.m_isTurretHomed),  //TODO: should probably change this to check if is aiming at target (hub)
+                tp("preload.waitTurretHomed.START"),
+                Commands.waitUntil(m_shooter.turretHomedSupp),  //TODO: should probably change this to check if is aiming at target (hub)
+                tp("preload.waitTurretHomed.END"),
                 logState(2),
                 shootWithTimeout(kShooterAutonCloseVel, 2).withName("ShootingCmd")
             ),
             logState(3),
+            tp("preload.deadline.START"),
             Commands.deadline(
                 runTraj(trajName, AutonK.kOneSweepMaxTime).withName("RunPath" + trajName),
                 Commands.sequence(
-                    logState(3.1),                
+                    logState(3.1),
+                    tp("preload.deadline.waitSeconds.START"),
                     Commands.waitSeconds(2.17),
+                    tp("preload.deadline.waitSeconds.END"),
                     logState(3.2),
+                    tp("preload.deadline.intake.START"),
                     m_superstructure.intake(() -> false).withTimeout(7.5),
+                    tp("preload.deadline.intake.END"),
                     logState(3.3),
-                    m_superstructure.unjamCmd()
+                    tp("preload.deadline.unjam.START"),
+                    m_superstructure.unjamCmd(),
+                    tp("preload.deadline.unjam.END")
                 )
             ),
+            tp("preload.deadline.END"),
             logState(4),
+            tp("preload.endShoot.START"),
             Commands.parallel(
                 shootWithTimeout(kShooterAutonEndSweepVel ,12),
                 Commands.sequence(
                     logState(4.1),
                     Commands.waitSeconds(6),
                     logState(4.2),
-                    m_superstructure.shimmy()
+                    tp("preload.shimmy.START"),
+                    m_superstructure.shimmy(),
+                    tp("preload.shimmy.END")
                 )
-            )
+            ),
+            tp("preload.endShoot.END")
         ).withName(trajName);
     }
 
@@ -113,28 +160,41 @@ public class WaltSimpleAutonFactory {
     public Command oneCycleGoInNow(boolean left) {
         String path = left ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
         return Commands.sequence(
+            tp("goInNow.sequence.START"),
             logState(0),
+            tp("goInNow.parallel.START"),
             Commands.parallel(
                 homingCmd().andThen(
+                    tp("goInNow.homing.END"),
                     logState(0.1),
                     Commands.waitSeconds(0.0001),
                     logState(0.2),
-                    m_superstructure.intake(() -> false).withTimeout(7.5)
+                    tp("goInNow.intake.START"),
+                    m_superstructure.intake(() -> false).asProxy().withTimeout(7.5),
+                    tp("goInNow.intake.END")
                 ),
-                runTraj(path, AutonK.kOneSweepMaxTime)
-                    .andThen(logState(0.99))
+                Commands.sequence(
+                    tp("goInNow.traj.START"),
+                    runTraj(path, AutonK.kOneSweepMaxTime),
+                    tp("goInNow.traj.END"),
+                    logState(0.99)
+                )
             ),
+            tp("goInNow.parallel.END"),
             logState(1),
+            tp("goInNow.shootDeadline.START"),
             Commands.deadline(
                 shootWithTimeout(kShooterAutonEndSweepVel, 12),
                 Commands.sequence(
                     logState(1.1),
                     Commands.waitSeconds(3), // 5
                     logState(1.2),
-                    // m_superstructure.shimmy()                   
-                    m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
-                )  
+                    tp("goInNow.retractIntake.START"),
+                    m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED).asProxy(),
+                    tp("goInNow.retractIntake.END")
+                )
             ),
+            tp("goInNow.shootDeadline.END"),
             logState(2)
         ).withName(path);
     }
@@ -172,7 +232,7 @@ public class WaltSimpleAutonFactory {
                     m_superstructure.activateOuttake(ShooterK.kShooterVel).withTimeout(2)
                 )
             )
-            
+
         );
     }
 
@@ -197,4 +257,3 @@ public class WaltSimpleAutonFactory {
         );
     }
 }
-

@@ -31,7 +31,6 @@ public class Indexer extends SubsystemBase {
     private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(MotorK.kZeroVel).withEnableFOC(true);
     private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(MotorK.kZeroVel).withEnableFOC(true);
 
-
     /* SIM OBJECTS */
     private final DCMotorSim m_spindexerSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
@@ -54,6 +53,9 @@ public class Indexer extends SubsystemBase {
     /* LOGGERS */
     private final DoubleLogger log_spindexerRPS = WaltLogger.logDouble(kLogTab, "spindexerRPS");
     private final DoubleLogger log_tunnelRPS = WaltLogger.logDouble(kLogTab, "tunnelRPS");
+
+    private final DoubleLogger log_desiredSpindexerRPS = WaltLogger.logDouble(kLogTab, "desiredSpindexerRPS");
+    private final DoubleLogger log_desiredTunnelRPS = WaltLogger.logDouble(kLogTab, "desiredTunnelRPS");
 
     /* CONSTRUCTOR */
     public Indexer() {
@@ -128,6 +130,9 @@ public class Indexer extends SubsystemBase {
     public void periodic() {
         log_spindexerRPS.accept(m_spindexer.getVelocity().getValueAsDouble());
         log_tunnelRPS.accept(m_tunnel.getVelocity().getValueAsDouble());
+
+        log_desiredSpindexerRPS.accept(m_spindexer.getClosedLoopReference().getValueAsDouble());
+        log_desiredTunnelRPS.accept(m_tunnel.getClosedLoopReference().getValueAsDouble());
     }
 
     @Override

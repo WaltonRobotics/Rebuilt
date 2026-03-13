@@ -69,7 +69,7 @@ public class Shooter extends SubsystemBase {
     boolean m_useShotCalculator = true;
 
     private AngularVelocity m_flywheelVelocity;
-    private Angle m_turretTurnPosition;
+    // private Angle m_turretTurnPosition;
 
     private int m_fuelStored = 8;
 
@@ -103,6 +103,17 @@ public class Shooter extends SubsystemBase {
     private Angle m_calcTurret = Rotations.of(0);
     private AngularVelocity m_calcFlywheelVelocity = MotorK.kZeroVel;
 
+    // Precomputed: true if turret travel is less than one full rotation (sub-360 cope path)
+    private static final boolean kTurretSubRotation = kTurretMaxRotsFromHome.times(2).magnitude() < 1.0;
+    // Precomputed doubles for hot-path unit conversions
+    private static final double kTurretMinRotsD = kTurretMinRots.in(Rotations);
+    private static final double kTurretMinRotsMagnitudeD = kTurretMinRots.magnitude();
+    private static final double kTurretMaxRotsD = kTurretMaxRots.in(Rotations);
+    private static final double kTurretMaxRotsMagnitudeD = kTurretMaxRots.magnitude();
+
+    // Yaw offset of the turret's zero direction relative to the robot's forward direction
+    private static final double kTurretYawOffsetRad = kTurretTransform.getRotation().toRotation2d().getRadians();
+
     private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
     private final DoubleLogger log_calcTurretPos = new DoubleLogger("Shooter/Turret", "calcTurretPos");
 
@@ -113,18 +124,16 @@ public class Shooter extends SubsystemBase {
 
     // private static final DoubleLogger log_timeOfFlight = new DoubleLogger("Shooter/Calculator", "timeOfFlight");
 
-    private final Pose3dLogger log_turretPose = WaltLogger.logPose3d("ShotCalc", "TurretPivotPose");
-    private final Pose3dLogger log_targetPose = WaltLogger.logPose3d("ShotCalc", "TargetPose");
     private final Pose3dLogger log_desiredAimPose = WaltLogger.logPose3d("ShotCalc", "DesiredAimPose");
     private final Pose3dLogger log_currentAimPose = WaltLogger.logPose3d("ShotCalc", "CurrentAimPose");
-    private final Pose2dLogger log_fieldAimDir = WaltLogger.logPose2d("ShotCalc", "FieldAimDirection");
 
     private final BooleanLogger log_turretHomed = WaltLogger.logBoolean("Shooter/Turret", "Homed");
     private final BooleanLogger log_useShotCalc = WaltLogger.logBoolean("ShotCalc", "useShotCalc");
 
     
     //---LOGIC BOOLEANS
-    public boolean m_isTurretHomed = false;
+    private boolean m_isTurretHomed = false;
+    public BooleanSupplier turretHomedSupp = () -> m_isTurretHomed;
 
     /* SIM OBJECTS */
     private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(
@@ -163,7 +172,7 @@ public class Shooter extends SubsystemBase {
 
         sig_shooterCLErr.setUpdateFrequency(Hertz.of(50));
 
-        m_turretTurnPosition = m_turret.getPosition().getValue();
+        Angle turretTurnPosition = m_turret.getPosition().getValue();
         m_flywheelVelocity = m_shooterA.getVelocity().getValue();
 
         m_poseSupplier = poseSupplier;
@@ -172,7 +181,7 @@ public class Shooter extends SubsystemBase {
 
         m_turretVisualizer = new TurretVisualizer(
                 () -> new Pose3d(m_poseSupplier.get().rotateAround(
-                        poseSupplier.get().getTranslation(), new Rotation2d(m_turretTurnPosition)))
+                        poseSupplier.get().getTranslation(), new Rotation2d(turretTurnPosition)))
                                 .transformBy(kTurretTransform),
                 fieldSpeedsSupplier);
 
@@ -181,12 +190,12 @@ public class Shooter extends SubsystemBase {
         trg_homingHallDirect.onTrue(Commands.sequence(
             Commands.runOnce(() -> {
                 m_homingCommand.cancel();
-                System.out.println("FastHoming OK!!!");
+                WaltLogger.timedPrint("FastHoming OK!!!");
             }),
             Commands.runOnce(() -> homingEventLoop.clear()))
         );
 
-        m_turret.setPosition(0);
+        m_turret.setPosition(kInitPosition);
 
         initSim();
     }
@@ -232,9 +241,8 @@ public class Shooter extends SubsystemBase {
     }
 
     public boolean isShooterSpunUp() {
-        var err = m_shooterA.getClosedLoopError();
-        log_shooterClosedLoopError.accept(err.getValueAsDouble());
-        boolean isNear = m_shooterA.getClosedLoopError().isNear(0, 3);
+        log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
+        boolean isNear = sig_shooterCLErr.isNear(0, 3);
         log_spunUp.accept(isNear);
         return isNear;
     }
@@ -360,6 +368,8 @@ public class Shooter extends SubsystemBase {
 
     /* ShootOnTheMove™ */
 
+    public record AzimuthCalcDetails(Pose3d desiredAimPose, Pose3d currentAimPose, double rawDesiredRotations, double safeDesiredRotations) {}
+
     /**
      * Calculates the turret's *TARGET* angle while ensuring it stays within physical limits.
      * IF the turret is near a limit, snaps 360 degrees in the opposite direction to reach the same angle
@@ -369,61 +379,56 @@ public class Shooter extends SubsystemBase {
      * @return safe rotation setpoint that is accurate to the target within bounds of kTurretMaxAngle
      * and kTurretMinAngle
      */
-    public Angle calculateAzimuthAngle(Translation3d target, Pose2d robotPose) {
-        Angle turretPosition = m_turretTurnPosition;
-        m_periodicTracer.addEpoch("azimuth/getPose");
-
+    public static Angle calculateAzimuthAngle(Translation3d target, Pose2d robotPose, Angle turretPosition, Consumer<AzimuthCalcDetails> logger) {
+        // Convert once; reused below in both snapback and current-aim logging
+        double turretPositionRots = turretPosition.in(Rotations);
+        
         /* Calculation Zone */
         // turret pivot location in field space (no extra rotateBy — that's for visualization only)
         Pose3d turretPose = new Pose3d(robotPose).transformBy(kTurretTransform);
-        log_turretPose.accept(turretPose);
+        Translation3d turretTranslation = turretPose.getTranslation();
 
         // vector from turret pivot to target in field space
-        Translation3d distance = target.minus(turretPose.getTranslation());
-        log_targetPose.accept(new Pose3d(target, new Rotation3d()));
+        Translation3d distance = target.minus(turretTranslation);
 
         // field-frame yaw to target, converted to turret-relative by subtracting turret's zero direction
-        // turretPose.getRotation() = robot heading + kTurretAngleOffset, so this correctly accounts for
+        // kTurretYawOffsetRad = robot heading + kTurretAngleOffset, so this correctly accounts for
         // the physical offset of the turret's zero position relative to the robot's forward direction
         double fieldYawRad = Math.atan2(distance.getY(), distance.getX());
         Rotation2d turretZeroFieldDir = turretPose.getRotation().toRotation2d();
+
+        // Avoid Rotation2d allocation — subtract in radians and convert to rotations directly
         Rotation2d direction = new Rotation2d(fieldYawRad).minus(turretZeroFieldDir);
 
         // desired aim: turret pivot with X-axis pointing at target in field space
-        log_desiredAimPose.accept(new Pose3d(turretPose.getTranslation(), new Rotation3d(0, 0, fieldYawRad)));
+        var desiredAimPose = new Pose3d(turretTranslation, new Rotation3d(0, 0, fieldYawRad));
         // current aim: turret pivot with X-axis showing where the turret is actually pointing right now
-        double currentFieldYaw = turretZeroFieldDir.getRadians() + turretPosition.in(Rotations) * 2 * Math.PI;
-        log_currentAimPose.accept(new Pose3d(turretPose.getTranslation(), new Rotation3d(0, 0, currentFieldYaw)));
-        // 2D field-frame arrow at turret pivot pointing at target (easier to read on top-down view)
-        log_fieldAimDir.accept(new Pose2d(turretPose.getTranslation().toTranslation2d(), new Rotation2d(fieldYawRad)));
+        double currentFieldYaw = turretZeroFieldDir.getRadians() + turretPositionRots * (2 * Math.PI);
+        var currentAimPose = new Pose3d(turretTranslation, new Rotation3d(0, 0, currentFieldYaw));
 
+        //normalizes the angle to be fit in the range of the max rotations
         double angleRotations = MathUtil.inputModulus(
-            direction.getRotations(),
-            kTurretMinRots.magnitude(), kTurretMaxRots.magnitude()); //normalizes the angle to be fit in the range of the max rotations
-
-        log_rawDesiredTurretRot.accept(angleRotations);
-        m_periodicTracer.addEpoch("azimuth/calcAngle");
+            direction.getRotations(), kTurretMinRotsMagnitudeD, kTurretMaxRotsMagnitudeD
+        );
 
         /* Snapback Zone */
         double snapbackSafeAngleRotations = angleRotations;
         // sub-360 cope calc
-        var calculated = false;
-        if (kTurretMaxRotsFromHome.times(2).magnitude() < Rotations.of(1).magnitude()) {
-            snapbackSafeAngleRotations = MathUtil.clamp(angleRotations, kTurretMinRots.in(Rotations), kTurretMaxRots.in(Rotations));
-            calculated = true;
-        }
+        // boolean calculated = false;
+        // if (kTurretMaxRotsFromHome.times(2).magnitude() < Rotations.of(1).magnitude()) {
+        //     snapbackSafeAngleRotations = MathUtil.clamp(angleRotations, kTurretMinRots.in(Rotations), kTurretMaxRots.in(Rotations));
+        //     calculated = true;
+        // }
 
         //this is the snapback function, to make sure that you will always be tracking and you will not go over your physical limits.
-        double current = turretPosition.in(Rotations);
-        if (!calculated && current > 0 && angleRotations + 1 <= kTurretMaxRots.in(Rotations)) {
+        if (turretPositionRots > 0 && angleRotations + 1 <= kTurretMaxRotsD) {
             snapbackSafeAngleRotations += 1;
         }
-        else if (!calculated && current < 0 && angleRotations - 1 >= kTurretMinRots.in(Rotations)) {
+        else if (turretPositionRots < 0 && angleRotations - 1 >= kTurretMinRotsD) {
             snapbackSafeAngleRotations -= 1;
         }
 
-        log_desiredTurretRot.accept(snapbackSafeAngleRotations);
-        m_periodicTracer.addEpoch("azimuth/snapback");
+        logger.accept(new AzimuthCalcDetails(desiredAimPose, currentAimPose, angleRotations, snapbackSafeAngleRotations));
         return Rotations.of(snapbackSafeAngleRotations);
     }
 
@@ -458,7 +463,7 @@ public class Shooter extends SubsystemBase {
      * Accounts for moving speeds
      * @param robotPose current Robot position.
      */
-    private void calculateAndSetShot(Pose2d robotPose, boolean staticShot) {
+    private void calculateAndSetShot(Pose2d robotPose, boolean staticShot, Angle turretPosition) {
         // How fast the robot is currently going, (CURRENT ROBOT VELOCITY)
         ChassisSpeeds fieldSpeeds = staticShot ? WpiK.kZeroChassisSpeeds : m_fieldSpeedsSupplier.get();
         m_periodicTracer.addEpoch("calculateShot/getFieldSpeeds");
@@ -470,7 +475,12 @@ public class Shooter extends SubsystemBase {
 
         // The turret angle according to the Calculated shot
         log_calculatedShotTarget.accept(calculatedShot.getTarget());
-        Angle azimuthAngle = calculateAzimuthAngle(calculatedShot.getTarget(), robotPose);
+        Angle azimuthAngle = Shooter.calculateAzimuthAngle(calculatedShot.getTarget(), robotPose, turretPosition, (AzimuthCalcDetails details) -> {
+            log_desiredAimPose.accept(details.desiredAimPose);
+            log_currentAimPose.accept(details.currentAimPose);
+            log_rawDesiredTurretRot.accept(details.rawDesiredRotations);
+            log_desiredTurretRot.accept(details.safeDesiredRotations);
+        });
         m_periodicTracer.addEpoch("calculateShot/calculateAzimuthAngle");
 
         // Sets the TurretPosition to the Calculated TurretAngle
@@ -524,56 +534,36 @@ public class Shooter extends SubsystemBase {
         m_periodicTracer.addEpoch("Entry (Unused Time)");
 
         // Cache all signals at the top so every consumer in this loop sees the same values
-        m_turretTurnPosition = m_turret.getPosition().getValue();
+        Angle turretTurnPosition = m_turret.getPosition().getValue();
         m_flywheelVelocity = m_shooterA.getVelocity().getValue();
-
         Pose2d pose = m_poseSupplier.get();
+        m_periodicTracer.addEpoch("Getting Values");
 
-        // trg_inAllianceZone.and(DriverStation::isTeleop)
-        //     .onTrue(Commands.runOnce(() -> setGoal(ShooterGoal.SHOOTING)))
-        //     .onFalse(Commands.runOnce(() -> setGoal(ShooterGoal.PASSING)));
-        // trg_inAllianceZone.negate().and(DriverStation::isTeleop).whileTrue(Commands.runOnce(() -> setGoal(ShooterGoal.PASSING)));
+
         m_currentTarget = calculateTarget(pose);
         log_globalShotTarget.accept(m_currentTarget);
 
-        m_periodicTracer.addEpoch("Calculating Shot");
-
-        m_periodicTracer.addEpoch("Toggling Coast");
-
-        //---Loggers
-
-        // m_turretVisualizer.update3dPose(m_turretTurnPosition, getHoodAngle());
-
-        // m_periodicTracer.addEpoch("Turret Visualizer ");
-
         if (m_isTurretHomed && m_useShotCalculator) {
-            calculateAndSetShot(pose, true);
+            calculateAndSetShot(pose, true, turretTurnPosition);
+            m_periodicTracer.addEpoch("Calculating Shot");
         }
 
         log_shooterVelocityRPS.accept(m_flywheelVelocity.in(RotationsPerSecond));
-        log_turretPositionRots.accept(m_turretTurnPosition.in(Rotations));
-
-        // log_exitBeamBreak.accept(trg_exitBeamBreak);
+        log_turretPositionRots.accept(turretTurnPosition.in(Rotations));
         log_spunUp.accept(isShooterSpunUp());
-
         log_onLeftSide.accept(m_onLeftSide);
-        // log_inAllianceZone.accept(trg_inAllianceZone);
-
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocity.in(RotationsPerSecond));
         log_calcTurretPos.accept(m_calcTurret.in(Rotations));
 
         log_useShotCalc.accept(m_useShotCalculator);
-
         m_periodicTracer.addEpoch("Logging");
-
-        // KEEP AT THE BOTTOM OF PERIODIC
-        m_periodicTracer.addEpoch("EventLoop Poll");
 
         // m_periodicTracer.printEpochs();
     }
 
     public void fastPeriodic() {
         homingEventLoop.poll();
+        log_turretHomed.accept(m_isTurretHomed);
         log_turretHomingHall.accept(trg_homingHallDirect);
     }
 
@@ -590,6 +580,7 @@ public class Shooter extends SubsystemBase {
 
     public Command turretHomingCmd() {
         Runnable init = () -> {
+            WaltLogger.timedPrint("TurretHoming BEGIN");
             m_turret.setControl(m_VoltageReq.withOutput(kHomingVoltage));
             setShotCalc(false);
             m_isTurretHomed = false;
@@ -600,6 +591,7 @@ public class Shooter extends SubsystemBase {
             if (interrupted) { 
                 m_turret.setControl(m_BrakeReq);
                 log_turretHomed.accept(m_isTurretHomed);
+                WaltLogger.timedPrint("TurretHoming INTERRUPTED!!!");
                 return;
             }
 
@@ -612,17 +604,9 @@ public class Shooter extends SubsystemBase {
         };
 
         BooleanSupplier isFinished = () -> {
-            return !m_turretHomingHall.get();
+            return !m_turretHomingHall.get() || m_isTurretHomed;
         };
 
-        return new FunctionalCommand(init, () ->{}, end, isFinished, this)
-            .until(trg_homingHallDirect)
-            .andThen(
-                Commands.print("========== TURRET HOMING COMPLETE =========="),
-                Commands.waitSeconds(0.1),
-                runOnce(() -> {
-                    m_turret.setControl(m_PVRequest.withPosition(0));
-                })
-            );
+        return new FunctionalCommand(init, () ->{}, end, isFinished, this);
     }
 }

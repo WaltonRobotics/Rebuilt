@@ -167,6 +167,7 @@ public class Constants {
         private static final CurrentLimitsConfigs kShooterACurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(80)
             .withSupplyCurrentLimit(50)
+            .withSupplyCurrentLowerTime(0)
             .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kShooterAOutputConfigs = new MotorOutputConfigs()
@@ -386,6 +387,7 @@ public class Constants {
         private static final CurrentLimitsConfigs kIntakeRollersCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(120)
             .withSupplyCurrentLimit(50)
+            .withSupplyCurrentLowerTime(0)
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
         private static final Slot0Configs kIntakeRollersSlot0Configs = new Slot0Configs()
@@ -435,12 +437,12 @@ public class Constants {
         /* CONFIGS */
         //TODO: Make transfer configs accurate
         private static final Slot0Configs kSpindexerSlot0Configs = new Slot0Configs()
-            .withKS(0.012)
-            .withKV(0.371)
+            .withKS(0.25)
+            .withKV(0.12)
             .withKA(0)
-            .withKP(0.1)
+            .withKP(0.5)
             .withKI(0)
-            .withKD(0.03);
+            .withKD(0);
         private static final CurrentLimitsConfigs kSpindexerCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(65)
             .withSupplyCurrentLimit(30)
@@ -449,13 +451,13 @@ public class Constants {
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kSpindexerMotorOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.CounterClockwise_Positive) //TODO: CW or CCW?
+            .withInverted(InvertedValue.CounterClockwise_Positive)
             .withNeutralMode(NeutralModeValue.Coast);
         private static final FeedbackConfigs kSpindexerFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kSpindexerGearing);
         private static final VoltageConfigs kSpindexerVoltageConfigs = new VoltageConfigs()
-            .withPeakForwardVoltage(6)    //1.2
-            .withPeakReverseVoltage(-6);  //-1.2
+            .withPeakForwardVoltage(16)    //1.2
+            .withPeakReverseVoltage(-16);  //-1.2
         public static final TalonFXConfiguration kSpindexerTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kSpindexerSlot0Configs)
             .withCurrentLimits(kSpindexerCurrentLimitConfigs)
@@ -473,6 +475,7 @@ public class Constants {
         private static final CurrentLimitsConfigs kTunnelCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(60)
             .withSupplyCurrentLimit(30)
+            .withSupplyCurrentLowerTime(0)
             .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
@@ -482,8 +485,8 @@ public class Constants {
         private static final FeedbackConfigs kTunnelFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kTunnelGearing);
         private static final VoltageConfigs kTunnelVoltageConfigs = new VoltageConfigs()
-            .withPeakForwardVoltage(6)  //1.2
-            .withPeakReverseVoltage(-6);    //-1.2
+            .withPeakForwardVoltage(16)  //1.2
+            .withPeakReverseVoltage(-16);    //-1.2
         public static final TalonFXConfiguration kTunnelTalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kTunnelSlot0Configs)
             .withCurrentLimits(kTunnelCurrentLimitConfigs)

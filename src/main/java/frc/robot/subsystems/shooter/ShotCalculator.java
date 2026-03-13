@@ -30,6 +30,7 @@ import edu.wpi.first.units.measure.Time;
 
 public class ShotCalculator {
     private static final DoubleLogger log_timeOfFlight = new DoubleLogger("Shooter/Calculator", "timeOfFlight");
+    private static final DoubleLogger log_distToTargetMeters = new DoubleLogger("Shooter/Calculator", "distTargetToMeters");
     private static final Tracer m_iterativeTracer = new Tracer();
 
     //see 5000's code (circa 2/16/2026 9:11 PM EST)
@@ -93,7 +94,9 @@ public class ShotCalculator {
      * @return the distance between the Robot and the Target
      */
     public static Distance getDistanceToTarget(Pose2d robot, Translation3d target) {
-        return Meters.of(robot.getTranslation().getDistance(target.toTranslation2d()));
+        Distance dist = Meters.of(robot.getTranslation().getDistance(target.toTranslation2d()));
+        log_distToTargetMeters.accept(dist.magnitude());
+        return dist;
     }
 
     // see https://www.desmos.com/geometry/l4edywkmha
