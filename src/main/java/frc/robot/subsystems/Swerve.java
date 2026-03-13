@@ -81,7 +81,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         .withSteerRequestType(SteerRequestType.Position);
 
     private final Detection detection = new Detection();
-    
+
     private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
 

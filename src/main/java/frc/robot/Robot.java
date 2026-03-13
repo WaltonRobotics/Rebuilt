@@ -188,7 +188,7 @@ public class Robot extends TimedRobot {
 
     /* COMMANDS */
     /**
-     * 
+     * Normal driveCommand which takes in drive stick requests. Is defaultCommand
      * @param speedMultiplier How much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
      * @return swerve drive command
      */
@@ -200,7 +200,7 @@ public class Robot extends TimedRobot {
             LinearVelocity translationSpeed = (m_driver.leftTrigger().getAsBoolean() ? 
                 kMaxTranslationSpeed.times(speedMultiplier) :
                 kMaxTranslationSpeed);
-            
+
             var driverXVelo = translationSpeed.times(-m_driver.getLeftY());
             var driverYVelo = translationSpeed.times(-m_driver.getLeftX());
             var driverYawRate = kDriverMaxAngularRate.times(-m_driver.getRightX());
@@ -210,7 +210,7 @@ public class Robot extends TimedRobot {
             log_stickDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond));
             log_robotDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond)); // Should be equal to stick desired IN THIS CASE
             log_swerveShimmying.accept(false);
-                
+
             return drive
                 .withVelocityX(driverXVelo) // Drive forward with Y (forward)
                 .withVelocityY(driverYVelo) // Drive left with X (left)
@@ -233,7 +233,7 @@ public class Robot extends TimedRobot {
             LinearVelocity translationSpeed = (m_driver.leftTrigger().getAsBoolean() ? 
                 kMaxTranslationSpeed.times(speedMultiplier) :
                 kMaxTranslationSpeed);
-            
+
             var driverXVelo = translationSpeed.times(-m_driver.getLeftY());
             var driverYVelo = translationSpeed.times(-m_driver.getLeftX());
             // Use shimmyAngularRate over driver request
@@ -244,7 +244,7 @@ public class Robot extends TimedRobot {
             log_stickDesiredFieldZRot.accept(kDriverMaxAngularRate.times(-m_driver.getRightX()).in(RotationsPerSecond));  // Logging driver requests even though they have no impact
             log_robotDesiredFieldZRot.accept(yawRate.in(RotationsPerSecond));
             log_swerveShimmying.accept(true);
-                
+
             return drive
                 .withVelocityX(driverXVelo) // Drive forward with Y (forward)
                 .withVelocityY(driverYVelo) // Drive left with X (left)
@@ -270,7 +270,7 @@ public class Robot extends TimedRobot {
     private void configureFuelSim() {
         FuelSim instance = FuelSim.getInstance();
         // instance.spawnStartingFuel();
-    
+
         instance.registerRobot(
                 kRobotFullWidth.in(Meters),
                 kRobotFullLength.in(Meters),
@@ -333,7 +333,7 @@ public class Robot extends TimedRobot {
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
-        trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   
+        trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));
         trg_unlimitFps.onTrue(WaltCamera.setFpsLimitCmd(false));
 
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
@@ -366,7 +366,7 @@ public class Robot extends TimedRobot {
         trg_emergencyBarf.whileTrue(
             m_superstructure.emergencyBarf()
         );
-        
+
         trg_shimmy.whileTrue(m_superstructure.intakeArmShimmy());
 
         trg_swerveShimmy.whileTrue(driveCommandWithSwerveShimmying(RobotK.kRobotSpeedIntakingLimit));
@@ -416,7 +416,6 @@ public class Robot extends TimedRobot {
 
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
-        
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
         // m_driver.back().and(m_driver.y()).whileTrue(m_drivetrain.sysIdDynamic(Direction.kForward));
