@@ -371,8 +371,6 @@ public class Robot extends TimedRobot {
 
         trg_swerveShimmy.whileTrue(driveCommandWithSwerveShimmying(RobotK.kRobotSpeedIntakingLimit));
 
-        trg_swerveShimmy.onFalse(Commands.print("Robot swerveShimmy stopped"));
-
         trg_unjam.whileTrue(
             m_superstructure.unjamCmd()
         );
