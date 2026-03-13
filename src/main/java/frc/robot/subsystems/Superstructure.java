@@ -107,9 +107,19 @@ public class Superstructure extends SubsystemBase {
 
     public Command startShootSequence(Supplier<AngularVelocity> RPS) {
         return Commands.parallel(
-            Commands.run(() -> m_shooter.setShooterVelocity(RPS.get())),
+            m_shooter.setShooterVelocityCmdSupp(RPS),
             Commands.sequence(
-                Commands.waitUntil(() -> m_shooter.isShooterSpunUp()).withTimeout(3),
+                Commands.waitUntil(() -> m_shooter.isShooterSpunUp()).withTimeout(ShooterK.kShooterTimeout),
+                m_indexer.startTunnelCmd(),
+                m_indexer.startSpindexerCmd()
+            )
+        );
+    }
+
+    public Command startShootSequenceNOSHOOT() {
+        return Commands.parallel(
+            Commands.sequence(
+                Commands.waitUntil(() -> m_shooter.isShooterSpunUp()).withTimeout(ShooterK.kShooterTimeout),
                 m_indexer.startTunnelCmd(),
                 m_indexer.startSpindexerCmd()
             )
@@ -149,6 +159,14 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
+    public Command activateOuttakeNOSHOOT() {
+        return Commands.parallel(
+            startShootSequenceNOSHOOT()
+        ).finallyDo(
+            () -> deactivateOuttakeNOSHOOT()
+        );
+    }
+
     public Command activateOuttakeCalc() {
         return Commands.parallel(
             startShootSequenceCalc()
@@ -169,6 +187,14 @@ public class Superstructure extends SubsystemBase {
         // m_shooter.setHoodPosition(Degrees.of(1));
 
         Commands.sequence(logActiveCommands("deactivateOuttake", "shooting", "emergencyDump"));
+    }
+
+    public void deactivateOuttakeNOSHOOT() {
+        m_indexer.stopSpindexer();
+        m_indexer.stopTunnel();
+        // m_shooter.setHoodPosition(Degrees.of(1));
+
+        // Commands.sequence(logActiveCommands("deactivateOuttake", "shooting", "emergencyDump"));
     }
 
     public Command emergencyBarf() {

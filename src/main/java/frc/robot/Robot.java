@@ -157,7 +157,7 @@ public class Robot extends TimedRobot {
     public Robot() {
         configureBindings();
         // configureTestBindings();    //this should be commented out during competition matches
-        // configureTestingDashboard();
+        configureTestingDashboard();
 
         lastGotTagMsmtTimer.start();
         if (Robot.isSimulation()) {
@@ -345,6 +345,8 @@ public class Robot extends TimedRobot {
         m_driver.povDown().onTrue(m_shooter.setTurretLockCmd(false));
         m_driver.povRight().onTrue(m_shooter.setTurretLockCmd(true));
 
+        m_driver.povLeft().whileTrue(m_superstructure.activateOuttakeNOSHOOT());
+
         // trg_optimalPrefireTime.whileTrue(
         //     Commands.run(() -> setBothRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> setBothRumble(RumbleType.kBothRumble, 0)));
     }
@@ -383,20 +385,20 @@ public class Robot extends TimedRobot {
         /* ELASTIC WIDGET BINDINGS */
         TestingDashboard.trg_letShooterVelocityRPSChange
             .whileTrue(m_shooter.setShooterVelocityCmd(TestingDashboard.sub_shooterVelocityRPS));
-        TestingDashboard.trg_letTurretPositionRotsChange
-            .whileTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
-        // TestingDashboard.trg_letHoodPositionDegsChange
-            // .whileTrue(m_shooter.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
+        // TestingDashboard.trg_letTurretPositionRotsChange
+        //     .whileTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
+        // // TestingDashboard.trg_letHoodPositionDegsChange
+        //     // .whileTrue(m_shooter.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
 
-        TestingDashboard.trg_letSpindexerVelocityRPSChange
-            .whileTrue(m_indexer.setSpindexerVelocityCmd(TestingDashboard.sub_spindexerVelocityRPS));
-        TestingDashboard.trg_letTunnelVelocityRPSChange
-            .whileTrue(m_indexer.setTunnelVelocityCmd(TestingDashboard.sub_tunnelVelocityRPS));
+        // TestingDashboard.trg_letSpindexerVelocityRPSChange
+        //     .whileTrue(m_indexer.setSpindexerVelocityCmd(TestingDashboard.sub_spindexerVelocityRPS));
+        // TestingDashboard.trg_letTunnelVelocityRPSChange
+        //     .whileTrue(m_indexer.setTunnelVelocityCmd(TestingDashboard.sub_tunnelVelocityRPS));
 
-        TestingDashboard.trg_letIntakeArmPositionRotsChange
-            .whileTrue(m_intake.setIntakeArmPos(TestingDashboard.sub_intakeArmPositionRots));
-        TestingDashboard.trg_letIntakeRollersVelocityRPSChange
-            .whileTrue(m_intake.setIntakeRollersVelocity(TestingDashboard.sub_intakeRollersVelocityRPS));
+        // TestingDashboard.trg_letIntakeArmPositionRotsChange
+        //     .whileTrue(m_intake.setIntakeArmPos(TestingDashboard.sub_intakeArmPositionRots));
+        // TestingDashboard.trg_letIntakeRollersVelocityRPSChange
+        //     .whileTrue(m_intake.setIntakeRollersVelocity(TestingDashboard.sub_intakeRollersVelocityRPS));
     }
 
     /* PERIODICS */

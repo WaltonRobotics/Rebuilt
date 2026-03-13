@@ -88,6 +88,7 @@ public class Constants {
         public static final Translation3d kPassingSpotLeft = new Translation3d(
             Meters.of(2), Meters.of(6.5), Meters.zero());
         
+        public static final double kShooterTimeout = 1.0;
 
         /* MOTOR CONSTANTS */
         public static final double kShooterMoI = 0.000349 * 2.5;  //J for 5 3" 0.53lb flywheels
@@ -322,7 +323,7 @@ public class Constants {
         public static final Distance kRobotFullWidth = Inches.of(33.6875);
         public static final Distance kRobotFullLength = Inches.of(32.6875);
         public static final Distance kBumperHeight = Inches.of(4.5);
-        public static final double kRobotSpeedIntakingLimit = 0.13;
+        public static final double kRobotSpeedIntakingLimit = 0.4;
     }
 
     public static class SuperstructureK {
