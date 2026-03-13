@@ -59,10 +59,6 @@ public class WaltAutonFactory {
     //---AUTON CONSTRUCTION
     public Command runTrajCmd(String traj) {
         return Commands.sequence(
-            Commands.runOnce(() -> {
-                var trajectory = Choreo.loadTrajectory(traj);
-                trajectory.get().getPoses();
-            }),
             m_autoFactory.resetOdometry(traj),
             m_autoFactory.trajectoryCmd(traj)
         );
