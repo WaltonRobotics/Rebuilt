@@ -55,7 +55,6 @@ import frc.util.WaltLogger.DoubleLogger;
  */
 public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private static final double kSimLoopPeriod = 0.004; // 4 ms
-    private final AngularVelocity kSwerveShimmyAngularRate = RotationsPerSecond.of(1.3 / 2);
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
 
@@ -81,10 +80,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         .withSteerRequestType(SteerRequestType.Position);
 
     private final Detection detection = new Detection();
-
-    private final BooleanLogger log_swerveShimmyCCW = WaltLogger.logBoolean("Swerve", "swerveShimmyCCW");
-    private final DoubleLogger log_swerveShimmyYawRate = WaltLogger.logDouble("Swerve", "swerveShimmyYawRate");
-
+    
     private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
 

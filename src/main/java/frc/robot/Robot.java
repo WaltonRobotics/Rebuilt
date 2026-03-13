@@ -90,7 +90,7 @@ public class Robot extends TimedRobot {
     private final Indexer m_indexer = new Indexer();
 
     // private final WaltVisualSim m_visualSim;
-    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter, m_drivetrain);
+    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
 
     //---AUTONS
     private Command m_autonomousCommand;
@@ -122,7 +122,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_passRight = m_manipulator.povRight().and(trg_driverOverride.negate()).and(trg_passLeft.negate());
 
     private Trigger trg_shimmy = m_manipulator.leftBumper();
-    private Trigger trg_swerveShimmy = m_driver.povLeft();
+    private Trigger trg_swerveShimmy = m_driver.leftBumper();
 
     //---OVERRIDE TRIGGERS
     private Trigger trg_deployIntakeOverride = trg_manipOverride.and(m_manipulator.rightTrigger());
@@ -138,6 +138,8 @@ public class Robot extends TimedRobot {
     private final DoubleLogger log_stickDesiredFieldX = WaltLogger.logDouble("Swerve", "stick desired teleop x");
     private final DoubleLogger log_stickDesiredFieldY = WaltLogger.logDouble("Swerve", "stick desired teleop y");
     private final DoubleLogger log_stickDesiredFieldZRot = WaltLogger.logDouble("Swerve", "stick desired teleop z rot");
+    private final DoubleLogger log_robotDesiredFieldZRot = WaltLogger.logDouble("Swerve", "robot desired teleop z rot");
+    private final BooleanLogger log_swerveShimmying = WaltLogger.logBoolean("Swerve", "swerveShimmying");
     private final BooleanLogger log_povUp = WaltLogger.logBoolean(kLogTab, "Pov Up");
     private final BooleanLogger log_povRight = WaltLogger.logBoolean(kLogTab, "Pov Right");
     private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
@@ -199,6 +201,8 @@ public class Robot extends TimedRobot {
             log_stickDesiredFieldX.accept(driverXVelo.in(MetersPerSecond));
             log_stickDesiredFieldY.accept(driverYVelo.in(MetersPerSecond));
             log_stickDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond));
+            log_robotDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond)); // Should be equal to stick desired IN THIS CASE
+            log_swerveShimmying.accept(false);
                 
             return drive
                 .withVelocityX(driverXVelo) // Drive forward with Y (forward)
@@ -217,7 +221,7 @@ public class Robot extends TimedRobot {
     private Command swerveRequestWithSwerveShimmy(double speedMultiplier, boolean shimmyCCW) {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
-        // Drivetrain will execute this command periodically
+        // Drivetrain will NOT execute this command periodically
         return m_drivetrain.applyRequest(() -> {
             LinearVelocity translationSpeed = (m_driver.leftTrigger().getAsBoolean() ? 
                 kMaxTranslationSpeed.times(speedMultiplier) :
@@ -225,16 +229,19 @@ public class Robot extends TimedRobot {
             
             var driverXVelo = translationSpeed.times(-m_driver.getLeftY());
             var driverYVelo = translationSpeed.times(-m_driver.getLeftX());
+            // Use shimmyAngularRate over driver request
             var yawRate = kSwerveShimmyAngularRate.times(shimmyCCW ? 1 : -1);
 
             log_stickDesiredFieldX.accept(driverXVelo.in(MetersPerSecond));
             log_stickDesiredFieldY.accept(driverYVelo.in(MetersPerSecond));
-            log_stickDesiredFieldZRot.accept(yawRate.in(RotationsPerSecond)); // TODO: Change loggers later
+            log_stickDesiredFieldZRot.accept(kDriverMaxAngularRate.times(-m_driver.getRightX()).in(RotationsPerSecond));  // Logging driver requests even though they have no impact
+            log_robotDesiredFieldZRot.accept(yawRate.in(RotationsPerSecond));
+            log_swerveShimmying.accept(true);
                 
             return drive
                 .withVelocityX(driverXVelo) // Drive forward with Y (forward)
                 .withVelocityY(driverYVelo) // Drive left with X (left)
-                .withRotationalRate(yawRate); // Drive counterclockwise with negative X (left)
+                .withRotationalRate(yawRate); // Use shimmy rotation rate
             }
         );
     }
@@ -245,9 +252,7 @@ public class Robot extends TimedRobot {
      * @return Swerve driveCommand with swerveShimmy rotational values
      */
     private Command driveCommandWithSwerveShimmying(double speedMultiplier) {
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
-        // Drivetrain will execute this command periodically
+        // Return a sequence of two swerveRequests to shimmy in alternating directions
         return Commands.repeatingSequence(
             swerveRequestWithSwerveShimmy(speedMultiplier, true).withTimeout(0.113),
             swerveRequestWithSwerveShimmy(speedMultiplier, false).withTimeout(0.1)

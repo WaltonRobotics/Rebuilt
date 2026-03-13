@@ -30,7 +30,6 @@ public class Superstructure extends SubsystemBase {
     private final Intake m_intake;
     private final Indexer m_indexer;
     private final Shooter m_shooter;
-    private final Swerve m_swerve;
 
     /* LOGGERS */
     private HashSet<String> m_activeCommands = new HashSet<>();
@@ -40,11 +39,10 @@ public class Superstructure extends SubsystemBase {
     private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
     
     /* CONSTRUCTOR */
-    public Superstructure(Intake intake, Indexer indexer, Shooter shooter, Swerve swerve) {
+    public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
         m_intake = intake;
         m_indexer = indexer;
         m_shooter = shooter;
-        m_swerve = swerve;
     }
 
     /* BUTTON BIND SEQUENCES */
