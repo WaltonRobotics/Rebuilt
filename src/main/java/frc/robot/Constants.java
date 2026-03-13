@@ -11,6 +11,7 @@ import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.configs.VoltageConfigs;
 
 import java.util.ArrayList;
@@ -149,6 +150,7 @@ public class Constants {
         public static final int kShooterA_CANID = 20;
         public static final int kShooterB_CANID = 21;
         public static final int kTurretCANID = 12;
+        public static final int kHoodCANID = 22;
 
         // public static final int kExitBeamBreakChannel = 1; //TODO: Update channel number
         public static final int kHoodChannel = 0;
@@ -241,8 +243,31 @@ public class Constants {
             .withFeedback(kTurretFeedbackConfigs)
             .withVoltage(kTurretVoltageConfigs);
 
-        public static final CanandmagSettings kHoodEncoderSettings = new CanandmagSettings()
-            .setInvertDirection(false);
+
+        private static final Slot0Configs kHoodSlot0Configs = new Slot0Configs()
+            .withKP(29)
+            .withKI(0)
+            .withKD(0)
+            .withKS(0.5)
+            .withKV(4)
+            .withKA(0)
+            .withKG(0);
+        private static final CurrentLimitsConfigs kHoodCurrentLimitConfig = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(30)
+            .withSupplyCurrentLimit(15)
+            .withSupplyCurrentLowerLimit(5)
+            .withSupplyCurrentLowerTime(1);
+        private static final MotorOutputConfigs kOutputConfigs = new MotorOutputConfigs()
+            .withInverted(InvertedValue.Clockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Brake);
+        private static final VoltageConfigs kHoodVoltageConfigs = new VoltageConfigs()
+            .withPeakForwardVoltage(16)
+            .withPeakReverseVoltage(-16);
+        public static final TalonFXSConfiguration kHoodTalonFXSConfiguration = new TalonFXSConfiguration()
+            .withSlot0(kHoodSlot0Configs)
+            .withCurrentLimits(kHoodCurrentLimitConfig)
+            .withMotorOutput(kOutputConfigs)
+            .withVoltage(kHoodVoltageConfigs);
 
         //Left, Center (Climb), Center (Hub), Right - Driver POV
         public static final Pose2d kShooterOverridePose[] = {
