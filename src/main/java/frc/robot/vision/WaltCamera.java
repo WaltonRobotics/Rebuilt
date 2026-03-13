@@ -9,6 +9,7 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -22,6 +23,8 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Robot;
+import frc.util.VisionUtil;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleArrayLogger;
 import frc.util.WaltLogger.IntLogger;
@@ -33,12 +36,13 @@ public class WaltCamera extends PhotonCamera {
     /* CLASS VARIABLES */
     private static final int kGlobalFpsLimit = 5;
     private static final int kGlobalFps = 30;
+    public static final VisionSim m_visionSim = new VisionSim();
 
     public static final List<WaltCamera> AllCameras = Collections.unmodifiableList(Arrays.asList(
-        new WaltCamera("FL_HAT", VisionK.kFrontLeftCTR),
-        new WaltCamera("FR_HAT", VisionK.kFrontRightCTR),
-        new WaltCamera("BL_HAT", VisionK.kBackLeftCTR),
-        new WaltCamera("BR_HAT", VisionK.kBackRightCTR)
+        new WaltCamera("FL_HAT", VisionK.kFrontLeftRTC, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0)),
+        new WaltCamera("FR_HAT", VisionK.kFrontRightRTC, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0)),
+        new WaltCamera("BL_HAT", VisionK.kBackLeftRTC, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0)),
+        new WaltCamera("BR_HAT", VisionK.kBackRightRTC, VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0))
     ));
 
     public static void setFpsLimit(boolean limited) {
@@ -88,9 +92,8 @@ public class WaltCamera extends PhotonCamera {
     private Matrix<N3, N1> m_curStdDevs;
 
     /* CONSTRUCTOR */
-    public WaltCamera(String cameraName, Transform3d robotToCam) {
+    public WaltCamera(String cameraName, Transform3d robotToCam, SimCameraProperties simCamProperties) {
         super(cameraName);
-        m_sim = new PhotonCameraSim(this);
         m_robotToCam = robotToCam;
         m_estimator = new PhotonPoseEstimator(FieldK.kTagLayout, m_robotToCam);
 
@@ -103,8 +106,35 @@ public class WaltCamera extends PhotonCamera {
         log_numResults = WaltLogger.logInt(ntPrefix, "numResults");
 
         log_camTransform.accept(robotToCam);
+
+        // Simulation
+        if (Robot.isSimulation()) {
+            // Create a PhotonCameraSim which will update the linked PhotonCamera's values with visible targets.
+            m_sim = new PhotonCameraSim(this, simCamProperties);
+            // Add the simulated camera to view the targets on this simulated field.
+            m_visionSim.addCamera(m_sim, robotToCam);
+
+            m_sim.enableDrawWireframe(true);
+        }
+        else m_sim = null; //temp solution to make code compiled.
     }
 
+    /* METHODS */
+    public void takeOutputSnapshot() {
+        super.takeOutputSnapshot();
+    }
+
+    public void takeInputSnapshot() {
+        super.takeInputSnapshot();
+    }
+
+    public void takeBothSnapshots() {
+        takeInputSnapshot();
+        takeOutputSnapshot();
+        System.out.println(super.getName() + ": BothSnapshot");
+    }
+
+    
     /* VISION ESTIMATION METHODS */
    /**
      * The latest estimated robot pose on the field from vision data. This may be empty. This should
@@ -129,6 +159,17 @@ public class WaltCamera extends PhotonCamera {
             }
             updateEstimationStdDevs(visionEst, change.getTargets());
             log_stdDevs.accept(m_curStdDevs.getData());
+
+            if (Robot.isSimulation()) {
+                visionEst.ifPresentOrElse(
+                        est ->
+                                m_visionSim.getSimDebugField()
+                                    .getObject(this.getName() + "VisionEstimation")
+                                    .setPose(est.estimatedPose.toPose2d()),
+                        () -> {
+                            m_visionSim.getSimDebugField().getObject("VisionEstimation").setPoses();
+                        });
+            }
         }
 
         if (visionEst.isPresent()) {

@@ -15,6 +15,7 @@ import org.photonvision.PhotonCamera;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -37,11 +38,13 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
+import frc.robot.Constants.AutoAlignK;
+import frc.robot.Constants.ShooterK;
+import frc.robot.AutoAlign.MovingAutoAlign;
+import frc.robot.dashboards.AutonChooser;
+import frc.robot.Constants.RobotK;
 import frc.robot.subsystems.shooter.FuelSim;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.Constants.RobotK;
-import frc.robot.dashboards.AutonChooser;
 import frc.robot.dashboards.TestingDashboard;
 import frc.robot.autons.WaltAutonFactory;
 import frc.robot.autons.WaltSimpleAutonFactory;
@@ -106,6 +109,12 @@ public class Robot extends TimedRobot {
     /* TRIGGERS */
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
+
+    //---AUTO ALIGN TRIGGERS
+    private Trigger trg_autoAlignLeft = m_driver.povLeft();
+    private Trigger trg_autoAlignClimb = m_driver.povDown();
+    private Trigger trg_autoAlignHub = m_driver.povUp();
+    private Trigger trg_autoAlignRight = m_driver.povRight();
 
     //---COMMAND SEQUENCE TRIGGERS
 
@@ -173,7 +182,21 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().schedule(m_preheaterCommand);
     }
 
+    private final Runnable cameraSnapshotFunc = () -> {
+        for (var camera : WaltCamera.AllCameras) {
+        camera.takeBothSnapshots();
+        }
+    };
+
     /* COMMANDS */
+    private Command autoAlignCmd(int shooterPose) {
+        return MovingAutoAlign.autoAlignWithIntermediateTransformUntilInTolerances(
+        m_drivetrain, 
+        () -> ShooterK.kShooterOverridePose[shooterPose], 
+        () -> AutoAlignK.kIntermediatePoseTransform
+        ).alongWith(Commands.runOnce(cameraSnapshotFunc));
+    }
+    
     /**
      * 
      * @param speedMultiplier how much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
@@ -269,6 +292,12 @@ public class Robot extends TimedRobot {
         m_driver.leftBumper().and(trg_driverOverride).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
 
         m_drivetrain.registerTelemetry(logger::telemeterize);
+
+        //Auto Align
+        trg_autoAlignLeft.whileTrue(autoAlignCmd(0));
+        trg_autoAlignClimb.whileTrue(autoAlignCmd(1));
+        trg_autoAlignHub.whileTrue(autoAlignCmd(2));
+        trg_autoAlignRight.whileTrue(autoAlignCmd(3));
 
         /* CUSTOM BINDS */
         trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   
@@ -388,7 +417,6 @@ public class Robot extends TimedRobot {
         m_periodicTracer.addEpoch("Entry (Unused Time)");
         CommandScheduler.getInstance().run(); 
         m_periodicTracer.addEpoch("CommandScheduler");
-
 
         for (var camera : WaltCamera.AllCameras) {
             Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
@@ -547,11 +575,14 @@ public class Robot extends TimedRobot {
 
     @Override
     public void simulationPeriodic() {
+        SwerveDriveState robotState = m_drivetrain.getState();
+        Pose2d robotPose = robotState.Pose;
+        WaltCamera.m_visionSim.simulationPeriodic(robotPose);
         FuelSim instance = FuelSim.getInstance();
         instance.logFuels();
         instance.updateSim();
 
-        // m_visionSim.simulationPeriodic(robotPose);
+        WaltCamera.m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();
         m_shooter.simulationPeriodic();
         m_intake.simulationPeriodic();

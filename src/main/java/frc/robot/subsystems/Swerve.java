@@ -248,6 +248,18 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         return m_sysIdRoutineToApply.dynamic(direction);
     }
 
+    public static ChassisSpeeds getFieldRelativeChassisSpeeds(SwerveDriveState swerveDriveState) {
+        Pose2d pose = swerveDriveState.Pose;
+        ChassisSpeeds robotRelChassisSpeeds = swerveDriveState.Speeds;
+
+        return new ChassisSpeeds(
+                robotRelChassisSpeeds.vxMetersPerSecond * pose.getRotation().getCos()
+                        - robotRelChassisSpeeds.vyMetersPerSecond * pose.getRotation().getSin(),
+                robotRelChassisSpeeds.vyMetersPerSecond * pose.getRotation().getCos()
+                        + robotRelChassisSpeeds.vxMetersPerSecond * pose.getRotation().getSin(),
+                robotRelChassisSpeeds.omegaRadiansPerSecond);
+    }
+    
     @Override
     public void periodic() {
         /*
