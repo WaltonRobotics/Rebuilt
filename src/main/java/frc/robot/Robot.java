@@ -325,7 +325,7 @@ public class Robot extends TimedRobot {
             m_superstructure.unjamCmd(() -> false)
         );
 
-        trg_unjam.whileTrue(
+        trg_unjam.and(trg_shoot).whileTrue(
             m_superstructure.unjamCmd(()-> true)
         );
 

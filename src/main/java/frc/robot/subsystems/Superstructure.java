@@ -285,6 +285,7 @@ public class Superstructure extends SubsystemBase {
                 }
                 else if (isShooting.getAsBoolean()) {
                     m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS);
+                    m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS);
                 }
             }
         );
