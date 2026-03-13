@@ -400,7 +400,7 @@ public class Robot extends TimedRobot {
 
     private void configureTestBindings() {
         Pose2d testPose2d = new Pose2d();
-        Angle rotationDegrees = Angle.ofBaseUnits(60, Degree);
+        Angle rotationDegrees = Degrees.of(90);
         testPose2d.rotateBy(new Rotation2d(rotationDegrees));
 
         m_driver.povUp().whileTrue(m_drivetrain.toPose(testPose2d));
