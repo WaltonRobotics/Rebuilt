@@ -7,8 +7,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.RobotK.*;
-import static frc.robot.Constants.ShooterK.kShooterRPS;
-
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -26,6 +24,7 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -41,6 +40,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.shooter.FuelSim;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.Constants.RobotK;
+import frc.robot.Constants.ShooterK;
 import frc.robot.dashboards.AutonChooser;
 import frc.robot.dashboards.TestingDashboard;
 import frc.robot.autons.WaltAutonFactory;
@@ -52,11 +52,13 @@ import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.WaltCamera;
+import frc.util.HubShiftUtil;
 import frc.util.Telemetry;
 // import frc.util.WaltVisualSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.StringLogger;
 
 public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
@@ -104,6 +106,7 @@ public class Robot extends TimedRobot {
     // private final VisionSim m_visionSim = new VisionSim();
 
     /* TRIGGERS */
+    private Trigger trg_optimalPrefireTime = new Trigger(HubShiftUtil.optimalPrefireTime());
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
 
@@ -116,9 +119,6 @@ public class Robot extends TimedRobot {
 
     private Trigger trg_shoot = m_driver.rightTrigger().and(trg_driverOverride.negate());
     private Trigger trg_emergencyBarf = m_driver.rightTrigger().and(trg_driverOverride);
-
-    private Trigger trg_passLeft = m_manipulator.povLeft().and(trg_driverOverride.negate());
-    private Trigger trg_passRight = m_manipulator.povRight().and(trg_driverOverride.negate()).and(trg_passLeft.negate());
 
     private Trigger trg_shimmy = m_manipulator.leftBumper();
 
@@ -141,6 +141,15 @@ public class Robot extends TimedRobot {
 
     private final BooleanLogger log_isDisabled = WaltLogger.logBoolean(kLogTab, "is robot disabled");
 
+    private final StringLogger log_currentShift = WaltLogger.logString("Util/Shift", "currentShift");
+    private final DoubleLogger log_elapsedTime = WaltLogger.logDouble("Util/Shift", "elapsedTime");
+    private final DoubleLogger log_remainingTime = WaltLogger.logDouble("Util/Shift", "currentTime");
+    private final BooleanLogger log_isActive = WaltLogger.logBoolean("Util/Shift", "isActive");
+    private final StringLogger log_currentFudgedShift = WaltLogger.logString("Util/Shift", "currentFudgedShift");
+    private final DoubleLogger log_elapsedFudgedTime = WaltLogger.logDouble("Util/Shift", "elapsedFudgedTime");
+    private final DoubleLogger log_remainingFudgedTime = WaltLogger.logDouble("Util/Shift", "currentFudgedTime");
+    private final BooleanLogger log_isActiveFudged = WaltLogger.logBoolean("Util/Shift", "isActiveFudged");
+
     private final Tracer m_periodicTracer = new Tracer();
     private final Command m_preheaterCommand;
 
@@ -148,7 +157,7 @@ public class Robot extends TimedRobot {
     public Robot() {
         configureBindings();
         // configureTestBindings();    //this should be commented out during competition matches
-        // configureTestingDashboard();
+        configureTestingDashboard();
 
         lastGotTagMsmtTimer.start();
         if (Robot.isSimulation()) {
@@ -204,6 +213,11 @@ public class Robot extends TimedRobot {
         );
     }
 
+    private void setBothRumble(RumbleType type, double intensity) {
+        m_driver.setRumble(type, intensity);
+        m_manipulator.setRumble(type, intensity);
+    }
+
     //(nonsotm (just for simulating entire robot)) BLARGHHHHHH get intake dude (alex?) to give me his code (idk if he finished it yet)
     private void configureFuelSim() {
         FuelSim instance = FuelSim.getInstance();
@@ -242,121 +256,87 @@ public class Robot extends TimedRobot {
 
     //---BINDINGS
     private void configureBindings() {
-        /* GENERATED SWERVE BINDS */
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
-        m_drivetrain.setDefaultCommand(driveCommand(RobotK.kRobotSpeedIntakingLimit));
+        //---SWERVE BINDS
+        final var idle = new SwerveRequest.Idle();
+        RobotModeTriggers.disabled().whileTrue(
+            m_drivetrain.applyRequest(() -> idle).ignoringDisable(true)
+        );
 
+        m_drivetrain.setDefaultCommand(driveCommand(RobotK.kRobotSpeedIntakingLimit));  //+X=forward, +Y=left
+
+        m_driver.leftBumper().and(trg_driverOverride).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
+        m_drivetrain.registerTelemetry(logger::telemeterize);
+
+        //---INTAKE
+        trg_intake.and(trg_shoot.negate()).whileTrue(
+            m_superstructure.intake(() -> false)
+        );
+
+        trg_intake.and(trg_shoot).whileTrue(
+            m_superstructure.intake(() -> true)
+        );
+
+        trg_retractIntake.onTrue(
+            m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+        );
+        
+        trg_shimmy.whileTrue(m_superstructure.intakeArmShimmy());
+
+        //---SHOOTING
+        trg_shoot.whileTrue(m_superstructure.shoot(() -> ShooterK.kShooterRPS));    //fixed RPS
+
+        trg_emergencyBarf.whileTrue(
+            m_superstructure.emergencyBarf()
+        );
+
+        //---UNJAM
+        trg_unjam.and(trg_shoot.negate()).whileTrue(
+            m_superstructure.unjamCmd(() -> false)
+        );
+
+        trg_unjam.and(trg_shoot).whileTrue(
+            m_superstructure.unjamCmd(()-> true)
+        );
+
+        //---OVERRIDE COMMANDS
+        m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
+
+        trg_deployIntakeOverride.onTrue(
+            m_superstructure.overrideIntakeArm(IntakeArmPosition.DEPLOYED)
+        ).onFalse(
+            m_superstructure.overrideIntakeArm(IntakeArmPosition.SAFE)
+        );
+        trg_intakeUpOverride.onTrue(
+            m_superstructure.overrideIntakeArm(IntakeArmPosition.RETRACTED)
+        );
+
+        m_driver.povDown().onTrue(m_shooter.setTurretLockCmd(false));
+        m_driver.povRight().onTrue(m_shooter.setTurretLockCmd(true));
+
+        m_driver.povLeft().whileTrue(m_superstructure.shoot_TestingWidget());
+
+        //---DRIVER FEATURES
         // Trigger trg_hubActiveOrPassing =
         //     new Trigger(
         //         () ->
         //             HubShiftUtil.getShiftedShiftInfo().active()
         //                 || m_shooter.getCurrentGoal().equals(ShooterGoal.PASSING));
 
-        // Idle while the robot is disabled. This ensures the configured
-        // neutral mode is applied to the drive motors while disabled.
-        final var idle = new SwerveRequest.Idle();
-        RobotModeTriggers.disabled().whileTrue(
-            m_drivetrain.applyRequest(() -> idle).ignoringDisable(true)
-        );
+        // trg_optimalPrefireTime.whileTrue(
+        //     Commands.run(() -> setBothRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> setBothRumble(RumbleType.kBothRumble, 0)));
 
-        // m_driver.a().whileTrue(m_drivetrain.applyRequest(() -> brake));
-        // m_driver.b().whileTrue(m_drivetrain.applyRequest(() ->
-        //     point.withModuleDirection(new Rotation2d(-m_driver.getLeftY(), -m_driver.getLeftX()))
-        // ));
+        trg_shoot.onTrue(WaltCamera.takeSnapshotCmd()); //snapshot every time driver shoots
 
-        // Reset the field-centric heading on left bumper press.
-        m_driver.leftBumper().and(trg_driverOverride).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
-
-        m_drivetrain.registerTelemetry(logger::telemeterize);
-
-        /* CUSTOM BINDS */
         trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   
         trg_unlimitFps.onTrue(WaltCamera.setFpsLimitCmd(false));
-
-        //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
-        // trg_swerveToObject.whileTrue(
-        //     m_drivetrain.swerveToObject()
-        // );
-
-        //---NORMAL SEQUENCES
-        //Intake
-        trg_intake.and((trg_passLeft.or(trg_passRight)).negate()).whileTrue(
-            m_superstructure.intake(() -> false)
-        );
-        trg_retractIntake.onTrue(
-            m_superstructure.deactivateIntake(IntakeArmPosition.RETRACTED)
-        );
-
-        //Shooting
-        // trg_shoot.and(() -> trg_hubActiveOrPassing.getAsBoolean()).whileTrue(
-        trg_shoot.whileTrue(
-            m_superstructure.activateOuttake(kShooterRPS)
-        );
-
-        // snapshot on each shoot press
-        trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
-
-        trg_intake.and(trg_passLeft.or(trg_passRight)).whileTrue(
-            m_superstructure.intake(() -> true)
-        );
-
-        trg_emergencyBarf.whileTrue(
-            m_superstructure.emergencyBarf()
-        );
-        
-        trg_shimmy.whileTrue(m_superstructure.shimmy());
-
-        trg_unjam.whileTrue(
-            m_superstructure.unjamCmd()
-        );
-
-        //---OVERRIDE COMMANDS
-        m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
-
-        // m_manipulator.y().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(35)));
-        // m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(1)));
-
-        trg_deployIntakeOverride.onTrue(
-            m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)
-        ).onFalse(
-            m_superstructure.intakeTo(IntakeArmPosition.SAFE)
-        );
-        trg_intakeUpOverride.onTrue(
-            m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
-        );
-
-        // m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
-
-        m_driver.povDown().onTrue(m_shooter.setShotCalcCmd(false));
-        m_driver.povRight().onTrue(m_shooter.setShotCalcCmd(true));
     }
 
     private void configureTestBindings() {
-        /* GENERATED SWERVE BINDS */
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
-        m_drivetrain.setDefaultCommand(driveCommand(RobotK.kRobotSpeedIntakingLimit));
+        configureBindings();
 
-        // Idle while the robot is disabled. This ensures the configured
-        // neutral mode is applied to the drive motors while disabled.
-        final var idle = new SwerveRequest.Idle();
-        RobotModeTriggers.disabled().whileTrue(
-            m_drivetrain.applyRequest(() -> idle).ignoringDisable(true)
-        );
-
-        // Reset the field-centric heading on left bumper press.
-        m_driver.leftBumper().and(trg_manipOverride.negate()).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
-
-        m_drivetrain.registerTelemetry(logger::telemeterize);
-
-        
-        // Run SysId routines when holding back/start and X/Y.
-        // Note that each routine should be run exactly once in a single log.
-        // m_driver.back().and(m_driver.y()).whileTrue(m_drivetrain.sysIdDynamic(Direction.kForward));
-        // m_driver.back().and(m_driver.x()).whileTrue(m_drivetrain.sysIdDynamic(Direction.kReverse));
-        // m_driver.start().and(m_driver.y()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kForward));
-        // m_driver.start().and(m_driver.x()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kReverse));
+        /* ADD ADDITIONAL BINDS DOWN HERE */
+        // m_manipulator.y().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(35)));
+        // m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(1)));
     }
 
     private void configureTestingDashboard() {
@@ -366,20 +346,20 @@ public class Robot extends TimedRobot {
         /* ELASTIC WIDGET BINDINGS */
         TestingDashboard.trg_letShooterVelocityRPSChange
             .whileTrue(m_shooter.setShooterVelocityCmd(TestingDashboard.sub_shooterVelocityRPS));
-        TestingDashboard.trg_letTurretPositionRotsChange
-            .whileTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
-        // TestingDashboard.trg_letHoodPositionDegsChange
-            // .whileTrue(m_shooter.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
+        // TestingDashboard.trg_letTurretPositionRotsChange
+        //     .whileTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
+        // // TestingDashboard.trg_letHoodPositionDegsChange
+        //     // .whileTrue(m_shooter.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
 
-        TestingDashboard.trg_letSpindexerVelocityRPSChange
-            .whileTrue(m_indexer.setSpindexerVelocityCmd(TestingDashboard.sub_spindexerVelocityRPS));
-        TestingDashboard.trg_letTunnelVelocityRPSChange
-            .whileTrue(m_indexer.setTunnelVelocityCmd(TestingDashboard.sub_tunnelVelocityRPS));
+        // TestingDashboard.trg_letSpindexerVelocityRPSChange
+        //     .whileTrue(m_indexer.setSpindexerVelocityCmd(TestingDashboard.sub_spindexerVelocityRPS));
+        // TestingDashboard.trg_letTunnelVelocityRPSChange
+        //     .whileTrue(m_indexer.setTunnelVelocityCmd(TestingDashboard.sub_tunnelVelocityRPS));
 
-        TestingDashboard.trg_letIntakeArmPositionRotsChange
-            .whileTrue(m_intake.setIntakeArmPos(TestingDashboard.sub_intakeArmPositionRots));
-        TestingDashboard.trg_letIntakeRollersVelocityRPSChange
-            .whileTrue(m_intake.setIntakeRollersVelocity(TestingDashboard.sub_intakeRollersVelocityRPS));
+        // TestingDashboard.trg_letIntakeArmPositionRotsChange
+        //     .whileTrue(m_intake.setIntakeArmPos(TestingDashboard.sub_intakeArmPositionRots));
+        // TestingDashboard.trg_letIntakeRollersVelocityRPSChange
+        //     .whileTrue(m_intake.setIntakeRollersVelocity(TestingDashboard.sub_intakeRollersVelocityRPS));
     }
 
     /* PERIODICS */
@@ -408,6 +388,15 @@ public class Robot extends TimedRobot {
         m_periodicTracer.addEpoch("Logging");
 
         log_miniPCCurrent.accept(m_PDH.getCurrent(kMiniPCChannel));
+
+        log_currentShift.accept(HubShiftUtil.getOfficialShiftInfo().currentShift().toString());
+        log_currentFudgedShift.accept(HubShiftUtil.getShiftedShiftInfo().currentShift().toString());
+        log_elapsedTime.accept(Math.floor(HubShiftUtil.getOfficialShiftInfo().elapsedTime() * 100) / 100.0);
+        log_elapsedFudgedTime.accept((Math.floor(HubShiftUtil.getShiftedShiftInfo().elapsedTime() * 100) / 100.0));
+        log_remainingTime.accept((Math.floor(HubShiftUtil.getOfficialShiftInfo().remainingTime() * 100) / 100.0));
+        log_remainingFudgedTime.accept((Math.floor(HubShiftUtil.getShiftedShiftInfo().remainingTime() * 100) / 100.0));
+        log_isActive.accept(() -> HubShiftUtil.getOfficialShiftInfo().active());
+        log_isActiveFudged.accept(() -> HubShiftUtil.getShiftedShiftInfo().active());
 
         // log_shooterDirection.accept(
         //     new Pose3d(
@@ -485,6 +474,7 @@ public class Robot extends TimedRobot {
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().cancel(m_autonomousCommand);
         }
+        HubShiftUtil.initialize();
     }
 
     @Override

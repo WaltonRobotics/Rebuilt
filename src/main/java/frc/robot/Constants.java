@@ -36,6 +36,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -88,6 +89,7 @@ public class Constants {
         public static final Translation3d kPassingSpotLeft = new Translation3d(
             Meters.of(2), Meters.of(6.5), Meters.zero());
         
+        public static final double kShooterTimeout = 1.0;
 
         /* MOTOR CONSTANTS */
         public static final double kShooterMoI = 0.000349 * 2.5;  //J for 5 3" 0.53lb flywheels
@@ -107,7 +109,7 @@ public class Constants {
         public static final AngularVelocity kShooterAutonCloseRPS = kShooterMaxRPS.times(0.60);  //auton pose is closer to the hub than teleop scoring
         public static final AngularVelocity kShooterAuton_EndSweep_RPS = kShooterMaxRPS.times(0.70); // end of sweep paths
 
-        public static final AngularVelocity kShooterBarfRPS = RotationsPerSecond.of((5785/60) * (0.2) / kShooterGearing);
+        public static final AngularVelocity kShooterBarfRPS = RotationsPerSecond.of((5785/60) * (0.3) / kShooterGearing);
         public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.of(/* 0/60 * (0.9) / kShooterGearing */ 0);
 
         //---HOOD CONSTANTS
@@ -165,7 +167,6 @@ public class Constants {
         private static final CurrentLimitsConfigs kShooterACurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(80)
             .withSupplyCurrentLimit(50)
-            .withSupplyCurrentLowerTime(0)
             .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kShooterAOutputConfigs = new MotorOutputConfigs()
@@ -323,7 +324,7 @@ public class Constants {
         public static final Distance kRobotFullWidth = Inches.of(33.6875);
         public static final Distance kRobotFullLength = Inches.of(32.6875);
         public static final Distance kBumperHeight = Inches.of(4.5);
-        public static final double kRobotSpeedIntakingLimit = 0.13;
+        public static final double kRobotSpeedIntakingLimit = 0.4;
     }
 
     public static class SuperstructureK {
@@ -341,6 +342,7 @@ public class Constants {
         public static final double kIntakeRollersGearing = 12.0/30;
 
         public static final AngularVelocity kIntakeRollersMaxRPS = RotationsPerSecond.of((5785 / 60) / kIntakeRollersGearing * 1.0);  //0.8
+        public static final Time kIntakeArmDeployTimeout = Seconds.of(0.25);
 
         /* IDS */
         public static final int kIntakeArmCANID = 40;
@@ -425,20 +427,20 @@ public class Constants {
         public static final double kSpindexerMOI = 0.00166190059;
         public static final double kTunnelMOI = 0.000215968064;
       
-        public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60FOCMaxVelocity.div(kSpindexerGearing);
+        public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60MaxVelocity.div(kSpindexerGearing);
         public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(1.0);   //0.7
 
-        public static final AngularVelocity kTunnelMaxRPS = MotorK.kX44FOCMaxVelocity.div(kTunnelGearing);
+        public static final AngularVelocity kTunnelMaxRPS = MotorK.kX44MaxVelocity.div(kTunnelGearing);
         public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(1.0); //0.65
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
         private static final Slot0Configs kSpindexerSlot0Configs = new Slot0Configs()
-            .withKS(0.25)
-            .withKV(0.12)
+            .withKS(0.2)
+            .withKV(0.545)
             .withKA(0)
-            .withKP(0.5)
+            .withKP(0.75)
             .withKI(0)
             .withKD(0);
         private static final CurrentLimitsConfigs kSpindexerCurrentLimitConfigs = new CurrentLimitsConfigs()
@@ -503,7 +505,15 @@ public class Constants {
             Meters.of(5.437880039215088), new Rotation2d(0));
         
         public static final double kOneSweepMaxTime = 12.5; //in sec
+        public static final double kIntakeTimeout = 7.5; //in sec
+        public static final double kShootingTimeout = 12; //in sec
+
         public static final String kLeftSweepPathName = "LeftSweep";
         public static final String kRightSweepPathName = "RightSweep";
+
+        public static final String kLeftOptimizedSweepPathName = "LeftSweepOptimized";
+        public static final String kRightOptimizedSweepPathName = "RightSweepOptimized";
+
+
     }
 }

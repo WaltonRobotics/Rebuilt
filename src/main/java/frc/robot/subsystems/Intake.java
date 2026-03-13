@@ -102,6 +102,10 @@ public class Intake extends SubsystemBase {
     }
 
     /* COMMANDS */
+    public Command retractIntakeArm() {
+        return setIntakeArmPosCmd(IntakeArmPosition.RETRACTED);
+    }
+
     public void setIntakeArmPos(IntakeArmPosition rots) {
         setIntakeArmPos(rots.rots, rots == IntakeArmPosition.RETRACTED ? 3 : 1);
     }
@@ -125,7 +129,7 @@ public class Intake extends SubsystemBase {
         return isNear;
     }
 
-    public Command shimmy() {
+    public Command intakeArmShimmy() {
         return Commands.repeatingSequence(
             setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             setIntakeRollersVelocityCmd(RotationsPerSecond.of(0)),
@@ -136,7 +140,7 @@ public class Intake extends SubsystemBase {
         ).finallyDo(() -> setIntakeArmPosCmd(IntakeArmPosition.SAFE));
     }
 
-     public void setIntakeArmNeutralMode(NeutralModeValue value) {
+    public void setIntakeArmNeutralMode(NeutralModeValue value) {
         m_intakeArm.setNeutralMode(value);
     }
 
@@ -164,38 +168,6 @@ public class Intake extends SubsystemBase {
     //for TestingDashboard
     public Command setIntakeRollersVelocity(DoubleSubscriber sub_RPS) {
         return run(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
-    }
-
-    // public TalonFX getIntakeArmMotor() {
-    //     return m_intakeArm;
-    // }
-
-    // public TalonFX getIntakeRollers() {
-    //     return m_intakeRollers;
-    // }
-
-    public double getIntakeArmStatorCurrent() {
-        return m_intakeArm.getStatorCurrent().getValueAsDouble();
-    }
-
-    public double getIntakeRollersStatorCurrent() {
-        return m_intakeRollers.getStatorCurrent().getValueAsDouble();
-    }
-
-    public double getIntakeArmSupplyCurrent() {
-        return m_intakeArm.getSupplyCurrent().getValueAsDouble();
-    }
-
-    public double getIntakeRollersSupplyCurrent() {
-        return m_intakeRollers.getSupplyCurrent().getValueAsDouble();
-    }
-
-    public double getIntakeArmMotorVoltage() {
-        return m_intakeArm.getMotorVoltage().getValueAsDouble();
-    }
-
-    public double getIntakeRollersMotorVoltage() {
-        return m_intakeRollers.getMotorVoltage().getValueAsDouble();
     }
 
     public Command intakeArmCurrentSenseHoming() {
