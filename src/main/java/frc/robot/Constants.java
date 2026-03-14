@@ -501,16 +501,21 @@ public class Constants {
 
         public static final Pose2d kLeftNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
             Meters.of(5.437880039215088), new Rotation2d(0));
-        
-        public static final double kOneSweepMaxTime = 12.5; //in sec
-        public static final double kIntakeTimeout = 7.5; //in sec
-        public static final double kShootingTimeout = 12; //in sec
+
+        public static final double kOneSweepMaxTime = 12.5;
+        public static final double kTwoSweepMaxTime = 20;
+
+        public static final double kIntakeTimeout = 7.5;
+        public static final double kShootingTimeout = 5; //12
 
         public static final String kLeftSweepPathName = "LeftSweep";
         public static final String kRightSweepPathName = "RightSweep";
 
         public static final String kLeftOptimizedSweepPathName = "LeftSweepOptimized";
         public static final String kRightOptimizedSweepPathName = "RightSweepOptimized";
+
+        public static final String kLeftTwoSweepName = "LeftSweepTwo"; //NO LEFT TWO SWEEP PATH AS OF NOW
+        public static final String kRightTwoSweepName = "RightSweepTwo";
 
 
     }

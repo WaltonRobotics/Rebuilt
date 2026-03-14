@@ -160,10 +160,10 @@ public class WaltSimpleAutonFactory {
     //OVERALL TODO: clean up code and combine no preload w/ preload (and left/right) into one method
     //TODO: find better name for this
     public Command oneCycleGoInNow(boolean left, boolean optimized) {
-        String regPath = left ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
-        String optPath = left ? AutonK.kLeftOptimizedSweepPathName : AutonK.kRightOptimizedSweepPathName;
+        // String regPath = left ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
+        String path = left ? AutonK.kLeftOptimizedSweepPathName : AutonK.kRightOptimizedSweepPathName;
 
-        String path = optimized ? optPath : regPath;
+        // String path = optimized ? optPath : regPath;
         
         return Commands.sequence(
             tp("goInNow.sequence.START"),
@@ -173,7 +173,7 @@ public class WaltSimpleAutonFactory {
                 homingCmd().andThen(
                     tp("goInNow.homing.END"),
                     logState(0.1),
-                    Commands.waitSeconds(0.0001),
+                    Commands.waitSeconds(0.0001),                    
                     logState(0.2),
                     tp("goInNow.intake.START"),
                     m_superstructure.intake(() -> false).withTimeout(AutonK.kIntakeTimeout).asProxy(),
@@ -205,17 +205,26 @@ public class WaltSimpleAutonFactory {
         ).withName(path);
     }
 
-    public Command rightTwoSweep() {
+    public Command rightTwoSweep(boolean left) {
+        String path = left ? AutonK.kLeftTwoSweepName : AutonK.kRightTwoSweepName;
+
         return Commands.sequence(
+            oneCycleGoInNow(left, true),
             Commands.parallel(
-                m_autoFactory.resetOdometry(AutonK.kRightSweepPathName),
-                m_superstructure.activateOuttake(() -> kShooterAutonCloseRPS).withTimeout(2)
+                Commands.sequence(
+                    Commands.waitSeconds(2),
+                    m_superstructure.intake(() -> false).withTimeout(4).asProxy()
+                ),
+                runTraj(path, AutonK.kTwoSweepMaxTime)
             ),
-            rightOneSweep(),
-            m_autoFactory.resetOdometry("RightTurnBack"),
-            m_autoFactory.trajectoryCmd("RightTurnBack"),
-            rightOneSweep()
-        );
+            Commands.deadline(
+                shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout),
+                Commands.sequence(
+                    Commands.waitSeconds(2.75),
+                    m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED).asProxy()
+                )
+            )
+        ).withName(path);
     }
 
     public Command rightDepotToShoot() {
