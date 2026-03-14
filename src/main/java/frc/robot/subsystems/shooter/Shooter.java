@@ -3,6 +3,7 @@ package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
@@ -91,6 +92,7 @@ public class Shooter extends SubsystemBase {
     private final TalonFX m_shooterA = new TalonFX(kShooterA_CANID, Constants.kCanivoreBus); // X60Foc
     private final TalonFX m_shooterB = new TalonFX(kShooterB_CANID, Constants.kCanivoreBus); // X60Foc
     private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(false);
+    private final NeutralOut m_neutralOutReq = new NeutralOut();
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); // X44Foc
     private final PositionVoltage m_PVRequest = new PositionVoltage(0).withEnableFOC(true);
@@ -247,8 +249,13 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setShooterVelocity(AngularVelocity RPS) {
-        m_shooterA.setControl(m_velocityRequest.withVelocity(RPS));
+        if (RPS.isEquivalent(RotationsPerSecond.zero())) {
+            m_shooterA.setControl(m_neutralOutReq);
+        } else {
+            m_shooterA.setControl(m_velocityRequest.withVelocity(RPS));
+        }
     }
+
 
     // for TestingDashboard
     public Command setShooterVelocityCmd(DoubleSubscriber sub_RPS) {
