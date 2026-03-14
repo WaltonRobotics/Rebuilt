@@ -1,9 +1,9 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.Constants.IndexerK.kLogTab;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -21,11 +21,16 @@ import com.ctre.phoenix6.swerve.SwerveRequest.SwerveDriveBrake;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.numbers.N1;
@@ -43,9 +48,13 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.vision.Detection;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.Pose2dLogger;
+import frc.util.WaltLogger.Pose3dLogger;
+import frc.util.WaltLogger.Transform3dLogger;
 
 /**
  * CommandSwerveDrivetrain: Class that extends the Phoenix 6 SwerveDrivetrain class
@@ -81,6 +90,14 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         .withSteerRequestType(SteerRequestType.Position);
 
     private final Detection detection = new Detection();
+
+    private final DoubleLogger log_shimmyYDist = WaltLogger.logDouble("Swerve", "shimmyYDist");
+    private final DoubleLogger log_shimmyXDist = WaltLogger.logDouble("Swerve", "shimmyXDist");
+    private final DoubleLogger log_shimmyXMvmt = WaltLogger.logDouble("Swerve", "shimmyXMvmt");
+    private final DoubleLogger log_shimmyYMvmt = WaltLogger.logDouble("Swerve", "shimmyYMvmt");
+    private final Pose3dLogger log_shimmyPose = WaltLogger.logPose3d("Swerve", "shimmyPose");
+    
+    private final Pose2dLogger log_targetPose = WaltLogger.logPose2d("Swerve", "targetPose");
 
     private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
@@ -411,51 +428,75 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      * @return
      */
     public Command toPose(Pose2d destination) {
-        return Commands.run(
-            () -> {
-                Pose2d curPose = getState().Pose;
-
-                double xSpeed = m_pathXController.calculate(curPose.getX(), destination.getX());
-                double ySpeed = m_pathYController.calculate(curPose.getY(), destination.getY());
-                double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), destination.getRotation().getRadians());
-
-                setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
-            }
-        );
+        return Commands.run(() -> {
+            Pose2d curPose = getState().Pose;
+            double xSpeed = m_pathXController.calculate(curPose.getX(), destination.getX());
+            double ySpeed = m_pathYController.calculate(curPose.getY(), destination.getY());
+            double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), destination.getRotation().getRadians());
+            setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
+        });
     }
 
     public Command roboToAngle(Angle desiredAngle) {
-        return Commands.run(
-            () -> {
-                Pose2d curPose = getState().Pose;
-
-                double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), desiredAngle.in(Radians));
-
-                setControl(swreq_drive.withRotationalRate(thetaSpeed));
-            }
-
-        );
+        return Commands.run(() -> {
+            Pose2d curPose = getState().Pose;
+            double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), desiredAngle.in(Radians));
+            setControl(swreq_drive.withRotationalRate(thetaSpeed));
+        });
     }
 
     public Command roboToTranslation(Distance x, Distance y) {
-        return Commands.run(
-            () -> {
-                Pose2d curPose = getState().Pose;
+        return Commands.run(() -> {
+            Pose2d curPose = getState().Pose;
+            double xSpeed = m_pathXController.calculate(curPose.getX(), x.in(Meters));
+            double ySpeed = m_pathYController.calculate(curPose.getY(), y.in(Meters));
+            setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed));
+        });
+    }
 
-                double xSpeed = m_pathXController.calculate(curPose.getX(), x.in(Meters));
-                double ySpeed = m_pathYController.calculate(curPose.getY(), y.in(Meters));
-
-                setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed));
-            }
-
+    public Command shimmy(Distance x, Distance y, double secondsBetween, boolean waitBack) {
+        return Commands.sequence(
+            roboToTranslation(x, y),
+            Commands.waitSeconds(secondsBetween),
+            roboToTranslation(x.unaryMinus(), y.unaryMinus()),
+            waitBack ? Commands.waitSeconds(secondsBetween) : Commands.none()
         );
     }
 
-    // public Command swerveShimmy(Pose3d target) {
-    //     return Commands.repeatingSequence(
-    //         toPose(null)
-    //     );
-    // }
+    private record SwerveShimmyData(Distance xMovement, Distance yMovement) {}
+
+    private SwerveShimmyData calcSwerveShimmyData(Supplier<Translation3d> targetSup) {
+        Pose2d curPose = getState().Pose;
+        var target = targetSup.get();
+        Pose2d targetPose = new Pose2d(target.getMeasureX().in(Meters), target.getMeasureY().in(Meters), curPose.getRotation());
+
+        Distance xDistance = targetPose.getMeasureX().minus(curPose.getMeasureX());
+        Distance yDistance = targetPose.getMeasureY().minus(curPose.getMeasureY());
+
+        Distance xMovement = Meters.of(MathUtil.clamp(Math.abs(xDistance.in(Meters)), 0, 0.3));
+        Distance yMovement = Meters.of(MathUtil.clamp(Math.abs(yDistance.in(Meters)), 0, 0.3));
+
+        log_shimmyXDist.accept(xDistance.in(Meters));
+        log_shimmyYDist.accept(yDistance.in(Meters));
+
+        log_shimmyXMvmt.accept(xMovement.in(Meters));
+        log_shimmyYMvmt.accept(yMovement.in(Meters));
+
+        log_targetPose.accept(targetPose);
+
+        Pose3d shimmyPose = new Pose3d(new Pose2d(xDistance, yDistance, curPose.getRotation()));
+        log_shimmyPose.accept(shimmyPose);
+        return new SwerveShimmyData(xMovement, yMovement);
+    }
+
+    public Command swerveShimmy(Supplier<Translation3d> targetSup) {
+        return Commands.repeatingSequence(
+            Commands.defer(() -> {
+                var shimmyDat = calcSwerveShimmyData(targetSup);
+                return shimmy(shimmyDat.xMovement, shimmyDat.yMovement, 0.3, true);
+            }, Set.of(this))
+        );
+    }
 
     /**
      * robot goes to detected target

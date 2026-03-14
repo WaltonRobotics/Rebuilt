@@ -20,6 +20,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -315,7 +316,7 @@ public class Robot extends TimedRobot {
 
         trg_shimmy.whileTrue(m_superstructure.intakeArmShimmy());
 
-        // trg_swerveShimmy.whileTrue(m_drivetrain.swerveShimmy());
+        trg_swerveShimmy.whileTrue(m_drivetrain.swerveShimmy(() -> m_shooter.getCurrentTarget()));
 
         trg_unjam.whileTrue(
             m_superstructure.unjamCmd()
@@ -343,9 +344,6 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
-        // m_driver.povUp().whileTrue(m_drivetrain.roboToTranslation(Meters.of(0.5), Meters.of(0.0)));
-        // m_driver.povLeft().whileTrue(m_drivetrain.roboToTranslation(Meters.zero(), Meters.zero()));
-
         configureBindings();
     }
 
