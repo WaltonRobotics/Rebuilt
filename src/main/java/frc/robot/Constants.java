@@ -4,6 +4,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CommutationConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
@@ -20,7 +21,9 @@ import java.util.HashSet;
 import java.util.List;
 
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
+import com.ctre.phoenix6.signals.AdvancedHallSupportValue;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorArrangementValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.reduxrobotics.sensors.canandmag.CanandmagSettings;
@@ -97,6 +100,7 @@ public class Constants {
 
         public static final double kShooterGearing = 1/1;
         public static final double kTurretGearing = 41.66666666/1;
+        public static final double kHoodGearing = 25.0/1;
 
         public static final int kPeakShooterVolts = 16;
 
@@ -126,6 +130,8 @@ public class Constants {
         public static final Angle kHoodEncoderMaxDegs = Degrees.of(Rotations.of(0.9451).in(Degrees));
         public static final Angle kHoodAbsoluteMaxDegs = Degrees.of(40);
         public static final Angle kHoodServoMaxDegs = Degrees.of(300);
+        //TODO: ensure this is the home value
+        public static final Angle kHoodHomePosition = Degrees.of(0);
 
         public static final Angle kHoodShootingTolerance = Degrees.of(0.5);
 
@@ -263,11 +269,15 @@ public class Constants {
         private static final VoltageConfigs kHoodVoltageConfigs = new VoltageConfigs()
             .withPeakForwardVoltage(16)
             .withPeakReverseVoltage(-16);
+        private static final CommutationConfigs kHoodCommutationConfigs = new CommutationConfigs()
+            .withAdvancedHallSupport(AdvancedHallSupportValue.Enabled)
+            .withMotorArrangement(MotorArrangementValue.NEO550_JST);
         public static final TalonFXSConfiguration kHoodTalonFXSConfiguration = new TalonFXSConfiguration()
             .withSlot0(kHoodSlot0Configs)
             .withCurrentLimits(kHoodCurrentLimitConfig)
             .withMotorOutput(kOutputConfigs)
-            .withVoltage(kHoodVoltageConfigs);
+            .withVoltage(kHoodVoltageConfigs)
+            .withCommutation(kHoodCommutationConfigs);
 
         //Left, Center (Climb), Center (Hub), Right - Driver POV
         public static final Pose2d kShooterOverridePose[] = {
