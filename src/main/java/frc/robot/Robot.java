@@ -220,53 +220,6 @@ public class Robot extends TimedRobot {
             }
         );
     }
-    /**
-     * Returns a modified swerveRequest which uses swerveShimmy's rotational value instead of the driver's stick's.
-     * Does not move the robot, only returns a swerveRequest.
-     * @param speedMultiplier How much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
-     * @param shimmyCCW If the shimmy direction is CCW
-     * @return A swerveRequest with shimmying rotational values
-     */
-    private Command swerveRequestWithSwerveShimmy(double speedMultiplier, boolean shimmyCCW) {
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
-        // Drivetrain will NOT execute this command periodically
-        return m_drivetrain.applyRequest(() -> {
-            LinearVelocity translationSpeed = (m_driver.leftTrigger().getAsBoolean() ?
-                kMaxTranslationSpeed.times(speedMultiplier) :
-                kMaxTranslationSpeed);
-
-            var driverXVelo = translationSpeed.times(-m_driver.getLeftY());
-            var driverYVelo = translationSpeed.times(-m_driver.getLeftX());
-            // Use shimmyAngularRate over driver request
-            var yawRate = kSwerveShimmyAngularRate.times(shimmyCCW ? 1 : -1);
-
-            log_stickDesiredFieldX.accept(driverXVelo.in(MetersPerSecond));
-            log_stickDesiredFieldY.accept(driverYVelo.in(MetersPerSecond));
-            log_stickDesiredFieldZRot.accept(kDriverMaxAngularRate.times(-m_driver.getRightX()).in(RotationsPerSecond));  // Logging driver requests even though they have no impact
-            log_robotDesiredFieldZRot.accept(yawRate.in(RotationsPerSecond));
-            log_swerveShimmying.accept(true);
-
-            return drive
-                .withVelocityX(driverXVelo) // Drive forward with Y (forward)
-                .withVelocityY(driverYVelo) // Drive left with X (left)
-                .withRotationalRate(yawRate); // Use shimmy rotation rate
-            }
-        );
-    }
-    /**
-     * A modified driveCommand that utilizes the swerveShimmy rotational value instead of what the driver requests.
-     * Translational control should not be affected. Regular driveCommand is used as defaultCommand.
-     * @param speedMultiplier How much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
-     * @return Swerve driveCommand with swerveShimmy rotational values
-     */
-    private Command driveCommandWithSwerveShimmying(double speedMultiplier) {
-        // Return a sequence of two swerveRequests to shimmy in alternating directions
-        return Commands.repeatingSequence(
-            swerveRequestWithSwerveShimmy(speedMultiplier, true), //.withTimeout(0.113),
-            swerveRequestWithSwerveShimmy(speedMultiplier, false) //.withTimeout(0.1)
-        );
-    }
 
     //(nonsotm (just for simulating entire robot)) BLARGHHHHHH get intake dude (alex?) to give me his code (idk if he finished it yet)
     private void configureFuelSim() {
@@ -371,7 +324,7 @@ public class Robot extends TimedRobot {
 
         trg_shimmy.whileTrue(m_superstructure.intakeArmShimmy());
 
-        trg_swerveShimmy.whileTrue(driveCommandWithSwerveShimmying(RobotK.kRobotSpeedIntakingLimit));
+        // trg_swerveShimmy.whileTrue(m_drivetrain.swerveShimmy());
 
         trg_unjam.whileTrue(
             m_superstructure.unjamCmd()
@@ -399,10 +352,8 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
-        Angle rotationDegrees = Degrees.of(90);
-
-        m_driver.povUp().whileTrue(m_drivetrain.roboToAngle(rotationDegrees));
-        m_driver.povLeft().whileTrue(m_drivetrain.roboToAngle(Degrees.zero()));
+        // m_driver.povUp().whileTrue(m_drivetrain.roboToTranslation(Meters.of(0.5), Meters.of(0.0)));
+        // m_driver.povLeft().whileTrue(m_drivetrain.roboToTranslation(Meters.zero(), Meters.zero()));
 
         configureBindings();
     }

@@ -24,12 +24,15 @@ import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -70,17 +73,14 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
 
-    private final PIDController m_pathXController = new PIDController(7.7, 0, 0);
-    private final PIDController m_pathYController = new PIDController(7.7, 0, 0);
+    private final PIDController m_pathXController = new PIDController(4.69, 0, 0);
+    private final PIDController m_pathYController = new PIDController(4.69, 0, 0);
     private final PIDController m_pathThetaController = new PIDController(4.68, 0, 0);
     private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds = new SwerveRequest.ApplyFieldSpeeds()
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.Position);
 
     private final Detection detection = new Detection();
-
-    private DoubleLogger log_PIDThetaOutput = WaltLogger.logDouble("Swerve", "PIDThetaOutput");
-    private DoubleLogger log_PIDThetaInput = WaltLogger.logDouble("Swerve", "PIDThetaInput");
 
     private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
@@ -165,6 +165,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
+        // SmartDashboard.putData("Turning PID", m_pathThetaController);
+        // SmartDashboard.putData("X Controller", m_pathXController);
+        // SmartDashboard.putData("Y Controller", m_pathYController);
+
     }
 
     /**
@@ -189,6 +194,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
     }
 
     /**
@@ -221,7 +227,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         if (Utils.isSimulation()) {
             startSimThread();
         }
-        SmartDashboard.putData("Turning PID", m_pathThetaController);
     }
 
     /**
@@ -414,9 +419,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 double ySpeed = m_pathYController.calculate(curPose.getY(), destination.getY());
                 double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), destination.getRotation().getRadians());
 
-                log_PIDThetaInput.accept(destination.getRotation().getDegrees());
-                log_PIDThetaOutput.accept(thetaSpeed);
-
                 setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
             }
         );
@@ -429,14 +431,31 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
                 double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), desiredAngle.in(Radians));
 
-                log_PIDThetaInput.accept(desiredAngle.in(Degrees));
-                log_PIDThetaOutput.accept(thetaSpeed);
-
                 setControl(swreq_drive.withRotationalRate(thetaSpeed));
             }
 
         );
     }
+
+    public Command roboToTranslation(Distance x, Distance y) {
+        return Commands.run(
+            () -> {
+                Pose2d curPose = getState().Pose;
+
+                double xSpeed = m_pathXController.calculate(curPose.getX(), x.in(Meters));
+                double ySpeed = m_pathYController.calculate(curPose.getY(), y.in(Meters));
+
+                setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed));
+            }
+
+        );
+    }
+
+    // public Command swerveShimmy(Pose3d target) {
+    //     return Commands.repeatingSequence(
+    //         toPose(null)
+    //     );
+    // }
 
     /**
      * robot goes to detected target
