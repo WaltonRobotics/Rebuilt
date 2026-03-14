@@ -151,14 +151,15 @@ public class Superstructure extends SubsystemBase {
             up("pre repeating sequence"),
             Commands.repeatingSequence(
                 up("in repeating sequence"),
-                m_indexer.stopIndexerCmd()
-                    .onlyIf(() -> !m_shooter.isShooterSpunUp())
-                    .andThen(m_indexer.startIndexerCmd()).beforeStarting(Commands.waitUntil(() -> m_shooter.isShooterSpunUp())),
+                Commands.waitUntil(() -> !m_shooter.isShooterSpunUp()), // block until un-spun
+                m_indexer.stopIndexerCmd(), // stop indexer
+                up("restart indexer in repeating sequence"),
+                Commands.waitUntil(() -> m_shooter.isShooterSpunUp()), // block until spun
+                m_indexer.startIndexerCmd(), // restart indexer
                 up("end repeating sequence")
             ),
             up("post repeating sequence")
         )
-        .repeatedly()
         .finallyDo(
             () -> {
                 deactivateOuttake();
