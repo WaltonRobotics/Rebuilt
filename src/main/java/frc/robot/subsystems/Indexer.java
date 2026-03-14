@@ -80,6 +80,13 @@ public class Indexer extends SubsystemBase {
         );
     }
 
+    public Command stopIndexerCmd() {
+        return Commands.sequence(
+            stopTunnelCmd(),
+            stopSpindexerCmd()
+        );
+    }
+
     public Command startSpindexerCmd() {
         return setSpindexerVelocityCmd(kSpindexerShootRPS);
     }

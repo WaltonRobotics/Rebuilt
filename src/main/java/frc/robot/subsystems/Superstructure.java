@@ -131,6 +131,14 @@ public class Superstructure extends SubsystemBase {
     }
 
     /**
+     * @param update message to update the SHOOTER logger
+     * @return a Command that updates the logger
+     */
+    public Command up(String update) {
+        return Commands.runOnce(() -> log_shooterState.accept(update));
+    }
+
+    /**
      * Turns on spinner and exhaust and sets shooter speed to RPS.
      * <p>
      * Note: does not move turret or hood.
@@ -139,13 +147,27 @@ public class Superstructure extends SubsystemBase {
     public Command activateOuttake(Supplier<AngularVelocity> RPS) {
         log_shooterState.accept("pre sequence");
         return Commands.sequence(
-                Commands.runOnce(() -> log_shooterState.accept("post sequence call")),
+            up("post sequence call"),
             m_shooter.setShooterVelocityCmdSupp(RPS),
-                Commands.runOnce(() -> log_shooterState.accept("post supplier command")),
+            up("post supplier command"),
+
+            up("pre waituntil command"),
             Commands.waitUntil(() -> m_shooter.isShooterSpunUp()),
-                Commands.runOnce(() -> log_shooterState.accept("post waitUntil")),
+            up("post waituntil command"),
+
+            up("pre start indexer"),
             m_indexer.startIndexerCmd(),
-                Commands.runOnce(() -> log_shooterState.accept("post start indexer"))
+            up("post start indexer"),
+
+            up("pre repeating sequence"),
+            Commands.repeatingSequence(
+                up("in repeating sequence"),
+                m_indexer.stopIndexerCmd()
+                    .onlyIf(() -> !m_shooter.isShooterSpunUp())
+                    .andThen(m_indexer.startIndexerCmd()).beforeStarting(Commands.waitUntil(() -> m_shooter.isShooterSpunUp())),
+                up("end repeating sequence")
+            ),
+            up("post repeating sequence")
         )
         .repeatedly()
         .finallyDo(
