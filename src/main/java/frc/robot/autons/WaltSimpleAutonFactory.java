@@ -31,8 +31,8 @@ public class WaltSimpleAutonFactory {
     private final DoubleLogger log_autonState = WaltLogger.logDouble("Auton", "State");
 
     //trajectory logger
-    private final StringLogger log_trajectoryName = new StringLogger(kLogTab, "trajectoryName");
-    private final Pose2dArrayLogger log_trajectoryPoses = new Pose2dArrayLogger(kLogTab, "trajectoryPoses");
+    private final StringLogger log_trajectoryName = new StringLogger(AutonK.kLogTab, "trajectoryName");
+    private final Pose2dArrayLogger log_trajectoryPoses = new Pose2dArrayLogger(AutonK.kLogTab, "trajectoryPoses");
 
     public WaltSimpleAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter, Swerve swerve) {
         m_superstructure = superstructure;
