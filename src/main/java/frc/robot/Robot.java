@@ -142,15 +142,6 @@ public class Robot extends TimedRobot {
     private final DoubleLogger log_stickDesiredFieldZRot = WaltLogger.logDouble("Swerve", "stick desired teleop z rot");
     private final DoubleLogger log_robotDesiredFieldZRot = WaltLogger.logDouble("Swerve", "robot desired teleop z rot");
     private final BooleanLogger log_swerveShimmying = WaltLogger.logBoolean("Swerve", "swerveShimmying");
-    private final BooleanLogger log_povUp = WaltLogger.logBoolean(kLogTab, "Pov Up");
-    private final BooleanLogger log_povRight = WaltLogger.logBoolean(kLogTab, "Pov Right");
-    private final BooleanLogger log_povLeft = WaltLogger.logBoolean(kLogTab, "Pov Left");
-    private final BooleanLogger log_povDown = WaltLogger.logBoolean(kLogTab, "Pov Down");
-
-    private final BooleanLogger log_manipLeftTrigger = WaltLogger.logBoolean(kLogTab, "Manip Left Trigger");
-    private final BooleanLogger log_manipRightTrigger = WaltLogger.logBoolean(kLogTab, "Manip Right Trigger");
-    private final BooleanLogger log_driverLeftTrigger = WaltLogger.logBoolean(kLogTab, "Driver Left Trigger");
-    private final BooleanLogger log_driverRightTrigger = WaltLogger.logBoolean(kLogTab, "Driver Right Trigger");
 
     private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble(kLogTab, "MiniPC current");
 
