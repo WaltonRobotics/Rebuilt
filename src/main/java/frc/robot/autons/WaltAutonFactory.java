@@ -1,5 +1,7 @@
 package frc.robot.autons;
 
+import static frc.robot.Constants.SuperstructureK.kLogTab;
+
 import java.util.ArrayList;
 
 import choreo.Choreo;
@@ -10,6 +12,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.AutonK;
 import frc.robot.subsystems.Swerve;
 import frc.util.AllianceFlipUtil;
+import frc.util.WaltLogger.Pose2dArrayLogger;
+import frc.util.WaltLogger.Pose2dLogger;
 
 public class WaltAutonFactory {
     /* CLASS VARIABLES */
@@ -27,8 +31,6 @@ public class WaltAutonFactory {
 
     private String[] neutralCycle;
     private AutonSide m_side;
-
-    //trajectory logger
 
     public void setAutonSide(AutonSide side) {
         if (m_side != side) {
@@ -57,7 +59,7 @@ public class WaltAutonFactory {
 
     /* AUTON COMMANDS */
     //---AUTON CONSTRUCTION
-    public Command runTrajCmd(String traj) {
+    public Command runTrajCmd(String traj) {    
         return Commands.sequence(
             m_autoFactory.resetOdometry(traj),
             m_autoFactory.trajectoryCmd(traj)

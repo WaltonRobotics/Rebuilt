@@ -2,7 +2,9 @@ package frc.robot.autons;
 
 import static frc.robot.Constants.ShooterK.kShooterAutonCloseRPS;
 import static frc.robot.Constants.ShooterK.kShooterAuton_EndSweep_RPS;
+import static frc.robot.Constants.SuperstructureK.kLogTab;
 
+import choreo.Choreo;
 import choreo.auto.AutoFactory;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -14,6 +16,8 @@ import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.Pose2dArrayLogger;
+import frc.util.WaltLogger.StringLogger;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 
@@ -25,6 +29,10 @@ public class WaltSimpleAutonFactory {
     private final Swerve m_swerve;
 
     private final DoubleLogger log_autonState = WaltLogger.logDouble("Auton", "State");
+
+    //trajectory logger
+    private final Pose2dArrayLogger log_trajectoryPoses = new Pose2dArrayLogger(kLogTab, "trajectoryPoses");
+    private final StringLogger log_trajectoryName = new StringLogger(kLogTab, "trajectoryName");
 
     public WaltSimpleAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter, Swerve swerve) {
         m_superstructure = superstructure;
@@ -85,6 +93,12 @@ public class WaltSimpleAutonFactory {
 
     private Command runTraj(String name, double timeoutSecs) {
         return Commands.sequence(
+            Commands.runOnce(() -> {
+                var trajectory = Choreo.loadTrajectory(name);
+                trajectory.get().getPoses();
+                log_trajectoryPoses.accept(trajectory.get().getPoses());
+                log_trajectoryName.accept(name);
+            }),
             tp("runTraj.START(" + name + ")"),
             m_autoFactory.trajectoryCmd(name).withTimeout(timeoutSecs),
             tp("runTraj.END(" + name + ")"),
