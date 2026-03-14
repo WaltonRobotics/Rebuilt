@@ -263,8 +263,8 @@ public class Robot extends TimedRobot {
     private Command driveCommandWithSwerveShimmying(double speedMultiplier) {
         // Return a sequence of two swerveRequests to shimmy in alternating directions
         return Commands.repeatingSequence(
-            swerveRequestWithSwerveShimmy(speedMultiplier, true).withTimeout(0.113),
-            swerveRequestWithSwerveShimmy(speedMultiplier, false).withTimeout(0.1)
+            swerveRequestWithSwerveShimmy(speedMultiplier, true), //.withTimeout(0.113),
+            swerveRequestWithSwerveShimmy(speedMultiplier, false) //.withTimeout(0.1)
         );
     }
 
@@ -399,11 +399,10 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
-        Pose2d testPose2d = new Pose2d();
         Angle rotationDegrees = Degrees.of(90);
-        testPose2d.rotateBy(new Rotation2d(rotationDegrees));
 
-        m_driver.povUp().whileTrue(m_drivetrain.toPose(testPose2d));
+        m_driver.povUp().whileTrue(m_drivetrain.roboToAngle(rotationDegrees));
+        m_driver.povLeft().whileTrue(m_drivetrain.roboToAngle(Degrees.zero()));
 
         configureBindings();
     }

@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.Constants.IndexerK.kLogTab;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -28,8 +29,10 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -39,6 +42,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.vision.Detection;
 import frc.util.WaltLogger;
+import frc.util.WaltLogger.DoubleLogger;
 
 /**
  * CommandSwerveDrivetrain: Class that extends the Phoenix 6 SwerveDrivetrain class
@@ -68,12 +72,15 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     private final PIDController m_pathXController = new PIDController(7.7, 0, 0);
     private final PIDController m_pathYController = new PIDController(7.7, 0, 0);
-    private final PIDController m_pathThetaController = new PIDController(7, 0, 0);
+    private final PIDController m_pathThetaController = new PIDController(4.68, 0, 0);
     private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds = new SwerveRequest.ApplyFieldSpeeds()
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.Position);
 
     private final Detection detection = new Detection();
+
+    private DoubleLogger log_PIDThetaOutput = WaltLogger.logDouble("Swerve", "PIDThetaOutput");
+    private DoubleLogger log_PIDThetaInput = WaltLogger.logDouble("Swerve", "PIDThetaInput");
 
     private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
@@ -214,6 +221,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         if (Utils.isSimulation()) {
             startSimThread();
         }
+        SmartDashboard.putData("Turning PID", m_pathThetaController);
     }
 
     /**
@@ -333,7 +341,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         return m_kinematics.toChassisSpeeds(getState().ModuleStates);
     }
 
-     private void followPath(SwerveSample sample) {
+    private void followPath(SwerveSample sample) {
         m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
         var pose = getState().Pose;
         var samplePose = sample.getPose();
@@ -406,8 +414,27 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 double ySpeed = m_pathYController.calculate(curPose.getY(), destination.getY());
                 double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), destination.getRotation().getRadians());
 
+                log_PIDThetaInput.accept(destination.getRotation().getDegrees());
+                log_PIDThetaOutput.accept(thetaSpeed);
+
                 setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
             }
+        );
+    }
+
+    public Command roboToAngle(Angle desiredAngle) {
+        return Commands.run(
+            () -> {
+                Pose2d curPose = getState().Pose;
+
+                double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), desiredAngle.in(Radians));
+
+                log_PIDThetaInput.accept(desiredAngle.in(Degrees));
+                log_PIDThetaOutput.accept(thetaSpeed);
+
+                setControl(swreq_drive.withRotationalRate(thetaSpeed));
+            }
+
         );
     }
 
