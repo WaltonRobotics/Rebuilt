@@ -119,17 +119,6 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
-    public Command startShootSequenceCalc() {
-        return Commands.parallel(
-            m_shooter.shootFromCalc(),
-            Commands.sequence(
-                Commands.waitUntil(() -> m_shooter.isShooterSpunUp()).withTimeout(3),
-                m_indexer.startTunnelCmd(),
-                m_indexer.startSpindexerCmd()
-            )
-        );
-    }
-
     /**
      * @param update message to update the SHOOTER logger
      * @return a Command that updates the logger
@@ -178,19 +167,51 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
+    /**
+     * Turns on spinner and exhaust and sets shooter speed to CALCULATE SHOT RPS
+     * <p>
+     * Note: does not move turret or hood.
+     * @param RPS the speed for the shooter
+     */
+    public Command activateOuttakeShotCalc() {
+        log_shooterState.accept("pre sequence");
+        return Commands.sequence(
+            up("post sequence call"),
+            m_shooter.shootFromCalc(),
+            up("post supplier command"),
+
+            up("pre waituntil command"),
+            Commands.waitUntil(() -> m_shooter.isShooterSpunUp()),
+            up("post waituntil command"),
+
+            up("pre start indexer"),
+            m_indexer.startIndexerCmd(),
+            up("post start indexer"),
+
+            up("pre repeating sequence"),
+            Commands.repeatingSequence(
+                up("in repeating sequence"),
+                m_indexer.stopIndexerCmd()
+                    .onlyIf(() -> !m_shooter.isShooterSpunUp())
+                    .andThen(m_indexer.startIndexerCmd()).beforeStarting(Commands.waitUntil(() -> m_shooter.isShooterSpunUp())),
+                up("end repeating sequence")
+            ),
+            up("post repeating sequence")
+        )
+        .repeatedly()
+        .finallyDo(
+            () -> {
+                deactivateOuttake();
+                log_shooterState.accept("post deactivate outtake");
+            }
+        );
+    }
+
     public Command activateOuttakeNOSHOOT() {
         return Commands.parallel(
             startShootSequenceNOSHOOT()
         ).finallyDo(
             () -> deactivateOuttakeNOSHOOT()
-        );
-    }
-
-    public Command activateOuttakeCalc() {
-        return Commands.parallel(
-            startShootSequenceCalc()
-        ).finallyDo(
-            () -> deactivateOuttake()
         );
     }
 
