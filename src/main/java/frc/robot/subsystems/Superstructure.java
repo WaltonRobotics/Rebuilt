@@ -6,6 +6,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import frc.robot.Constants;
 import frc.robot.Constants.IndexerK;
 import frc.robot.Constants.IntakeK;
@@ -14,12 +15,14 @@ import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.StringArrayLogger;
+import frc.util.WaltLogger.StringLogger;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.SuperstructureK.*;
 import static frc.robot.Constants.ShooterK;
+import static frc.robot.Constants.IndexerK.kSpindexerShootRPS;
 import static frc.robot.Constants.IntakeK;
 
 import java.util.HashSet;
@@ -38,6 +41,8 @@ public class Superstructure extends SubsystemBase {
 
     private HashSet<String> m_activeOverrideCommands = new HashSet<>();
     private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
+
+    private StringLogger log_shooterState = WaltLogger.logString(kLogTab, "ShooterState");
     
     /* CONSTRUCTOR */
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
@@ -105,17 +110,6 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
-    public Command startShootSequence(Supplier<AngularVelocity> RPS) {
-        return Commands.parallel(
-            m_shooter.setShooterVelocityCmdSupp(RPS),
-            Commands.sequence(
-                Commands.waitUntil(() -> m_shooter.isShooterSpunUp()).withTimeout(ShooterK.kShooterTimeout),
-                m_indexer.startTunnelCmd(),
-                m_indexer.startSpindexerCmd()
-            )
-        );
-    }
-
     public Command startShootSequenceNOSHOOT() {
         return Commands.parallel(
             Commands.sequence(
@@ -143,18 +137,22 @@ public class Superstructure extends SubsystemBase {
      * @param RPS the speed for the shooter
      */
     public Command activateOuttake(Supplier<AngularVelocity> RPS) {
-        Command logCommand;
-        if (RPS == ShooterK.kShooterRPS) {
-            logCommand = logActiveCommands("shooting", "deactivateOuttake", "emergencyDump");   
-        } else {
-            logCommand = logActiveCommands("emergencyDump", "shooting", "deactivateOuttake");
-        }
-
-        return Commands.parallel(
-            startShootSequence(RPS),
-            logCommand
-        ).finallyDo(
-            () -> deactivateOuttake()
+        log_shooterState.accept("pre sequence");
+        return Commands.sequence(
+                Commands.runOnce(() -> log_shooterState.accept("post sequence call")),
+            m_shooter.setShooterVelocityCmdSupp(RPS),
+                Commands.runOnce(() -> log_shooterState.accept("post supplier command")),
+            Commands.waitUntil(() -> m_shooter.isShooterSpunUp()),
+                Commands.runOnce(() -> log_shooterState.accept("post waitUntil")),
+            m_indexer.startIndexerCmd(),
+                Commands.runOnce(() -> log_shooterState.accept("post start indexer"))
+        )
+        .repeatedly()
+        .finallyDo(
+            () -> {
+                deactivateOuttake();
+                log_shooterState.accept("post deactivate outtake");
+            }
         );
     }
 

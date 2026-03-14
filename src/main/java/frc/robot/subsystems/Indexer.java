@@ -11,6 +11,7 @@ import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -72,6 +73,13 @@ public class Indexer extends SubsystemBase {
 
     /* COMMANDS */
     //---STARTS AND STOPS
+    public Command startIndexerCmd() {
+        return Commands.sequence(
+            startTunnelCmd(),
+            startSpindexerCmd()
+        );
+    }
+
     public Command startSpindexerCmd() {
         return setSpindexerVelocityCmd(kSpindexerShootRPS);
     }

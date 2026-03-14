@@ -235,7 +235,11 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command setShooterVelocityCmdSupp(Supplier<AngularVelocity> supp_RPS) {
-        return run(() -> setShooterVelocity(supp_RPS.get()));
+        return runOnce(() -> setShooterVelocity(supp_RPS.get()));
+    }
+
+    public void setShooterVelocitySupp(Supplier<AngularVelocity> supp_RPS) {
+        run(() -> setShooterVelocity(supp_RPS.get()));
     }
 
     public Command shootFromCalc() {
