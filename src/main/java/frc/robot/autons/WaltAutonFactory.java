@@ -59,7 +59,7 @@ public class WaltAutonFactory {
 
     /* AUTON COMMANDS */
     //---AUTON CONSTRUCTION
-    public Command runTrajCmd(String traj) {    
+    public Command runTrajCmd(String traj) {
         return Commands.sequence(
             m_autoFactory.resetOdometry(traj),
             m_autoFactory.trajectoryCmd(traj)

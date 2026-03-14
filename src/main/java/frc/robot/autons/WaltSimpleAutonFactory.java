@@ -31,8 +31,8 @@ public class WaltSimpleAutonFactory {
     private final DoubleLogger log_autonState = WaltLogger.logDouble("Auton", "State");
 
     //trajectory logger
-    private final Pose2dArrayLogger log_trajectoryPoses = new Pose2dArrayLogger(kLogTab, "trajectoryPoses");
     private final StringLogger log_trajectoryName = new StringLogger(kLogTab, "trajectoryName");
+    private final Pose2dArrayLogger log_trajectoryPoses = new Pose2dArrayLogger(kLogTab, "trajectoryPoses");
 
     public WaltSimpleAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter, Swerve swerve) {
         m_superstructure = superstructure;
@@ -94,10 +94,8 @@ public class WaltSimpleAutonFactory {
     private Command runTraj(String name, double timeoutSecs) {
         return Commands.sequence(
             Commands.runOnce(() -> {
-                var trajectory = Choreo.loadTrajectory(name);
-                trajectory.get().getPoses();
-                log_trajectoryPoses.accept(trajectory.get().getPoses());
                 log_trajectoryName.accept(name);
+                log_trajectoryPoses.accept(Choreo.loadTrajectory(name).get().getPoses()); 
             }),
             tp("runTraj.START(" + name + ")"),
             m_autoFactory.trajectoryCmd(name).withTimeout(timeoutSecs),
