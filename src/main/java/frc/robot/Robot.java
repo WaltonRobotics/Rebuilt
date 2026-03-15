@@ -46,7 +46,7 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.dashboards.AutonChooser;
-// import frc.robot.dashboards.TestingDashboard;
+import frc.robot.dashboards.TestingDashboard;
 import frc.robot.autons.WaltAutonFactory;
 import frc.robot.autons.WaltSimpleAutonFactory;
 import frc.robot.generated.TunerConstants;
@@ -313,8 +313,8 @@ public class Robot extends TimedRobot {
 
         //Shooting
         // NORMAL FIXED SHOT
-        trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(60))); //TestingDashboard.sub_shooterVelocityRPS.get()
-        // trg_shoot.whileTrue(m_superstructure.activateOuttakeShotCalc());
+        // trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
+        trg_shoot.whileTrue(m_superstructure.activateOuttakeShotCalc());
 
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
@@ -357,7 +357,7 @@ public class Robot extends TimedRobot {
         m_driver.povDown().onTrue(m_shooter.setTurretLockCmd(false));
         m_driver.povRight().onTrue(m_shooter.setTurretLockCmd(true));
 
-        m_driver.start().whileTrue(m_superstructure.activateOuttakeNOSHOOT());
+        // m_driver.start().whileTrue(m_superstructure.activateOuttakeNOSHOOT());
         // trg_optimalPrefireTime.whileTrue(
         //     Commands.run(() -> setBothRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> setBothRumble(RumbleType.kBothRumble, 0))
         // );
@@ -377,11 +377,11 @@ public class Robot extends TimedRobot {
         /* INITIALIZE DASHBOARD */
         // TestingDashboard.initialize();
 
-        /* ELASTIC WIDGET BINDINGS */
+        // // /* ELASTIC WIDGET BINDINGS */
         // TestingDashboard.trg_letShooterVelocityRPSChange
         //     .whileTrue(m_shooter.setShooterVelocityCmd(TestingDashboard.sub_shooterVelocityRPS));
-        // TestingDashboard.trg_letTurretPositionRotsChange
-        //     .whileTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
+        // // // TestingDashboard.trg_letTurretPositionRotsChange
+        // // //     .whileTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
         // TestingDashboard.trg_letHoodPositionDegsChange
         //     .whileTrue(m_hood.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
 

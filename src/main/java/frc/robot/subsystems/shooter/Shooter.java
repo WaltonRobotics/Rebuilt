@@ -542,7 +542,7 @@ public class Shooter extends SubsystemBase {
             }
         }
         // Sets the HoodPosition to the Calculated HoodAngle
-        // m_hood.setHoodPos(Degrees.of(calculatedShot.getHoodAngle().in(Degrees)));
+        m_hood.setHoodPos(Degrees.of(calculatedShot.getHoodAngle().in(Degrees)));
 
         m_calcTurret = azimuthAngle;
         m_calcFlywheelVelocity = () -> ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(),

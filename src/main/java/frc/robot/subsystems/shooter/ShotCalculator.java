@@ -100,6 +100,24 @@ public class ShotCalculator {
 
         m_shotMap.put(0.94, new ShotData(RotationsPerSecond.of(56), Degrees.of(71)));
         m_timeOfFlightMap.put(0.94, 1.00);
+
+        m_shotMap.put(1.712, new ShotData(RotationsPerSecond.of(53.77), Degrees.of(306.66)));
+        m_timeOfFlightMap.put(1.712, 1.05);
+
+        m_shotMap.put(1.82, new ShotData(RotationsPerSecond.of(53.77), Degrees.of(306.66)));
+        m_timeOfFlightMap.put(1.82, 0.95);
+
+        m_shotMap.put(3.021, new ShotData(RotationsPerSecond.of(62.85), Degrees.of(518.68)));
+        m_timeOfFlightMap.put(3.012, 0.92);
+
+        m_shotMap.put(2.965, new ShotData(RotationsPerSecond.of(60.85), Degrees.of(518.68)));
+        m_timeOfFlightMap.put(2.965, 0.96);
+
+        m_shotMap.put(3.975, new ShotData(RotationsPerSecond.of(74.20), Degrees.of(518.68)));
+        m_timeOfFlightMap.put(3.975, 1.19);
+
+        m_shotMap.put(3.935, new ShotData(RotationsPerSecond.of(70.49), Degrees.of(518.68)));
+        m_timeOfFlightMap.put(3.935, 1.08);
     }
 
     /**
