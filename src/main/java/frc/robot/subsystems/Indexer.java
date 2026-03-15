@@ -11,6 +11,7 @@ import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -27,8 +28,8 @@ public class Indexer extends SubsystemBase {
     private final TalonFX m_spindexer = new TalonFX(kSpindexerCANID, Constants.kCanivoreBus); // X60Foc
     private final TalonFX m_tunnel = new TalonFX(kTunnelCANID, Constants.kCanivoreBus); // X60Foc
 
-    private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
-    private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
+    private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(0).withEnableFOC(false);
+    private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(0).withEnableFOC(false);
 
     /* SIM OBJECTS */
     private final DCMotorSim m_spindexerSim = new DCMotorSim(
@@ -72,6 +73,20 @@ public class Indexer extends SubsystemBase {
 
     /* COMMANDS */
     //---STARTS AND STOPS
+    public Command startIndexerCmd() {
+        return Commands.sequence(
+            startTunnelCmd(),
+            startSpindexerCmd()
+        );
+    }
+
+    public Command stopIndexerCmd() {
+        return Commands.sequence(
+            stopTunnelCmd(),
+            stopSpindexerCmd()
+        );
+    }
+
     public Command startSpindexerCmd() {
         return setSpindexerVelocityCmd(kSpindexerShootRPS);
     }

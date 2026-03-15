@@ -128,7 +128,7 @@ public class Intake extends SubsystemBase {
     public Command shimmy() {
         return Commands.repeatingSequence(
             setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
-            setIntakeRollersVelocityCmd(RotationsPerSecond.of(0)),
+            setIntakeRollersVelocityCmd(RotationsPerSecond.zero()),
             setIntakeArmPosCmd(IntakeArmPosition.SHIMMY),
             Commands.waitUntil(() -> isIntakeArmAtPos()),
             setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
@@ -150,7 +150,7 @@ public class Intake extends SubsystemBase {
     }
 
     public Command stopIntakeRollers() {
-        return setIntakeRollersVelocityCmd(RotationsPerSecond.of(0));
+        return setIntakeRollersVelocityCmd(RotationsPerSecond.zero());
     }
 
     public void setIntakeRollersVelocity(AngularVelocity RPS) {
@@ -197,6 +197,16 @@ public class Intake extends SubsystemBase {
     public double getIntakeRollersMotorVoltage() {
         return m_intakeRollers.getMotorVoltage().getValueAsDouble();
     }
+
+    // TESTING TO SEE IF WE CAN JUST SAY 0 AS 0
+    // public Command intakeArmHome() {
+    //     return Commands.sequence(
+    //         runOnce(() -> m_intakeArm.setPosition(0)),
+    //         runOnce(() -> m_isIntakeArmHomed = true),
+    //         runOnce(() -> log_isIntakeArmHomed.accept(m_isIntakeArmHomed)),
+    //         runOnce(() -> removeDefaultCommand())
+    //     );
+    // }
 
     public Command intakeArmCurrentSenseHoming() {
         Runnable init = () -> {

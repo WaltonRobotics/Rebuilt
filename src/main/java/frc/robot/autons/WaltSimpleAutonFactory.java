@@ -2,6 +2,7 @@ package frc.robot.autons;
 
 import static frc.robot.Constants.ShooterK.kShooterAutonCloseRPS;
 import static frc.robot.Constants.ShooterK.kShooterAuton_EndSweep_RPS;
+import static frc.robot.Constants.AutonK.*;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -13,6 +14,7 @@ import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
+import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
@@ -24,7 +26,7 @@ public class WaltSimpleAutonFactory {
     private final Shooter m_shooter;
     private final Swerve m_swerve;
 
-    private final DoubleLogger log_autonState = WaltLogger.logDouble("Auton", "State");
+    private final DoubleLogger log_autonState = WaltLogger.logDouble(kLogTab, "State");
 
     public WaltSimpleAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter, Swerve swerve) {
         m_superstructure = superstructure;
@@ -78,7 +80,7 @@ public class WaltSimpleAutonFactory {
     private Command shootWithTimeout(AngularVelocity speed, double seconds) {
         return Commands.sequence(
             tp("shootWithTimeout.START(" + speed + "," + seconds + ")"),
-            m_superstructure.activateOuttake(speed).withTimeout(seconds),
+            m_superstructure.activateOuttake(() -> speed).withTimeout(seconds),
             tp("shootWithTimeout.END")
         );
     }
@@ -127,7 +129,7 @@ public class WaltSimpleAutonFactory {
                     tp("preload.deadline.intake.END"),
                     logState(3.3),
                     tp("preload.deadline.unjam.START"),
-                    m_superstructure.unjamCmd(),
+                    m_superstructure.unjamCmd(() -> false),
                     tp("preload.deadline.unjam.END")
                 )
             ),
@@ -135,7 +137,7 @@ public class WaltSimpleAutonFactory {
             logState(4),
             tp("preload.endShoot.START"),
             Commands.parallel(
-                shootWithTimeout(kShooterAuton_EndSweep_RPS ,12),
+                shootWithTimeout(kShooterAuton_EndSweep_RPS, 12),
                 Commands.sequence(
                     logState(4.1),
                     Commands.waitSeconds(6),
@@ -157,10 +159,12 @@ public class WaltSimpleAutonFactory {
         return preload_oneSweep(true);
     }
 
-    //OVERALL TODO: clean up code and combine no preload w/ preload (and left/right) into one method
-    //TODO: find better name for this
-    public Command oneCycleGoInNow(boolean left) {
-        String path = left ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
+    public Command firstSweep_NoPreload(boolean left, boolean optimized) {
+        // String regPath = left ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
+        String path = left ? AutonK.kLeftOptimizedSweepPathName : AutonK.kRightOptimizedSweepPathName;
+
+        // String path = optimized ? optPath : regPath;
+        
         return Commands.sequence(
             tp("goInNow.sequence.START"),
             logState(0),
@@ -169,10 +173,10 @@ public class WaltSimpleAutonFactory {
                 homingCmd().andThen(
                     tp("goInNow.homing.END"),
                     logState(0.1),
-                    Commands.waitSeconds(0.0001),
+                    // Commands.waitSeconds(0.0001),
                     logState(0.2),
                     tp("goInNow.intake.START"),
-                    m_superstructure.intake(() -> false).asProxy().withTimeout(7.5),
+                    m_superstructure.intake(() -> false).withTimeout(AutonK.kIntakeTimeout).asProxy(),
                     tp("goInNow.intake.END")
                 ),
                 Commands.sequence(
@@ -186,10 +190,10 @@ public class WaltSimpleAutonFactory {
             logState(1),
             tp("goInNow.shootDeadline.START"),
             Commands.deadline(
-                shootWithTimeout(kShooterAuton_EndSweep_RPS, 12).asProxy(),
+                shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout).asProxy(),
                 Commands.sequence(
                     logState(1.1),
-                    Commands.waitSeconds(3), // 5
+                    Commands.waitSeconds(3.5),
                     logState(1.2),
                     tp("goInNow.retractIntake.START"),
                     m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED).asProxy(),
@@ -201,17 +205,26 @@ public class WaltSimpleAutonFactory {
         ).withName(path);
     }
 
-    public Command rightTwoSweep() {
+    public Command rightTwoSweep(boolean left) {
+        String path = left ? AutonK.kLeftTwoSweepName : AutonK.kRightTwoSweepName;
+
         return Commands.sequence(
+            firstSweep_NoPreload(left, true),
             Commands.parallel(
-                m_autoFactory.resetOdometry(AutonK.kRightSweepPathName),
-                m_superstructure.activateOuttake(kShooterAutonCloseRPS).withTimeout(2)
+                Commands.sequence(
+                    Commands.waitSeconds(2),
+                    m_superstructure.intake(() -> false).asProxy().withTimeout(4)
+                ),
+                runTraj(path, AutonK.kTwoSweepMaxTime)
             ),
-            rightOneSweep(),
-            m_autoFactory.resetOdometry("RightTurnBack"),
-            m_autoFactory.trajectoryCmd("RightTurnBack"),
-            rightOneSweep()
-        );
+            Commands.deadline(
+                shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout).asProxy(),
+                Commands.sequence(
+                    Commands.waitSeconds(2.75),
+                    m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED).asProxy()
+                )
+            )
+        ).withName(path);
     }
 
     public Command rightDepotToShoot() {
@@ -231,7 +244,7 @@ public class WaltSimpleAutonFactory {
             Commands.parallel(
                 m_autoFactory.trajectoryCmd("RightDepotToShoot"),
                 Commands.sequence(
-                    m_superstructure.activateOuttake(ShooterK.kShooterRPS).withTimeout(2)
+                    m_superstructure.activateOuttake(() -> ShooterK.kShooterRPS).withTimeout(2)
                 )
             )
 
@@ -249,7 +262,7 @@ public class WaltSimpleAutonFactory {
                 m_autoFactory.trajectoryCmd("RightOutpostToNeutral"),
                 Commands.sequence(
                     Commands.waitSeconds(0.5),
-                    m_superstructure.activateOuttake(ShooterK.kShooterRPS).withTimeout(2),
+                    m_superstructure.activateOuttake(() -> ShooterK.kShooterRPS).withTimeout(2),
                     Commands.waitSeconds(0.5),
                     m_intake.setIntakeArmPosCmd(IntakeArmPosition.SAFE),
                     Commands.waitSeconds(0.5),
