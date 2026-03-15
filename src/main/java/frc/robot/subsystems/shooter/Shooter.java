@@ -103,7 +103,7 @@ public class Shooter extends SubsystemBase {
     private final Trigger trg_homingHallDirect = new Trigger(homingEventLoop, () -> !m_turretHomingHall.get());
     private final BooleanLogger log_turretHomingHall = new BooleanLogger(kLogTab, "turretHomeHall");
 
-    private Angle m_calcTurret = Rotations.of(0);
+    private Angle m_calcTurret = Rotations.zero();
     private Supplier<AngularVelocity> m_calcFlywheelVelocity = () -> RotationsPerSecond.of(44.81);
 
     // Precomputed: true if turret travel is less than one full rotation (sub-360

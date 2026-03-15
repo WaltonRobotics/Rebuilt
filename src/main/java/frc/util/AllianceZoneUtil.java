@@ -34,18 +34,18 @@ public class AllianceZoneUtil {
             field_x_len.minus(hub_x_centerPos), centerField_y_pos, hub_z_len, Rotation3d.kZero);
     public static final Pose3d redRightTarget =
         new Pose3d(
-            new Translation3d(Inches.of(651.2), Inches.of(49.86), Inches.of(0)), Rotation3d.kZero);
+            new Translation3d(Inches.of(651.2), Inches.of(49.86), Inches.zero()), Rotation3d.kZero);
 
     public static final Pose3d blueLeftTarget =
         new Pose3d(
-            new Translation3d(Inches.of(0), Inches.of(200.86), Inches.of(0)), Rotation3d.kZero);
+            new Translation3d(Inches.zero(), Inches.of(200.86), Inches.zero()), Rotation3d.kZero);
 
     public static final Pose3d redLeftTarget =
         new Pose3d(
-            new Translation3d(Inches.of(651.2), Inches.of(200.86), Inches.of(0)), Rotation3d.kZero);
+            new Translation3d(Inches.of(651.2), Inches.of(200.86), Inches.zero()), Rotation3d.kZero);
 
     public static final Pose3d blueRightTarget =
-        new Pose3d(new Translation3d(Inches.of(0), Inches.of(49.86), Inches.of(0)), Rotation3d.kZero);
+        new Pose3d(new Translation3d(Inches.zero(), Inches.of(49.86), Inches.zero()), Rotation3d.kZero);
     
 
     enum Region {
@@ -54,7 +54,7 @@ public class AllianceZoneUtil {
                         new Translation2d(0, 0), new Translation2d(allianceZone_x_len, field_y_len))),
         RightNeutralZone(
                 new Rectangle2d(
-                        new Translation2d(centerField_x_pos.minus(neutralZone_x_len.div(2.0)), Inches.of(0)),
+                        new Translation2d(centerField_x_pos.minus(neutralZone_x_len.div(2.0)), Inches.zero()),
                         new Translation2d(
                                 centerField_x_pos.plus(neutralZone_x_len.div(2.0)), centerField_y_pos))),
         LeftNeutralZone(
@@ -64,7 +64,7 @@ public class AllianceZoneUtil {
                         new Translation2d(centerField_x_pos.plus(neutralZone_x_len.div(2.0)), field_y_len))),
         RedZone(
                 new Rectangle2d(
-                        new Translation2d(field_x_len.minus(allianceZone_x_len), Inches.of(0)),
+                        new Translation2d(field_x_len.minus(allianceZone_x_len), Inches.zero()),
                         new Translation2d(field_x_len, field_y_len)));
 
         private final Rectangle2d rect;

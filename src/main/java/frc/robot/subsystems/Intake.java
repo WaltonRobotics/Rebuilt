@@ -128,7 +128,7 @@ public class Intake extends SubsystemBase {
     public Command shimmy() {
         return Commands.repeatingSequence(
             setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
-            setIntakeRollersVelocityCmd(RotationsPerSecond.of(0)),
+            setIntakeRollersVelocityCmd(RotationsPerSecond.zero()),
             setIntakeArmPosCmd(IntakeArmPosition.SHIMMY),
             Commands.waitUntil(() -> isIntakeArmAtPos()),
             setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
@@ -150,7 +150,7 @@ public class Intake extends SubsystemBase {
     }
 
     public Command stopIntakeRollers() {
-        return setIntakeRollersVelocityCmd(RotationsPerSecond.of(0));
+        return setIntakeRollersVelocityCmd(RotationsPerSecond.zero());
     }
 
     public void setIntakeRollersVelocity(AngularVelocity RPS) {
