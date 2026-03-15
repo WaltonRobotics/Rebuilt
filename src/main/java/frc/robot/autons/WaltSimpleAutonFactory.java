@@ -50,7 +50,7 @@ public class WaltSimpleAutonFactory {
 
     private Command tp(String message) {
         return WaltLogger.timedPrintCmd(message);
-    }    
+    }
 
     public Command preheater() {
         return Commands.sequence(
@@ -141,7 +141,7 @@ public class WaltSimpleAutonFactory {
                     Commands.waitSeconds(6),
                     logState(4.2),
                     tp("preload.shimmy.START"),
-                    m_superstructure.shimmy(),
+                    m_superstructure.intakeArmShimmy(),
                     tp("preload.shimmy.END")
                 )
             ),

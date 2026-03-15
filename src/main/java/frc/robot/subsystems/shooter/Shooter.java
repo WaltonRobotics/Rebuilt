@@ -78,6 +78,7 @@ public class Shooter extends SubsystemBase {
     private boolean m_onLeftSide;
     //need to implement the differing targets (if in neutral zone, shoot to X point (passing))
     private Translation3d m_currentTarget = Translation3d.kZero;
+    private Translation3d m_currentCalcTarget = Translation3d.kZero;
 
     private final TurretVisualizer m_turretVisualizer;
     private final FuelSim m_fuelSim;
@@ -294,6 +295,14 @@ public class Shooter extends SubsystemBase {
         return RotationsPerSecond.of(m_calcFlywheelVelocity.in(RotationsPerSecond));
     }
 
+    public Translation3d getCurrentTarget() {
+        return m_currentTarget;
+    }
+
+    public Translation3d getCurrentCalcTarget() {
+        return m_currentCalcTarget;
+    }
+
     public double getFlywheelStatorCurrent() {
         return m_shooterA.getStatorCurrent().getValueAsDouble();
     }
@@ -488,6 +497,7 @@ public class Shooter extends SubsystemBase {
         // setHoodPosition(Degrees.of(calculatedShot.getHoodAngle().in(Degrees)));
 
         m_calcTurret = azimuthAngle;
+        m_currentCalcTarget = calculatedShot.getTarget();
         m_calcFlywheelVelocity = ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(), kFlywheelRadius);
         m_periodicTracer.addEpoch("calculateShot/setOutputs");
     }

@@ -20,6 +20,9 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -62,14 +65,15 @@ public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
     //---CONSTANTS
     private final LinearVelocity kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts; // kSpeedAt12Volts desired top speed
-    private final AngularVelocity kMaxAngularRate = RotationsPerSecond.of(1.05); // 3/4 of a rotation per second max angular velocity
+    private final AngularVelocity kDriverMaxAngularRate = RotationsPerSecond.of(1.05); // 3/4 of a rotation per second max angular velocity
+    private final AngularVelocity kSwerveShimmyAngularRate = RotationsPerSecond.of(1.3 / 3);
 
     private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
     private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger(kLogTab, "VisionSeenLastSec");
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-        .withDeadband(kMaxTranslationSpeed.times(0.1)).withRotationalDeadband(kMaxAngularRate.times(0.1)) // Add a 10% deadband
+        .withDeadband(kMaxTranslationSpeed.times(0.1)).withRotationalDeadband(kDriverMaxAngularRate.times(0.1)) // Add a 10% deadband
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     // private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     // private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -121,6 +125,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_passRight = m_manipulator.povRight().and(trg_driverOverride.negate()).and(trg_passLeft.negate());
 
     private Trigger trg_shimmy = m_manipulator.leftBumper();
+    private Trigger trg_swerveShimmy = m_driver.leftBumper();
 
     //---OVERRIDE TRIGGERS
     private Trigger trg_deployIntakeOverride = trg_manipOverride.and(m_manipulator.rightTrigger());
@@ -136,6 +141,8 @@ public class Robot extends TimedRobot {
     private final DoubleLogger log_stickDesiredFieldX = WaltLogger.logDouble("Swerve", "stick desired teleop x");
     private final DoubleLogger log_stickDesiredFieldY = WaltLogger.logDouble("Swerve", "stick desired teleop y");
     private final DoubleLogger log_stickDesiredFieldZRot = WaltLogger.logDouble("Swerve", "stick desired teleop z rot");
+    private final DoubleLogger log_robotDesiredFieldZRot = WaltLogger.logDouble("Swerve", "robot desired teleop z rot");
+    private final BooleanLogger log_swerveShimmying = WaltLogger.logBoolean("Swerve", "swerveShimmying");
 
     private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble(kLogTab, "MiniPC current");
 
@@ -175,8 +182,8 @@ public class Robot extends TimedRobot {
 
     /* COMMANDS */
     /**
-     * 
-     * @param speedMultiplier how much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
+     * Normal driveCommand which takes in drive stick requests. Is defaultCommand
+     * @param speedMultiplier How much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
      * @return swerve drive command
      */
     private Command driveCommand(double speedMultiplier) {
@@ -184,18 +191,20 @@ public class Robot extends TimedRobot {
         // and Y is defined as to the left according to WPILib convention.
         // Drivetrain will execute this command periodically
         return m_drivetrain.applyRequest(() -> {
-            LinearVelocity translationSpeed = (m_driver.leftTrigger().getAsBoolean() ? 
+            LinearVelocity translationSpeed = (m_driver.leftTrigger().getAsBoolean() ?
                 kMaxTranslationSpeed.times(speedMultiplier) :
                 kMaxTranslationSpeed);
-        
+
             var driverXVelo = translationSpeed.times(-m_driver.getLeftY());
             var driverYVelo = translationSpeed.times(-m_driver.getLeftX());
-            var driverYawRate = kMaxAngularRate.times(-m_driver.getRightX());
+            var driverYawRate = kDriverMaxAngularRate.times(-m_driver.getRightX());
 
             log_stickDesiredFieldX.accept(driverXVelo.in(MetersPerSecond));
             log_stickDesiredFieldY.accept(driverYVelo.in(MetersPerSecond));
             log_stickDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond));
-            
+            log_robotDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond)); // Should be equal to stick desired IN THIS CASE
+            log_swerveShimmying.accept(false);
+
             return drive
                 .withVelocityX(driverXVelo) // Drive forward with Y (forward)
                 .withVelocityY(driverYVelo) // Drive left with X (left)
@@ -208,7 +217,7 @@ public class Robot extends TimedRobot {
     private void configureFuelSim() {
         FuelSim instance = FuelSim.getInstance();
         // instance.spawnStartingFuel();
-    
+
         instance.registerRobot(
                 kRobotFullWidth.in(Meters),
                 kRobotFullLength.in(Meters),
@@ -271,7 +280,7 @@ public class Robot extends TimedRobot {
         m_drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
-        trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   
+        trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));
         trg_unlimitFps.onTrue(WaltCamera.setFpsLimitCmd(false));
 
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
@@ -304,8 +313,10 @@ public class Robot extends TimedRobot {
         trg_emergencyBarf.whileTrue(
             m_superstructure.emergencyBarf()
         );
-        
-        trg_shimmy.whileTrue(m_superstructure.shimmy());
+
+        trg_shimmy.whileTrue(m_superstructure.intakeArmShimmy());
+
+        trg_swerveShimmy.whileTrue(m_drivetrain.swerveShimmy(() -> m_shooter.getCurrentTarget()));
 
         trg_unjam.whileTrue(
             m_superstructure.unjamCmd()
@@ -333,30 +344,7 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
-        /* GENERATED SWERVE BINDS */
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
-        m_drivetrain.setDefaultCommand(driveCommand(RobotK.kRobotSpeedIntakingLimit));
-
-        // Idle while the robot is disabled. This ensures the configured
-        // neutral mode is applied to the drive motors while disabled.
-        final var idle = new SwerveRequest.Idle();
-        RobotModeTriggers.disabled().whileTrue(
-            m_drivetrain.applyRequest(() -> idle).ignoringDisable(true)
-        );
-
-        // Reset the field-centric heading on left bumper press.
-        m_driver.leftBumper().and(trg_manipOverride.negate()).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
-
-        m_drivetrain.registerTelemetry(logger::telemeterize);
-
-        
-        // Run SysId routines when holding back/start and X/Y.
-        // Note that each routine should be run exactly once in a single log.
-        // m_driver.back().and(m_driver.y()).whileTrue(m_drivetrain.sysIdDynamic(Direction.kForward));
-        // m_driver.back().and(m_driver.x()).whileTrue(m_drivetrain.sysIdDynamic(Direction.kReverse));
-        // m_driver.start().and(m_driver.y()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kForward));
-        // m_driver.start().and(m_driver.x()).whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kReverse));
+        configureBindings();
     }
 
     private void configureTestingDashboard() {
@@ -386,7 +374,7 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         m_periodicTracer.addEpoch("Entry (Unused Time)");
-        CommandScheduler.getInstance().run(); 
+        CommandScheduler.getInstance().run();
         m_periodicTracer.addEpoch("CommandScheduler");
 
 
@@ -426,7 +414,7 @@ public class Robot extends TimedRobot {
         // );
 
         /* for the mechanism2D in 3D, drag all 3 mechanisms2ds onto the robot pose
-        and also log the shooter position pose */ 
+        and also log the shooter position pose */
         // m_periodicTracer.printEpochs();
     }
 
@@ -496,7 +484,7 @@ public class Robot extends TimedRobot {
     @Override
     public void testInit() {
         CommandScheduler.getInstance().cancelAll();
-        
+
         CommandScheduler.getInstance().schedule(
             Commands.sequence(
                 m_drivetrain.runOnce(m_drivetrain::seedFieldCentric),
@@ -520,7 +508,7 @@ public class Robot extends TimedRobot {
                 m_drivetrain.applyRequest(() ->
                     drive.withVelocityX(0)
                         .withVelocityY(0)
-                        .withRotationalRate(kMaxAngularRate)
+                        .withRotationalRate(kDriverMaxAngularRate)
                 ),
                 Commands.waitSeconds(2.5),
                 m_drivetrain.xBrake(),

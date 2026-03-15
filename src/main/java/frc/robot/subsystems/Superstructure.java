@@ -35,7 +35,7 @@ public class Superstructure extends SubsystemBase {
 
     private HashSet<String> m_activeOverrideCommands = new HashSet<>();
     private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
-    
+
     /* CONSTRUCTOR */
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
         m_intake = intake;
@@ -94,7 +94,7 @@ public class Superstructure extends SubsystemBase {
                 m_shooter.setTurretPos(Rotations.of(-0.250));
                 m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
                 m_indexer.setSpindexerVelocity(isPassing.getAsBoolean() ? Constants.IndexerK.kSpindexerShootRPS : Constants.IndexerK.kSpindexerIntakeRPS);
-            }, 
+            },
             () -> {
                 if (m_intake.getIntakeArmStatorCurrent() < 40) {
                     Commands.run(() -> m_shooter.setShotCalcCmd(true));
@@ -142,7 +142,7 @@ public class Superstructure extends SubsystemBase {
     public Command activateOuttake(AngularVelocity RPS) {
         Command logCommand;
         if (RPS == ShooterK.kShooterRPS) {
-            logCommand = logActiveCommands("shooting", "deactivateOuttake", "emergencyDump");   
+            logCommand = logActiveCommands("shooting", "deactivateOuttake", "emergencyDump");
         } else {
             logCommand = logActiveCommands("emergencyDump", "shooting", "deactivateOuttake");
         }
@@ -194,7 +194,7 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
-    public Command shimmy() {
+    public Command intakeArmShimmy() {
        return m_intake.shimmy();
     }
 
