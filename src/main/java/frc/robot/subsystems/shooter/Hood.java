@@ -34,7 +34,7 @@ public class Hood extends SubsystemBase {
     private final DoubleLogger log_hoodControlPos = WaltLogger.logDouble("Shooter/Hood", "hoodControlPos");
     private final DoubleLogger log_hoodCurrentPos = WaltLogger.logDouble("Shooter/Hood", "hoodCurrentPos");
 
-    private Debouncer m_currentDebouncer = new Debouncer(0.125, DebounceType.kRising);
+    private Debouncer m_currentDebouncer = new Debouncer(0.100, DebounceType.kRising);
     private Debouncer m_velocityDebouncer = new Debouncer(0.125, DebounceType.kRising);
 
     private BooleanSupplier m_currentSpike = () -> m_hood.getStatorCurrent().getValueAsDouble() > 10.0;

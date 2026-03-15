@@ -6,6 +6,7 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CommutationConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.ExternalFeedbackConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
@@ -117,12 +118,10 @@ public class Constants {
 
         //---HOOD CONSTANTS
         public static final double kHoodMoI = 0.00027505;
-        public static final double kHoodEncoderGearing = 360/40.0;
 
         //i geniunely dont know if these are right bro like ARGHHHH
-        public static final Angle kHoodMinPosition = Rotations.of(0);
-        public static final Angle kHoodSafeDegs = Degrees.of(11);
-        private static final Angle kHoodMaxRots = Rotations.of(1.812988).div(kHoodGearing); //apparently this is 26 or 27 degrees? idk thats where we're telling it to go sooo..
+        public static final Angle kHoodMinPosition = Rotations.of(0.1);
+        private static final Angle kHoodMaxRots = Rotations.of(1.82195); //apparently this is 26 or 27 degrees? idk thats where we're telling it to go sooo..
         public static final Angle kHoodMaxDegs = Degrees.of(kHoodMaxRots.in(Degrees));
         //TODO: ensure this is the home value
         // public static final Angle kHoodHomePosition = Degrees.of(10);
@@ -196,12 +195,39 @@ public class Constants {
                 .withVoltage(kShooterAVoltageConfigs);
 
         //---HOOD
-        private static final MagnetSensorConfigs kHoodEncoderMagnetSensorConfigs = new MagnetSensorConfigs()
-            .withMagnetOffset(Rotations.of(-0.0068359375))
-            .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
-            .withAbsoluteSensorDiscontinuityPoint(Rotations.of(1));
-        public static final CANcoderConfiguration kHoodEncoderConfiguration = new CANcoderConfiguration()
-            .withMagnetSensor(kHoodEncoderMagnetSensorConfigs);
+        private static final Slot0Configs kHoodSlot0Configs = new Slot0Configs()
+            .withKP(29)
+            .withKI(0)
+            .withKD(0)
+            .withKS(0.5)
+            .withKV(4)
+            .withKA(0)
+            .withKG(0);
+        private static final CurrentLimitsConfigs kHoodCurrentLimitConfig = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(30)
+            .withSupplyCurrentLimit(15)
+            .withSupplyCurrentLowerLimit(5)
+            .withSupplyCurrentLowerTime(1)
+            .withStatorCurrentLimitEnable(true)
+            .withSupplyCurrentLimitEnable(true);
+        private static final MotorOutputConfigs kHoodOutputConfigs = new MotorOutputConfigs()
+            .withInverted(InvertedValue.Clockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Brake);
+        private static final VoltageConfigs kHoodVoltageConfigs = new VoltageConfigs()
+            .withPeakForwardVoltage(16)
+            .withPeakReverseVoltage(-16);
+        private static final CommutationConfigs kHoodCommutationConfigs = new CommutationConfigs()
+            .withAdvancedHallSupport(AdvancedHallSupportValue.Enabled)
+            .withMotorArrangement(MotorArrangementValue.NEO550_JST);
+        private static final ExternalFeedbackConfigs kHoodFeedbackConfigs = new ExternalFeedbackConfigs()
+            .withSensorToMechanismRatio(kHoodGearing);
+        public static final TalonFXSConfiguration kHoodTalonFXSConfiguration = new TalonFXSConfiguration()
+            .withSlot0(kHoodSlot0Configs)
+            .withCurrentLimits(kHoodCurrentLimitConfig)
+            .withMotorOutput(kHoodOutputConfigs)
+            .withExternalFeedback(kHoodFeedbackConfigs)
+            .withVoltage(kHoodVoltageConfigs)
+            .withCommutation(kHoodCommutationConfigs);
 
         //---TURRET
         private static final Slot0Configs kTurretSlot0Configs = new Slot0Configs()
@@ -213,10 +239,10 @@ public class Constants {
             .withKD(5); // OLD: kP was too low making the slope less steep, kS kV and kA were causing rlly weird behavior (jumping up/down way further than targeted position)
         private static final CurrentLimitsConfigs kTurretCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(55)
-            .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimit(55)
             .withSupplyCurrentLowerLimit(15)
             .withSupplyCurrentLowerTime(1.0) // drop to 15A after 1 second
+            .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kTurretOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive)
@@ -243,36 +269,6 @@ public class Constants {
             .withSoftwareLimitSwitch(kTurretSoftwareLimitSwitchConfigs)
             .withFeedback(kTurretFeedbackConfigs)
             .withVoltage(kTurretVoltageConfigs);
-
-
-        private static final Slot0Configs kHoodSlot0Configs = new Slot0Configs()
-            .withKP(29)
-            .withKI(0)
-            .withKD(0)
-            .withKS(0.5)
-            .withKV(4)
-            .withKA(0)
-            .withKG(0);
-        private static final CurrentLimitsConfigs kHoodCurrentLimitConfig = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(30)
-            .withSupplyCurrentLimit(15)
-            .withSupplyCurrentLowerLimit(5)
-            .withSupplyCurrentLowerTime(1);
-        private static final MotorOutputConfigs kOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.Clockwise_Positive)
-            .withNeutralMode(NeutralModeValue.Brake);
-        private static final VoltageConfigs kHoodVoltageConfigs = new VoltageConfigs()
-            .withPeakForwardVoltage(16)
-            .withPeakReverseVoltage(-16);
-        private static final CommutationConfigs kHoodCommutationConfigs = new CommutationConfigs()
-            .withAdvancedHallSupport(AdvancedHallSupportValue.Enabled)
-            .withMotorArrangement(MotorArrangementValue.NEO550_JST);
-        public static final TalonFXSConfiguration kHoodTalonFXSConfiguration = new TalonFXSConfiguration()
-            .withSlot0(kHoodSlot0Configs)
-            .withCurrentLimits(kHoodCurrentLimitConfig)
-            .withMotorOutput(kOutputConfigs)
-            .withVoltage(kHoodVoltageConfigs)
-            .withCommutation(kHoodCommutationConfigs);
 
         //Left, Center (Climb), Center (Hub), Right - Driver POV
         public static final Pose2d kShooterOverridePose[] = {

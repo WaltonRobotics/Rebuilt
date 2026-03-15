@@ -8,6 +8,7 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.StaticBrake;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.hardware.TalonFXS;
 
@@ -17,6 +18,8 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
+import com.reduxrobotics.canand.CanandEventLoop;
+import com.reduxrobotics.sensors.canandmag.Canandmag;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -96,8 +99,11 @@ public class Shooter extends SubsystemBase {
     private final TalonFX m_shooterB = new TalonFX(kShooterB_CANID, Constants.kCanivoreBus); // X60Foc
     private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(false);
     private final NeutralOut m_neutralOutReq = new NeutralOut();
+    
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); // X44Foc
+    private final CANcoder m_turretEncoderA = new CANcoder(19, Constants.kCanivoreBus);
+    private final Canandmag m_turretEncoderB = new Canandmag(1);
     private final PositionVoltage m_PVRequest = new PositionVoltage(0).withEnableFOC(true);
     private final VoltageOut m_VoltageReq = new VoltageOut(0);
     private final StaticBrake m_BrakeReq = new StaticBrake();
@@ -177,7 +183,7 @@ public class Shooter extends SubsystemBase {
 
     StatusSignal<Double> sig_shooterCLErr = m_shooterA.getClosedLoopError();
 
-    private final Command m_homingCommand = homingCmds();
+    private final Command m_homingCommand = turretHomingCmd();
 
     /* CONSTRUCTOR */
     public Shooter(Supplier<Pose2d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
@@ -188,6 +194,11 @@ public class Shooter extends SubsystemBase {
 
         m_shooterB.setControl(new Follower(kShooterA_CANID, MotorAlignmentValue.Opposed));
 
+        m_turretEncoderA.getConfigurator();
+        m_turretEncoderB.setPartyMode(5);
+
+        CanandEventLoop.getInstance();
+
         sig_shooterCLErr.setUpdateFrequency(Hertz.of(50));
 
         Angle turretTurnPosition = m_turret.getPosition().getValue();
@@ -195,7 +206,7 @@ public class Shooter extends SubsystemBase {
 
         m_poseSupplier = poseSupplier;
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
-        // setDefaultCommand(m_homingCommand);
+        setDefaultCommand(m_homingCommand);
 
         m_turretVisualizer = new TurretVisualizer(
                 () -> new Pose3d(m_poseSupplier.get().rotateAround(

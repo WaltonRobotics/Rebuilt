@@ -163,7 +163,7 @@ public class Robot extends TimedRobot {
     public Robot() {
         configureBindings();
         configureTestBindings();    //this should be commented out during competition matches
-        configureTestingDashboard();
+        // configureTestingDashboard();
 
         lastGotTagMsmtTimer.start();
         if (Robot.isSimulation()) {
