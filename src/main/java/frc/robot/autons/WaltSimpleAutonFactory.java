@@ -159,9 +159,7 @@ public class WaltSimpleAutonFactory {
         return preload_oneSweep(true);
     }
 
-    //OVERALL TODO: clean up code and combine no preload w/ preload (and left/right) into one method
-    //TODO: find better name for this
-    public Command oneCycleGoInNow(boolean left, boolean optimized) {
+    public Command firstSweep_NoPreload(boolean left, boolean optimized) {
         // String regPath = left ? AutonK.kLeftSweepPathName : AutonK.kRightSweepPathName;
         String path = left ? AutonK.kLeftOptimizedSweepPathName : AutonK.kRightOptimizedSweepPathName;
 
@@ -211,7 +209,7 @@ public class WaltSimpleAutonFactory {
         String path = left ? AutonK.kLeftTwoSweepName : AutonK.kRightTwoSweepName;
 
         return Commands.sequence(
-            oneCycleGoInNow(left, true),
+            firstSweep_NoPreload(left, true),
             Commands.parallel(
                 Commands.sequence(
                     Commands.waitSeconds(2),
