@@ -76,7 +76,7 @@ public class Constants {
             log_turretTransform.accept(kTurretTransform);
         }
 
-        public static final Distance kFlywheelRadius = Inches.of(1.5); 
+        public static final Distance kFlywheelRadius = Inches.of(1.5);
 
         public static final int kHopperCapacity = 55; //TODO: find true max
 
@@ -100,16 +100,15 @@ public class Constants {
         public static final int kPeakShooterVolts = 16;
 
         public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.75); //0.75 rots in each direction from home
-        public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.magnitude());
-        public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.magnitude());
+        public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.in(Rotations));
+        public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.in(Rotations));
 
         public static final AngularVelocity kShooterMaxRPS = MotorK.kX60MaxVelocity.div(kShooterGearing);
         public static final AngularVelocity kShooterRPS = kShooterMaxRPS.times(0.65);   //Kraken X60Foc Max (RPM: 5785) //(0.9)
         public static final AngularVelocity kShooterAutonCloseRPS = kShooterMaxRPS.times(0.60);  //auton pose is closer to the hub than teleop scoring
         public static final AngularVelocity kShooterAuton_EndSweep_RPS = kShooterMaxRPS.times(0.70); // end of sweep paths
-
-        public static final AngularVelocity kShooterBarfRPS = RotationsPerSecond.of((5785/60) * (0.2) / kShooterGearing);
-        public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.of(/* 0/60 * (0.9) / kShooterGearing */ 0);
+        public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.2);
+        public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.zero();
 
         //---HOOD CONSTANTS
         public static final double kHoodMoI = 0.00027505;
@@ -119,7 +118,7 @@ public class Constants {
         // servo to hood: 300 : 0 || 0 : 40
         // hood to encoder: 0 : 0 || 40 : 0.9451 (340.236)
         // servo to encoder: 300 : 0 || 0 : 0.9451 (340.236)
-        public static final Angle kHoodMinDegs = Degrees.of(0); // 0 = 0 (encoder wise i believe)
+        public static final Angle kHoodMinDegs = Degrees.zero(); // 0 = 0 (encoder wise i believe)
         public static final Angle kHoodSafeDegs = Degrees.of(1);
         public static final Angle kHoodMaxDegs = Degrees.of(37);    // 40 = 0.9451 (encoder wise i believe)
         public static final Angle kHoodEncoderMaxDegs = Degrees.of(Rotations.of(0.9451).in(Degrees));
@@ -340,7 +339,7 @@ public class Constants {
         public static final double kIntakeRollersMOI = 0.0001; // 0.00343880857
         public static final double kIntakeRollersGearing = 12.0/30;
 
-        public static final AngularVelocity kIntakeRollersMaxRPS = RotationsPerSecond.of((5785 / 60) / kIntakeRollersGearing * 1.0);  //0.8
+        public static final AngularVelocity kIntakeRollersMaxRPS = MotorK.kX60FOCMaxVelocity.div(kIntakeRollersGearing);
 
         /* IDS */
         public static final int kIntakeArmCANID = 40;
@@ -427,10 +426,10 @@ public class Constants {
       
         public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60MaxVelocity.div(kSpindexerGearing);
         public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
-        public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(1.0);   //0.7
+        public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(1.0);
 
         public static final AngularVelocity kTunnelMaxRPS = MotorK.kX44MaxVelocity.div(kTunnelGearing);
-        public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(1.0); //0.65
+        public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(1.0);
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
