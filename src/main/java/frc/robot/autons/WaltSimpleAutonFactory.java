@@ -2,6 +2,7 @@ package frc.robot.autons;
 
 import static frc.robot.Constants.ShooterK.kShooterAutonCloseRPS;
 import static frc.robot.Constants.ShooterK.kShooterAuton_EndSweep_RPS;
+import static frc.robot.Constants.AutonK.*;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -13,6 +14,7 @@ import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
+import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
@@ -24,7 +26,8 @@ public class WaltSimpleAutonFactory {
     private final Shooter m_shooter;
     private final Swerve m_swerve;
 
-    private final DoubleLogger log_autonState = WaltLogger.logDouble("Auton", "State");
+    private final DoubleLogger log_autonState = WaltLogger.logDouble(kLogTab, "State");
+    private final BooleanLogger log_isCycleOneDone = WaltLogger.logBoolean(kLogTab, "isCycleOneDone");
 
     public WaltSimpleAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter, Swerve swerve) {
         m_superstructure = superstructure;
@@ -157,6 +160,8 @@ public class WaltSimpleAutonFactory {
         return preload_oneSweep(true);
     }
 
+    private boolean isDoneWithOneCycle = false;
+
     //OVERALL TODO: clean up code and combine no preload w/ preload (and left/right) into one method
     //TODO: find better name for this
     public Command oneCycleGoInNow(boolean left, boolean optimized) {
@@ -173,7 +178,7 @@ public class WaltSimpleAutonFactory {
                 homingCmd().andThen(
                     tp("goInNow.homing.END"),
                     logState(0.1),
-                    Commands.waitSeconds(0.0001),                    
+                    // Commands.waitSeconds(0.0001),
                     logState(0.2),
                     tp("goInNow.intake.START"),
                     m_superstructure.intake(() -> false).withTimeout(AutonK.kIntakeTimeout).asProxy(),
@@ -213,12 +218,12 @@ public class WaltSimpleAutonFactory {
             Commands.parallel(
                 Commands.sequence(
                     Commands.waitSeconds(2),
-                    m_superstructure.intake(() -> false).withTimeout(4).asProxy()
+                    m_superstructure.intake(() -> false).asProxy().withTimeout(4)
                 ),
                 runTraj(path, AutonK.kTwoSweepMaxTime)
             ),
             Commands.deadline(
-                shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout),
+                shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout).asProxy(),
                 Commands.sequence(
                     Commands.waitSeconds(2.75),
                     m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED).asProxy()

@@ -66,9 +66,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
 
-    private final PIDController m_pathXController = new PIDController(7.7, 0, 0);
-    private final PIDController m_pathYController = new PIDController(7.7, 0, 0);
-    private final PIDController m_pathThetaController = new PIDController(7, 0, 0);
+    private final PIDController m_pathXController = new PIDController(4.69, 0, 0);
+    private final PIDController m_pathYController = new PIDController(4.69, 0, 0);
+    private final PIDController m_pathThetaController = new PIDController(4.68, 0, 0);
     private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds = new SwerveRequest.ApplyFieldSpeeds()
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.Position);

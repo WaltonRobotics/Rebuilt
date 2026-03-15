@@ -494,6 +494,8 @@ public class Constants {
     }
 
     public static class AutonK {
+        public static final String kLogTab = "Auton";
+
         public static final Pose2d kRightNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
             Meters.of(2.251265048980713), new Rotation2d(0));
         public static final Pose2d kRightDepotPose = new Pose2d(Meters.of(1.1576627492904663), 

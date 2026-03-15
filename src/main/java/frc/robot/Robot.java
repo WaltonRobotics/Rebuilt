@@ -505,7 +505,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        m_autonomousCommand = AutonChooser.m_chooser.getSelected().autonCommand;
+        m_autonomousCommand = AutonChooser.m_chooser.getSelected().autonCommand.withTimeout(20.3);
 
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
