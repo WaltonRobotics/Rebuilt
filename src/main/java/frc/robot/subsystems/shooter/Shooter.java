@@ -175,7 +175,7 @@ public class Shooter extends SubsystemBase {
 
     StatusSignal<Double> sig_shooterCLErr = m_shooterA.getClosedLoopError();
 
-    private final Command m_homingCommand = turretHomingCmd();
+    private final Command m_homingCommand = homingCmds();
 
     /* CONSTRUCTOR */
     public Shooter(Supplier<Pose2d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
@@ -676,5 +676,12 @@ public class Shooter extends SubsystemBase {
         };
 
         return new FunctionalCommand(init, () -> {}, end, isFinished, this);
+    }
+
+    public Command homingCmds() {
+        return Commands.sequence(
+            hoodCurrentSenseHomingCmd().asProxy(),
+            turretHomingCmd().asProxy()
+        );
     }
 }
