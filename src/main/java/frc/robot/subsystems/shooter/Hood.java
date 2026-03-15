@@ -68,6 +68,10 @@ public class Hood extends SubsystemBase {
     private Angle getHoodAngle() {
         return m_hood.getPosition().getValue();
     }
+    
+    public boolean isHoodHomed() {
+        return m_isHoodHomed;
+    }
 
     public Command hoodCurrentSenseHomingCmd(){
         Runnable init = () -> {

@@ -42,7 +42,7 @@ public class Superstructure extends SubsystemBase {
     private HashSet<String> m_activeOverrideCommands = new HashSet<>();
     private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
 
-    private StringLogger log_shooterState = WaltLogger.logString(kLogTab, "ShooterState");
+    // private StringLogger log_shooterState = WaltLogger.logString(kLogTab, "ShooterState");
     
     /* CONSTRUCTOR */
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
@@ -58,24 +58,24 @@ public class Superstructure extends SubsystemBase {
      * @param pos the position to move deploy to.
      */
     public Command deactivateIntake(IntakeArmPosition pos) {
-        Command logCommand;
-        switch (pos) {
-            case SAFE:
-                if (m_intake.getIntakeArmStatorCurrent() < 40) {
-                    logCommand = logActiveCommands("safeIntake", "activateIntake", "retractIntake");
-                } else {
-                    return Commands.none();
-                }
-                break;
-            default:
-                logCommand = logActiveCommands("retractIntake", "activateIntake", "safeIntake");
-                break;
-        }
+        // Command logCommand;
+        // switch (pos) {
+        //     case SAFE:
+        //         if (m_intake.getIntakeArmStatorCurrent() < 40) {
+        //             logCommand = logActiveCommands("safeIntake", "activateIntake", "retractIntake");
+        //         } else {
+        //             return Commands.none();
+        //         }
+        //         break;
+        //     default:
+        //         // logCommand = logActiveCommands("retractIntake", "activateIntake", "safeIntake");
+        //         break;
+        // }
         return Commands.sequence(
             m_intake.stopIntakeRollers(),
             m_intake.setIntakeArmPosCmd(pos),
-            m_indexer.stopSpindexerCmd(),
-            logCommand
+            m_indexer.stopSpindexerCmd()
+            // logCommand
         );
     }
 
@@ -123,9 +123,9 @@ public class Superstructure extends SubsystemBase {
      * @param update message to update the SHOOTER logger
      * @return a Command that updates the logger
      */
-    public Command up(String update) {
-        return Commands.runOnce(() -> log_shooterState.accept(update));
-    }
+    // public Command up(String update) {
+    //     return Commands.runOnce(() -> log_shooterState.accept(update));
+    // }
 
     /**
      * Turns on spinner and exhaust and sets shooter speed to RPS.
@@ -134,7 +134,7 @@ public class Superstructure extends SubsystemBase {
      * @param RPS the speed for the shooter
      */
     public Command activateOuttake(Supplier<AngularVelocity> RPS) {
-        log_shooterState.accept("pre sequence");
+        // log_shooterState.accept("pre sequence");
         return Commands.sequence(
             // up("post sequence call"),
             m_shooter.setShooterVelocityCmdSupp(RPS),
@@ -151,12 +151,13 @@ public class Superstructure extends SubsystemBase {
             // up("pre repeating sequence"),
             Commands.repeatingSequence(
                 // up("in repeating sequence"),
-                Commands.waitUntil(() -> !m_shooter.isShooterSpunUp()), // block until un-spun
-                m_indexer.stopIndexerCmd(), // stop indexer
-                // up("restart indexer in repeating sequence"),
-                Commands.waitUntil(() -> m_shooter.isShooterSpunUp()), // block until spun
-                m_indexer.startIndexerCmd() // restart indexer
-                // up("end repeating sequence")
+                // Commands.waitUntil(() -> !m_shooter.isShooterSpunUp()), // block until un-spun
+                // m_indexer.stopIndexerCmd(), // stop indexer
+                // // up("restart indexer in repeating sequence"),
+                // Commands.waitUntil(() -> m_shooter.isShooterSpunUp()), // block until spun
+                // m_indexer.startIndexerCmd() // restart indexer
+                // // up("end repeating sequence")
+                Commands.print("cope sequence: INITIATED")
             )
             // up("post repeating sequence")
         )
@@ -175,35 +176,35 @@ public class Superstructure extends SubsystemBase {
      * @param RPS the speed for the shooter
      */
     public Command activateOuttakeShotCalc() {
-        log_shooterState.accept("pre sequence");
+        // log_shooterState.accept("pre sequence");
         return Commands.sequence(
-            up("post sequence call"),
+            // up("post sequence call"),
             m_shooter.shootFromCalc(),
-            up("post supplier command"),
+            // up("post supplier command"),
 
-            up("pre waituntil command"),
+            // up("pre waituntil command"),
             Commands.waitUntil(() -> m_shooter.isShooterSpunUp()),
-            up("post waituntil command"),
+            // up("post waituntil command"),
 
-            up("pre start indexer"),
+            // up("pre start indexer"),
             m_indexer.startIndexerCmd(),
-            up("post start indexer"),
+            // up("post start indexer"),
 
-            up("pre repeating sequence"),
+            // up("pre repeating sequence"),
             Commands.repeatingSequence(
-                up("in repeating sequence"),
-                m_indexer.stopIndexerCmd()
-                    .onlyIf(() -> !m_shooter.isShooterSpunUp())
-                    .andThen(m_indexer.startIndexerCmd()).beforeStarting(Commands.waitUntil(() -> m_shooter.isShooterSpunUp())),
-                up("end repeating sequence")
-            ),
-            up("post repeating sequence")
+                // up("in repeating sequence"),
+                // m_indexer.stopIndexerCmd()
+                //     .onlyIf(() -> !m_shooter.isShooterSpunUp())
+                //     .andThen(m_indexer.startIndexerCmd()).beforeStarting(Commands.waitUntil(() -> m_shooter.isShooterSpunUp()))
+                // up("end repeating sequence")
+                Commands.print("shotCalc cope sequence: INITIATED")
+            )
+            // up("post repeating sequence")
         )
-        .repeatedly()
         .finallyDo(
             () -> {
                 deactivateOuttake();
-                log_shooterState.accept("post deactivate outtake");
+                // log_shooterState.accept("post deactivate outtake");
             }
         );
     }
@@ -227,7 +228,7 @@ public class Superstructure extends SubsystemBase {
         m_shooter.setShooterVelocity(ShooterK.kShooterZeroRPS);
         // m_shooter.setHoodPosition(Degrees.of(1));
 
-        Commands.sequence(logActiveCommands("deactivateOuttake", "shooting", "emergencyDump"));
+        // Commands.sequence(logActiveCommands("deactivateOuttake", "shooting", "emergencyDump"));
     }
 
     public void deactivateOuttakeNOSHOOT() {
@@ -268,15 +269,15 @@ public class Superstructure extends SubsystemBase {
      * @param degs degrees to rotate to.
      */
     public Command turretTo(Angle degs) {
-        Command logCommand;
-        if (degs.magnitude() == 180) {
-            logCommand = logActiveOverrideCommands("turret180", "turret0");
-        } else {
-            logCommand = logActiveOverrideCommands("turret0", "turret180");
-        }
+        // Command logCommand;
+        // if (degs.magnitude() == 180) {
+        //     logCommand = logActiveOverrideCommands("turret180", "turret0");
+        // } else {
+        //     logCommand = logActiveOverrideCommands("turret0", "turret180");
+        // }
         return Commands.sequence(
-            m_shooter.setTurretPosCmd(Rotations.of(degs.in(Rotations))),
-            logCommand
+            m_shooter.setTurretPosCmd(Rotations.of(degs.in(Rotations)))
+            // logCommand
         );
     }
 
@@ -296,8 +297,8 @@ public class Superstructure extends SubsystemBase {
      */
     public Command startSpindexerCmd() {
         return Commands.sequence(
-            m_indexer.startSpindexerCmd(),
-            logActiveOverrideCommands("startSpindexerCmd", "stopSpindexerCmd")
+            m_indexer.startSpindexerCmd()
+            // logActiveOverrideCommands("startSpindexerCmd", "stopSpindexerCmd")
         );
     }
 
@@ -306,8 +307,8 @@ public class Superstructure extends SubsystemBase {
      */
     public Command stopSpindexerCmd() {
         return Commands.sequence(
-            m_indexer.stopSpindexerCmd(),
-            logActiveOverrideCommands("stopSpindexerCmd", "startSpindexerCmd")
+            m_indexer.stopSpindexerCmd()
+            // logActiveOverrideCommands("stopSpindexerCmd", "startSpindexerCmd")
         );
     }
 
@@ -338,8 +339,8 @@ public class Superstructure extends SubsystemBase {
      */
     public Command startTunnelCmd() {
         return Commands.sequence(
-            m_indexer.startTunnelCmd(),
-            logActiveOverrideCommands("startTunnelCmd", "stopTunnelCmd")
+            m_indexer.startTunnelCmd()
+            // logActiveOverrideCommands("startTunnelCmd", "stopTunnelCmd")
         );
     }
 
@@ -348,8 +349,8 @@ public class Superstructure extends SubsystemBase {
      */
     public Command stopTunnelCmd() {
         return Commands.sequence(
-            m_indexer.stopTunnelCmd(),
-            logActiveOverrideCommands("stopTunnelCmd", "startTunnelCmd")
+            m_indexer.stopTunnelCmd()
+            // logActiveOverrideCommands("stopTunnelCmd", "startTunnelCmd")
         );
     }
 
@@ -358,8 +359,8 @@ public class Superstructure extends SubsystemBase {
      */
     public Command startIntakeRollers() {
         return Commands.sequence(
-            m_intake.startIntakeRollers(),
-            logActiveOverrideCommands("startIntakeRollers", "stopIntakeRollers")
+            m_intake.startIntakeRollers()
+            // logActiveOverrideCommands("startIntakeRollers", "stopIntakeRollers")
         );
     }
 
@@ -368,8 +369,8 @@ public class Superstructure extends SubsystemBase {
      */
     public Command stopIntakeRollers() {
         return Commands.sequence(
-            m_intake.stopIntakeRollers(),
-            logActiveOverrideCommands("stopIntakeRollers", "startIntakeRollers")
+            m_intake.stopIntakeRollers()
+            // logActiveOverrideCommands("stopIntakeRollers", "startIntakeRollers")
         );
     }
 
@@ -379,80 +380,80 @@ public class Superstructure extends SubsystemBase {
      * @return
      */
     public Command intakeTo(IntakeArmPosition pos) {
-        Command logCommand;
-        switch (pos) {
-            case DEPLOYED:
-                logCommand = logActiveOverrideCommands("deployIntake", "safeIntake", "intakeUp");
-                break;
-            case SAFE:
-                logCommand = logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp");
-                break;
-            default:
-                if (m_intake.getIntakeArmStatorCurrent() < 40) {
-                    logCommand = logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake");
-                }
-                else {
-                   return Commands.none();
-                }
-                break;
-        }
-        return logCommand = Commands.sequence(
-            m_intake.setIntakeArmPosCmd(pos),
-            logCommand
-        );
-    }
-
-    /**
-     * Adds and removes specified Command names from the ActiveCommands ArrayList, then logs the ArrayList.
-     * @param toAdd Command name to add.
-     * @param toRemove Command names to remove.
-     */
-    private Command logActiveCommands(String toAdd, String... toRemove) {
-        Command addTo = Commands.runOnce(
-            () -> m_activeCommands.add(toAdd)
-        );
-        Command removeFrom = Commands.runOnce(
-            () -> {
-                for (String s : toRemove) {
-                    m_activeCommands.remove(s);
-                }
-            }
-        );
-        Command updateLog = Commands.runOnce(
-            () -> log_activeCommands.accept(m_activeCommands.toArray(new String[m_activeCommands.size()]))
-        );
-
+        // Command logCommand;
+        // switch (pos) {
+        //     case DEPLOYED:
+        //         logCommand = logActiveOverrideCommands("deployIntake", "safeIntake", "intakeUp");
+        //         break;
+        //     case SAFE:
+        //         logCommand = logActiveOverrideCommands("safeIntake", "deployIntake", "intakeUp");
+        //         break;
+        //     default:
+        //         if (m_intake.getIntakeArmStatorCurrent() < 40) {
+        //             logCommand = logActiveOverrideCommands("intakeUp", "safeIntake", "deployIntake");
+        //         }
+        //         else {
+        //            return Commands.none();
+        //         }
+        //         break;
+        // }
         return Commands.sequence(
-            addTo,
-            removeFrom,
-            updateLog
+            m_intake.setIntakeArmPosCmd(pos)
+            // logCommand
         );
     }
 
-    /**
-     * Adds and removes specified override Command names from the activeOverridesCommands ArrayList, then logs the ArrayList.
-     * @param toAdd override Command name to add.
-     * @param toRemove override Command names to remove.
-     */
-    private Command logActiveOverrideCommands(String toAdd, String... toRemove) {
-        Command addTo = Commands.runOnce(
-            () -> m_activeOverrideCommands.add(toAdd)   
-        );
-        Command removeFrom = Commands.runOnce(
-            () -> {
-                for (String s : toRemove) {
-                    m_activeOverrideCommands.remove(s);
-                }
-            }
-        );
-        Command updateLog = Commands.runOnce(
-            () -> log_activeOverrideCommands.accept(m_activeOverrideCommands.toArray(new String[m_activeOverrideCommands.size()]))
-        );
+    // /**
+    //  * Adds and removes specified Command names from the ActiveCommands ArrayList, then logs the ArrayList.
+    //  * @param toAdd Command name to add.
+    //  * @param toRemove Command names to remove.
+    //  */
+    // private Command logActiveCommands(String toAdd, String... toRemove) {
+    //     Command addTo = Commands.runOnce(
+    //         () -> m_activeCommands.add(toAdd)
+    //     );
+    //     Command removeFrom = Commands.runOnce(
+    //         () -> {
+    //             for (String s : toRemove) {
+    //                 m_activeCommands.remove(s);
+    //             }
+    //         }
+    //     );
+    //     Command updateLog = Commands.runOnce(
+    //         () -> log_activeCommands.accept(m_activeCommands.toArray(new String[m_activeCommands.size()]))
+    //     );
 
-        return Commands.sequence(
-            addTo,
-            removeFrom,
-            updateLog
-        );
-    }
+    //     return Commands.sequence(
+    //         addTo,
+    //         removeFrom,
+    //         updateLog
+    //     );
+    // }
+
+    // /**
+    //  * Adds and removes specified override Command names from the activeOverridesCommands ArrayList, then logs the ArrayList.
+    //  * @param toAdd override Command name to add.
+    //  * @param toRemove override Command names to remove.
+    //  */
+    // private Command logActiveOverrideCommands(String toAdd, String... toRemove) {
+    //     Command addTo = Commands.runOnce(
+    //         () -> m_activeOverrideCommands.add(toAdd)   
+    //     );
+    //     Command removeFrom = Commands.runOnce(
+    //         () -> {
+    //             for (String s : toRemove) {
+    //                 m_activeOverrideCommands.remove(s);
+    //             }
+    //         }
+    //     );
+    //     Command updateLog = Commands.runOnce(
+    //         () -> log_activeOverrideCommands.accept(m_activeOverrideCommands.toArray(new String[m_activeOverrideCommands.size()]))
+    //     );
+
+    //     return Commands.sequence(
+    //         addTo,
+    //         removeFrom,
+    //         updateLog
+    //     );
+    // }
 }

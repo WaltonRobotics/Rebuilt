@@ -14,6 +14,7 @@ import static frc.robot.Constants.ShooterK.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
@@ -49,41 +50,56 @@ public class ShotCalculator {
         minDistance = 0.0;
         maxDistance = 5.0;
 
-        m_shotMap.put(5.34, new ShotData(RotationsPerSecond.of(2900 / 60), Degrees.of(27)));
-        m_timeOfFlightMap.put(5.34, 1.30);
+        // m_shotMap.put(5.34, new ShotData(RotationsPerSecond.of(2900 / 60), Degrees.of(27)));
+        // m_timeOfFlightMap.put(5.34, 1.30);
 
-        m_shotMap.put(4.90, new ShotData(RotationsPerSecond.of(2700 / 60), Degrees.of(26)));
-        m_timeOfFlightMap.put(4.90, 1.42);
+        // m_shotMap.put(4.90, new ShotData(RotationsPerSecond.of(2700 / 60), Degrees.of(26)));
+        // m_timeOfFlightMap.put(4.90, 1.42);
 
-        m_shotMap.put(4.44, new ShotData(RotationsPerSecond.of(2820 / 60), Degrees.of(25.5)));
-        m_timeOfFlightMap.put(4.44, 1.34);
+        // m_shotMap.put(4.44, new ShotData(RotationsPerSecond.of(2820 / 60), Degrees.of(25.5)));
+        // m_timeOfFlightMap.put(4.44, 1.34);
 
-        m_shotMap.put(4.05, new ShotData(RotationsPerSecond.of(2800 / 60), Degrees.of(25)));
-        m_timeOfFlightMap.put(4.05, 1.36);
+        // m_shotMap.put(4.05, new ShotData(RotationsPerSecond.of(2800 / 60), Degrees.of(25)));
+        // m_timeOfFlightMap.put(4.05, 1.36);
 
-        m_shotMap.put(3.74, new ShotData(RotationsPerSecond.of(2750 / 60), Degrees.of(24)));
-        m_timeOfFlightMap.put(3.74, 1.21);
+        // m_shotMap.put(3.74, new ShotData(RotationsPerSecond.of(2750 / 60), Degrees.of(24)));
+        // m_timeOfFlightMap.put(3.74, 1.21);
 
-        m_shotMap.put(3.42, new ShotData(RotationsPerSecond.of(2700 / 60), Degrees.of(23)));
-        m_timeOfFlightMap.put(3.42, 1.40);
+        // m_shotMap.put(3.42, new ShotData(RotationsPerSecond.of(2700 / 60), Degrees.of(23)));
+        // m_timeOfFlightMap.put(3.42, 1.40);
 
-        m_shotMap.put(3.06, new ShotData(RotationsPerSecond.of(2610 / 60), Degrees.of(22)));
-        m_timeOfFlightMap.put(3.06, 1.38);
+        // m_shotMap.put(3.06, new ShotData(RotationsPerSecond.of(2610 / 60), Degrees.of(22)));
+        // m_timeOfFlightMap.put(3.06, 1.38);
 
-        m_shotMap.put(2.73, new ShotData(RotationsPerSecond.of(2500 / 60), Degrees.of(20.5)));
-        m_timeOfFlightMap.put(2.73, 1.34);
+        // m_shotMap.put(2.73, new ShotData(RotationsPerSecond.of(2500 / 60), Degrees.of(20.5)));
+        // m_timeOfFlightMap.put(2.73, 1.34);
 
-        m_shotMap.put(2.45, new ShotData(RotationsPerSecond.of(2450 / 60), Degrees.of(19.5)));
-        m_timeOfFlightMap.put(2.45, 1.28);
+        // m_shotMap.put(2.45, new ShotData(RotationsPerSecond.of(2450 / 60), Degrees.of(19.5)));
+        // m_timeOfFlightMap.put(2.45, 1.28);
 
-        m_shotMap.put(2.14, new ShotData(RotationsPerSecond.of(2400 / 60), Degrees.of(18)));
-        m_timeOfFlightMap.put(2.14, 1.31);
+        // m_shotMap.put(2.14, new ShotData(RotationsPerSecond.of(2400 / 60), Degrees.of(18)));
+        // m_timeOfFlightMap.put(2.14, 1.31);
 
-        m_shotMap.put(1.86, new ShotData(RotationsPerSecond.of(2350 / 60), Degrees.of(17)));
-        m_timeOfFlightMap.put(1.86, 1.24);
+        // m_shotMap.put(1.86, new ShotData(RotationsPerSecond.of(2350 / 60), Degrees.of(17)));
+        // m_timeOfFlightMap.put(1.86, 1.24);
 
-        m_shotMap.put(1.55, new ShotData(RotationsPerSecond.of(2275 / 60), Degrees.of(15)));
-        m_timeOfFlightMap.put(1.55, 1.23);
+        // m_shotMap.put(1.55, new ShotData(RotationsPerSecond.of(2275 / 60), Degrees.of(15)));
+        // m_timeOfFlightMap.put(1.55, 1.23);
+
+        m_shotMap.put(5.657, new ShotData(RotationsPerSecond.of(83.80), Degrees.of(522.76)));
+        m_timeOfFlightMap.put(5.657, 1.30);
+
+        m_shotMap.put(2.818, new ShotData(RotationsPerSecond.of(61.81), Degrees.of(410.63)));
+        m_timeOfFlightMap.put(2.818, 1.12);
+
+        m_shotMap.put(3.420, new ShotData(RotationsPerSecond.of(66.51), Degrees.of(410.63)));
+        m_timeOfFlightMap.put(3.420, 1.14);
+
+        m_shotMap.put(3.074, new ShotData(RotationsPerSecond.of(63.20), Degrees.of(505.57)));
+        m_timeOfFlightMap.put(3.074, 1.05);
+
+        m_shotMap.put(0.94, new ShotData(RotationsPerSecond.of(56), Degrees.of(71)));
+        m_timeOfFlightMap.put(0.94, 1.00);
     }
 
     /**
@@ -94,7 +110,8 @@ public class ShotCalculator {
      * @return the distance between the Robot and the Target
      */
     public static Distance getDistanceToTarget(Pose2d robot, Translation3d target) {
-        Distance dist = Meters.of(robot.getTranslation().getDistance(target.toTranslation2d()));
+        Pose3d turretPose = new Pose3d(robot).transformBy(kTurretTransform);
+        Distance dist = Meters.of(turretPose.getTranslation().toTranslation2d().getDistance(target.toTranslation2d()));
         log_distToTargetMeters.accept(dist.magnitude());
         return dist;
     }

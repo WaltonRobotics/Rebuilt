@@ -112,6 +112,8 @@ public class Shooter extends SubsystemBase {
     // private final PositionVoltage m_hoodPVRequest = new PositionVoltage(0).withEnableFOC(false);
     // private final VoltageOut m_hoodZeroReq = new VoltageOut(0);
 
+    private final Hood m_hood = new Hood();
+
     private final DigitalInput m_turretHomingHall = new DigitalInput(2);
     private final Trigger trg_homingHallDirect = new Trigger(homingEventLoop, () -> !m_turretHomingHall.get());
     private final BooleanLogger log_turretHomingHall = new BooleanLogger(kLogTab, "turretHomeHall");
@@ -267,7 +269,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command shootFromCalc() {
-        return run(() -> setShooterVelocity(m_calcFlywheelVelocity.get()));
+        return runOnce(() -> setShooterVelocity(m_calcFlywheelVelocity.get()));
     }
 
     public void setShooterVelocity(AngularVelocity RPS) {
@@ -514,7 +516,7 @@ public class Shooter extends SubsystemBase {
         // iterativeMovingShotFromInterpolationMap method
         // The Calculated shot itself, according to the current robotPose, robotSpeeds,
         // and the currentTarget
-        ShotData calculatedShot = ShotCalculator.iterativeMovingShotFromFunnelClearance(robotPose, fieldSpeeds,
+        ShotData calculatedShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(robotPose, fieldSpeeds,
                 m_currentTarget, 3);
         m_periodicTracer.addEpoch("calculateShot/iterativeMovingShot");
 
@@ -540,7 +542,7 @@ public class Shooter extends SubsystemBase {
             }
         }
         // Sets the HoodPosition to the Calculated HoodAngle
-        // setHoodPosition(Degrees.of(calculatedShot.getHoodAngle().in(Degrees)));
+        // m_hood.setHoodPos(Degrees.of(calculatedShot.getHoodAngle().in(Degrees)));
 
         m_calcTurret = azimuthAngle;
         m_calcFlywheelVelocity = () -> ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(),
@@ -607,7 +609,7 @@ public class Shooter extends SubsystemBase {
         m_currentTarget = calculateTarget(pose);
         log_globalShotTarget.accept(m_currentTarget);
 
-        if (m_isTurretHomed) {
+        if (m_isTurretHomed && m_hood.isHoodHomed()) {
             calcAndSetShot(pose, true, turretTurnPosition);
             m_periodicTracer.addEpoch("Calculating Shot");
         }

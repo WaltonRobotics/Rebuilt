@@ -46,7 +46,7 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.dashboards.AutonChooser;
-import frc.robot.dashboards.TestingDashboard;
+// import frc.robot.dashboards.TestingDashboard;
 import frc.robot.autons.WaltAutonFactory;
 import frc.robot.autons.WaltSimpleAutonFactory;
 import frc.robot.generated.TunerConstants;
@@ -145,16 +145,18 @@ public class Robot extends TimedRobot {
 
     private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble(kLogTab, "MiniPC current");
 
-    private final BooleanLogger log_isDisabled = WaltLogger.logBoolean(kLogTab, "is robot disabled");
+    //DRIVERSTATION LOGS TELL US
+    // private final BooleanLogger log_isDisabled = WaltLogger.logBoolean(kLogTab, "is robot disabled");
 
-    private final StringLogger log_currentShift = WaltLogger.logString("Util/Shift", "currentShift");
-    private final DoubleLogger log_elapsedTime = WaltLogger.logDouble("Util/Shift", "elapsedTime");
-    private final DoubleLogger log_remainingTime = WaltLogger.logDouble("Util/Shift", "currentTime");
-    private final BooleanLogger log_isActive = WaltLogger.logBoolean("Util/Shift", "isActive");
-    private final StringLogger log_currentFudgedShift = WaltLogger.logString("Util/Shift", "currentFudgedShift");
-    private final DoubleLogger log_elapsedFudgedTime = WaltLogger.logDouble("Util/Shift", "elapsedFudgedTime");
-    private final DoubleLogger log_remainingFudgedTime = WaltLogger.logDouble("Util/Shift", "currentFudgedTime");
-    private final BooleanLogger log_isActiveFudged = WaltLogger.logBoolean("Util/Shift", "isActiveFudged");
+    //NOT DISPLAYING
+    // private final StringLogger log_currentShift = WaltLogger.logString("Util/Shift", "currentShift");
+    // private final DoubleLogger log_elapsedTime = WaltLogger.logDouble("Util/Shift", "elapsedTime");
+    // private final DoubleLogger log_remainingTime = WaltLogger.logDouble("Util/Shift", "currentTime");
+    // private final BooleanLogger log_isActive = WaltLogger.logBoolean("Util/Shift", "isActive");
+    // private final StringLogger log_currentFudgedShift = WaltLogger.logString("Util/Shift", "currentFudgedShift");
+    // private final DoubleLogger log_elapsedFudgedTime = WaltLogger.logDouble("Util/Shift", "elapsedFudgedTime");
+    // private final DoubleLogger log_remainingFudgedTime = WaltLogger.logDouble("Util/Shift", "currentFudgedTime");
+    // private final BooleanLogger log_isActiveFudged = WaltLogger.logBoolean("Util/Shift", "isActiveFudged");
 
     private final Tracer m_periodicTracer = new Tracer();
     private final Command m_preheaterCommand;
@@ -311,8 +313,8 @@ public class Robot extends TimedRobot {
 
         //Shooting
         // NORMAL FIXED SHOT
-        trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> ShooterK.kShooterRPS));
-        // trg_shoot.whileTrue(m_superstructure.activateOuttakeCalc());
+        trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(60))); //TestingDashboard.sub_shooterVelocityRPS.get()
+        // trg_shoot.whileTrue(m_superstructure.activateOuttakeShotCalc());
 
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
@@ -355,14 +357,14 @@ public class Robot extends TimedRobot {
         m_driver.povDown().onTrue(m_shooter.setTurretLockCmd(false));
         m_driver.povRight().onTrue(m_shooter.setTurretLockCmd(true));
 
-        // m_driver.povLeft().whileTrue(m_superstructure.activateOuttakeNOSHOOT());
-        trg_optimalPrefireTime.whileTrue(
-            Commands.run(() -> setBothRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> setBothRumble(RumbleType.kBothRumble, 0))
-        );
+        m_driver.start().whileTrue(m_superstructure.activateOuttakeNOSHOOT());
+        // trg_optimalPrefireTime.whileTrue(
+        //     Commands.run(() -> setBothRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> setBothRumble(RumbleType.kBothRumble, 0))
+        // );
 
-        trg_comebackTime.whileTrue(
-            Commands.run(() -> setBothRumble(RumbleType.kRightRumble, 0.5)).finallyDo(()-> setBothRumble(RumbleType.kRightRumble, 0))
-        );
+        // trg_comebackTime.whileTrue(
+        //     Commands.run(() -> setBothRumble(RumbleType.kRightRumble, 0.5)).finallyDo(()-> setBothRumble(RumbleType.kRightRumble, 0))
+        // );
     }
 
     private void configureTestBindings() {
@@ -373,15 +375,15 @@ public class Robot extends TimedRobot {
 
     private void configureTestingDashboard() {
         /* INITIALIZE DASHBOARD */
-        TestingDashboard.initialize();
+        // TestingDashboard.initialize();
 
         /* ELASTIC WIDGET BINDINGS */
-        TestingDashboard.trg_letShooterVelocityRPSChange
-            .whileTrue(m_shooter.setShooterVelocityCmd(TestingDashboard.sub_shooterVelocityRPS));
+        // TestingDashboard.trg_letShooterVelocityRPSChange
+        //     .whileTrue(m_shooter.setShooterVelocityCmd(TestingDashboard.sub_shooterVelocityRPS));
         // TestingDashboard.trg_letTurretPositionRotsChange
         //     .whileTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
-        TestingDashboard.trg_letHoodPositionDegsChange
-            .whileTrue(m_hood.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
+        // TestingDashboard.trg_letHoodPositionDegsChange
+        //     .whileTrue(m_hood.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
 
         // TestingDashboard.trg_letSpindexerVelocityRPSChange
         //     .whileTrue(m_indexer.setSpindexerVelocityCmd(TestingDashboard.sub_spindexerVelocityRPS));
@@ -416,19 +418,19 @@ public class Robot extends TimedRobot {
         m_periodicTracer.addEpoch("VisionUpdate");
 
         log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
-        log_isDisabled.accept(trg_limitFPS);
+        // log_isDisabled.accept(trg_limitFPS);
         m_periodicTracer.addEpoch("Logging");
 
         log_miniPCCurrent.accept(m_PDH.getCurrent(kMiniPCChannel));
 
-        log_currentShift.accept(HubShiftUtil.getOfficialShiftInfo().currentShift().toString());
-        log_currentFudgedShift.accept(HubShiftUtil.getShiftedShiftInfo().currentShift().toString());
-        log_elapsedTime.accept(Math.floor(HubShiftUtil.getOfficialShiftInfo().elapsedTime() * 100) / 100.0);
-        log_elapsedFudgedTime.accept((Math.floor(HubShiftUtil.getShiftedShiftInfo().elapsedTime() * 100) / 100.0));
-        log_remainingTime.accept((Math.floor(HubShiftUtil.getOfficialShiftInfo().remainingTime() * 100) / 100.0));
-        log_remainingFudgedTime.accept((Math.floor(HubShiftUtil.getShiftedShiftInfo().remainingTime() * 100) / 100.0));
-        log_isActive.accept(() -> HubShiftUtil.getOfficialShiftInfo().active());
-        log_isActiveFudged.accept(() -> HubShiftUtil.getShiftedShiftInfo().active());
+        // log_currentShift.accept(HubShiftUtil.getOfficialShiftInfo().currentShift().toString());
+        // log_currentFudgedShift.accept(HubShiftUtil.getShiftedShiftInfo().currentShift().toString());
+        // log_elapsedTime.accept(Math.floor(HubShiftUtil.getOfficialShiftInfo().elapsedTime() * 100) / 100.0);
+        // log_elapsedFudgedTime.accept((Math.floor(HubShiftUtil.getShiftedShiftInfo().elapsedTime() * 100) / 100.0));
+        // log_remainingTime.accept((Math.floor(HubShiftUtil.getOfficialShiftInfo().remainingTime() * 100) / 100.0));
+        // log_remainingFudgedTime.accept((Math.floor(HubShiftUtil.getShiftedShiftInfo().remainingTime() * 100) / 100.0));
+        // log_isActive.accept(() -> HubShiftUtil.getOfficialShiftInfo().active());
+        // log_isActiveFudged.accept(() -> HubShiftUtil.getShiftedShiftInfo().active());
 
         // log_shooterDirection.accept(
         //     new Pose3d(
