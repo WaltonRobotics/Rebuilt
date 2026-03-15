@@ -14,6 +14,7 @@ import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
+import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
@@ -203,6 +204,7 @@ public class WaltSimpleAutonFactory {
             logState(2)
         ).withName(path);
     }
+
 
     public Command fastRightOneSweep() {
         return Commands.sequence(

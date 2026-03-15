@@ -11,12 +11,12 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class TestingDashboard {
-    public static NetworkTableInstance nte_inst = NetworkTableInstance.getDefault();
-    public static NetworkTable nte_testingDashboard = nte_inst.getTable("TestingDashboard");
+    // public static NetworkTableInstance nte_inst = NetworkTableInstance.getDefault();
+    // public static NetworkTable nte_testingDashboard = nte_inst.getTable("TestingDashboard");
 
     /* TOPICS */
     //---SHOOTER
-    public static DoubleTopic DT_shooterVelocityRPS = nte_inst.getDoubleTopic("/TestingDashboard/shooterVelocityRPS");
+    // public static DoubleTopic DT_shooterVelocityRPS = nte_inst.getDoubleTopic("/TestingDashboard/shooterVelocityRPS");
     // public static DoubleTopic DT_turretPositionRots = nte_inst.getDoubleTopic("/TestingDashboard/turretPositionRots");
     // public static DoubleTopic DT_hoodPositionDegs = nte_inst.getDoubleTopic("/TestingDashboard/hoodPositionDegs");
 
@@ -29,7 +29,7 @@ public class TestingDashboard {
     // public static DoubleTopic DT_intakeRollersVelocityRPS = nte_inst.getDoubleTopic("/TestingDashboard/intakeRollersVelocityRPS");
 
     //---"ALLOW CHANGES" SWITCHES
-    public static BooleanTopic BT_letShooterVelocityRPSChange = nte_inst.getBooleanTopic("/TestingDashboard/letShooterVelocityRPSChange");
+    // public static BooleanTopic BT_letShooterVelocityRPSChange = nte_inst.getBooleanTopic("/TestingDashboard/letShooterVelocityRPSChange");
     // public static BooleanTopic BT_letTurretPositionRotsChange = nte_inst.getBooleanTopic("/TestingDashboard/letTurretPositionRotsChange");
     // public static BooleanTopic BT_letHoodPositionDegsChange = nte_inst.getBooleanTopic("/TestingDashboard/letHoodPositionDegsChange");
 
@@ -41,7 +41,7 @@ public class TestingDashboard {
 
     // /* PUBLISHERS */
     // //---SHOOTER
-    public static DoublePublisher pub_shooterVelocityRPS;
+    // public static DoublePublisher pub_shooterVelocityRPS;
     // public static DoublePublisher pub_turretPositionRots;
     // public static DoublePublisher pub_hoodPositionDegs;
 
@@ -54,7 +54,7 @@ public class TestingDashboard {
     // public static DoublePublisher pub_intakeRollersVelocityRPS;
 
     // //---"ALLOW CHANGES" SWITCHES
-    public static BooleanPublisher pub_letShooterVelocityRPSChange;
+    // public static BooleanPublisher pub_letShooterVelocityRPSChange;
     // public static BooleanPublisher pub_letTurretPositionRotsChange;
     // public static BooleanPublisher pub_letHoodPositionDegsChange;
 
@@ -66,7 +66,7 @@ public class TestingDashboard {
 
     // /* SUBSCRIBERS */
     // //---SHOOTER
-    public static DoubleSubscriber sub_shooterVelocityRPS;
+    // public static DoubleSubscriber sub_shooterVelocityRPS;
     // public static DoubleSubscriber sub_turretPositionRots;
     // public static DoubleSubscriber sub_hoodPositionDegs;
 
@@ -79,7 +79,7 @@ public class TestingDashboard {
     // public static DoubleSubscriber sub_intakeRollersVelocityRPS;
 
     // //---"ALLOW CHANGES" SWITCHES
-    public static BooleanSubscriber sub_letShooterVelocityRPSChange;
+    // public static BooleanSubscriber sub_letShooterVelocityRPSChange;
     // public static BooleanSubscriber sub_letTurretPositionRotsChange;
     // public static BooleanSubscriber sub_letHoodPositionDegsChange;
 
@@ -90,7 +90,7 @@ public class TestingDashboard {
     // public static BooleanSubscriber sub_letIntakeRollersVelocityRPSChange;
 
     /* TRIGGERS */
-    public static Trigger trg_letShooterVelocityRPSChange;
+    // public static Trigger trg_letShooterVelocityRPSChange;
     // public static Trigger trg_letTurretPositionRotsChange;
     // public static Trigger trg_letHoodPositionDegsChange;
 
@@ -102,7 +102,7 @@ public class TestingDashboard {
 
     public static void initialize() {
         //---SHOOTER
-        pub_shooterVelocityRPS = DT_shooterVelocityRPS.publish();
+        // pub_shooterVelocityRPS = DT_shooterVelocityRPS.publish();
         // pub_turretPositionRots = DT_turretPositionRots.publish();
         // pub_hoodPositionDegs = DT_hoodPositionDegs.publish();
 
@@ -110,7 +110,7 @@ public class TestingDashboard {
         // pub_turretPositionRots.setDefault(0);
         // pub_hoodPositionDegs.setDefault(0);
 
-        sub_shooterVelocityRPS = DT_shooterVelocityRPS.subscribe(0);
+        // sub_shooterVelocityRPS = DT_shooterVelocityRPS.subscribe(0);
         // sub_turretPositionRots = DT_turretPositionRots.subscribe(0);
         // sub_hoodPositionDegs = DT_hoodPositionDegs.subscribe(0);
 
@@ -135,7 +135,7 @@ public class TestingDashboard {
         // sub_intakeRollersVelocityRPS = DT_intakeRollersVelocityRPS.subscribe(0);
 
         //---"ALLOW CHANGES" SWITCHES
-        pub_letShooterVelocityRPSChange = BT_letShooterVelocityRPSChange.publish();
+        // pub_letShooterVelocityRPSChange = BT_letShooterVelocityRPSChange.publish();
         // pub_letTurretPositionRotsChange = BT_letTurretPositionRotsChange.publish();
         // pub_letHoodPositionDegsChange = BT_letHoodPositionDegsChange.publish();
         // pub_letSpindexerVelocityRPSChange = BT_letSpindexerVelocityRPSChange.publish();
@@ -143,7 +143,7 @@ public class TestingDashboard {
         // pub_letIntakeArmPositionRotsChange = BT_letIntakeArmPositionRotsChange.publish();
         // pub_letIntakeRollersVelocityRPSChange = BT_letIntakeRollersVelocityRPSChange.publish();
 
-        pub_letShooterVelocityRPSChange.setDefault(false);
+        // pub_letShooterVelocityRPSChange.setDefault(false);
         // pub_letTurretPositionRotsChange.setDefault(false);
         // pub_letHoodPositionDegsChange.setDefault(false);
         // pub_letSpindexerVelocityRPSChange.setDefault(false);
@@ -151,7 +151,7 @@ public class TestingDashboard {
         // pub_letIntakeArmPositionRotsChange.setDefault(false);
         // pub_letIntakeRollersVelocityRPSChange.setDefault(false);
 
-        sub_letShooterVelocityRPSChange = BT_letShooterVelocityRPSChange.subscribe(false);
+        // sub_letShooterVelocityRPSChange = BT_letShooterVelocityRPSChange.subscribe(false);
         // sub_letTurretPositionRotsChange = BT_letTurretPositionRotsChange.subscribe(false);
         // sub_letHoodPositionDegsChange = BT_letHoodPositionDegsChange.subscribe(false);
         // sub_letSpindexerVelocityRPSChange = BT_letSpindexerVelocityRPSChange.subscribe(false);
@@ -160,7 +160,7 @@ public class TestingDashboard {
         // sub_letIntakeRollersVelocityRPSChange = BT_letIntakeRollersVelocityRPSChange.subscribe(false);
 
         //---TRIGGERS
-        trg_letShooterVelocityRPSChange = new Trigger(() -> sub_letShooterVelocityRPSChange.get());
+        // trg_letShooterVelocityRPSChange = new Trigger(() -> sub_letShooterVelocityRPSChange.get());
         // trg_letTurretPositionRotsChange = new Trigger(() -> sub_letTurretPositionRotsChange.get());
         // trg_letHoodPositionDegsChange = new Trigger(() -> sub_letHoodPositionDegsChange.get());
 

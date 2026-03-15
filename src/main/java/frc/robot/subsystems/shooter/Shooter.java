@@ -8,13 +8,18 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.StaticBrake;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.hardware.TalonFXS;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
+import com.reduxrobotics.canand.CanandEventLoop;
+import com.reduxrobotics.sensors.canandmag.Canandmag;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -95,9 +100,17 @@ public class Shooter extends SubsystemBase {
     private final NeutralOut m_neutralOutReq = new NeutralOut();
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); // X44Foc
+    private final CANcoder m_turretEncoderA = new CANcoder(19, Constants.kCanivoreBus);
+    private final Canandmag m_turretEncoderB = new Canandmag(1);
     private final PositionVoltage m_PVRequest = new PositionVoltage(0).withEnableFOC(true);
     private final VoltageOut m_VoltageReq = new VoltageOut(0);
     private final StaticBrake m_BrakeReq = new StaticBrake();
+
+    // private final TalonFXS m_hood = new TalonFXS(kHoodCANID);
+    // private final PositionVoltage m_hoodPVRequest = new PositionVoltage(0).withEnableFOC(false);
+    // private final VoltageOut m_hoodZeroReq = new VoltageOut(0);
+
+    private final Hood m_hood = new Hood();
 
     private final DigitalInput m_turretHomingHall = new DigitalInput(2);
     private final Trigger trg_homingHallDirect = new Trigger(homingEventLoop, () -> !m_turretHomingHall.get());
@@ -134,11 +147,13 @@ public class Shooter extends SubsystemBase {
     private final Pose3dLogger log_currentAimPose = WaltLogger.logPose3d("ShotCalc", "CurrentAimPose");
 
     private final BooleanLogger log_turretHomed = WaltLogger.logBoolean("Shooter/Turret", "Homed");
+    // private final BooleanLogger log_hoodHomed = WaltLogger.logBoolean("Shooter/Hood", "Homed");
     private final BooleanLogger log_useShotCalc = WaltLogger.logBoolean("ShotCalc", "useShotCalc");
 
     // ---LOGIC BOOLEANS
     private boolean m_isTurretHomed = false;
     public BooleanSupplier turretHomedSupp = () -> m_isTurretHomed;
+    // private boolean m_isHoodHomed = false;
 
     /* SIM OBJECTS */
     private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(
@@ -158,10 +173,10 @@ public class Shooter extends SubsystemBase {
     // WaltLogger.logBoolean(kLogTab, "exitBeamBreak");
     private final BooleanLogger log_spunUp = WaltLogger.logBoolean(kLogTab, "spunUp");
 
-    private final DoubleLogger log_shooterClosedLoopError = WaltLogger.logDouble("Shooter/Hood",
-            "shooterClosedLoopError");
+    private final DoubleLogger log_shooterClosedLoopError = WaltLogger.logDouble("Shooter", "shooterClosedLoopError");
 
     private final DoubleLogger log_turretControlPos = WaltLogger.logDouble("Shooter/Turret", "turretControlPos");
+    // private final DoubleLogger log_hoodControlPos = WaltLogger.logDouble("Shooter/Hood", "hoodControlPos");
 
     private final Tracer m_periodicTracer = new Tracer();
 
@@ -174,8 +189,14 @@ public class Shooter extends SubsystemBase {
         m_shooterA.getConfigurator().apply(kShooterATalonFXConfiguration);
         m_shooterB.getConfigurator().apply(kShooterBTalonFXConfiguration);
         m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
+        // m_hood.getConfigurator().apply(kHoodTalonFXSConfiguration);
 
         m_shooterB.setControl(new Follower(kShooterA_CANID, MotorAlignmentValue.Opposed));
+
+        m_turretEncoderA.getConfigurator();
+        m_turretEncoderB.setPartyMode(5);
+
+        CanandEventLoop.getInstance();
 
         sig_shooterCLErr.setUpdateFrequency(Hertz.of(50));
 
@@ -245,7 +266,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command shootFromCalc() {
-        return run(() -> setShooterVelocity(m_calcFlywheelVelocity.get()));
+        return runOnce(() -> setShooterVelocity(m_calcFlywheelVelocity.get()));
     }
 
     public void setShooterVelocity(AngularVelocity RPS) {
@@ -272,18 +293,6 @@ public class Shooter extends SubsystemBase {
         return isNear;
     }
 
-    public double convertHoodAngleToServoAngle(Angle hoodAngleDegs) {
-        return (1 - (hoodAngleDegs.magnitude() / kHoodAbsoluteMaxDegs.magnitude())) * kHoodServoMaxDegs.magnitude();
-    }
-
-    public double convertServoAngleToHoodAngle(Angle servoAngleDegs) {
-        return (1 - (servoAngleDegs.magnitude() / kHoodServoMaxDegs.magnitude())) * kHoodAbsoluteMaxDegs.magnitude();
-    }
-
-    public double convertEncoderAngleToServoAngle(Angle encoderAngleDegs) {
-        return (1 - (encoderAngleDegs.magnitude() / kHoodEncoderMaxDegs.magnitude())) * kHoodServoMaxDegs.magnitude();
-    }
-
     // ---TURRET (Motionmagic Angle Control)
     public Command setTurretPosCmd(Angle rots) {
         return runOnce(() -> setTurretPos(rots));
@@ -304,14 +313,29 @@ public class Shooter extends SubsystemBase {
         return run(() -> setTurretPos(Rotations.of(sub_rots.get())));
     }
 
+    // // ---HOOD
+    // public void setHoodPos(Angle degs) {
+    //     m_hood.setControl(m_hoodPVRequest.withPosition(degs));
+    //     log_hoodControlPos.accept(degs.in(Degrees));
+    // }
+
+    // public Command setHoodPosCmd(Angle degs) {
+    //     return runOnce(() -> setHoodPos(degs));
+    // }
+
+    // //for TestingDashboard
+    // public Command setHoodPositionCmd(DoubleSubscriber sub_degs) {
+    //     return run(() -> setHoodPos(Degrees.of(sub_degs.get())));
+    // }
+
     /* GETTERS */
     public AngularVelocity getShooterVelocity() {
         return m_shooterA.getVelocity().getValue();
     }
 
-    private Angle getHoodAngle() {
-        return Degrees.zero();
-    }
+    // private Angle getHoodAngle() {
+    //     return Degrees.zero();
+    // }
 
     private Angle getTurretPosition() {
         return m_turret.getPosition().getValue();
@@ -341,26 +365,26 @@ public class Shooter extends SubsystemBase {
         m_fuelStored++;
     }
 
-    /**
-     * Launches SIMULATION FUEL™ at the current Flywheel Velocity, current Hood
-     * Angle, and the
-     * current Turret Position.
-     */
-    public void launchFuel() {
-        if (m_fuelStored == 0)
-            return;
-        // m_fuelStored--;
+    // /**
+    //  * Launches SIMULATION FUEL™ at the current Flywheel Velocity, current Hood
+    //  * Angle, and the
+    //  * current Turret Position.
+    //  */
+    // public void launchFuel() {
+    //     if (m_fuelStored == 0)
+    //         return;
+    //     // m_fuelStored--;
 
-        AngularVelocity flywheelVelocity = getShooterVelocity(); // current flywheel velocity
-        Angle hoodAngle = Degrees.of(90).minus(getHoodAngle()); // current hood angle (need to subtract from 90 to get
-                                                                // an accurate launching angle)
-        Angle turretPosition = getTurretPosition(); // current turret position
-        LinearVelocity flywheelLinearVelocity = ShotCalculator
-                .angularToLinearVelocity(flywheelVelocity, kFlywheelRadius);
+    //     AngularVelocity flywheelVelocity = getShooterVelocity(); // current flywheel velocity
+    //     Angle hoodAngle = Degrees.of(90).minus(getHoodAngle()); // current hood angle (need to subtract from 90 to get
+    //                                                             // an accurate launching angle)
+    //     Angle turretPosition = getTurretPosition(); // current turret position
+    //     LinearVelocity flywheelLinearVelocity = ShotCalculator
+    //             .angularToLinearVelocity(flywheelVelocity, kFlywheelRadius);
 
-        m_fuelSim.launchFuel(flywheelLinearVelocity, hoodAngle, turretPosition,
-                kTurretTransform.getMeasureZ()); // launch from where the turret *should* be
-    }
+    //     m_fuelSim.launchFuel(flywheelLinearVelocity, hoodAngle, turretPosition,
+    //             kTurretTransform.getMeasureZ()); // launch from where the turret *should* be
+    // }
 
     // TODO: update orientation values (if needed)
     private void initSim() {
@@ -489,8 +513,7 @@ public class Shooter extends SubsystemBase {
         // iterativeMovingShotFromInterpolationMap method
         // The Calculated shot itself, according to the current robotPose, robotSpeeds,
         // and the currentTarget
-        ShotData calculatedShot = ShotCalculator.iterativeMovingShotFromFunnelClearance(robotPose, fieldSpeeds,
-                m_currentTarget, 3);
+        ShotData calculatedShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(robotPose, fieldSpeeds, m_currentTarget, 3);
         m_periodicTracer.addEpoch("calculateShot/iterativeMovingShot");
 
         // The turret angle according to the Calculated shot
@@ -515,7 +538,7 @@ public class Shooter extends SubsystemBase {
             }
         }
         // Sets the HoodPosition to the Calculated HoodAngle
-        // setHoodPosition(Degrees.of(calculatedShot.getHoodAngle().in(Degrees)));
+        m_hood.setHoodPos(Degrees.of(calculatedShot.getHoodAngle().in(Degrees)));
 
         m_calcTurret = azimuthAngle;
         m_calcFlywheelVelocity = () -> ShotCalculator.linearToAngularVelocity(calculatedShot.getExitVelocity(),
@@ -582,7 +605,7 @@ public class Shooter extends SubsystemBase {
         m_currentTarget = calculateTarget(pose);
         log_globalShotTarget.accept(m_currentTarget);
 
-        if (m_isTurretHomed) {
+        if (m_isTurretHomed && m_hood.isHoodHomed()) {
             calcAndSetShot(pose, true, turretTurnPosition);
             m_periodicTracer.addEpoch("Calculating Shot");
         }
@@ -607,9 +630,9 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        m_turretVisualizer.updateFuel(
-                ShotCalculator.angularToLinearVelocity(m_flywheelVelocity, kFlywheelRadius),
-                getHoodAngle());
+        // m_turretVisualizer.updateFuel(
+        //         ShotCalculator.angularToLinearVelocity(m_flywheelVelocity, kFlywheelRadius),
+        //         getHoodAngle());
 
         WaltMotorSim.updateSimFX(m_shooterA, m_shooterSim);
         WaltMotorSim.updateSimFX(m_turret, m_turretSim);
@@ -644,5 +667,41 @@ public class Shooter extends SubsystemBase {
         };
 
         return new FunctionalCommand(init, () ->{}, end, isFinished, this);
+    }
+
+    // public Command hoodCurrentSenseHomingCmd(){
+    //     Runnable init = () -> {
+    //         m_hood.setControl(m_hoodZeroReq.withOutput(kHomingVoltage));
+    //         m_isHoodHomed = false;
+    //         log_hoodHomed.accept(m_isHoodHomed);
+    //     };
+
+    //     Consumer<Boolean> end = (Boolean interrupted) -> {
+    //         if (interrupted) {
+    //             m_hood.setControl(m_BrakeReq);
+    //             WaltLogger.timedPrint("HoodHoming INTERRUPTED!!!!");
+    //             log_hoodHomed.accept(m_isHoodHomed);
+    //             return;
+    //         }
+
+    //         m_hood.setPosition(kHoodHomePosition);
+    //         m_hood.setControl(m_BrakeReq);
+    //         removeDefaultCommand();
+    //         m_isHoodHomed = true;
+    //         log_hoodHomed.accept(m_isHoodHomed);
+    //     };
+
+    //     BooleanSupplier isFinished = () -> {
+    //         return m_isHoodHomed;
+    //     };
+
+    //     return new FunctionalCommand(init, () -> {}, end, isFinished, this);
+    // }
+
+    public Command homingCmds() {
+        return Commands.sequence(
+            // hoodCurrentSenseHomingCmd().asProxy(),
+            turretHomingCmd().asProxy()
+        );
     }
 }
