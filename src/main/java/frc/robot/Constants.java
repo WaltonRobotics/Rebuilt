@@ -119,13 +119,10 @@ public class Constants {
         public static final double kHoodMoI = 0.00027505;
         public static final double kHoodEncoderGearing = 360/40.0;
 
-        // 300° on the servo is 0° on the hood, and 0° on the servo is 40° on the hood.
-        // servo to hood: 300 : 0 || 0 : 40
-        // hood to encoder: 0 : 0 || 40 : 0.9451 (340.236)
-        // servo to encoder: 300 : 0 || 0 : 0.9451 (340.236)
-        public static final Angle kHoodMinPosition = Rotations.of(0); // 0 = 0 (encoder wise i believe)
+        //i geniunely dont know if these are right bro like ARGHHHH
+        public static final Angle kHoodMinPosition = Rotations.of(0);
         public static final Angle kHoodSafeDegs = Degrees.of(11);
-        private static final Angle kHoodMaxRots = Rotations.of(1.812988).div(kHoodGearing);
+        private static final Angle kHoodMaxRots = Rotations.of(1.812988).div(kHoodGearing); //apparently this is 26 or 27 degrees? idk thats where we're telling it to go sooo..
         public static final Angle kHoodMaxDegs = Degrees.of(kHoodMaxRots.in(Degrees));
         //TODO: ensure this is the home value
         // public static final Angle kHoodHomePosition = Degrees.of(10);
