@@ -160,8 +160,6 @@ public class WaltSimpleAutonFactory {
         return preload_oneSweep(true);
     }
 
-    private boolean isDoneWithOneCycle = false;
-
     //OVERALL TODO: clean up code and combine no preload w/ preload (and left/right) into one method
     //TODO: find better name for this
     public Command oneCycleGoInNow(boolean left, boolean optimized) {
@@ -198,7 +196,7 @@ public class WaltSimpleAutonFactory {
                 shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout).asProxy(),
                 Commands.sequence(
                     logState(1.1),
-                    Commands.waitSeconds(3.5),
+                    Commands.waitSeconds(3.75),
                     logState(1.2),
                     tp("goInNow.retractIntake.START"),
                     m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED).asProxy(),

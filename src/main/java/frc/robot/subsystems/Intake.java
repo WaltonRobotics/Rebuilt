@@ -198,6 +198,16 @@ public class Intake extends SubsystemBase {
         return m_intakeRollers.getMotorVoltage().getValueAsDouble();
     }
 
+    // TESTING TO SEE IF WE CAN JUST SAY 0 AS 0
+    // public Command intakeArmHome() {
+    //     return Commands.sequence(
+    //         runOnce(() -> m_intakeArm.setPosition(0)),
+    //         runOnce(() -> m_isIntakeArmHomed = true),
+    //         runOnce(() -> log_isIntakeArmHomed.accept(m_isIntakeArmHomed)),
+    //         runOnce(() -> removeDefaultCommand())
+    //     );
+    // }
+
     public Command intakeArmCurrentSenseHoming() {
         Runnable init = () -> {
             m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(-3.25));
