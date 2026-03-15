@@ -20,18 +20,22 @@ public class AutonChooser {
     private static final WaltPathAndCommand auton_none = new WaltPathAndCommand("", Commands.none());
 
     private static WaltPathAndCommand auton_oneCycleGoInNow_Right(WaltSimpleAutonFactory simpleAutonFactory) {
-        return new WaltPathAndCommand(AutonK.kRightSweepPathName, simpleAutonFactory.oneCycleGoInNow(false, false));
+        return new WaltPathAndCommand(AutonK.kRightSweepPathName, simpleAutonFactory.firstSweep_NoPreload(false, false));
     }
     private static WaltPathAndCommand auton_oneCycleGoInNow_Left(WaltSimpleAutonFactory simpleAutonFactory) {
-        return new WaltPathAndCommand(AutonK.kLeftSweepPathName, simpleAutonFactory.oneCycleGoInNow(true, false));
+        return new WaltPathAndCommand(AutonK.kLeftSweepPathName, simpleAutonFactory.firstSweep_NoPreload(true, false));
     }
 
     private static WaltPathAndCommand auton_oneCycleGoInNow_LeftOptimize(WaltSimpleAutonFactory simpleAutonFactory) {
-        return new WaltPathAndCommand(AutonK.kLeftOptimizedSweepPathName, simpleAutonFactory.oneCycleGoInNow(true, true));
+        return new WaltPathAndCommand(AutonK.kLeftOptimizedSweepPathName, simpleAutonFactory.firstSweep_NoPreload(true, true));
     }
 
     private static WaltPathAndCommand auton_oneCycleGoInNow_RightOptimize(WaltSimpleAutonFactory simpleAutonFactory) {
-        return new WaltPathAndCommand(AutonK.kRightOptimizedSweepPathName, simpleAutonFactory.oneCycleGoInNow(false, true));
+        return new WaltPathAndCommand(AutonK.kRightOptimizedSweepPathName, simpleAutonFactory.firstSweep_NoPreload(false, true));
+    }
+
+    private static WaltPathAndCommand auton_twoRightSweep(WaltSimpleAutonFactory simpleAutonFactory) {
+        return new WaltPathAndCommand(AutonK.kRightSweepPathName, simpleAutonFactory.rightTwoSweep(false));
     }
 
     public static void initialize(WaltSimpleAutonFactory simpleAutonFactory) {
@@ -42,6 +46,7 @@ public class AutonChooser {
         m_chooser.addOption("Fast One Left Neutral Pickup", auton_oneCycleGoInNow_Left(m_simpleAutonFactory));
         m_chooser.addOption("Optimized One Left Neutral Pickup", auton_oneCycleGoInNow_LeftOptimize(simpleAutonFactory));
         m_chooser.addOption("Optimized One Right Neutral Pickup", auton_oneCycleGoInNow_RightOptimize(simpleAutonFactory));
+        m_chooser.addOption("Two Right Sweep", auton_twoRightSweep(simpleAutonFactory));
 
         SmartDashboard.putData(m_chooser);
     }

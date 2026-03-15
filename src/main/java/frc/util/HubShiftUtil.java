@@ -44,6 +44,8 @@ public class HubShiftUtil {
   private static final double approachingActiveFudge = -1 * (minTimeOfFlight + minFuelCountDelay);
   private static final double endingActiveFudge =
       shiftEndFuelCountExtension + -1 * (maxTimeOfFlight + maxFuelCountDelay);
+  private static final double approachingActiveComeback = approachingActiveFudge - 3.0;
+  private static final double endingActiveComeback = endingActiveFudge + 3.0;
 
   public static final double autoEndTime = 20.0;
   public static final double teleopDuration = 140.0;
@@ -156,7 +158,49 @@ public class HubShiftUtil {
     return getShiftInfo(getSchedule(), shiftStartTimes, shiftEndTimes);
   }
 
-  public static ShiftInfo getShiftedShiftInfo() {
+  public static ShiftInfo getComebackShiftInfo() {
+    boolean[] shiftSchedule = getSchedule();
+    // Starting active
+    if (shiftSchedule[1] == true) {
+      double[] shiftedShiftStartTimes = {
+        0.0,
+        10.0,
+        35.0 + endingActiveComeback,
+        60.0 + approachingActiveComeback,
+        85.0 + endingActiveComeback,
+        110.0 + approachingActiveComeback
+      };
+      double[] shiftedShiftEndTimes = {
+        10.0,
+        35.0 + endingActiveComeback,
+        60.0 + approachingActiveComeback,
+        85.0 + endingActiveComeback,
+        110.0 + approachingActiveComeback,
+        140.0
+      };
+      return getShiftInfo(shiftSchedule, shiftedShiftStartTimes, shiftedShiftEndTimes);
+    }
+    double[] shiftedShiftStartTimes = {
+      0.0,
+      10.0 + endingActiveComeback,
+      35.0 + approachingActiveComeback,
+      60.0 + endingActiveComeback,
+      85.0 + approachingActiveComeback,
+      110.0
+    };
+    double[] shiftedShiftEndTimes = {
+      10.0 + endingActiveComeback,
+      35.0 + approachingActiveComeback,
+      60.0 + endingActiveComeback,
+      85.0 + approachingActiveComeback,
+      110.0,
+      140.0
+    };
+    return getShiftInfo(shiftSchedule, shiftedShiftStartTimes, shiftedShiftEndTimes);
+    // }
+  }
+
+    public static ShiftInfo getShiftedShiftInfo() {
     boolean[] shiftSchedule = getSchedule();
     // Starting active
     if (shiftSchedule[1] == true) {
@@ -207,7 +251,17 @@ public class HubShiftUtil {
    return () -> {
         boolean shiftedActive = getShiftedShiftInfo().active;
         boolean realActive = getOfficialShiftInfo().active;
-        return shiftedActive && !realActive;
+
+        return (shiftedActive && !realActive) || (!shiftedActive && realActive);
+    };
+  }
+
+  public static BooleanSupplier comebackTime() {
+    return () -> {
+      boolean realActive = getOfficialShiftInfo().active;
+      boolean comebackActive = getComebackShiftInfo().active;
+
+      return (comebackActive && !realActive) || (!comebackActive && realActive);
     };
   }
 }

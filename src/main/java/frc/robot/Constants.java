@@ -80,7 +80,7 @@ public class Constants {
             log_turretTransform.accept(kTurretTransform);
         }
 
-        public static final Distance kFlywheelRadius = Inches.of(1.5); 
+        public static final Distance kFlywheelRadius = Inches.of(1.5);
 
         public static final int kHopperCapacity = 55; //TODO: find true max
 
@@ -105,16 +105,15 @@ public class Constants {
         public static final int kPeakShooterVolts = 16;
 
         public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.75); //0.75 rots in each direction from home
-        public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.magnitude());
-        public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.magnitude());
+        public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.in(Rotations));
+        public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.in(Rotations));
 
         public static final AngularVelocity kShooterMaxRPS = MotorK.kX60MaxVelocity.div(kShooterGearing);
         public static final AngularVelocity kShooterRPS = kShooterMaxRPS.times(0.65);   //Kraken X60Foc Max (RPM: 5785) //(0.9)
         public static final AngularVelocity kShooterAutonCloseRPS = kShooterMaxRPS.times(0.60);  //auton pose is closer to the hub than teleop scoring
         public static final AngularVelocity kShooterAuton_EndSweep_RPS = kShooterMaxRPS.times(0.70); // end of sweep paths
-
-        public static final AngularVelocity kShooterBarfRPS = RotationsPerSecond.of((5785/60) * (0.2) / kShooterGearing);
-        public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.of(/* 0/60 * (0.9) / kShooterGearing */ 0);
+        public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.2);
+        public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.zero();
 
         //---HOOD CONSTANTS
         public static final double kHoodMoI = 0.00027505;
@@ -373,7 +372,7 @@ public class Constants {
         public static final double kIntakeRollersMOI = 0.0001; // 0.00343880857
         public static final double kIntakeRollersGearing = 12.0/30;
 
-        public static final AngularVelocity kIntakeRollersMaxRPS = RotationsPerSecond.of((5785 / 60) / kIntakeRollersGearing * 1.0);  //0.8
+        public static final AngularVelocity kIntakeRollersMaxRPS = MotorK.kX60FOCMaxVelocity.div(kIntakeRollersGearing);
 
         /* IDS */
         public static final int kIntakeArmCANID = 40;
@@ -460,10 +459,10 @@ public class Constants {
       
         public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60MaxVelocity.div(kSpindexerGearing);
         public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
-        public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(1.0);   //0.7
+        public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(1.0);
 
         public static final AngularVelocity kTunnelMaxRPS = MotorK.kX44MaxVelocity.div(kTunnelGearing);
-        public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(1.0); //0.65
+        public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(1.0);
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
@@ -527,6 +526,8 @@ public class Constants {
     }
 
     public static class AutonK {
+        public static final String kLogTab = "Auton";
+
         public static final Pose2d kRightNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
             Meters.of(2.251265048980713), new Rotation2d(0));
         public static final Pose2d kRightDepotPose = new Pose2d(Meters.of(1.1576627492904663), 
@@ -534,16 +535,21 @@ public class Constants {
 
         public static final Pose2d kLeftNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
             Meters.of(5.437880039215088), new Rotation2d(0));
-        
-        public static final double kOneSweepMaxTime = 12.5; //in sec
-        public static final double kIntakeTimeout = 7.5; //in sec
-        public static final double kShootingTimeout = 12; //in sec
+
+        public static final double kOneSweepMaxTime = 12.5;
+        public static final double kTwoSweepMaxTime = 20;
+
+        public static final double kIntakeTimeout = 7.5;
+        public static final double kShootingTimeout = 4; //12
 
         public static final String kLeftSweepPathName = "LeftSweep";
         public static final String kRightSweepPathName = "RightSweep";
 
         public static final String kLeftOptimizedSweepPathName = "LeftSweepOptimized";
         public static final String kRightOptimizedSweepPathName = "RightSweepOptimized";
+
+        public static final String kLeftTwoSweepName = "LeftSweepTwo"; //NO LEFT TWO SWEEP PATH AS OF NOW
+        public static final String kRightTwoSweepName = "RightSweepTwo";
 
 
     }

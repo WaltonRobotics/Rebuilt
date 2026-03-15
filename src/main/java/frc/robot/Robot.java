@@ -107,6 +107,7 @@ public class Robot extends TimedRobot {
 
     /* TRIGGERS */
     private Trigger trg_optimalPrefireTime = new Trigger(HubShiftUtil.optimalPrefireTime());
+    private Trigger trg_comebackTime = new Trigger(HubShiftUtil.comebackTime());
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
 
@@ -351,8 +352,13 @@ public class Robot extends TimedRobot {
 
         m_driver.povLeft().whileTrue(m_superstructure.activateOuttakeNOSHOOT());
 
-        // trg_optimalPrefireTime.whileTrue(
-        //     Commands.run(() -> setBothRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> setBothRumble(RumbleType.kBothRumble, 0)));
+        trg_optimalPrefireTime.whileTrue(
+            Commands.run(() -> setBothRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> setBothRumble(RumbleType.kBothRumble, 0))
+        );
+
+        trg_comebackTime.whileTrue(
+            Commands.run(() -> setBothRumble(RumbleType.kRightRumble, 0.5)).finallyDo(()-> setBothRumble(RumbleType.kRightRumble, 0))
+        );
     }
 
     private void configureTestBindings() {
@@ -499,7 +505,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        m_autonomousCommand = AutonChooser.m_chooser.getSelected().autonCommand;
+        m_autonomousCommand = AutonChooser.m_chooser.getSelected().autonCommand.withTimeout(20.3);
 
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
@@ -543,7 +549,7 @@ public class Robot extends TimedRobot {
                 m_drivetrain.xBrake(),
                 Commands.waitSeconds(2.5),
                 m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(kMaxTranslationSpeed.times(-1))
+                    drive.withVelocityX(kMaxTranslationSpeed.unaryMinus())
                         .withVelocityY(0)
                         .withRotationalRate(0)
                 ),

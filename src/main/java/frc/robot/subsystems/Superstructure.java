@@ -6,6 +6,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import frc.robot.Constants;
 import frc.robot.Constants.IndexerK;
 import frc.robot.Constants.IntakeK;
@@ -14,12 +15,14 @@ import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.StringArrayLogger;
+import frc.util.WaltLogger.StringLogger;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.SuperstructureK.*;
 import static frc.robot.Constants.ShooterK;
+import static frc.robot.Constants.IndexerK.kSpindexerShootRPS;
 import static frc.robot.Constants.IntakeK;
 
 import java.util.HashSet;
@@ -38,6 +41,8 @@ public class Superstructure extends SubsystemBase {
 
     private HashSet<String> m_activeOverrideCommands = new HashSet<>();
     private final StringArrayLogger log_activeOverrideCommands = WaltLogger.logStringArray(kLogTab, "Active Override Commands");
+
+    private StringLogger log_shooterState = WaltLogger.logString(kLogTab, "ShooterState");
     
     /* CONSTRUCTOR */
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
@@ -96,23 +101,12 @@ public class Superstructure extends SubsystemBase {
 
                 if (m_intake.getIntakeArmStatorCurrent() < 40) {
                     m_shooter.setIntaking(false);
-                    m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
+                    m_intake.setIntakeRollersVelocity(RotationsPerSecond.zero());   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
                     if (!shooting) {
-                        m_indexer.setSpindexerVelocityCmd(RotationsPerSecond.of(0));
+                        m_indexer.setSpindexerVelocityCmd(RotationsPerSecond.zero());
                     }
                 }
             })
-        );
-    }
-
-    public Command startShootSequence(Supplier<AngularVelocity> RPS) {
-        return Commands.parallel(
-            m_shooter.setShooterVelocityCmdSupp(RPS),
-            Commands.sequence(
-                Commands.waitUntil(() -> m_shooter.isShooterSpunUp()).withTimeout(ShooterK.kShooterTimeout),
-                m_indexer.startTunnelCmd(),
-                m_indexer.startSpindexerCmd()
-            )
         );
     }
 
@@ -125,15 +119,12 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
-    public Command startShootSequenceCalc() {
-        return Commands.parallel(
-            m_shooter.shootFromCalc(),
-            Commands.sequence(
-                Commands.waitUntil(() -> m_shooter.isShooterSpunUp()).withTimeout(3),
-                m_indexer.startTunnelCmd(),
-                m_indexer.startSpindexerCmd()
-            )
-        );
+    /**
+     * @param update message to update the SHOOTER logger
+     * @return a Command that updates the logger
+     */
+    public Command up(String update) {
+        return Commands.runOnce(() -> log_shooterState.accept(update));
     }
 
     /**
@@ -143,18 +134,77 @@ public class Superstructure extends SubsystemBase {
      * @param RPS the speed for the shooter
      */
     public Command activateOuttake(Supplier<AngularVelocity> RPS) {
-        Command logCommand;
-        if (RPS == ShooterK.kShooterRPS) {
-            logCommand = logActiveCommands("shooting", "deactivateOuttake", "emergencyDump");   
-        } else {
-            logCommand = logActiveCommands("emergencyDump", "shooting", "deactivateOuttake");
-        }
+        log_shooterState.accept("pre sequence");
+        return Commands.sequence(
+            // up("post sequence call"),
+            m_shooter.setShooterVelocityCmdSupp(RPS),
+            // up("post supplier command"),
 
-        return Commands.parallel(
-            startShootSequence(RPS),
-            logCommand
-        ).finallyDo(
-            () -> deactivateOuttake()
+            // up("pre waituntil command"),
+            Commands.waitUntil(() -> m_shooter.isShooterSpunUp()),
+            // up("post waituntil command"),
+
+            // up("pre start indexer"),
+            m_indexer.startIndexerCmd(),
+            // up("post start indexer"),
+
+            // up("pre repeating sequence"),
+            Commands.repeatingSequence(
+                // up("in repeating sequence"),
+                Commands.waitUntil(() -> !m_shooter.isShooterSpunUp()), // block until un-spun
+                m_indexer.stopIndexerCmd(), // stop indexer
+                // up("restart indexer in repeating sequence"),
+                Commands.waitUntil(() -> m_shooter.isShooterSpunUp()), // block until spun
+                m_indexer.startIndexerCmd() // restart indexer
+                // up("end repeating sequence")
+            )
+            // up("post repeating sequence")
+        )
+        .finallyDo(
+            () -> {
+                deactivateOuttake();
+                // log_shooterState.accept("post deactivate outtake");
+            }
+        );
+    }
+
+    /**
+     * Turns on spinner and exhaust and sets shooter speed to CALCULATE SHOT RPS
+     * <p>
+     * Note: does not move turret or hood.
+     * @param RPS the speed for the shooter
+     */
+    public Command activateOuttakeShotCalc() {
+        log_shooterState.accept("pre sequence");
+        return Commands.sequence(
+            up("post sequence call"),
+            m_shooter.shootFromCalc(),
+            up("post supplier command"),
+
+            up("pre waituntil command"),
+            Commands.waitUntil(() -> m_shooter.isShooterSpunUp()),
+            up("post waituntil command"),
+
+            up("pre start indexer"),
+            m_indexer.startIndexerCmd(),
+            up("post start indexer"),
+
+            up("pre repeating sequence"),
+            Commands.repeatingSequence(
+                up("in repeating sequence"),
+                m_indexer.stopIndexerCmd()
+                    .onlyIf(() -> !m_shooter.isShooterSpunUp())
+                    .andThen(m_indexer.startIndexerCmd()).beforeStarting(Commands.waitUntil(() -> m_shooter.isShooterSpunUp())),
+                up("end repeating sequence")
+            ),
+            up("post repeating sequence")
+        )
+        .repeatedly()
+        .finallyDo(
+            () -> {
+                deactivateOuttake();
+                log_shooterState.accept("post deactivate outtake");
+            }
         );
     }
 
@@ -163,14 +213,6 @@ public class Superstructure extends SubsystemBase {
             startShootSequenceNOSHOOT()
         ).finallyDo(
             () -> deactivateOuttakeNOSHOOT()
-        );
-    }
-
-    public Command activateOuttakeCalc() {
-        return Commands.parallel(
-            startShootSequenceCalc()
-        ).finallyDo(
-            () -> deactivateOuttake()
         );
     }
 
@@ -204,15 +246,15 @@ public class Superstructure extends SubsystemBase {
                 m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS);
                 m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS);
                 m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
-                m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersMaxRPS.times(-1));
+                m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersMaxRPS.unaryMinus());
             },
             () -> {
-                m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));
+                m_intake.setIntakeRollersVelocity(RotationsPerSecond.zero());
                 m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
-                m_shooter.setShooterVelocity(RotationsPerSecond.of(0));
+                m_shooter.setShooterVelocity(RotationsPerSecond.zero());
                 // m_shooter.setHoodPosition(ShooterK.kHoodSafeDegs);
-                m_indexer.setSpindexerVelocity(RotationsPerSecond.of(0));
-                m_indexer.setTunnelVelocity(RotationsPerSecond.of(0));
+                m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
+                m_indexer.setTunnelVelocity(RotationsPerSecond.zero());
             }
         );
     }
@@ -272,16 +314,16 @@ public class Superstructure extends SubsystemBase {
     public Command unjamCmd(BooleanSupplier isShooting) {
         return Commands.runEnd(
             () -> {
-                m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS.times(-1));
-                m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS.times(-1));
+                m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS.unaryMinus());
+                m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS.unaryMinus());
                 if (!isShooting.getAsBoolean()) {
-                    m_shooter.setShooterVelocity(ShooterK.kShooterRPS.times(-1));
+                    m_shooter.setShooterVelocity(ShooterK.kShooterRPS.unaryMinus());
                 }
             }, () -> {
                 if (!isShooting.getAsBoolean()) {
-                    m_shooter.setShooterVelocity(RotationsPerSecond.of(0));
-                    m_indexer.setSpindexerVelocity(RotationsPerSecond.of(0));
-                    m_indexer.setTunnelVelocity(RotationsPerSecond.of(0));
+                    m_shooter.setShooterVelocity(RotationsPerSecond.zero());
+                    m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
+                    m_indexer.setTunnelVelocity(RotationsPerSecond.zero());
                 }
                 else if (isShooting.getAsBoolean()) {
                     m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS);
