@@ -205,6 +205,24 @@ public class WaltSimpleAutonFactory {
         ).withName(path);
     }
 
+    public Command fastRightOneSweep() {
+        return Commands.sequence(
+            Commands.parallel(
+                homingCmd().andThen(
+                    m_superstructure.intake(() -> false).withTimeout(2).asProxy()
+                ),
+                runTraj("RightSweepFast", 6)
+            ),
+            Commands.deadline(
+                shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout).asProxy(),
+                Commands.sequence(
+                    Commands.waitSeconds(3.5),
+                    m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED).asProxy()
+                )
+            )
+        );
+    }
+
     public Command rightTwoSweep(boolean left) {
         String path = left ? AutonK.kLeftTwoSweepName : AutonK.kRightTwoSweepName;
 
