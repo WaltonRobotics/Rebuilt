@@ -14,7 +14,6 @@ import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
-import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
@@ -217,6 +216,39 @@ public class WaltSimpleAutonFactory {
                 shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout).asProxy(),
                 Commands.sequence(
                     Commands.waitSeconds(3.5),
+                    m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED).asProxy()
+                )
+            )
+        );
+    }
+
+    public Command fastRightTwoSweep_ZigZag() {
+        return Commands.sequence(
+            fastRightOneSweep(),
+            Commands.parallel(
+                Commands.sequence(
+                    Commands.waitSeconds(2),
+                    m_superstructure.intake(() -> false).asProxy().withTimeout(10)
+                ),
+                runTraj(AutonK.kZigzagRightTwo, 12)
+            )
+        );
+    }
+
+    public Command fastRightTwoSweep_Reshoot() {
+        return Commands.sequence(
+            fastRightOneSweep(),
+            Commands.parallel(
+                Commands.sequence(
+                    Commands.waitSeconds(2),
+                    m_superstructure.intake(() -> false).asProxy().withTimeout(2.5)
+                ),
+                runTraj(AutonK.kReshootRightTwo, 8)
+            ),
+            Commands.deadline(
+                shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout).asProxy(),
+                Commands.sequence(
+                    Commands.waitSeconds(2.75),
                     m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED).asProxy()
                 )
             )

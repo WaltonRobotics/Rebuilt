@@ -518,6 +518,8 @@ public class Constants {
         public static final String kLeftTwoSweepName = "LeftSweepTwo"; //NO LEFT TWO SWEEP PATH AS OF NOW
         public static final String kRightTwoSweepName = "RightSweepTwo";
 
-
+        public static final String kFastRightTwoSweepName = "RightSweepFast";
+        public static final String kZigzagRightTwo = "RightSweepFast_ZigZag";
+        public static final String kReshootRightTwo = "RightSweepFast_Reshoot";
     }
 }

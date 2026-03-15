@@ -2,8 +2,6 @@ package frc.robot.dashboards;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.sendable.SendableRegistry;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -39,7 +37,15 @@ public class AutonChooser {
     }
 
     private static WaltPathAndCommand auton_fastRight(WaltSimpleAutonFactory simpleAutonFactory) {
-        return new WaltPathAndCommand("RightSweepFast", simpleAutonFactory.fastRightOneSweep());
+        return new WaltPathAndCommand(AutonK.kFastRightTwoSweepName, simpleAutonFactory.fastRightOneSweep());
+    }
+
+    private static WaltPathAndCommand auton_fastRightTwo_ZigZag(WaltSimpleAutonFactory simpleAutonFactory) {
+        return new WaltPathAndCommand(AutonK.kFastRightTwoSweepName, simpleAutonFactory.fastRightTwoSweep_ZigZag());
+    }
+
+    private static WaltPathAndCommand auton_fastRightTwo_Reshoot(WaltSimpleAutonFactory simpleAutonFactory) {
+        return new WaltPathAndCommand(AutonK.kFastRightTwoSweepName, simpleAutonFactory.fastRightTwoSweep_ZigZag());
     }
 
     public static void initialize(WaltSimpleAutonFactory simpleAutonFactory) {
@@ -51,7 +57,8 @@ public class AutonChooser {
         m_chooser.addOption("Optimized One Left Neutral Pickup", auton_oneCycleGoInNow_LeftOptimize(simpleAutonFactory));
         m_chooser.addOption("Optimized One Right Neutral Pickup", auton_oneCycleGoInNow_RightOptimize(simpleAutonFactory));
         m_chooser.addOption("Fast One Right Neutral Pickup", auton_fastRight(m_simpleAutonFactory));
-        m_chooser.addOption("Two Right Sweep", auton_twoRightSweep(simpleAutonFactory));
+        m_chooser.addOption("Zigzag Two Right Neutral Pickup", auton_fastRightTwo_ZigZag(simpleAutonFactory));
+        m_chooser.addOption("Reshoot Two Right Neutral Pickup", auton_fastRightTwo_Reshoot(simpleAutonFactory));
 
         SmartDashboard.putData(m_chooser);
     }
