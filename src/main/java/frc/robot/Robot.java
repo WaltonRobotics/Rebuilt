@@ -391,8 +391,8 @@ public class Robot extends TimedRobot {
             .whileTrue(m_shooter.setShooterVelocityCmd(TestingDashboard.sub_shooterVelocityRPS));
         // TestingDashboard.trg_letTurretPositionRotsChange
         //     .whileTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
-        // // TestingDashboard.trg_letHoodPositionDegsChange
-        //     // .whileTrue(m_shooter.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
+        TestingDashboard.trg_letHoodPositionDegsChange
+            .whileTrue(m_shooter.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
 
         // TestingDashboard.trg_letSpindexerVelocityRPSChange
         //     .whileTrue(m_indexer.setSpindexerVelocityCmd(TestingDashboard.sub_spindexerVelocityRPS));

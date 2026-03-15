@@ -302,6 +302,11 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> setHoodPos(degs));
     }
 
+    //for TestingDashboard
+    public Command setHoodPositionCmd(DoubleSubscriber sub_degs) {
+        return run(() -> setHoodPos(Degrees.of(sub_degs.get())));
+    }
+
     /* GETTERS */
     public AngularVelocity getShooterVelocity() {
         return m_shooterA.getVelocity().getValue();
