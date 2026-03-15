@@ -161,7 +161,7 @@ public class Robot extends TimedRobot {
 
     /* CONSTRUCTOR */
     public Robot() {
-        // configureBindings();
+        configureBindings();
         configureTestBindings();    //this should be commented out during competition matches
         configureTestingDashboard();
 
@@ -477,6 +477,7 @@ public class Robot extends TimedRobot {
             m_disableChangeDelayTimer.reset();
             m_shooter.setTurretNeutralMode(NeutralModeValue.Coast);
             m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
+            m_hood.setHoodNeutralMode(NeutralModeValue.Coast);
         }
     }
 

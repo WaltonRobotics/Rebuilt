@@ -11,6 +11,7 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.StaticBrake;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFXS;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
@@ -95,6 +96,10 @@ public class Hood extends SubsystemBase {
             m_velocityDebouncer.calculate(m_veloIsNearZero.getAsBoolean());
 
         return new FunctionalCommand(init, () -> {}, end, isFinished, this).withTimeout(5);
+    }
+
+    public void setHoodNeutralMode(NeutralModeValue value) {
+        m_hood.setNeutralMode(value);
     }
 
     @Override
