@@ -549,7 +549,7 @@ public class Robot extends TimedRobot {
                 m_drivetrain.xBrake(),
                 Commands.waitSeconds(2.5),
                 m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(kMaxTranslationSpeed.times(-1))
+                    drive.withVelocityX(kMaxTranslationSpeed.unaryMinus())
                         .withVelocityY(0)
                         .withRotationalRate(0)
                 ),

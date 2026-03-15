@@ -136,34 +136,34 @@ public class Superstructure extends SubsystemBase {
     public Command activateOuttake(Supplier<AngularVelocity> RPS) {
         log_shooterState.accept("pre sequence");
         return Commands.sequence(
-            up("post sequence call"),
+            // up("post sequence call"),
             m_shooter.setShooterVelocityCmdSupp(RPS),
-            up("post supplier command"),
+            // up("post supplier command"),
 
-            up("pre waituntil command"),
+            // up("pre waituntil command"),
             Commands.waitUntil(() -> m_shooter.isShooterSpunUp()),
-            up("post waituntil command"),
+            // up("post waituntil command"),
 
-            up("pre start indexer"),
+            // up("pre start indexer"),
             m_indexer.startIndexerCmd(),
-            up("post start indexer"),
+            // up("post start indexer"),
 
-            up("pre repeating sequence"),
+            // up("pre repeating sequence"),
             Commands.repeatingSequence(
-                up("in repeating sequence"),
+                // up("in repeating sequence"),
                 Commands.waitUntil(() -> !m_shooter.isShooterSpunUp()), // block until un-spun
                 m_indexer.stopIndexerCmd(), // stop indexer
-                up("restart indexer in repeating sequence"),
+                // up("restart indexer in repeating sequence"),
                 Commands.waitUntil(() -> m_shooter.isShooterSpunUp()), // block until spun
-                m_indexer.startIndexerCmd(), // restart indexer
-                up("end repeating sequence")
-            ),
-            up("post repeating sequence")
+                m_indexer.startIndexerCmd() // restart indexer
+                // up("end repeating sequence")
+            )
+            // up("post repeating sequence")
         )
         .finallyDo(
             () -> {
                 deactivateOuttake();
-                log_shooterState.accept("post deactivate outtake");
+                // log_shooterState.accept("post deactivate outtake");
             }
         );
     }
@@ -246,7 +246,7 @@ public class Superstructure extends SubsystemBase {
                 m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS);
                 m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS);
                 m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
-                m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersMaxRPS.times(-1));
+                m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersMaxRPS.unaryMinus());
             },
             () -> {
                 m_intake.setIntakeRollersVelocity(RotationsPerSecond.of(0));
@@ -314,10 +314,10 @@ public class Superstructure extends SubsystemBase {
     public Command unjamCmd(BooleanSupplier isShooting) {
         return Commands.runEnd(
             () -> {
-                m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS.times(-1));
-                m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS.times(-1));
+                m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS.unaryMinus());
+                m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS.unaryMinus());
                 if (!isShooting.getAsBoolean()) {
-                    m_shooter.setShooterVelocity(ShooterK.kShooterRPS.times(-1));
+                    m_shooter.setShooterVelocity(ShooterK.kShooterRPS.unaryMinus());
                 }
             }, () -> {
                 if (!isShooting.getAsBoolean()) {

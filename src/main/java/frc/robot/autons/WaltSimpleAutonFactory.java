@@ -27,7 +27,6 @@ public class WaltSimpleAutonFactory {
     private final Swerve m_swerve;
 
     private final DoubleLogger log_autonState = WaltLogger.logDouble(kLogTab, "State");
-    private final BooleanLogger log_isCycleOneDone = WaltLogger.logBoolean(kLogTab, "isCycleOneDone");
 
     public WaltSimpleAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter, Swerve swerve) {
         m_superstructure = superstructure;
