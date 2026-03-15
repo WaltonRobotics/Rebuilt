@@ -39,6 +39,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.vision.Detection;
 import frc.util.WaltLogger;
+import frc.util.WaltLogger.DoubleLogger;
 
 /**
  * CommandSwerveDrivetrain: Class that extends the Phoenix 6 SwerveDrivetrain class 
@@ -74,6 +75,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         .withSteerRequestType(SteerRequestType.Position);
 
     private final Detection detection = new Detection();
+
+    private final DoubleLogger log_absoluteRobotSpeed = new WaltLogger.DoubleLogger("Swerve", "absoluteRobotSpeed");
 
     private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
@@ -267,6 +270,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+
+        ChassisSpeeds currentChassisSpeeds = this.getChassisSpeeds();
+        log_absoluteRobotSpeed.accept(Math.hypot(currentChassisSpeeds.vxMetersPerSecond, currentChassisSpeeds.vyMetersPerSecond));
     }
 
     private void startSimThread() {
@@ -333,7 +339,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         return m_kinematics.toChassisSpeeds(getState().ModuleStates);
     }
 
-     private void followPath(SwerveSample sample) {
+    private void followPath(SwerveSample sample) {
         m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
         var pose = getState().Pose;
         var samplePose = sample.getPose();
