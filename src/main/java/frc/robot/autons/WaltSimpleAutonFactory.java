@@ -137,7 +137,7 @@ public class WaltSimpleAutonFactory {
             logState(4),
             tp("preload.endShoot.START"),
             Commands.parallel(
-                shootWithTimeout(kShooterAuton_EndSweep_RPS ,12),
+                shootWithTimeout(kShooterAuton_EndSweep_RPS, 12),
                 Commands.sequence(
                     logState(4.1),
                     Commands.waitSeconds(6),
