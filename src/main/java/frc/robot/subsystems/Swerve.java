@@ -446,7 +446,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     public Command roboToTranslation(Distance x, Distance y) {
-        return Commands.run(() -> {
+        return Commands.runOnce(() -> {
             Pose2d curPose = getState().Pose;
             double xSpeed = m_pathXController.calculate(curPose.getX(), x.in(Meters));
             double ySpeed = m_pathYController.calculate(curPose.getY(), y.in(Meters));
