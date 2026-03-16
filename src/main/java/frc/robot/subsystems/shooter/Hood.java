@@ -108,6 +108,6 @@ public class Hood extends SubsystemBase {
 
     @Override
     public void periodic() {
-        log_hoodCurrentPos.accept(getHoodAngle().in(Degrees)); 
+        // log_hoodCurrentPos.accept(getHoodAngle().in(Degrees)); 
     }
 }

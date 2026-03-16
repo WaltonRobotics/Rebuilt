@@ -46,8 +46,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import frc.util.AllianceFlipUtil;
 import frc.util.VisionUtil;
-import frc.util.WaltLogger;
-import frc.util.WaltLogger.Pose3dLogger;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
@@ -69,8 +67,8 @@ public class Constants {
     public static class WpiK {
         public static final ChassisSpeeds kZeroChassisSpeeds = new ChassisSpeeds(0, 0, 0);
     }
-
     public static class ShooterK {
+
         public static final String kLogTab = "Shooter";
         private static final Rotation2d kTurretAngleOffset = Rotation2d.fromDegrees(-135);
         public static final Transform3d kTurretTransform = new Transform3d(new Translation3d(Inches.of(-4.744), Inches.of(-4.239), Inches.of(17.260)), new Rotation3d(kTurretAngleOffset)); //DUMMY VALS
