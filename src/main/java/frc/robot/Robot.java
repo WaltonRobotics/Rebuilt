@@ -167,7 +167,7 @@ public class Robot extends TimedRobot {
     /* CONSTRUCTOR */
     public Robot() {
         configureBindings();
-        configureTestBindings();    //this should be commented out during competition matches
+        // configureTestBindings();    //this should be commented out during competition matches
         // configureTestingDashboard();
 
         lastGotTagMsmtTimer.start();
