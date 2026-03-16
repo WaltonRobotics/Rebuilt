@@ -89,7 +89,10 @@ public class Robot extends TimedRobot {
     //---INIT SUBSYSTEMS
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
 
-    private final Shooter m_shooter = new Shooter(() -> m_drivetrain.getState().Pose, () -> m_drivetrain.getChassisSpeeds());
+    private final Shooter m_shooter = new Shooter(
+        () -> m_drivetrain.getState().Pose, 
+        () -> m_drivetrain.getStateCopy(),
+        () -> m_drivetrain.getChassisSpeeds());
     private final Hood m_hood = new Hood();
 
     private final Intake m_intake = new Intake();
@@ -158,21 +161,13 @@ public class Robot extends TimedRobot {
     // private final DoubleLogger log_remainingFudgedTime = WaltLogger.logDouble("Util/Shift", "currentFudgedTime");
     // private final BooleanLogger log_isActiveFudged = WaltLogger.logBoolean("Util/Shift", "isActiveFudged");
 
-    private final StringLogger log_currentShift = WaltLogger.logString("Util/Shift", "currentShift");
-    private final DoubleLogger log_elapsedTime = WaltLogger.logDouble("Util/Shift", "elapsedTime");
-    private final DoubleLogger log_remainingTime = WaltLogger.logDouble("Util/Shift", "currentTime");
-    private final BooleanLogger log_isActive = WaltLogger.logBoolean("Util/Shift", "isActive");
-    private final StringLogger log_currentFudgedShift = WaltLogger.logString("Util/Shift", "currentFudgedShift");
-    private final DoubleLogger log_elapsedFudgedTime = WaltLogger.logDouble("Util/Shift", "elapsedFudgedTime");
-    private final DoubleLogger log_remainingFudgedTime = WaltLogger.logDouble("Util/Shift", "currentFudgedTime");
-    private final BooleanLogger log_isActiveFudged = WaltLogger.logBoolean("Util/Shift", "isActiveFudged");
-
-    private final Tracer m_periodicTracer = new Tracer();
+    // private final Tracer m_periodicTracer = new Tracer();
     private final Command m_preheaterCommand;
 
     /* CONSTRUCTOR */
     public Robot() {
         configureBindings();
+        // configureTestBindings();    //this should be commented out during competition matches
         // configureTestingDashboard();
 
         lastGotTagMsmtTimer.start();
@@ -366,13 +361,13 @@ public class Robot extends TimedRobot {
         m_driver.povRight().onTrue(m_shooter.setTurretLockCmd(true));
 
         // m_driver.start().whileTrue(m_superstructure.activateOuttakeNOSHOOT());
-        trg_optimalPrefireTime.whileTrue(
-            Commands.run(() -> setBothRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> setBothRumble(RumbleType.kBothRumble, 0))
-        );
+        // trg_optimalPrefireTime.whileTrue(
+        //     Commands.run(() -> setBothRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> setBothRumble(RumbleType.kBothRumble, 0))
+        // );
 
-        trg_comebackTime.whileTrue(
-            Commands.run(() -> setBothRumble(RumbleType.kRightRumble, 0.5)).finallyDo(()-> setBothRumble(RumbleType.kRightRumble, 0))
-        );
+        // trg_comebackTime.whileTrue(
+        //     Commands.run(() -> setBothRumble(RumbleType.kRightRumble, 0.5)).finallyDo(()-> setBothRumble(RumbleType.kRightRumble, 0))
+        // );
     }
 
     private void configureTestBindings() {
@@ -407,9 +402,9 @@ public class Robot extends TimedRobot {
     /* PERIODICS */
     @Override
     public void robotPeriodic() {
-        m_periodicTracer.addEpoch("Entry (Unused Time)");
+        // m_periodicTracer.addEpoch("Entry (Unused Time)");
         CommandScheduler.getInstance().run(); 
-        m_periodicTracer.addEpoch("CommandScheduler");
+        // m_periodicTracer.addEpoch("CommandScheduler");
 
 
         for (var camera : WaltCamera.AllCameras) {
@@ -423,11 +418,11 @@ public class Robot extends TimedRobot {
                 // System.out.println("AddMeasurementFrom: " + camera.getName());
             }
         }
-        m_periodicTracer.addEpoch("VisionUpdate");
+        // m_periodicTracer.addEpoch("VisionUpdate");
 
         log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
         // log_isDisabled.accept(trg_limitFPS);
-        m_periodicTracer.addEpoch("Logging");
+        // m_periodicTracer.addEpoch("Logging");
 
         log_miniPCCurrent.accept(m_PDH.getCurrent(kMiniPCChannel));
 

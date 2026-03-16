@@ -32,7 +32,7 @@ import edu.wpi.first.units.measure.Time;
 public class ShotCalculator {
     private static final DoubleLogger log_timeOfFlight = new DoubleLogger("Shooter/Calculator", "timeOfFlight");
     private static final DoubleLogger log_distToTargetMeters = new DoubleLogger("Shooter/Calculator", "distTargetToMeters");
-    private static final Tracer m_iterativeTracer = new Tracer();
+    // private static final Tracer m_iterativeTracer = new Tracer();
 
     //see 5000's code (circa 2/16/2026 9:11 PM EST)
     public static final InterpolatingTreeMap<Double, ShotData> m_shotMap = new InterpolatingTreeMap<>(
@@ -235,16 +235,16 @@ public class ShotCalculator {
     // use an iterative lookahead approach to determine shot parameters for a moving robot
     public static ShotData iterativeMovingShotFromFunnelClearance(Pose2d robot,
             ChassisSpeeds fieldSpeeds, Translation3d target, int iterations) {
-        m_iterativeTracer.clearEpochs();
+        // m_iterativeTracer.clearEpochs();
 
         // Perform initial estimation (assuming unmoving robot) to get time of flight estimate
         ShotData shot = calculateShotFromFunnelClearance(robot, target, target);
-        m_iterativeTracer.addEpoch("initialShot");
+        // m_iterativeTracer.addEpoch("initialShot");
 
         Distance distance = getDistanceToTarget(robot, target);
         Time timeOfFlight = calculateTimeOfFlight(shot.getExitVelocity(), shot.getHoodAngle(),
                 distance);
-        m_iterativeTracer.addEpoch("initialTOF");
+        // m_iterativeTracer.addEpoch("initialTOF");
 
         Translation3d predictedTarget = target;
 
@@ -259,7 +259,7 @@ public class ShotCalculator {
             shot = calculateShotFromFunnelClearance(robot, target, predictedTarget);
             timeOfFlight = calculateTimeOfFlight(shot.getExitVelocity(), shot.getHoodAngle(),
                     getDistanceToTarget(robot, predictedTarget));
-            m_iterativeTracer.addEpoch("iteration" + i);
+            // m_iterativeTracer.addEpoch("iteration" + i);
 
             // ShotData shotDataDiff = shot.minus(prevShot);
             // Distance distanceDiff = prevDistance.minus(distance);

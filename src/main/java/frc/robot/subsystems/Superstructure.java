@@ -6,23 +6,16 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import frc.robot.Constants;
 import frc.robot.Constants.IndexerK;
-import frc.robot.Constants.IntakeK;
-import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.StringArrayLogger;
-import frc.util.WaltLogger.StringLogger;
-
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.SuperstructureK.*;
 import static frc.robot.Constants.ShooterK;
-import static frc.robot.Constants.IndexerK.kSpindexerShootRPS;
 import static frc.robot.Constants.IntakeK;
 
 import java.util.HashSet;
@@ -157,7 +150,8 @@ public class Superstructure extends SubsystemBase {
                 // Commands.waitUntil(() -> m_shooter.isShooterSpunUp()), // block until spun
                 // m_indexer.startIndexerCmd() // restart indexer
                 // // up("end repeating sequence")
-                Commands.print("cope sequence: INITIATED")
+                // Commands.print("cope sequence: INITIATED")
+                Commands.none()
             )
             // up("post repeating sequence")
         )
