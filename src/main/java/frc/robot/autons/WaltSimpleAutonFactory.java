@@ -217,13 +217,14 @@ public class WaltSimpleAutonFactory {
     }
 
 
-    public Command fastRightOneSweep() {
+    public Command fastOneSweep(boolean left) {
+        String path = left ? AutonK.kFastLeftTwoSweepName : AutonK.kFastRightTwoSweepName;
         return Commands.sequence(
             Commands.parallel(
                 homingCmd().andThen(
                     m_superstructure.intake(() -> false).withTimeout(3.5).asProxy()
                 ),
-                runTraj(AutonK.kFastLeftTwoSweepName, 6) //TODO: CHANGE THIS BACK TO RIGHT SWEEP NAME
+                runTraj(path, 6)
             ),
             Commands.deadline(
                 shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout).asProxy(),
@@ -237,7 +238,7 @@ public class WaltSimpleAutonFactory {
 
     public Command fastRightTwoSweep_ZigZag() {
         return Commands.sequence(
-            fastRightOneSweep(),
+            fastOneSweep(false),
             Commands.parallel(
                 Commands.sequence(
                     Commands.waitSeconds(2),
@@ -248,15 +249,16 @@ public class WaltSimpleAutonFactory {
         );
     }
 
-    public Command fastRightTwoSweep_Reshoot() {
+    public Command fastTwoSweep_Reshoot(boolean left) {
+        String path = left ? AutonK.kReshootLeftTwo : AutonK.kReshootRightTwo;
         return Commands.sequence(
-            fastRightOneSweep(),
+            fastOneSweep(left),
             Commands.parallel(
                 Commands.sequence(
                     Commands.waitSeconds(2),
                     m_superstructure.intake(() -> false).asProxy().withTimeout(2.5)
                 ),
-                runTraj(AutonK.kReshootLeftTwo, 8) //TODO: CHANGE THIS BACK TO RIGHT SIDE
+                runTraj(path, 8)
             ),
             Commands.deadline(
                 shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout).asProxy(),

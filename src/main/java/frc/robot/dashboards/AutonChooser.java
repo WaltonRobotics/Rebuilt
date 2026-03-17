@@ -37,7 +37,7 @@ public class AutonChooser {
     }
 
     private static WaltPathAndCommand auton_fastRight(WaltSimpleAutonFactory simpleAutonFactory) {
-        return new WaltPathAndCommand(AutonK.kFastRightTwoSweepName, simpleAutonFactory.fastRightOneSweep());
+        return new WaltPathAndCommand(AutonK.kFastRightTwoSweepName, simpleAutonFactory.fastOneSweep(false));
     }
 
     private static WaltPathAndCommand auton_fastRightTwo_ZigZag(WaltSimpleAutonFactory simpleAutonFactory) {
@@ -45,12 +45,12 @@ public class AutonChooser {
     }
 
     private static WaltPathAndCommand auton_fastRightTwo_Reshoot(WaltSimpleAutonFactory simpleAutonFactory) {
-        return new WaltPathAndCommand(AutonK.kFastRightTwoSweepName, simpleAutonFactory.fastRightTwoSweep_Reshoot());
+        return new WaltPathAndCommand(AutonK.kFastRightTwoSweepName, simpleAutonFactory.fastTwoSweep_Reshoot(false));
     }
 
-    // private static WaltPathAndCommand auton_fastLeftTwo_Reshoot(WaltSimpleAutonFactory simpleAutonFactory) {
-    //     return new WaltPathAndCommand(AutonK.kFastLeftTwoSweepName, simpleAutonFactory.fastLeftTwoSweep_Reshoot());
-    // }
+    private static WaltPathAndCommand auton_fastLeftTwo_Reshoot(WaltSimpleAutonFactory simpleAutonFactory) {
+        return new WaltPathAndCommand(AutonK.kFastLeftTwoSweepName, simpleAutonFactory.fastTwoSweep_Reshoot(true));
+    }
 
     public static void initialize(WaltSimpleAutonFactory simpleAutonFactory) {
         m_simpleAutonFactory = simpleAutonFactory;
@@ -63,7 +63,7 @@ public class AutonChooser {
         m_chooser.addOption("Fast One Right Neutral Pickup", auton_fastRight(m_simpleAutonFactory));
         m_chooser.addOption("Zigzag Two Right Neutral Pickup", auton_fastRightTwo_ZigZag(simpleAutonFactory));
         m_chooser.addOption("Reshoot Two Right Neutral Pickup", auton_fastRightTwo_Reshoot(simpleAutonFactory));
-        // m_chooser.addOption("Reshoot Two Left Neutral Pickup", auton_fastLeftTwo_Reshoot(simpleAutonFactory));
+        m_chooser.addOption("Reshoot Two Left Neutral Pickup", auton_fastLeftTwo_Reshoot(simpleAutonFactory));
 
         SmartDashboard.putData(m_chooser);
     }
