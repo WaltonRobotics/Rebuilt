@@ -32,7 +32,8 @@ public class WaltLogger {
     }
 
     private static boolean shouldPublishNt() {
-        return Constants.kDebugLoggingEnabled;
+        return false;
+        // return Constants.kDebugLoggingEnabled;
     }
 
     public static BooleanEntry booleanItem(String table, String name, PubSubOption... options) {

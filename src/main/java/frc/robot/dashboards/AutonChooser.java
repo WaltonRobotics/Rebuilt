@@ -45,8 +45,12 @@ public class AutonChooser {
     }
 
     private static WaltPathAndCommand auton_fastRightTwo_Reshoot(WaltSimpleAutonFactory simpleAutonFactory) {
-        return new WaltPathAndCommand(AutonK.kFastRightTwoSweepName, simpleAutonFactory.fastRightTwoSweep_ZigZag());
+        return new WaltPathAndCommand(AutonK.kFastRightTwoSweepName, simpleAutonFactory.fastRightTwoSweep_Reshoot());
     }
+
+    // private static WaltPathAndCommand auton_fastLeftTwo_Reshoot(WaltSimpleAutonFactory simpleAutonFactory) {
+    //     return new WaltPathAndCommand(AutonK.kFastLeftTwoSweepName, simpleAutonFactory.fastLeftTwoSweep_Reshoot());
+    // }
 
     public static void initialize(WaltSimpleAutonFactory simpleAutonFactory) {
         m_simpleAutonFactory = simpleAutonFactory;
@@ -59,6 +63,7 @@ public class AutonChooser {
         m_chooser.addOption("Fast One Right Neutral Pickup", auton_fastRight(m_simpleAutonFactory));
         m_chooser.addOption("Zigzag Two Right Neutral Pickup", auton_fastRightTwo_ZigZag(simpleAutonFactory));
         m_chooser.addOption("Reshoot Two Right Neutral Pickup", auton_fastRightTwo_Reshoot(simpleAutonFactory));
+        // m_chooser.addOption("Reshoot Two Left Neutral Pickup", auton_fastLeftTwo_Reshoot(simpleAutonFactory));
 
         SmartDashboard.putData(m_chooser);
     }

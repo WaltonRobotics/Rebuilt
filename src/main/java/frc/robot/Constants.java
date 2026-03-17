@@ -112,7 +112,7 @@ public class Constants {
         public static final AngularVelocity kShooterRPS = kShooterMaxRPS.times(0.65);   //Kraken X60Foc Max (RPM: 5785) //(0.9)
         public static final AngularVelocity kShooterAutonCloseRPS = kShooterMaxRPS.times(0.60);  //auton pose is closer to the hub than teleop scoring
         public static final AngularVelocity kShooterAuton_EndSweep_RPS = kShooterMaxRPS.times(0.70); // end of sweep paths
-        public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.2);
+        public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.31);
         public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.zero();
 
         //---HOOD CONSTANTS
@@ -122,6 +122,7 @@ public class Constants {
         public static final Angle kHoodMinPosition = Rotations.of(0.1);
         private static final Angle kHoodMaxRots = Rotations.of(1.82195); //apparently this is 26 or 27 degrees? idk thats where we're telling it to go sooo..
         public static final Angle kHoodMaxDegs = Degrees.of(kHoodMaxRots.in(Degrees));
+        public static final Angle kHoodLockDegs = Degrees.of(kHoodMaxDegs.times(0.75).in(Degrees));
         //TODO: ensure this is the home value
         // public static final Angle kHoodHomePosition = Degrees.of(10);
         public static final Angle kHoodTrenchPosition = Degrees.of(5);
@@ -547,5 +548,8 @@ public class Constants {
         public static final String kFastRightTwoSweepName = "RightSweepFast";
         public static final String kZigzagRightTwo = "RightSweepFast_ZigZag";
         public static final String kReshootRightTwo = "RightSweepFast_Reshoot";
+
+        public static final String kFastLeftTwoSweepName = "LeftSweepFast";
+        public static final String kReshootLeftTwo = "LeftSweepFast_Reshoot";
     }
 }

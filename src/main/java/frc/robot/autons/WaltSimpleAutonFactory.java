@@ -210,9 +210,9 @@ public class WaltSimpleAutonFactory {
         return Commands.sequence(
             Commands.parallel(
                 homingCmd().andThen(
-                    m_superstructure.intake(() -> false).withTimeout(2).asProxy()
+                    m_superstructure.intake(() -> false).withTimeout(3.5).asProxy()
                 ),
-                runTraj("RightSweepFast", 6)
+                runTraj(AutonK.kFastLeftTwoSweepName, 6) //TODO: CHANGE THIS BACK TO RIGHT SWEEP NAME
             ),
             Commands.deadline(
                 shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout).asProxy(),
@@ -245,7 +245,7 @@ public class WaltSimpleAutonFactory {
                     Commands.waitSeconds(2),
                     m_superstructure.intake(() -> false).asProxy().withTimeout(2.5)
                 ),
-                runTraj(AutonK.kReshootRightTwo, 8)
+                runTraj(AutonK.kReshootLeftTwo, 8) //TODO: CHANGE THIS BACK TO RIGHT SIDE
             ),
             Commands.deadline(
                 shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout).asProxy(),
@@ -256,6 +256,44 @@ public class WaltSimpleAutonFactory {
             )
         );
     }
+
+    // public Command fastLeftOneSweep() {
+    //     return Commands.sequence(
+    //         Commands.parallel(
+    //             homingCmd().andThen(
+    //                 m_superstructure.intake(() -> false).withTimeout(3.5).asProxy()
+    //             ),
+    //             runTraj(AutonK.kFastLeftTwoSweepName, 6)
+    //         ),
+    //         Commands.deadline(
+    //             shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout).asProxy(),
+    //             Commands.sequence(
+    //                 Commands.waitSeconds(3.5),
+    //                 m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED).asProxy()
+    //             )
+    //         )
+    //     );
+    // }
+
+    // public Command fastLeftTwoSweep_Reshoot() {
+    //     return Commands.sequence(
+    //         fastLeftOneSweep(),
+    //         Commands.parallel(
+    //             Commands.sequence(
+    //                 Commands.waitSeconds(2),
+    //                 m_superstructure.intake(() -> false).asProxy().withTimeout(2.5)
+    //             ),
+    //             runTraj(AutonK.kReshootLeftTwo, 8)
+    //         ),
+    //         Commands.deadline(
+    //             shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout).asProxy(),
+    //             Commands.sequence(
+    //                 Commands.waitSeconds(2.75),
+    //                 m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED).asProxy()
+    //             )
+    //         )
+    //     );
+    // }
 
     public Command rightTwoSweep(boolean left) {
         String path = left ? AutonK.kLeftTwoSweepName : AutonK.kRightTwoSweepName;
