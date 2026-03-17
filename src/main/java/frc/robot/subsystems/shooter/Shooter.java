@@ -70,6 +70,7 @@ public class Shooter extends SubsystemBase {
     private int m_fuelStored = 8;
 
     private final Supplier<Pose2d> m_poseSupplier;
+    private final Supplier<ChassisSpeeds> m_fieldSpeedsSupplier;
 
     private final TurretVisualizer m_turretVisualizer;
     private final FuelSim m_fuelSim;
@@ -77,8 +78,8 @@ public class Shooter extends SubsystemBase {
     public final EventLoop homingEventLoop = new EventLoop();
 
     // ---MOTORS + CONTROL REQUESTS
-    private final TalonFX m_shooterA = new TalonFX(kShooterA_CANID, Constants.kCanivoreBus); // X60Foc
-    private final TalonFX m_shooterB = new TalonFX(kShooterB_CANID, Constants.kCanivoreBus); // X60Foc
+    private final TalonFX m_shooterA = new TalonFX(kShooterA_CANID, Constants.kShooterBus); // X60Foc
+    private final TalonFX m_shooterB = new TalonFX(kShooterB_CANID, Constants.kShooterBus); // X60Foc
     private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(false);
     private final NeutralOut m_neutralOutReq = new NeutralOut();
 
@@ -185,6 +186,7 @@ public class Shooter extends SubsystemBase {
         m_flywheelVelocity = m_shooterA.getVelocity().getValue();
 
         m_poseSupplier = poseSupplier;
+        m_fieldSpeedsSupplier = fieldSpeedsSupplier;
         setDefaultCommand(m_homingCommand);
 
         m_turretVisualizer = new TurretVisualizer(
@@ -279,8 +281,12 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setTurretPos(Angle rots) {
+        setTurretPos(rots, RotationsPerSecond.zero());
+    }
+
+    public void setTurretPos(Angle rots, AngularVelocity velocityFF) {
         if (!m_isTurretHomed) { return; }
-        m_turret.setControl(m_PVRequest.withPosition(rots));
+        m_turret.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFF));
         log_turretControlPos.accept(rots.in(Rotations));
     }
 
@@ -352,22 +358,6 @@ public class Shooter extends SubsystemBase {
     }
 
     /* ShootOnTheMove™ */
-    /**
-     * Version of calculateShot where, FOR TESTING, the turret will align to the
-     * target.
-     * 
-     * @param robotPose current Robot position
-     */
-    // private void calculateTurretAngle(Pose2d robotPose) {
-    //     ChassisSpeeds fieldSpeeds = m_fieldSpeedsSupplier.get();
-
-    //     ShotData calculatedShot =
-    //         ShotCalculator.iterativeMovingShotFromFunnelClearance(robotPose, fieldSpeeds, m_currentTarget, 3);
-    //     Angle azimuthAngle = ShotCalculator.calculateAzimuthAngle(robotPose, calculatedShot.getTarget(), m_turret.getPosition().getValue());
-    //     setTurretPos(azimuthAngle);
-
-    //     m_calcTurret = azimuthAngle;
-    // }
 
     /**
      * Tells us whether or not our Turret, Hood, and Flywheel are at their desired
@@ -407,13 +397,14 @@ public class Shooter extends SubsystemBase {
             var turretReference = calcData.turretReference();
 
             // set outputs
+            var turretVelocityFF = calcData.turretCalcDetails().turretVelocityFF();
             if (m_turretLocked) {
                 setTurretPos(m_turretLockAngle);
             } else {
                 if (m_holdTurretAtIntakePos) {
                     setTurretPos(Rotations.of(-0.250));
                 } else {
-                    setTurretPos(turretReference);
+                    setTurretPos(turretReference, turretVelocityFF);
                 }
             }
 
