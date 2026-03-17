@@ -96,7 +96,7 @@ public class Superstructure extends SubsystemBase {
                     m_shooter.setIntaking(false);
                     m_intake.setIntakeRollersVelocity(RotationsPerSecond.zero());   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
                     if (!shooting) {
-                        m_indexer.setSpindexerVelocityCmd(RotationsPerSecond.zero());
+                        m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
                     }
                 }
             })
@@ -171,28 +171,30 @@ public class Superstructure extends SubsystemBase {
      */
     public Command activateOuttakeShotCalc() {
         // log_shooterState.accept("pre sequence");
-        return Commands.sequence(
+        return Commands.parallel(
             // up("post sequence call"),
             m_shooter.shootFromCalc(),
             // up("post supplier command"),
 
-            // up("pre waituntil command"),
-            Commands.waitUntil(() -> m_shooter.isShooterSpunUp()),
-            // up("post waituntil command"),
+            Commands.sequence(
+                // up("pre waituntil command"),
+                Commands.waitUntil(() -> m_shooter.isShooterSpunUp()),
+                // up("post waituntil command"),
 
-            // up("pre start indexer"),
-            m_indexer.startIndexerCmd(),
-            // up("post start indexer"),
+                // up("pre start indexer"),
+                m_indexer.startIndexerCmd(),
+                // up("post start indexer"),
 
-            // up("pre repeating sequence"),
-            Commands.repeatingSequence(
-                // up("in repeating sequence"),
-                // m_indexer.stopIndexerCmd()
-                //     .onlyIf(() -> !m_shooter.isShooterSpunUp())
-                //     .andThen(m_indexer.startIndexerCmd()).beforeStarting(Commands.waitUntil(() -> m_shooter.isShooterSpunUp()))
-                // up("end repeating sequence")
-                // Commands.print("shotCalc cope sequence: INITIATED")
-                Commands.none()
+                // up("pre repeating sequence"),
+                Commands.repeatingSequence(
+                    // up("in repeating sequence"),
+                    // m_indexer.stopIndexerCmd()
+                    //     .onlyIf(() -> !m_shooter.isShooterSpunUp())
+                    //     .andThen(m_indexer.startIndexerCmd()).beforeStarting(Commands.waitUntil(() -> m_shooter.isShooterSpunUp()))
+                    // up("end repeating sequence")
+                    // Commands.print("shotCalc cope sequence: INITIATED")
+                    Commands.none()
+                )
             )
             // up("post repeating sequence")
         )

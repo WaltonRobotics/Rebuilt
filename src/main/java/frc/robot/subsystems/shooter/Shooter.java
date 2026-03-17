@@ -110,7 +110,7 @@ public class Shooter extends SubsystemBase {
     private final BooleanLogger log_turretHomingHall = new BooleanLogger(kLogTab, "turretHomeHall");
 
     private Angle m_calcTurret = Rotations.zero();
-    private Supplier<AngularVelocity> m_calcFlywheelVelocity = () -> RotationsPerSecond.of(44.81);
+    private AngularVelocity m_calcFlywheelVelocity = RotationsPerSecond.of(44.81);
 
     // Precomputed: true if turret travel is less than one full rotation (sub-360
     // cope path)
@@ -248,7 +248,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command shootFromCalc() {
-        return runOnce(() -> setShooterVelocity(m_calcFlywheelVelocity.get()));
+        return run(() -> setShooterVelocity(m_calcFlywheelVelocity));
     }
 
     public void setShooterVelocity(AngularVelocity RPS) {
@@ -302,10 +302,6 @@ public class Shooter extends SubsystemBase {
     /* GETTERS */
     public AngularVelocity getShooterVelocity() {
         return m_shooterA.getVelocity().getValue();
-    }
-
-    public Supplier<AngularVelocity> getFlywheelCalcVelocity() {
-        return m_calcFlywheelVelocity;
     }
 
     /* SIMULATION */
@@ -412,13 +408,13 @@ public class Shooter extends SubsystemBase {
             var hoodReference = calcData.hoodReference();
             m_hood.setHoodPos(hoodReference);
             // set shooter reference
-            m_calcFlywheelVelocity = () -> calcData.shooterReference();
+            m_calcFlywheelVelocity = calcData.shooterReference();
         }
 
         log_shooterVelocityRPS.accept(m_flywheelVelocity.in(RotationsPerSecond));
         log_turretPositionRots.accept(m_turretPosition.in(Rotations));
         log_spunUp.accept(isShooterSpunUp());
-        log_calcFlywheelVelocity.accept(m_calcFlywheelVelocity.get().in(RotationsPerSecond));
+        log_calcFlywheelVelocity.accept(m_calcFlywheelVelocity.in(RotationsPerSecond));
         log_calcTurretPos.accept(m_calcTurret.in(Rotations));
 
         // m_periodicTracer.addEpoch("Logging");

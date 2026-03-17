@@ -94,7 +94,7 @@ public class ShooterCalc {
         Angle turretPosition = m_turretPosSup.get();
 
         m_aimTarget = calculateTarget(robotPose);
-        m_shotCalcOutputs = calcShot(robotPose, m_useSotm, m_aimTarget, turretPosition, robotChassisSpeeds);
+        m_shotCalcOutputs = calcShot(robotPose, false, m_aimTarget, turretPosition, robotChassisSpeeds);
 
         // Logging
         log_globalShotTarget.accept(m_aimTarget);
