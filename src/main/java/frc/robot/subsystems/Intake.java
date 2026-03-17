@@ -103,11 +103,11 @@ public class Intake extends SubsystemBase {
 
     /* COMMANDS */
     public void setIntakeArmPos(IntakeArmPosition rots) {
-        setIntakeArmPos(rots.rots, rots == IntakeArmPosition.RETRACTED ? 3 : 1);
+        setIntakeArmPos(rots.rots, rots == IntakeArmPosition.RETRACTED ? 4 : 2);
     }
 
     public Command setIntakeArmPosCmd(IntakeArmPosition rots) {
-        return setIntakeArmPosCmd(rots.rots, rots == IntakeArmPosition.RETRACTED ? 3 : 1);
+        return setIntakeArmPosCmd(rots.rots, rots == IntakeArmPosition.RETRACTED ? 4 : 2);
     }
 
     public Command setIntakeArmPosCmd(Angle rots, double RPSPS) {
