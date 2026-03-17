@@ -96,7 +96,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private final DoubleLogger log_shimmyXMvmt = WaltLogger.logDouble("Swerve", "shimmyXMvmt");
     private final DoubleLogger log_shimmyYMvmt = WaltLogger.logDouble("Swerve", "shimmyYMvmt");
     private final Pose3dLogger log_shimmyPose = WaltLogger.logPose3d("Swerve", "shimmyPose");
-    
+
     private final Pose2dLogger log_targetPose = WaltLogger.logPose2d("Swerve", "targetPose");
 
     private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
@@ -455,10 +455,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     public Command shimmy(Distance x, Distance y, double secondsBetween, boolean waitBack) {
+        Pose2d curPose = getState().Pose;
         return Commands.sequence(
-            roboToTranslation(x, y),
+            roboToTranslation(curPose.getMeasureX().plus(x), curPose.getMeasureY().plus(y)),
             Commands.waitSeconds(secondsBetween),
-            roboToTranslation(x.unaryMinus(), y.unaryMinus()),
+            roboToTranslation(curPose.getMeasureX().minus(x), curPose.getMeasureY().minus(y)),
             waitBack ? Commands.waitSeconds(secondsBetween) : Commands.none()
         );
     }
@@ -467,14 +468,20 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     private SwerveShimmyData calcSwerveShimmyData(Supplier<Translation3d> targetSup) {
         Pose2d curPose = getState().Pose;
-        var target = targetSup.get();
+        var target = targetSup.get().toTranslation2d();
         Pose2d targetPose = new Pose2d(target.getMeasureX().in(Meters), target.getMeasureY().in(Meters), curPose.getRotation());
 
         Distance xDistance = targetPose.getMeasureX().minus(curPose.getMeasureX());
         Distance yDistance = targetPose.getMeasureY().minus(curPose.getMeasureY());
+        Distance xDistanceSquared = xDistance.times(xDistance.baseUnitMagnitude());
+        Distance yDistanceSquared = yDistance.times(yDistance.baseUnitMagnitude());
 
-        Distance xMovement = Meters.of(MathUtil.clamp(Math.abs(xDistance.in(Meters)), 0, 0.3));
-        Distance yMovement = Meters.of(MathUtil.clamp(Math.abs(yDistance.in(Meters)), 0, 0.3));
+        Distance hypotenuseDistance = Distance.ofBaseUnits(Math.sqrt(xDistanceSquared.minus(yDistanceSquared).baseUnitMagnitude()), Meter);
+
+        
+
+        Distance xMovement = Meters.of(MathUtil.clamp(xDistance.in(Meters), -0.3, 0.3));
+        Distance yMovement = Meters.of(MathUtil.clamp(yDistance.in(Meters), -0.3, 0.3));
 
         log_shimmyXDist.accept(xDistance.in(Meters));
         log_shimmyYDist.accept(yDistance.in(Meters));
@@ -501,7 +508,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     /**
      * robot goes to detected target
      */
-    public Command swerveToObject() {  
+    public Command swerveToObject() {
         PhotonTrackedTarget target = detection.getClosestObject();
         Pose2d destination = detection.targetToPose(getState().Pose, target);
         detection.addFuel(destination);

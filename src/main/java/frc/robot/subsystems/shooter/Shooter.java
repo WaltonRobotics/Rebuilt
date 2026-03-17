@@ -548,7 +548,6 @@ public class Shooter extends SubsystemBase {
         Pose2d pose = m_poseSupplier.get();
         m_periodicTracer.addEpoch("Getting Values");
 
-
         m_currentTarget = calculateTarget(pose);
         log_globalShotTarget.accept(m_currentTarget);
 
