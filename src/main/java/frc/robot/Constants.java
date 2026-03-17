@@ -52,6 +52,7 @@ public class Constants {
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
     public static final CANBus kCanivoreBus = new CANBus("fd");
+    public static final CANBus kShooterBus = new CANBus("shooter");
 
     public static final class MotorK {
         public static final double kX60MaxRadPerSec = DCMotor.getKrakenX60(1).freeSpeedRadPerSec;

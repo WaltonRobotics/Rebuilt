@@ -2,6 +2,7 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.kCanivoreBus;
+import static frc.robot.Constants.kShooterBus;
 import static frc.robot.Constants.ShooterK.*;
 
 import java.util.function.BooleanSupplier;
@@ -26,7 +27,7 @@ import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
 public class Hood extends SubsystemBase {
-    private final TalonFXS m_hood = new TalonFXS(kHoodCANID, kCanivoreBus);
+    private final TalonFXS m_hood = new TalonFXS(kHoodCANID, kShooterBus);
     private final PositionVoltage m_hoodPVRequest = new PositionVoltage(0).withEnableFOC(false);
     private final VoltageOut m_hoodZeroReq = new VoltageOut(0);
 

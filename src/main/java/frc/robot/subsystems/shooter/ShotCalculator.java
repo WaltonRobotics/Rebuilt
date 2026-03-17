@@ -43,48 +43,12 @@ public class ShotCalculator {
     private static final double minDistance;
     private static final double maxDistance;
 
-
-    //note that this is not being used as of now, but we will need to make our OWN lerp that way we shoot more accurately.
+    //LERP MADE ON 3/15/2025
     static {
         //TODO: find the actual minDistance and maxDistance for shooting
-        minDistance = 0.0;
-        maxDistance = 5.0;
+        minDistance = 0.94;
+        maxDistance = 5.8;
 
-        // m_shotMap.put(5.34, new ShotData(RotationsPerSecond.of(2900 / 60), Degrees.of(27)));
-        // m_timeOfFlightMap.put(5.34, 1.30);
-
-        // m_shotMap.put(4.90, new ShotData(RotationsPerSecond.of(2700 / 60), Degrees.of(26)));
-        // m_timeOfFlightMap.put(4.90, 1.42);
-
-        // m_shotMap.put(4.44, new ShotData(RotationsPerSecond.of(2820 / 60), Degrees.of(25.5)));
-        // m_timeOfFlightMap.put(4.44, 1.34);
-
-        // m_shotMap.put(4.05, new ShotData(RotationsPerSecond.of(2800 / 60), Degrees.of(25)));
-        // m_timeOfFlightMap.put(4.05, 1.36);
-
-        // m_shotMap.put(3.74, new ShotData(RotationsPerSecond.of(2750 / 60), Degrees.of(24)));
-        // m_timeOfFlightMap.put(3.74, 1.21);
-
-        // m_shotMap.put(3.42, new ShotData(RotationsPerSecond.of(2700 / 60), Degrees.of(23)));
-        // m_timeOfFlightMap.put(3.42, 1.40);
-
-        // m_shotMap.put(3.06, new ShotData(RotationsPerSecond.of(2610 / 60), Degrees.of(22)));
-        // m_timeOfFlightMap.put(3.06, 1.38);
-
-        // m_shotMap.put(2.73, new ShotData(RotationsPerSecond.of(2500 / 60), Degrees.of(20.5)));
-        // m_timeOfFlightMap.put(2.73, 1.34);
-
-        // m_shotMap.put(2.45, new ShotData(RotationsPerSecond.of(2450 / 60), Degrees.of(19.5)));
-        // m_timeOfFlightMap.put(2.45, 1.28);
-
-        // m_shotMap.put(2.14, new ShotData(RotationsPerSecond.of(2400 / 60), Degrees.of(18)));
-        // m_timeOfFlightMap.put(2.14, 1.31);
-
-        // m_shotMap.put(1.86, new ShotData(RotationsPerSecond.of(2350 / 60), Degrees.of(17)));
-        // m_timeOfFlightMap.put(1.86, 1.24);
-
-        // m_shotMap.put(1.55, new ShotData(RotationsPerSecond.of(2275 / 60), Degrees.of(15)));
-        // m_timeOfFlightMap.put(1.55, 1.23);
 
         m_shotMap.put(5.657, new ShotData(RotationsPerSecond.of(83.80), Degrees.of(522.76)));
         m_timeOfFlightMap.put(5.657, 1.30);
