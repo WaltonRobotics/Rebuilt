@@ -2,8 +2,6 @@ package frc.robot.dashboards;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.sendable.SendableRegistry;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -38,15 +36,34 @@ public class AutonChooser {
         return new WaltPathAndCommand(AutonK.kRightSweepPathName, simpleAutonFactory.rightTwoSweep(false));
     }
 
+    private static WaltPathAndCommand auton_fastRight(WaltSimpleAutonFactory simpleAutonFactory) {
+        return new WaltPathAndCommand(AutonK.kFastRightTwoSweepName, simpleAutonFactory.fastOneSweep(false));
+    }
+
+    private static WaltPathAndCommand auton_fastRightTwo_ZigZag(WaltSimpleAutonFactory simpleAutonFactory) {
+        return new WaltPathAndCommand(AutonK.kFastRightTwoSweepName, simpleAutonFactory.fastRightTwoSweep_ZigZag());
+    }
+
+    private static WaltPathAndCommand auton_fastRightTwo_Reshoot(WaltSimpleAutonFactory simpleAutonFactory) {
+        return new WaltPathAndCommand(AutonK.kFastRightTwoSweepName, simpleAutonFactory.fastTwoSweep_Reshoot(false));
+    }
+
+    private static WaltPathAndCommand auton_fastLeftTwo_Reshoot(WaltSimpleAutonFactory simpleAutonFactory) {
+        return new WaltPathAndCommand(AutonK.kFastLeftTwoSweepName, simpleAutonFactory.fastTwoSweep_Reshoot(true));
+    }
+
     public static void initialize(WaltSimpleAutonFactory simpleAutonFactory) {
         m_simpleAutonFactory = simpleAutonFactory;
 
         m_chooser.setDefaultOption("None Selected", auton_none);
-        m_chooser.addOption("Fast One Right Neutral Pickup", auton_oneCycleGoInNow_Right(m_simpleAutonFactory));
-        m_chooser.addOption("Fast One Left Neutral Pickup", auton_oneCycleGoInNow_Left(m_simpleAutonFactory));
+        m_chooser.addOption("One Right Neutral Pickup", auton_oneCycleGoInNow_Right(m_simpleAutonFactory));
+        m_chooser.addOption("One Left Neutral Pickup", auton_oneCycleGoInNow_Left(m_simpleAutonFactory));
         m_chooser.addOption("Optimized One Left Neutral Pickup", auton_oneCycleGoInNow_LeftOptimize(simpleAutonFactory));
         m_chooser.addOption("Optimized One Right Neutral Pickup", auton_oneCycleGoInNow_RightOptimize(simpleAutonFactory));
-        m_chooser.addOption("Two Right Sweep", auton_twoRightSweep(simpleAutonFactory));
+        m_chooser.addOption("Fast One Right Neutral Pickup", auton_fastRight(m_simpleAutonFactory));
+        m_chooser.addOption("Zigzag Two Right Neutral Pickup", auton_fastRightTwo_ZigZag(simpleAutonFactory));
+        m_chooser.addOption("Reshoot Two Right Neutral Pickup", auton_fastRightTwo_Reshoot(simpleAutonFactory));
+        m_chooser.addOption("Reshoot Two Left Neutral Pickup", auton_fastLeftTwo_Reshoot(simpleAutonFactory));
 
         SmartDashboard.putData(m_chooser);
     }

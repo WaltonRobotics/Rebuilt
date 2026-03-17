@@ -17,8 +17,8 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
-import com.reduxrobotics.canand.CanandEventLoop;
-import com.reduxrobotics.sensors.canandmag.Canandmag;
+// import com.reduxrobotics.canand.CanandEventLoop;
+// import com.reduxrobotics.sensors.canandmag.Canandmag;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -85,7 +85,7 @@ public class Shooter extends SubsystemBase {
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); // X44Foc
     private final CANcoder m_turretEncoderA = new CANcoder(19, Constants.kCanivoreBus);
-    private final Canandmag m_turretEncoderB = new Canandmag(1);
+    // private final Canandmag m_turretEncoderB = new Canandmag(1);
     private final PositionVoltage m_PVRequest = new PositionVoltage(0).withEnableFOC(true);
     private final VoltageOut m_VoltageReq = new VoltageOut(0);
     private final StaticBrake m_BrakeReq = new StaticBrake();
@@ -176,9 +176,9 @@ public class Shooter extends SubsystemBase {
         m_shooterB.setControl(new Follower(kShooterA_CANID, MotorAlignmentValue.Opposed));
 
         m_turretEncoderA.getConfigurator();
-        m_turretEncoderB.setPartyMode(5);
+        // m_turretEncoderB.setPartyMode(5);
 
-        CanandEventLoop.getInstance();
+        // CanandEventLoop.getInstance();
 
         sig_shooterCLErr.setUpdateFrequency(Hertz.of(50));
 
@@ -388,27 +388,26 @@ public class Shooter extends SubsystemBase {
 
         var calcData = m_shooterCalc.getLatestShotCalcOutputs();
 
-        // set turret reference
+        // set turret reference             // set hood reference  
         if (m_isTurretHomed && m_hood.isHoodHomed()) {
             var turretReference = calcData.turretReference();
+            var hoodReference = calcData.hoodReference();
 
             // set outputs
             var turretVelocityFF = calcData.turretCalcDetails().turretVelocityFF();
             if (m_turretLocked) {
                 setTurretPos(m_turretLockAngle);
+                m_hood.setHoodPos(kHoodLockDegs);
+                m_calcFlywheelVelocity = kShooterRPS;
             } else {
                 if (m_holdTurretAtIntakePos) {
                     setTurretPos(Rotations.of(-0.250));
                 } else {
                     setTurretPos(turretReference, turretVelocityFF);
+                    m_hood.setHoodPos(hoodReference);
+                    m_calcFlywheelVelocity = calcData.shooterReference();
                 }
             }
-
-            // set hood reference
-            var hoodReference = calcData.hoodReference();
-            m_hood.setHoodPos(hoodReference);
-            // set shooter reference
-            m_calcFlywheelVelocity = calcData.shooterReference();
         }
 
         log_shooterVelocityRPS.accept(m_flywheelVelocity.in(RotationsPerSecond));
