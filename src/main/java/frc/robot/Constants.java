@@ -27,7 +27,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-import com.reduxrobotics.sensors.canandmag.CanandmagSettings;
+// import com.reduxrobotics.sensors.canandmag.CanandmagSettings;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -375,7 +375,7 @@ public class Constants {
         /* CONFIGS */
         //IntakeArm Motor
         private static final CurrentLimitsConfigs kIntakeArmCurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(20)
+            .withStatorCurrentLimit(10)
             .withSupplyCurrentLimit(20)
             .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true)

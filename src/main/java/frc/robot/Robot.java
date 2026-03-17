@@ -80,7 +80,7 @@ public class Robot extends TimedRobot {
     // private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     // private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
-    private final Telemetry logger = new Telemetry(kMaxTranslationSpeed.in(MetersPerSecond));
+    // private final Telemetry logger = new Telemetry(kMaxTranslationSpeed.in(MetersPerSecond));
 
     //---CONTROLLERS
     private final CommandXboxController m_driver = new CommandXboxController(0);
@@ -293,7 +293,7 @@ public class Robot extends TimedRobot {
         // Reset the field-centric heading on left bumper press.
         m_driver.leftBumper().and(trg_driverOverride).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
 
-        m_drivetrain.registerTelemetry(logger::telemeterize);
+        // m_drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
         trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   

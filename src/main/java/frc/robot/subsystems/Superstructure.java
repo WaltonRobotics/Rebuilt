@@ -91,13 +91,10 @@ public class Superstructure extends SubsystemBase {
             }, 
             () -> {
                 boolean shooting = isShooting.getAsBoolean();
-
-                if (m_intake.getIntakeArmStatorCurrent() < 40) {
-                    m_shooter.setIntaking(false);
-                    m_intake.setIntakeRollersVelocity(RotationsPerSecond.zero());   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
-                    if (!shooting) {
-                        m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
-                    }
+                m_shooter.setIntaking(false);
+                m_intake.setIntakeRollersVelocity(RotationsPerSecond.zero());   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
+                if (!shooting) {
+                    m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
                 }
             })
         );

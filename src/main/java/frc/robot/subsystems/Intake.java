@@ -13,6 +13,7 @@ import static frc.robot.Constants.IntakeK.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
+import com.ctre.phoenix6.controls.DynamicMotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -164,38 +165,6 @@ public class Intake extends SubsystemBase {
     //for TestingDashboard
     public Command setIntakeRollersVelocity(DoubleSubscriber sub_RPS) {
         return run(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
-    }
-
-    // public TalonFX getIntakeArmMotor() {
-    //     return m_intakeArm;
-    // }
-
-    // public TalonFX getIntakeRollers() {
-    //     return m_intakeRollers;
-    // }
-
-    public double getIntakeArmStatorCurrent() {
-        return m_intakeArm.getStatorCurrent().getValueAsDouble();
-    }
-
-    public double getIntakeRollersStatorCurrent() {
-        return m_intakeRollers.getStatorCurrent().getValueAsDouble();
-    }
-
-    public double getIntakeArmSupplyCurrent() {
-        return m_intakeArm.getSupplyCurrent().getValueAsDouble();
-    }
-
-    public double getIntakeRollersSupplyCurrent() {
-        return m_intakeRollers.getSupplyCurrent().getValueAsDouble();
-    }
-
-    public double getIntakeArmMotorVoltage() {
-        return m_intakeArm.getMotorVoltage().getValueAsDouble();
-    }
-
-    public double getIntakeRollersMotorVoltage() {
-        return m_intakeRollers.getMotorVoltage().getValueAsDouble();
     }
 
     // TESTING TO SEE IF WE CAN JUST SAY 0 AS 0

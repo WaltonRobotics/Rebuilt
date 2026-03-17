@@ -17,8 +17,8 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
-import com.reduxrobotics.canand.CanandEventLoop;
-import com.reduxrobotics.sensors.canandmag.Canandmag;
+// import com.reduxrobotics.canand.CanandEventLoop;
+// import com.reduxrobotics.sensors.canandmag.Canandmag;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -85,7 +85,7 @@ public class Shooter extends SubsystemBase {
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); // X44Foc
     private final CANcoder m_turretEncoderA = new CANcoder(19, Constants.kCanivoreBus);
-    private final Canandmag m_turretEncoderB = new Canandmag(1);
+    // private final Canandmag m_turretEncoderB = new Canandmag(1);
     private final PositionVoltage m_PVRequest = new PositionVoltage(0).withEnableFOC(true);
     private final VoltageOut m_VoltageReq = new VoltageOut(0);
     private final StaticBrake m_BrakeReq = new StaticBrake();
@@ -176,9 +176,9 @@ public class Shooter extends SubsystemBase {
         m_shooterB.setControl(new Follower(kShooterA_CANID, MotorAlignmentValue.Opposed));
 
         m_turretEncoderA.getConfigurator();
-        m_turretEncoderB.setPartyMode(5);
+        // m_turretEncoderB.setPartyMode(5);
 
-        CanandEventLoop.getInstance();
+        // CanandEventLoop.getInstance();
 
         sig_shooterCLErr.setUpdateFrequency(Hertz.of(50));
 
