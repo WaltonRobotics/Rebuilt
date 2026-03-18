@@ -55,7 +55,7 @@ public class ShooterCalc {
     private final AzimuthCalcDetails kEmptyAzimuthCalcDetails = new AzimuthCalcDetails(Rotations.zero(), new Pose3d(), new Pose3d(), 0, RotationsPerSecond.zero());
     private final ShotCalcOutputs kEmptyShotCalcOutputs = new ShotCalcOutputs(kEmptyAzimuthCalcDetails, kEmptyShotData, Rotation.zero(), Rotation.zero(), RotationsPerSecond.zero());
 
-    private boolean m_useSotm = false;
+    private boolean m_useStaticShot = true;
     private Translation3d m_aimTarget = Translation3d.kZero;
     private ShotCalcOutputs m_shotCalcOutputs = kEmptyShotCalcOutputs;
     
@@ -70,8 +70,8 @@ public class ShooterCalc {
         m_notifier.startPeriodic(Hertz.of(25)); // 2x slower than robot loop
     }
 
-    public void shouldUseSotm(boolean should) {
-        m_useSotm = should;
+    public void shouldUseStaticShot(boolean should) {
+        m_useStaticShot = should;
     }
 
     public Translation3d getLatestAimTarget() {
@@ -92,7 +92,7 @@ public class ShooterCalc {
         Angle turretPosition = m_turretPosSup.get();
 
         m_aimTarget = calculateTarget(robotPose);
-        m_shotCalcOutputs = calcShot(robotPose, false, m_aimTarget, turretPosition, robotChassisSpeeds);
+        m_shotCalcOutputs = calcShot(robotPose, m_useStaticShot, m_aimTarget, turretPosition, robotChassisSpeeds);
 
         // Logging
         log_globalShotTarget.accept(m_aimTarget);

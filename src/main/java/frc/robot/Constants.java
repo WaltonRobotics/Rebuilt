@@ -375,7 +375,7 @@ public class Constants {
         /* CONFIGS */
         //IntakeArm Motor
         private static final CurrentLimitsConfigs kIntakeArmCurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(10)
+            .withStatorCurrentLimit(20)
             .withSupplyCurrentLimit(20)
             .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true)
