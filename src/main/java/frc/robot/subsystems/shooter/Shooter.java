@@ -398,7 +398,7 @@ public class Shooter extends SubsystemBase {
                     setTurretPos(Rotations.of(-0.250));
                 } else {
                     setTurretPos(turretReference, turretVelocityFF);
-                    // m_hood.setHoodPos(hoodReference);
+                    m_hood.setHoodPos(hoodReference);   //comment out for LERP
                     m_calcFlywheelVelocity = calcData.shooterReference();
                 }
             }

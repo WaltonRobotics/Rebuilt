@@ -316,8 +316,8 @@ public class Robot extends TimedRobot {
 
         //Shooting
         // NORMAL FIXED SHOT
-        trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
-        // trg_shoot.whileTrue(m_superstructure.activateOuttakeShotCalc());
+        // trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
+        trg_shoot.whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
 
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());

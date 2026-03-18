@@ -49,12 +49,25 @@ public class ShotCalculator {
         minDistance = 0.94;
         maxDistance = 5.8;
 
+        //mid grid
         m_shotMap.put(3.903, new ShotData(RotationsPerSecond.of(73.18), Degrees.of(327.75)));
         m_timeOfFlightMap.put(3.903, 1.35);
 
-        //THIS ONE IS INCONSISTENT UNTIL SHOOTER V3
+        //backright grid - THIS ONE IS INCONSISTENT UNTIL SHOOTER V3
         m_shotMap.put(5.657, new ShotData(RotationsPerSecond.of(95.00), Degrees.of(374.20)));
         m_timeOfFlightMap.put(5.657, 1.56);
+
+        //frontright grid
+        m_shotMap.put(3.763, new ShotData(RotationsPerSecond.of(77), Degrees.of(300)));
+        m_timeOfFlightMap.put(3.763, 1.43);
+
+        //frontleft grid
+        m_shotMap.put(1.476, new ShotData(RotationsPerSecond.of(57.72), Degrees.of(150.77)));
+        m_timeOfFlightMap.put(1.476, 1.125);
+
+        //backleft grid
+        m_shotMap.put(3.854, new ShotData(RotationsPerSecond.of(79), Degrees.of(345)));
+        m_timeOfFlightMap.put(3.854, 1.38);
     }
 
     /**
