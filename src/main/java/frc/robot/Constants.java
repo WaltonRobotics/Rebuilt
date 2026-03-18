@@ -413,7 +413,7 @@ public class Constants {
 
         //Intake Rollers Motor
         private static final CurrentLimitsConfigs kIntakeRollersCurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(120)
+            .withStatorCurrentLimit(85)
             .withSupplyCurrentLimit(50)
             .withSupplyCurrentLowerTime(0)
             .withStatorCurrentLimitEnable(true)
