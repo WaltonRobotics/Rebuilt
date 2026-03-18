@@ -83,9 +83,7 @@ public class Shooter extends SubsystemBase {
     private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(false);
     private final NeutralOut m_neutralOutReq = new NeutralOut();
 
-    private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); // X44Foc
-    private final CANcoder m_turretEncoderA = new CANcoder(19, Constants.kCanivoreBus);
-    // private final Canandmag m_turretEncoderB = new Canandmag(1);
+    private final TalonFX m_turretMotor = new TalonFX(kTurretCANID, Constants.kCanivoreBus); // X44Foc
     private final PositionVoltage m_PVRequest = new PositionVoltage(0).withEnableFOC(true);
     private final VoltageOut m_VoltageReq = new VoltageOut(0);
     private final StaticBrake m_BrakeReq = new StaticBrake();
@@ -97,7 +95,7 @@ public class Shooter extends SubsystemBase {
     private final Supplier<SwerveDriveState> m_threadsafeSwerveSup;
 
     private final Hood m_hood = new Hood();
-
+    private final Turret m_turret = new Turret();
 
     // thread copde
     private Angle m_turretPosition = Rotation.zero();
@@ -170,19 +168,14 @@ public class Shooter extends SubsystemBase {
 
         m_shooterA.getConfigurator().apply(kShooterATalonFXConfiguration);
         m_shooterB.getConfigurator().apply(kShooterBTalonFXConfiguration);
-        m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
+        m_turretMotor.getConfigurator().apply(kTurretTalonFXConfiguration);
         // m_hood.getConfigurator().apply(kHoodTalonFXSConfiguration);
 
         m_shooterB.setControl(new Follower(kShooterA_CANID, MotorAlignmentValue.Opposed));
 
-        m_turretEncoderA.getConfigurator();
-        // m_turretEncoderB.setPartyMode(5);
-
-        // CanandEventLoop.getInstance();
-
         sig_shooterCLErr.setUpdateFrequency(Hertz.of(50));
 
-        Angle turretTurnPosition = m_turret.getPosition().getValue();
+        Angle turretTurnPosition = m_turretMotor.getPosition().getValue();
         m_flywheelVelocity = m_shooterA.getVelocity().getValue();
 
         m_poseSupplier = poseSupplier;
@@ -204,7 +197,7 @@ public class Shooter extends SubsystemBase {
                 }),
                 Commands.runOnce(() -> homingEventLoop.clear())));
 
-        m_turret.setPosition(kInitPosition);
+        m_turretMotor.setPosition(kInitPosition);
 
         initSim();
     }
@@ -226,7 +219,7 @@ public class Shooter extends SubsystemBase {
     public void setTurretLock(boolean locked) {
         m_turretLocked = locked;
         if (m_turretLocked) {
-            m_turretLockAngle = m_turret.getPosition().getValue();
+            m_turretLockAngle = m_turretMotor.getPosition().getValue();
         }
     }
 
@@ -286,12 +279,12 @@ public class Shooter extends SubsystemBase {
 
     public void setTurretPos(Angle rots, AngularVelocity velocityFF) {
         if (!m_isTurretHomed) { return; }
-        m_turret.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFF));
+        m_turretMotor.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFF));
         log_turretControlPos.accept(rots.in(Rotations));
     }
 
     public void setTurretNeutralMode(NeutralModeValue value) {
-        m_turret.setNeutralMode(value);
+        m_turretMotor.setNeutralMode(value);
     }
 
     // for TestingDashboard
@@ -301,7 +294,7 @@ public class Shooter extends SubsystemBase {
 
     /* GETTERS */
     public AngularVelocity getShooterVelocity() {
-        return m_shooterA.getVelocity().getValue();
+        return m_flywheelVelocity;
     }
 
     /* SIMULATION */
@@ -349,7 +342,7 @@ public class Shooter extends SubsystemBase {
     private void initSim() {
         WaltMotorSim.initSimFX(m_shooterA, ChassisReference.CounterClockwise_Positive,
                 TalonFXSimState.MotorType.KrakenX60);
-        WaltMotorSim.initSimFX(m_turret, ChassisReference.CounterClockwise_Positive,
+        WaltMotorSim.initSimFX(m_turretMotor, ChassisReference.CounterClockwise_Positive,
                 TalonFXSimState.MotorType.KrakenX44);
     }
 
@@ -378,12 +371,13 @@ public class Shooter extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
+        m_turret.periodic();
         // m_periodicTracer.addEpoch("Entry (Unused Time)");
 
         // Cache all signals at the top so every consumer in this loop sees the same
         // values
         // THIS IS USED SNEAKILY BY SHOTCALC DO NOT MOVE THIS
-        m_turretPosition = m_turret.getPosition().getValue();
+        m_turretPosition = m_turretMotor.getPosition().getValue();
         m_flywheelVelocity = m_shooterA.getVelocity().getValue();
 
         var calcData = m_shooterCalc.getLatestShotCalcOutputs();
@@ -404,7 +398,7 @@ public class Shooter extends SubsystemBase {
                     setTurretPos(Rotations.of(-0.250));
                 } else {
                     setTurretPos(turretReference, turretVelocityFF);
-                    m_hood.setHoodPos(hoodReference);
+                    // m_hood.setHoodPos(hoodReference);
                     m_calcFlywheelVelocity = calcData.shooterReference();
                 }
             }
@@ -423,8 +417,6 @@ public class Shooter extends SubsystemBase {
 
     public void fastPeriodic() {
         homingEventLoop.poll();
-        log_turretHomed.accept(m_isTurretHomed);
-        log_turretHomingHall.accept(trg_homingHallDirect);
     }
 
     @Override
@@ -434,28 +426,28 @@ public class Shooter extends SubsystemBase {
         //         getHoodAngle());
 
         WaltMotorSim.updateSimFX(m_shooterA, m_shooterSim);
-        WaltMotorSim.updateSimFX(m_turret, m_turretSim);
+        WaltMotorSim.updateSimFX(m_turretMotor, m_turretSim);
         // WaltMotorSim.updateSimServo(m_hood, m_hoodSim);
     }
 
     public Command turretHomingCmd() {
         Runnable init = () -> {
             WaltLogger.timedPrint("TurretHoming BEGIN");
-            m_turret.setControl(m_VoltageReq.withOutput(kHomingVoltage));
+            m_turretMotor.setControl(m_VoltageReq.withOutput(kHomingVoltage));
             m_isTurretHomed = false;
             log_turretHomed.accept(m_isTurretHomed);
         };
 
         Consumer<Boolean> end = (Boolean interrupted) -> {
             if (interrupted) {
-                m_turret.setControl(m_BrakeReq);
+                m_turretMotor.setControl(m_BrakeReq);
                 log_turretHomed.accept(m_isTurretHomed);
                 WaltLogger.timedPrint("TurretHoming INTERRUPTED!!!");
                 return;
             }
 
-            m_turret.setPosition(kHomePosition); // Flowkirkentologicalexpialibrostatenuinely
-            m_turret.setControl(m_BrakeReq);
+            m_turretMotor.setPosition(kHomePosition); // Flowkirkentologicalexpialibrostatenuinely
+            m_turretMotor.setControl(m_BrakeReq);
             removeDefaultCommand();
             m_isTurretHomed = true;
             log_turretHomed.accept(m_isTurretHomed);
