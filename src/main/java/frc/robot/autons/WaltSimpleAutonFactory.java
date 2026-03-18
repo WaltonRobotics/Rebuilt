@@ -211,7 +211,7 @@ public class WaltSimpleAutonFactory {
         AutoTrajectory traj2 = createTraj(routine, path2);
 
         // Phase 1: first sweep + homing/intake
-        routine.active().onTrue(traj1.cmd().withTimeout(6));
+        routine.active().onTrue(traj1.cmd().withTimeout(10));
 
         routine.active().onTrue(
             homingCmd().andThen(
