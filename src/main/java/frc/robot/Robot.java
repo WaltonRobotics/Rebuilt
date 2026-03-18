@@ -102,8 +102,6 @@ public class Robot extends TimedRobot {
     private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
 
     //---AUTONS
-    private Command m_autonomousCommand;
-
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
     private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
 
@@ -177,6 +175,10 @@ public class Robot extends TimedRobot {
         }
 
         AutonChooser.initialize(m_simpleAutonFactory);
+
+        RobotModeTriggers.autonomous().whileTrue(
+            AutonChooser.m_chooser.selectedCommandScheduler().withTimeout(20.3)
+        );
 
         // set FPS limit on boot
         WaltCamera.setFpsLimit(true);
@@ -494,11 +496,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        m_autonomousCommand = AutonChooser.m_chooser.getSelected().autonCommand.withTimeout(20.3);
-
-        if (m_autonomousCommand != null) {
-            CommandScheduler.getInstance().schedule(m_autonomousCommand);
-        }
     }
 
     @Override
@@ -509,9 +506,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
-        if (m_autonomousCommand != null) {
-            CommandScheduler.getInstance().cancel(m_autonomousCommand);
-        }
         HubShiftUtil.initialize();
     }
 
