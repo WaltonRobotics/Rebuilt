@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static frc.robot.Constants.ShooterK.*;
@@ -49,7 +50,7 @@ public class ShotCalculator {
         minDistance = 0.94;
         maxDistance = 5.8;
 
-        //mid grid
+        //right mid grid
         m_shotMap.put(3.903, new ShotData(RotationsPerSecond.of(73.18), Degrees.of(327.75)));
         m_timeOfFlightMap.put(3.903, 1.35);
 
@@ -68,6 +69,31 @@ public class ShotCalculator {
         //backleft grid
         m_shotMap.put(3.854, new ShotData(RotationsPerSecond.of(79), Degrees.of(345)));
         m_timeOfFlightMap.put(3.854, 1.38);
+
+        //against the hub
+        m_shotMap.put(0.835, new ShotData(RotationsPerSecond.of(66.21), Degrees.of(85.51)));
+        m_timeOfFlightMap.put(0.835, 1.17);
+
+        //against the tower
+        m_shotMap.put(2.977, new ShotData(RotationsPerSecond.of(71.14), Degrees.of(338.81)));
+        m_timeOfFlightMap.put(2.977, 1.03);
+
+        //backleft grid
+        m_shotMap.put(4.348, new ShotData(RotationsPerSecond.of(77.94), Degrees.of(396.32)));
+        m_timeOfFlightMap.put(4.348, 1.38);
+
+        //left mid grid
+        m_shotMap.put(2.799, new ShotData(RotationsPerSecond.of(67.91), Degrees.of(308.94)));
+        m_timeOfFlightMap.put(2.799, 1.08);
+
+        m_shotMap.put(3.561, new ShotData(RotationsPerSecond.of(79.30), Degrees.of(287.93)));
+        m_timeOfFlightMap.put(3.561, 1.42);
+
+        m_shotMap.put(1.870, new ShotData(RotationsPerSecond.of(62.31), Degrees.of(231.52)));
+        m_timeOfFlightMap.put(1.870, 1.1);
+
+        m_shotMap.put(3.259, new ShotData(RotationsPerSecond.of(75.64), Degrees.of(268.02)));
+        m_timeOfFlightMap.put(3.259, 1.37);
     }
 
     /**
