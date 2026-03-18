@@ -168,7 +168,7 @@ public class Robot extends TimedRobot {
     public Robot() {
         configureBindings();
         // configureTestBindings();    //this should be commented out during competition matches
-        // configureTestingDashboard();
+        configureTestingDashboard();
 
         lastGotTagMsmtTimer.start();
         if (Robot.isSimulation()) {
@@ -316,8 +316,8 @@ public class Robot extends TimedRobot {
 
         //Shooting
         // NORMAL FIXED SHOT
-        // trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
-        trg_shoot.whileTrue(m_superstructure.activateOuttakeShotCalc());
+        trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
+        // trg_shoot.whileTrue(m_superstructure.activateOuttakeShotCalc());
 
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
@@ -378,15 +378,15 @@ public class Robot extends TimedRobot {
 
     private void configureTestingDashboard() {
         /* INITIALIZE DASHBOARD */
-        // TestingDashboard.initialize();
+        TestingDashboard.initialize();
 
         // // /* ELASTIC WIDGET BINDINGS */
-        // TestingDashboard.trg_letShooterVelocityRPSChange
-        //     .whileTrue(m_shooter.setShooterVelocityCmd(TestingDashboard.sub_shooterVelocityRPS));
+        TestingDashboard.trg_letShooterVelocityRPSChange
+            .whileTrue(m_shooter.setShooterVelocityCmd(TestingDashboard.sub_shooterVelocityRPS));
         // // // TestingDashboard.trg_letTurretPositionRotsChange
         // // //     .whileTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
-        // TestingDashboard.trg_letHoodPositionDegsChange
-        //     .whileTrue(m_hood.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
+        TestingDashboard.trg_letHoodPositionDegsChange
+            .whileTrue(m_hood.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
 
         // TestingDashboard.trg_letSpindexerVelocityRPSChange
         //     .whileTrue(m_indexer.setSpindexerVelocityCmd(TestingDashboard.sub_spindexerVelocityRPS));

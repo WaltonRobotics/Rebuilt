@@ -49,39 +49,12 @@ public class ShotCalculator {
         minDistance = 0.94;
         maxDistance = 5.8;
 
+        m_shotMap.put(3.903, new ShotData(RotationsPerSecond.of(73.18), Degrees.of(327.75)));
+        m_timeOfFlightMap.put(3.903, 1.35);
 
-        m_shotMap.put(5.657, new ShotData(RotationsPerSecond.of(83.80), Degrees.of(522.76)));
-        m_timeOfFlightMap.put(5.657, 1.30);
-
-        m_shotMap.put(2.818, new ShotData(RotationsPerSecond.of(61.81), Degrees.of(410.63)));
-        m_timeOfFlightMap.put(2.818, 1.12);
-
-        m_shotMap.put(3.420, new ShotData(RotationsPerSecond.of(66.51), Degrees.of(410.63)));
-        m_timeOfFlightMap.put(3.420, 1.14);
-
-        m_shotMap.put(3.074, new ShotData(RotationsPerSecond.of(63.20), Degrees.of(505.57)));
-        m_timeOfFlightMap.put(3.074, 1.05);
-
-        m_shotMap.put(0.94, new ShotData(RotationsPerSecond.of(56), Degrees.of(71)));
-        m_timeOfFlightMap.put(0.94, 1.00);
-
-        m_shotMap.put(1.712, new ShotData(RotationsPerSecond.of(53.77), Degrees.of(306.66)));
-        m_timeOfFlightMap.put(1.712, 1.05);
-
-        m_shotMap.put(1.82, new ShotData(RotationsPerSecond.of(53.77), Degrees.of(306.66)));
-        m_timeOfFlightMap.put(1.82, 0.95);
-
-        m_shotMap.put(3.021, new ShotData(RotationsPerSecond.of(62.85), Degrees.of(518.68)));
-        m_timeOfFlightMap.put(3.012, 0.92);
-
-        m_shotMap.put(2.965, new ShotData(RotationsPerSecond.of(60.85), Degrees.of(518.68)));
-        m_timeOfFlightMap.put(2.965, 0.96);
-
-        m_shotMap.put(3.975, new ShotData(RotationsPerSecond.of(74.20), Degrees.of(518.68)));
-        m_timeOfFlightMap.put(3.975, 1.19);
-
-        m_shotMap.put(3.935, new ShotData(RotationsPerSecond.of(70.49), Degrees.of(518.68)));
-        m_timeOfFlightMap.put(3.935, 1.08);
+        //THIS ONE IS INCONSISTENT UNTIL SHOOTER V3
+        m_shotMap.put(5.657, new ShotData(RotationsPerSecond.of(95.00), Degrees.of(374.20)));
+        m_timeOfFlightMap.put(5.657, 1.56);
     }
 
     /**

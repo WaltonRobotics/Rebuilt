@@ -125,30 +125,32 @@ public class Superstructure extends SubsystemBase {
      */
     public Command activateOuttake(Supplier<AngularVelocity> RPS) {
         // log_shooterState.accept("pre sequence");
-        return Commands.sequence(
+        return Commands.parallel(
             // up("post sequence call"),
             m_shooter.setShooterVelocityCmdSupp(RPS),
             // up("post supplier command"),
 
-            // up("pre waituntil command"),
-            Commands.waitUntil(() -> m_shooter.isShooterSpunUp()),
-            // up("post waituntil command"),
+            Commands.sequence(
+                // up("pre waituntil command"),
+                Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocity().gte(ShooterK.kShooterSpunUpMinimum)))).withTimeout(ShooterK.kShooterSpunUpTimeout),
+                m_indexer.startTunnelCmd(),
+                Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocity().gte(IndexerK.kTunnelSpunUpMinimum))).withTimeout(IndexerK.kTunnelSpunUpTimeout),
+                // up("post waituntil command"),
 
-            // up("pre start indexer"),
-            m_indexer.startIndexerCmd(),
-            // up("post start indexer"),
+                // up("pre start indexer"),
+                m_indexer.startSpindexerCmd(),
+                // up("post start indexer"),
 
-            // up("pre repeating sequence"),
-            Commands.repeatingSequence(
-                // up("in repeating sequence"),
-                // Commands.waitUntil(() -> !m_shooter.isShooterSpunUp()), // block until un-spun
-                // m_indexer.stopIndexerCmd(), // stop indexer
-                // // up("restart indexer in repeating sequence"),
-                // Commands.waitUntil(() -> m_shooter.isShooterSpunUp()), // block until spun
-                // m_indexer.startIndexerCmd() // restart indexer
-                // // up("end repeating sequence")
-                // Commands.print("cope sequence: INITIATED")
-                Commands.none()
+                // up("pre repeating sequence"),
+                Commands.repeatingSequence(
+                    // up("in repeating sequence"),
+                    // m_indexer.stopIndexerCmd()
+                    //     .onlyIf(() -> !m_shooter.isShooterSpunUp())
+                    //     .andThen(m_indexer.startIndexerCmd()).beforeStarting(Commands.waitUntil(() -> m_shooter.isShooterSpunUp()))
+                    // up("end repeating sequence")
+                    // Commands.print("shotCalc cope sequence: INITIATED")
+                    Commands.none()
+                )
             )
             // up("post repeating sequence")
         )
@@ -175,11 +177,13 @@ public class Superstructure extends SubsystemBase {
 
             Commands.sequence(
                 // up("pre waituntil command"),
-                Commands.waitUntil(() -> m_shooter.isShooterSpunUp()),
+                Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocity().gte(ShooterK.kShooterSpunUpMinimum)))).withTimeout(ShooterK.kShooterSpunUpTimeout),
+                m_indexer.startTunnelCmd(),
+                Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocity().gte(IndexerK.kTunnelSpunUpMinimum))).withTimeout(IndexerK.kTunnelSpunUpTimeout),
                 // up("post waituntil command"),
 
                 // up("pre start indexer"),
-                m_indexer.startIndexerCmd(),
+                m_indexer.startSpindexerCmd(),
                 // up("post start indexer"),
 
                 // up("pre repeating sequence"),

@@ -41,6 +41,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -114,6 +115,9 @@ public class Constants {
         public static final AngularVelocity kShooterAuton_EndSweep_RPS = kShooterMaxRPS.times(0.70); // end of sweep paths
         public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.31);
         public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.zero();
+
+        public static final AngularVelocity kShooterSpunUpMinimum = RotationsPerSecond.of(10);
+        public static final Time kShooterSpunUpTimeout = Seconds.of(0.64);  //double expected spinup time
 
         //---HOOD CONSTANTS
         public static final double kHoodMoI = 0.00027505;
@@ -455,8 +459,11 @@ public class Constants {
         public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(1.0);
 
-        public static final AngularVelocity kTunnelMaxRPS = MotorK.kX44MaxVelocity.div(kTunnelGearing);
+        public static final AngularVelocity kTunnelMaxRPS = MotorK.kX60MaxVelocity.div(kTunnelGearing);
         public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(1.0);
+
+        public static final AngularVelocity kTunnelSpunUpMinimum = RotationsPerSecond.of(10);
+        public static final Time kTunnelSpunUpTimeout = Seconds.of(1);  //double expected spinup time
         
         /* CONFIGS */
         //TODO: Make transfer configs accurate
