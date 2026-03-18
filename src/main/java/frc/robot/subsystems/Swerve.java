@@ -95,7 +95,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private final DoubleLogger log_shimmyXMvmt = WaltLogger.logDouble("Swerve", "shimmyXMvmt");
     private final DoubleLogger log_shimmyYMvmt = WaltLogger.logDouble("Swerve", "shimmyYMvmt");
     private final DoubleLogger log_shimmySlope = WaltLogger.logDouble("Swerve", "shimmySlope");
-    private final Pose3dLogger log_shimmyPose = WaltLogger.logPose3d("Swerve", "shimmyPose");
 
     private final Pose2dLogger log_curPose = WaltLogger.logPose2d("Swerve", "curPose");
     private final Pose2dLogger log_targetPosePos = WaltLogger.logPose2d("Swerve", "targetPosePos");
@@ -489,18 +488,18 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
         final Distance limitDistance = Meters.of(0.2);
 
-        Distance xDistance = targetPose.getMeasureX().minus(curPose.getMeasureX());
+        Distance xDistance = targetPose.getMeasureX().minus(curPose.getMeasureX()); // X and Y distances from robot to target
         Distance yDistance = targetPose.getMeasureY().minus(curPose.getMeasureY());
-        double slope = yDistance.baseUnitMagnitude() / xDistance.baseUnitMagnitude();
+        double slope = yDistance.baseUnitMagnitude() / xDistance.baseUnitMagnitude(); // Calculate the slope of the hypotenuse
 
-        Distance xLimited = Meters.of(Math.sqrt(
+        Distance xLimited = Meters.of(Math.sqrt(    // Normalizing x value to be within limitDistance
             (Math.pow(limitDistance.baseUnitMagnitude(), 2))
             / ((Math.pow(slope, 2)) + 1)
         ));
 
-        Distance yLimited = xLimited.times(slope);
+        Distance yLimited = xLimited.times(slope); // y always equals x times slope
 
-        Pose2d positive = new Pose2d(
+        Pose2d positive = new Pose2d( // Calculate the 2 poses depending on blue or red alliance
             alliance == Alliance.Blue ? curPose.getMeasureX().plus(xLimited) : curPose.getMeasureX().minus(xLimited),
             alliance == Alliance.Blue ? curPose.getMeasureY().plus(yLimited) : curPose.getMeasureY().minus(yLimited),
             curPose.getRotation()
@@ -525,8 +524,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         log_targetPosePos.accept(positive);
         log_targetPoseNeg.accept(negative);
 
-        Pose3d shimmyPose = new Pose3d(new Pose2d(xDistance, yDistance, curPose.getRotation()));
-        log_shimmyPose.accept(shimmyPose);
         return new SwerveShimmyData(positive, negative);
     }
 
