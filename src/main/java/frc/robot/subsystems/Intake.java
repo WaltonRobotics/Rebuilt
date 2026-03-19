@@ -222,8 +222,8 @@ public class Intake extends SubsystemBase {
 
     /* ENUMS */
     public enum IntakeArmPosition{
-        RETRACTED(Rotations.of(0.071514).in(Degrees)),
-        DEPLOYED(Rotations.of(0.289062 - (0.015)).in(Degrees)),
+        RETRACTED(Rotations.of(0.061514).in(Degrees)),
+        DEPLOYED(Rotations.of(0.289062 - (0.025)).in(Degrees)),
         SHIMMY(Rotations.of(0.126025).in(Degrees)),
         SAFE((DEPLOYED.rots.minus(Rotations.of(0.06))).in(Degrees));
 
