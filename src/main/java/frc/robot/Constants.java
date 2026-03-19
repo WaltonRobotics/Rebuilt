@@ -373,9 +373,13 @@ public class Constants {
         public static final AngularVelocity kIntakeRollersMaxRPS = MotorK.kX60FOCMaxVelocity.div(kIntakeRollersGearing);
         public static final AngularVelocity kIntakeRollersShootRPS = kIntakeRollersMaxRPS.times(0.2);
 
+        public static final double kIntakeFlapDeployPos = 180;
+        public static final double kIntakeFlapResetPos = 0;
+
         /* IDS */
         public static final int kIntakeArmCANID = 40;
         public static final int kIntakeRollersCANID = 41;
+        public static final int kIntakeFlapChannel = 0;
 
         /* CONFIGS */
         //IntakeArm Motor
