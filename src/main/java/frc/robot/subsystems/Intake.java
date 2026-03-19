@@ -23,6 +23,7 @@ import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -223,7 +224,7 @@ public class Intake extends SubsystemBase {
     /* ENUMS */
     public enum IntakeArmPosition{
         RETRACTED(Rotations.of(0.071514).in(Degrees)),
-        DEPLOYED(Rotations.of(0.289062 - (0.015)).in(Degrees)),
+        DEPLOYED(Rotations.of(0.289062 - (0.025)).in(Degrees)),
         SHIMMY(Rotations.of(0.126025).in(Degrees)),
         SAFE((DEPLOYED.rots.minus(Rotations.of(0.06))).in(Degrees));
 
