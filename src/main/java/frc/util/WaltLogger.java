@@ -2,6 +2,8 @@ package frc.util;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
+import java.util.function.IntConsumer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -254,7 +256,7 @@ public class WaltLogger {
         return new Translation2dLogger(table, name, options);
     }
 
-    public static final class IntLogger implements Consumer<Integer> {
+    public static final class IntLogger implements IntConsumer {
         public final IntegerPublisher ntPub;
         public final IntegerLogEntry logEntry;
 
@@ -264,7 +266,7 @@ public class WaltLogger {
         }
 
         @Override
-        public void accept(Integer value) {
+        public void accept(int value) {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
@@ -273,7 +275,7 @@ public class WaltLogger {
         }
     }
 
-    public static final class DoubleLogger implements Consumer<Double> {
+    public static final class DoubleLogger implements DoubleConsumer {
         public final DoublePublisher ntPub;
         public final DoubleLogEntry logEntry;
 
@@ -283,7 +285,7 @@ public class WaltLogger {
         }
 
         @Override
-        public void accept(Double value) {
+        public void accept(double value) {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
@@ -296,7 +298,7 @@ public class WaltLogger {
         return new DoubleLogger(table, name, options);
     }
 
-    public static final class BooleanLogger implements Consumer<Boolean> {
+    public static final class BooleanLogger {
         public final BooleanPublisher ntPub;
         public final BooleanLogEntry logEntry;
 
@@ -305,8 +307,7 @@ public class WaltLogger {
             logEntry = new BooleanLogEntry(DataLogManager.getLog(), "Robot/" + subTable + "/" + name);
         }
 
-        @Override
-        public void accept(Boolean value) {
+        public void accept(boolean value) {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
