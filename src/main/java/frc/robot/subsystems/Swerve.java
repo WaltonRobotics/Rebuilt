@@ -23,6 +23,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest.SwerveDriveBrake;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
+import edu.wpi.first.hal.simulation.RoboRioDataJNI;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
@@ -490,7 +491,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         ) <= tolerance;
     }
 
-    public Command shimmy(Translation2d positive, Translation2d negative, double secondsBetween, boolean waitBack) {
+    public Command translationShimmy(Translation2d positive, Translation2d negative, double secondsBetween, boolean waitBack) {
         Translation2d intialTranslation = getState().Pose.getTranslation();
         return Commands.sequence(
             roboToTranslation(positive),
@@ -498,6 +499,17 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             roboToTranslation(negative),
             waitBack ? Commands.waitSeconds(secondsBetween) : Commands.none(),
             roboToTranslation(intialTranslation)
+        );
+    }
+
+    public Command rotationShimmy(Rotation2d variation, double secondsBetween, boolean waitBack) {
+        Rotation2d initialRotation = getState().Pose.getRotation();
+        return Commands.sequence(
+            roboToRotation(initialRotation.plus(variation)),
+            Commands.waitSeconds(secondsBetween),
+            roboToRotation(initialRotation.minus(variation)),
+            waitBack ? Commands.waitSeconds(secondsBetween) : Commands.none(),
+            roboToRotation(initialRotation)
         );
     }
 
@@ -551,8 +563,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     public Command swerveShimmy(Supplier<Translation3d> targetSup) {
         return Commands.repeatingSequence(
             Commands.defer(() -> {
-                var shimmyDat = calcSwerveShimmyData(targetSup);
-                return shimmy(shimmyDat.forward, shimmyDat.backward, 0.2, true);
+                // var shimmyDat = calcSwerveShimmyData(targetSup);
+                // return translationShimmy(shimmyDat.forward, shimmyDat.backward, 0.2, true);
+                return rotationShimmy(new Rotation2d(0.5), 0.2, true);
             }, Set.of(this))
         );
     }
