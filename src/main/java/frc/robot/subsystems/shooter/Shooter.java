@@ -20,7 +20,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
@@ -57,8 +56,6 @@ public class Shooter extends SubsystemBase {
 
     // private final TurretVisualizer m_turretVisualizer;
     // private final FuelSim m_fuelSim;
-
-    public final EventLoop homingEventLoop = new EventLoop();
 
     // ---MOTORS + CONTROL REQUESTS
     private final TalonFX m_shooterA = new TalonFX(kShooterA_CANID, Constants.kShooterBus); // X60Foc
@@ -319,8 +316,8 @@ public class Shooter extends SubsystemBase {
 
         var calcData = m_shooterCalc.getLatestShotCalcOutputs();
 
-        // set turret reference            
-        if (m_isTurretHomed) {
+        // set turret reference             // set hood reference  
+        if (m_turret.isTurretHomed() && m_hood.isHoodHomed()) {
             var turretReference = calcData.turretReference();
 
             // set outputs
@@ -366,10 +363,6 @@ public class Shooter extends SubsystemBase {
         // m_periodicTracer.addEpoch("Logging");
 
         // m_periodicTracer.printEpochs();
-    }
-
-    public void fastPeriodic() {
-        homingEventLoop.poll();
     }
 
     @Override
