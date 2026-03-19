@@ -72,8 +72,8 @@ public class Shooter extends SubsystemBase {
     private final Supplier<Pose2d> m_poseSupplier;
     private final Supplier<ChassisSpeeds> m_fieldSpeedsSupplier;
 
-    private final TurretVisualizer m_turretVisualizer;
-    private final FuelSim m_fuelSim;
+    // private final TurretVisualizer m_turretVisualizer;
+    // private final FuelSim m_fuelSim;
 
     public final EventLoop homingEventLoop = new EventLoop();
 
@@ -182,13 +182,13 @@ public class Shooter extends SubsystemBase {
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
         setDefaultCommand(m_homingCommand);
 
-        m_turretVisualizer = new TurretVisualizer(
-                () -> new Pose3d(m_poseSupplier.get().rotateAround(
-                        poseSupplier.get().getTranslation(), new Rotation2d(turretTurnPosition)))
-                        .transformBy(kTurretTransform),
-                fieldSpeedsSupplier);
+        // m_turretVisualizer = new TurretVisualizer(
+        //         () -> new Pose3d(m_poseSupplier.get().rotateAround(
+        //                 poseSupplier.get().getTranslation(), new Rotation2d(turretTurnPosition)))
+        //                 .transformBy(kTurretTransform),
+        //         fieldSpeedsSupplier);
 
-        m_fuelSim = FuelSim.getInstance();
+        // m_fuelSim = FuelSim.getInstance();
 
         trg_homingHallDirect.onTrue(Commands.sequence(
                 Commands.runOnce(() -> {
@@ -213,6 +213,7 @@ public class Shooter extends SubsystemBase {
     // }
 
     public void setIntaking(boolean intaking) {
+        System.out.println("setIntaking: " + intaking);
         m_holdTurretAtIntakePos = intaking;
     }
 

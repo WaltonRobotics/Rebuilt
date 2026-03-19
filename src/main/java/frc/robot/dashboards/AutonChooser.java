@@ -34,6 +34,6 @@ public class AutonChooser {
         if (m_simpleAutonFactory == null) {
             return Commands.print("Tried to preheat before factory init!");
         }
-        return m_simpleAutonFactory.preheater().ignoringDisable(true);
+        return m_simpleAutonFactory.preheater().cmd().ignoringDisable(true);
     }
 }

@@ -7,15 +7,12 @@ import com.ctre.phoenix6.sim.ChassisReference;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IntakeK.*;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-import com.ctre.phoenix6.controls.DynamicMotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
-import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 
 import edu.wpi.first.math.filter.Debouncer;
@@ -24,7 +21,6 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -43,7 +39,7 @@ public class Intake extends SubsystemBase {
     private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID); //x60Foc
 
     private DynamicMotionMagicVoltage m_MMVReq = new DynamicMotionMagicVoltage(0, 1, 1).withEnableFOC(true);
-    private VelocityVoltage m_VVReq = new VelocityVoltage(0).withEnableFOC(true);
+    private VoltageOut m_VVReq = new VoltageOut(0).withEnableFOC(false);
 
     private BooleanSupplier m_currentSpike = () -> m_intakeArm.getStatorCurrent().getValueAsDouble() > 5.0;
     private BooleanSupplier m_veloIsNearZero = () -> Math.abs(m_intakeArm.getVelocity().getValueAsDouble()) < 0.005;
@@ -92,6 +88,7 @@ public class Intake extends SubsystemBase {
 
         if (Robot.isReal()) {
             setDefaultCommand(intakeArmCurrentSenseHoming());
+            // setDefaultCommand(intakeArmHome());
         }
 
         initSim();
@@ -129,7 +126,7 @@ public class Intake extends SubsystemBase {
     public Command shimmy() {
         return Commands.repeatingSequence(
             setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
-            setIntakeRollersVelocityCmd(RotationsPerSecond.zero()),
+            setIntakeRollersVelocityCmd(0),
             setIntakeArmPosCmd(IntakeArmPosition.SHIMMY),
             Commands.waitUntil(() -> isIntakeArmAtPos()),
             setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
@@ -147,35 +144,30 @@ public class Intake extends SubsystemBase {
     }
 
     public Command startIntakeRollers() {
-        return setIntakeRollersVelocityCmd(kIntakeRollersMaxRPS);
+        return setIntakeRollersVelocityCmd(12);
     }
 
     public Command stopIntakeRollers() {
-        return setIntakeRollersVelocityCmd(RotationsPerSecond.zero());
+        return setIntakeRollersVelocityCmd(0);
     }
 
-    public void setIntakeRollersVelocity(AngularVelocity RPS) {
-        m_intakeRollers.setControl(m_VVReq.withVelocity(RPS));
+    public void setIntakeRollersVelocity(double volts) {
+        m_intakeRollers.setControl(m_VVReq.withOutput(volts));
     }
 
-    public Command setIntakeRollersVelocityCmd(AngularVelocity RPS) {
-        return runOnce(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RPS)));
-    }
-
-    //for TestingDashboard
-    public Command setIntakeRollersVelocity(DoubleSubscriber sub_RPS) {
-        return run(() -> m_intakeRollers.setControl(m_VVReq.withVelocity(RotationsPerSecond.of(sub_RPS.get()))));
+    public Command setIntakeRollersVelocityCmd(double volts) {
+        return runOnce(() -> setIntakeRollersVelocity(volts));
     }
 
     // TESTING TO SEE IF WE CAN JUST SAY 0 AS 0
-    // public Command intakeArmHome() {
-    //     return Commands.sequence(
-    //         runOnce(() -> m_intakeArm.setPosition(0)),
-    //         runOnce(() -> m_isIntakeArmHomed = true),
-    //         runOnce(() -> log_isIntakeArmHomed.accept(m_isIntakeArmHomed)),
-    //         runOnce(() -> removeDefaultCommand())
-    //     );
-    // }
+    public Command intakeArmHome() {
+        return Commands.sequence(
+            runOnce(() -> m_intakeArm.setPosition(0)),
+            runOnce(() -> m_isIntakeArmHomed = true),
+            runOnce(() -> log_isIntakeArmHomed.accept(m_isIntakeArmHomed)),
+            runOnce(() -> removeDefaultCommand())
+        );
+    }
 
     public Command intakeArmCurrentSenseHoming() {
         Runnable init = () -> {
@@ -209,7 +201,7 @@ public class Intake extends SubsystemBase {
     public void periodic() {
         log_targetIntakeArmRots.accept(m_MMVReq.Position);
         // log_targetIntakeArmRots.accept(m_PVReq.Position);
-        log_targetIntakeRollersRPS.accept(m_VVReq.Velocity);
+        log_targetIntakeRollersRPS.accept(m_VVReq.Output);
         log_intakeRollersRPS.accept(m_intakeRollers.getVelocity().getValueAsDouble());
         log_intakeArmRots.accept(m_intakeArm.getPosition().getValueAsDouble());
     }
@@ -223,7 +215,7 @@ public class Intake extends SubsystemBase {
     /* ENUMS */
     public enum IntakeArmPosition{
         RETRACTED(Rotations.of(0.061514).in(Degrees)),
-        DEPLOYED(Rotations.of(0.289062 - (0.025)).in(Degrees)),
+        DEPLOYED(Rotations.of(0.289062 * 0.86).in(Degrees)),
         SHIMMY(Rotations.of(0.126025).in(Degrees)),
         SAFE((DEPLOYED.rots.minus(Rotations.of(0.06))).in(Degrees));
 

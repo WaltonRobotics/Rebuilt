@@ -542,7 +542,7 @@ public class Constants {
         public static final double kTwoSweepMaxTime = 20;
 
         public static final double kIntakeTimeout = 7.5;
-        public static final double kShootingTimeout = 4; //12
+        public static final double kShootingTimeout = 6; //12
 
         public static final String kLeftSweepPathName = "LeftSweep";
         public static final String kRightSweepPathName = "RightSweep";

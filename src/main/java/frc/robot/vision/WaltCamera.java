@@ -23,7 +23,6 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.util.WaltLogger;
-import frc.util.WaltLogger.DoubleArrayLogger;
 import frc.util.WaltLogger.IntLogger;
 
 import static frc.robot.Constants.VisionK;

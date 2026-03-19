@@ -40,7 +40,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-import frc.robot.subsystems.shooter.FuelSim;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.Constants.RobotK;
@@ -103,7 +102,6 @@ public class Robot extends TimedRobot {
 
     //---AUTONS
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
-    private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
 
     private final WaltSimpleAutonFactory m_simpleAutonFactory = new WaltSimpleAutonFactory(m_superstructure, m_autoFactory, m_intake, m_shooter, m_drivetrain);
     //---VISION
@@ -169,10 +167,6 @@ public class Robot extends TimedRobot {
         configureTestingDashboard();
 
         lastGotTagMsmtTimer.start();
-        if (Robot.isSimulation()) {
-            configureFuelSim();
-            // FuelSim.getInstance().enableAirResistance();
-        }
 
         AutonChooser.initialize(m_simpleAutonFactory);
 
@@ -231,41 +225,6 @@ public class Robot extends TimedRobot {
         m_manipulator.setRumble(type, intensity);
     }
 
-    //(nonsotm (just for simulating entire robot)) BLARGHHHHHH get intake dude (alex?) to give me his code (idk if he finished it yet)
-    private void configureFuelSim() {
-        FuelSim instance = FuelSim.getInstance();
-        // instance.spawnStartingFuel();
-    
-        instance.registerRobot(
-                kRobotFullWidth.in(Meters),
-                kRobotFullLength.in(Meters),
-                kBumperHeight.in(Meters),
-                () -> m_drivetrain.getState().Pose,
-                () -> m_drivetrain.getChassisSpeeds());
-        // instance.registerIntake(
-        //         -kRobotFullLength.div(2).in(Meters),
-        //         kRobotFullLength.div(2).in(Meters),
-        //         -kRobotFullWidth.div(2).plus(Inches.of(7)).in(Meters),
-        //         -kRobotFullWidth.div(2).in(Meters),
-        //         () -> intake.isRightDeployed() && m_shooter.simAbleToIntake(),
-        //         m_shooter::simIntake);
-        // instance.registerIntake(
-        //         -kRobotFullLength.div(2).in(Meters),
-        //         kRobotFullLength.div(2).in(Meters),
-        //         kRobotFullWidth.div(2).in(Meters),
-        //         kRobotFullWidth.div(2).plus(Inches.of(7)).in(Meters),
-        //         () -> intake.isLeftDeployed() && m_shooter.simAbleToIntake(),
-        //         m_shooter::simIntake);
-
-        instance.start();
-        instance.logFuels();
-        SmartDashboard.putData(Commands.runOnce(() -> {
-                    FuelSim.getInstance().clearFuel();
-                    FuelSim.getInstance().spawnStartingFuel();
-                })
-                .withName("Reset Fuel")
-                .ignoringDisable(true));
-    }
 
     //---BINDINGS
     private void configureBindings() {
@@ -529,7 +488,7 @@ public class Robot extends TimedRobot {
                         .withRotationalRate(0)
                 ),
                 Commands.waitSeconds(2.5),
-                m_drivetrain.xBrake(),
+                m_drivetrain.xBrakeCmd(),
                 Commands.waitSeconds(2.5),
                 m_drivetrain.applyRequest(() ->
                     drive.withVelocityX(kMaxTranslationSpeed.unaryMinus())
@@ -537,7 +496,7 @@ public class Robot extends TimedRobot {
                         .withRotationalRate(0)
                 ),
                 Commands.waitSeconds(2.5),
-                m_drivetrain.xBrake(),
+                m_drivetrain.xBrakeCmd(),
                 Commands.waitSeconds(2.5),
                 m_drivetrain.applyRequest(() ->
                     drive.withVelocityX(0)
@@ -545,7 +504,7 @@ public class Robot extends TimedRobot {
                         .withRotationalRate(kMaxAngularRate)
                 ),
                 Commands.waitSeconds(2.5),
-                m_drivetrain.xBrake(),
+                m_drivetrain.xBrakeCmd(),
                 Commands.waitSeconds(2.5),
                 m_drivetrain.applyRequest(() ->
                     drive.withVelocityX(0)
@@ -564,14 +523,14 @@ public class Robot extends TimedRobot {
 
     @Override
     public void simulationInit() {
-        FuelSim.getInstance().start();
+        // FuelSim.getInstance().start();
     }
 
     @Override
     public void simulationPeriodic() {
-        FuelSim instance = FuelSim.getInstance();
-        instance.logFuels();
-        instance.updateSim();
+        // FuelSim instance = FuelSim.getInstance();
+        // instance.logFuels();
+        // instance.updateSim();
 
         // m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();

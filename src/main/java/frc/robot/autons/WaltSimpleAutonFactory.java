@@ -7,11 +7,13 @@ import choreo.Choreo;
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.AutonK;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.shooter.Shooter;
@@ -19,8 +21,6 @@ import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.Pose2dArrayLogger;
 import frc.util.WaltLogger.StringLogger;
-import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.Intake.IntakeArmPosition;
 
 public class WaltSimpleAutonFactory {
     private final Superstructure m_superstructure;
@@ -69,28 +69,33 @@ public class WaltSimpleAutonFactory {
         ).withTimeout(5);
     }
 
+
+
     private Command shootWithTimeout(AngularVelocity speed, double seconds) {
         return Commands.sequence(
             tp("shootWithTimeout.START(" + speed + "," + seconds + ")"),
-            m_superstructure.activateOuttake(() -> speed).withTimeout(seconds),
+            m_superstructure.activateOuttakeShotCalc(), //(() -> speed).withTimeout(seconds),
             tp("shootWithTimeout.END")
         );
     }
 
     // --- Preheater (stays as Command, runs during disabled) ---
 
-    public Command preheater() {
-        var poses = Choreo.loadTrajectory("PreHeat").get().getPoses();
-        return Commands.sequence(
-            Commands.runOnce(() -> {
-                log_trajectoryName.accept("PreHeat");
-                log_trajectoryPoses.accept(poses);
-            }),
-            tp("preheat.START"),
-            m_autoFactory.trajectoryCmd("PreHeat").withTimeout(1.0),
-            tp("preheat.END"),
-            m_swerve.xBrake()
+    public AutoRoutine preheater() {
+        String path = "PreHeat";
+        AutoRoutine routine = m_autoFactory.newRoutine(path);
+        AutoTrajectory traj = createTraj(routine, path);
+
+        routine.active().onTrue(
+            tp("preheat.START")
+            .andThen(
+                traj.cmd(),
+                tp("preheat.END"),
+                m_swerve.xBrakeCmd()
+            )
         );
+
+        return routine;
     }
 
     // --- AutoRoutine trajectory helper ---
@@ -129,7 +134,7 @@ public class WaltSimpleAutonFactory {
 
         // After trajectory: xBrake + shoot
         traj.done().onTrue(Commands.sequence(
-            m_swerve.xBrake(),
+            m_swerve.xBrakeCmd(),
             shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout)
         ));
 
@@ -156,7 +161,7 @@ public class WaltSimpleAutonFactory {
         );
 
         traj.done().onTrue(Commands.sequence(
-            m_swerve.xBrake(),
+            m_swerve.xBrakeCmd(),
             shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout)
         ));
 
@@ -183,7 +188,7 @@ public class WaltSimpleAutonFactory {
 
         // Transition: xBrake -> shoot -> traj2
         traj1.done().onTrue(Commands.sequence(
-            m_swerve.xBrake(),
+            m_swerve.xBrakeCmd(),
             shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout),
             traj2.cmd().withTimeout(12)
         ));
@@ -197,7 +202,7 @@ public class WaltSimpleAutonFactory {
             m_superstructure.intake(() -> false).withTimeout(10)
         );
 
-        traj2.done().onTrue(m_swerve.xBrake());
+        traj2.done().onTrue(m_swerve.xBrakeCmd());
 
         return routine;
     }
@@ -211,35 +216,51 @@ public class WaltSimpleAutonFactory {
         AutoTrajectory traj2 = createTraj(routine, path2);
 
         // Phase 1: first sweep + homing/intake
-        routine.active().onTrue(traj1.cmd().withTimeout(10));
+        routine.active().onTrue(traj1.cmd());
+
+        Trigger stopIntk1Trg = traj1.atTime("stopIntake");
+        Trigger stopIntk2Trg = traj2.atTime("stopIntake");
+
+        stopIntk1Trg.onChange(Commands.print("StopIntk1Trg Change!"));
+        stopIntk2Trg.onChange(Commands.print("StopIntk2Trg Change!"));
 
         routine.active().onTrue(
             homingCmd().andThen(
-                m_superstructure.intake(() -> false).withTimeout(3.5)
-            )
+                m_superstructure.intake(() -> false)
+            ).until(stopIntk1Trg)
         );
 
         // Transition: xBrake -> shoot -> traj2
-        traj1.done().onTrue(Commands.sequence(
-            m_swerve.xBrake(),
-            shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout),
-            traj2.cmd().withTimeout(8)
-        ));
+        traj1.done().onTrue(
+            m_swerve.xBrakeCmd()
+        );
 
-        traj1.doneDelayed(3.5).onTrue(
+        // cope to "stop" superstructure intaking
+        traj1.done().onTrue(
+            m_intake.setIntakeRollersVelocityCmd(4)
+        );
+
+        traj1.doneDelayed(2.5).onTrue(
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
         );
 
+        traj1.doneFor(AutonK.kShootingTimeout).whileTrue(
+            m_superstructure.activateOuttakeShotCalc()
+        );
+
+        traj1.doneDelayed(AutonK.kShootingTimeout + 0.04).onTrue(traj2.cmd());
+
         // Phase 2: intake during reshoot path
-        traj2.atTime(2).onTrue(
-            m_superstructure.intake(() -> false).withTimeout(2.5)
+        traj2.atTime("startIntake").onTrue(
+            m_superstructure.intake(() -> false).until(stopIntk2Trg)
         );
 
         // Final: xBrake + shoot after traj2
-        traj2.done().onTrue(Commands.sequence(
-            m_swerve.xBrake(),
-            shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout)
-        ));
+        traj2.done().onTrue(m_swerve.xBrakeCmd());
+
+        traj2.doneFor(AutonK.kShootingTimeout).whileTrue(
+            m_superstructure.activateOuttakeShotCalc()
+        );
 
         traj2.doneDelayed(2.75).onTrue(
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
