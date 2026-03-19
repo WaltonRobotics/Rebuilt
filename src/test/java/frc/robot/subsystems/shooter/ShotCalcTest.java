@@ -371,37 +371,37 @@ class ShotCalcTest {
         @Test
         void turretAtZero_closeTarget_returnsValidAzimuth() {
             AzimuthCalcDetails details = ShooterCalc.calcAzimuth(
-                HUB_TARGET, CLOSE_POSE, Rotations.zero(), ZERO_SPEEDS);
+                HUB_TARGET, CLOSE_POSE, 0.0, ZERO_SPEEDS);
             assertAzimuthValid(details);
         }
 
         @Test
         void turretAtZero_midTarget_returnsValidAzimuth() {
             AzimuthCalcDetails details = ShooterCalc.calcAzimuth(
-                HUB_TARGET, MID_POSE, Rotations.zero(), ZERO_SPEEDS);
+                HUB_TARGET, MID_POSE, 0.0, ZERO_SPEEDS);
             assertAzimuthValid(details);
         }
 
         @Test
         void turretAtPositiveQuarter_returnsValidAzimuth() {
             AzimuthCalcDetails details = ShooterCalc.calcAzimuth(
-                HUB_TARGET, MID_POSE, Rotations.of(0.25), ZERO_SPEEDS);
+                HUB_TARGET, MID_POSE, 0.25, ZERO_SPEEDS);
             assertAzimuthValid(details);
         }
 
         @Test
         void turretAtNegativeQuarter_returnsValidAzimuth() {
             AzimuthCalcDetails details = ShooterCalc.calcAzimuth(
-                HUB_TARGET, MID_POSE, Rotations.of(-0.25), ZERO_SPEEDS);
+                HUB_TARGET, MID_POSE, -0.25, ZERO_SPEEDS);
             assertAzimuthValid(details);
         }
 
         @Test
         void movingRobot_producesVelocityFF() {
             AzimuthCalcDetails stationary = ShooterCalc.calcAzimuth(
-                HUB_TARGET, MID_POSE, Rotations.zero(), ZERO_SPEEDS);
+                HUB_TARGET, MID_POSE, 0.0, ZERO_SPEEDS);
             AzimuthCalcDetails moving = ShooterCalc.calcAzimuth(
-                HUB_TARGET, MID_POSE, Rotations.zero(), TRANSLATING_SPEEDS);
+                HUB_TARGET, MID_POSE, 0.0, TRANSLATING_SPEEDS);
             // Moving robot should produce nonzero velocity feedforward
             assertNotEquals(0.0, moving.turretVelocityFFRotPerSec(), 1e-6,
                 "Moving robot should produce nonzero turret velocity FF");
@@ -410,7 +410,7 @@ class ShotCalcTest {
         @Test
         void stationaryRobot_zeroVelocityFF() {
             AzimuthCalcDetails details = ShooterCalc.calcAzimuth(
-                HUB_TARGET, MID_POSE, Rotations.zero(), ZERO_SPEEDS);
+                HUB_TARGET, MID_POSE, 0.0, ZERO_SPEEDS);
             assertEquals(0.0, details.turretVelocityFFRotPerSec(), 1e-6,
                 "Stationary robot should have zero velocity FF (omega=0, v=0)");
         }
@@ -423,7 +423,7 @@ class ShotCalcTest {
             for (Pose2d pose : poses) {
                 for (double rot : turretRots) {
                     AzimuthCalcDetails d = ShooterCalc.calcAzimuth(
-                        HUB_TARGET, pose, Rotations.of(rot), ZERO_SPEEDS);
+                        HUB_TARGET, pose, rot, ZERO_SPEEDS);
                     double refRots = d.turretReferenceRots();
                     assertTrue(refRots >= -0.76 && refRots <= 0.76,
                         String.format("Turret reference %.4f out of [-0.75, 0.75] for pose=%s, turret=%.2f",
@@ -442,51 +442,51 @@ class ShotCalcTest {
         @Test
         void staticShot_close_returnsValidOutputs() {
             ShotCalcOutputs out = ShooterCalc.calcShot(
-                CLOSE_POSE, true, HUB_TARGET, Rotations.zero(), ZERO_SPEEDS);
+                CLOSE_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void staticShot_mid_returnsValidOutputs() {
             ShotCalcOutputs out = ShooterCalc.calcShot(
-                MID_POSE, true, HUB_TARGET, Rotations.zero(), ZERO_SPEEDS);
+                MID_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void staticShot_far_returnsValidOutputs() {
             ShotCalcOutputs out = ShooterCalc.calcShot(
-                FAR_POSE, true, HUB_TARGET, Rotations.zero(), ZERO_SPEEDS);
+                FAR_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void dynamicShot_translating_returnsValidOutputs() {
             ShotCalcOutputs out = ShooterCalc.calcShot(
-                MID_POSE, false, HUB_TARGET, Rotations.zero(), TRANSLATING_SPEEDS);
+                MID_POSE, false, HUB_TARGET, 0.0, TRANSLATING_SPEEDS);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void dynamicShot_rotating_returnsValidOutputs() {
             ShotCalcOutputs out = ShooterCalc.calcShot(
-                MID_POSE, false, HUB_TARGET, Rotations.zero(), ROTATING_SPEEDS);
+                MID_POSE, false, HUB_TARGET, 0.0, ROTATING_SPEEDS);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void dynamicShot_combined_returnsValidOutputs() {
             ShotCalcOutputs out = ShooterCalc.calcShot(
-                MID_POSE, false, HUB_TARGET, Rotations.of(0.1), COMBINED_SPEEDS);
+                MID_POSE, false, HUB_TARGET, 0.1, COMBINED_SPEEDS);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void staticVsDynamic_sameWhenStationary() {
             ShotCalcOutputs staticOut = ShooterCalc.calcShot(
-                MID_POSE, true, HUB_TARGET, Rotations.zero(), ZERO_SPEEDS);
+                MID_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
             ShotCalcOutputs dynamicOut = ShooterCalc.calcShot(
-                MID_POSE, false, HUB_TARGET, Rotations.zero(), ZERO_SPEEDS);
+                MID_POSE, false, HUB_TARGET, 0.0, ZERO_SPEEDS);
             // With zero chassis speeds, static and dynamic should produce identical results
             assertEquals(
                 staticOut.shooterReferenceRotPerSec(),
@@ -505,9 +505,9 @@ class ShotCalcTest {
         @Test
         void farShot_higherVelocityThanClose() {
             ShotCalcOutputs closeOut = ShooterCalc.calcShot(
-                CLOSE_POSE, true, HUB_TARGET, Rotations.zero(), ZERO_SPEEDS);
+                CLOSE_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
             ShotCalcOutputs farOut = ShooterCalc.calcShot(
-                FAR_POSE, true, HUB_TARGET, Rotations.zero(), ZERO_SPEEDS);
+                FAR_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
             assertTrue(
                 farOut.shooterReferenceRotPerSec() >
                 closeOut.shooterReferenceRotPerSec(),

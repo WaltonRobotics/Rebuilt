@@ -88,6 +88,10 @@ public class Constants {
         public static final double kTurretOffsetY_m = kTurretTransform.getTranslation().getY();
         public static final double kTurretAngleOffsetRad = kTurretAngleOffset.getRadians();
         public static final double kFlywheelRadiusM = kFlywheelRadius.in(Meters);
+        public static final double kFlywheelRadiusIn = kFlywheelRadius.in(Inches);
+        public static final double kTurretOffsetZ_in = kTurretTransform.getTranslation().getMeasureZ().in(Inches);
+        public static final double kFunnelRadiusIn = FieldConstants.Hub.funnelRadius.in(Inches);
+        public static final double kFunnelHeightPlusAboveIn = FieldConstants.Hub.funnelHeight.plus(kInchesAboveFunnel).in(Inches);
 
         public static final int kHopperCapacity = 55; //TODO: find true max
 
@@ -124,6 +128,8 @@ public class Constants {
 
         public static final AngularVelocity kShooterSpunUpMinimum = RotationsPerSecond.of(10);
         public static final Time kShooterSpunUpTimeout = Seconds.of(0.64);  //double expected spinup time
+        public static final double kShooterRPSd = kShooterRPS.in(RotationsPerSecond);
+        public static final double kShooterSpunUpMinimumD = kShooterSpunUpMinimum.in(RotationsPerSecond);
 
         //---HOOD CONSTANTS
         public static final double kHoodMoI = 0.00027505;

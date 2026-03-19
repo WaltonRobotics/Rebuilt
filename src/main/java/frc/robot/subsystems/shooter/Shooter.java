@@ -8,7 +8,6 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.StaticBrake;
-import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -20,12 +19,9 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 // import com.reduxrobotics.canand.CanandEventLoop;
 // import com.reduxrobotics.sensors.canandmag.Canandmag;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -40,9 +36,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Hertz;
-import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
@@ -62,9 +56,9 @@ public class Shooter extends SubsystemBase {
     // boolean m_useShotCalculator = true;
     boolean m_holdTurretAtIntakePos = false;
     boolean m_turretLocked = false;
-    Angle m_turretLockAngle = Degrees.zero();
+    double m_turretLockAngleRots = 0.0;
 
-    private AngularVelocity m_flywheelVelocity;
+    private double m_latestFlywheelVelocityRotPerSec;
     // private Angle m_turretTurnPosition;
 
     private int m_fuelStored = 8;
@@ -98,7 +92,7 @@ public class Shooter extends SubsystemBase {
     private final Turret m_turret = new Turret();
 
     // thread copde
-    private Angle m_turretPosition = Rotation.zero();
+    private double m_latestTurretPositionRots = 0.0;
     // private StatusSignal<Angle> sig_turretPos_THREADONLY = m_turret.getPosition(false).clone();
     private final ShooterCalc m_shooterCalc;
 
@@ -107,17 +101,10 @@ public class Shooter extends SubsystemBase {
     private final Trigger trg_homingHallDirect = new Trigger(homingEventLoop, () -> !m_turretHomingHall.get());
     private final BooleanLogger log_turretHomingHall = new BooleanLogger(kLogTab, "turretHomeHall");
 
-    private Angle m_calcTurret = Rotations.zero();
+    private double m_calcTurretRots = 0.0;
     private double m_calcFlywheelVelocityRotPerSec = 44.81;
 
-    // Precomputed: true if turret travel is less than one full rotation (sub-360
-    // cope path)
-    private static final boolean kTurretSubRotation = kTurretMaxRotsFromHome.times(2).magnitude() < 1.0;
-    // Precomputed doubles for hot-path unit conversions
-    private static final double kTurretMinRotsD = kTurretMinRots.in(Rotations);
-    private static final double kTurretMinRotsMagnitudeD = kTurretMinRots.magnitude();
-    private static final double kTurretMaxRotsD = kTurretMaxRots.in(Rotations);
-    private static final double kTurretMaxRotsMagnitudeD = kTurretMaxRots.magnitude();
+    private static final double kIntakeTurretPosRots = -0.250;
 
     private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
     private final DoubleLogger log_calcTurretPos = new DoubleLogger("Shooter/Turret", "calcTurretPos");
@@ -153,6 +140,7 @@ public class Shooter extends SubsystemBase {
     private final DoubleLogger log_shooterClosedLoopError = WaltLogger.logDouble("Shooter", "shooterClosedLoopError");
 
     private final DoubleLogger log_turretControlPos = WaltLogger.logDouble("Shooter/Turret", "turretControlPos");
+    private final DoubleLogger log_turretControlVeloFF = WaltLogger.logDouble("Shooter/Turret", "turretCtrlVeloFF");
     // private final DoubleLogger log_hoodControlPos = WaltLogger.logDouble("Shooter/Hood", "hoodControlPos");
 
     // private final Tracer m_periodicTracer = new Tracer();
@@ -164,7 +152,7 @@ public class Shooter extends SubsystemBase {
     /* CONSTRUCTOR */
     public Shooter(Supplier<Pose2d> poseSupplier, Supplier<SwerveDriveState> threadsafeSwerveStateSup, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
         m_threadsafeSwerveSup = threadsafeSwerveStateSup;
-        m_shooterCalc = new ShooterCalc(m_threadsafeSwerveSup, () -> m_turretPosition);
+        m_shooterCalc = new ShooterCalc(m_threadsafeSwerveSup, () -> m_latestTurretPositionRots);
 
         m_shooterA.getConfigurator().apply(kShooterATalonFXConfiguration);
         m_shooterB.getConfigurator().apply(kShooterBTalonFXConfiguration);
@@ -175,8 +163,8 @@ public class Shooter extends SubsystemBase {
 
         sig_shooterCLErr.setUpdateFrequency(Hertz.of(50));
 
-        Angle turretTurnPosition = m_turretMotor.getPosition().getValue();
-        m_flywheelVelocity = m_shooterA.getVelocity().getValue();
+        double turretTurnPosition = m_turretMotor.getPosition().getValueAsDouble();
+        m_latestFlywheelVelocityRotPerSec = m_shooterA.getVelocity().getValueAsDouble();
 
         m_poseSupplier = poseSupplier;
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
@@ -184,7 +172,7 @@ public class Shooter extends SubsystemBase {
 
         m_turretVisualizer = new TurretVisualizer(
                 () -> new Pose3d(m_poseSupplier.get().rotateAround(
-                        poseSupplier.get().getTranslation(), new Rotation2d(turretTurnPosition)))
+                        poseSupplier.get().getTranslation(), new Rotation2d(turretTurnPosition * 2.0 * Math.PI)))
                         .transformBy(kTurretTransform),
                 fieldSpeedsSupplier);
 
@@ -219,7 +207,7 @@ public class Shooter extends SubsystemBase {
     public void setTurretLock(boolean locked) {
         m_turretLocked = locked;
         if (m_turretLocked) {
-            m_turretLockAngle = m_turretMotor.getPosition().getValue();
+            m_turretLockAngleRots = m_latestTurretPositionRots;
         }
     }
 
@@ -268,39 +256,20 @@ public class Shooter extends SubsystemBase {
         return isNear;
     }
 
-    // ---TURRET (Motionmagic Angle Control)
-    public Command setTurretPosCmd(Angle rots) {
-        return runOnce(() -> setTurretPos(rots));
-    }
-
-    public void setTurretPos(Angle rots) {
-        setTurretPos(rots, RotationsPerSecond.zero());
-    }
-
-    public void setTurretPos(Angle rots, AngularVelocity velocityFF) {
+    public void setTurretPos(double positionRots, double velocityFFRotPerSec) {
         if (!m_isTurretHomed) { return; }
-        m_turretMotor.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFF));
-        log_turretControlPos.accept(rots.in(Rotations));
-    }
-
-    public void setTurretPos(double rots, double velocityFFRotPerSec) {
-        if (!m_isTurretHomed) { return; }
-        m_turretMotor.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFFRotPerSec));
-        log_turretControlPos.accept(rots);
+        m_turretMotor.setControl(m_PVRequest.withPosition(positionRots).withVelocity(velocityFFRotPerSec));
+        log_turretControlPos.accept(positionRots);
+        log_turretControlVeloFF.accept(velocityFFRotPerSec);
     }
 
     public void setTurretNeutralMode(NeutralModeValue value) {
         m_turretMotor.setNeutralMode(value);
     }
 
-    // for TestingDashboard
-    public Command setTurretPositionCmd(DoubleSubscriber sub_rots) {
-        return run(() -> setTurretPos(Rotations.of(sub_rots.get())));
-    }
-
     /* GETTERS */
-    public AngularVelocity getShooterVelocity() {
-        return m_flywheelVelocity;
+    public double getShooterVelocityRotPerSec() {
+        return m_latestFlywheelVelocityRotPerSec;
     }
 
     /* SIMULATION */
@@ -383,20 +352,20 @@ public class Shooter extends SubsystemBase {
         // Cache all signals at the top so every consumer in this loop sees the same
         // values
         // THIS IS USED SNEAKILY BY SHOTCALC DO NOT MOVE THIS
-        m_turretPosition = m_turretMotor.getPosition().getValue();
-        m_flywheelVelocity = m_shooterA.getVelocity().getValue();
+        m_latestTurretPositionRots = m_turretMotor.getPosition().getValueAsDouble();
+        m_latestFlywheelVelocityRotPerSec = m_shooterA.getVelocity().getValueAsDouble();
 
         var calcData = m_shooterCalc.getLatestShotCalcOutputs();
 
         // All calcData fields are CTRE-native (rotations, rot/s) — no wrapping needed
         if (m_isTurretHomed && m_hood.isHoodHomed()) {
             if (m_turretLocked) {
-                setTurretPos(m_turretLockAngle);
+                setTurretPos(m_turretLockAngleRots, 0.0);
                 m_hood.setHoodPos(kHoodLockDegs);
-                m_calcFlywheelVelocityRotPerSec = kShooterRPS.in(RotationsPerSecond);
+                m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
             } else {
                 if (m_holdTurretAtIntakePos) {
-                    setTurretPos(Rotations.of(-0.250));
+                    setTurretPos(kIntakeTurretPosRots, 0.0);
                 } else {
                     setTurretPos(calcData.turretReferenceRots(), calcData.turretCalcDetails().turretVelocityFFRotPerSec());
                     m_hood.setHoodPos(calcData.hoodReferenceRots());
@@ -405,11 +374,11 @@ public class Shooter extends SubsystemBase {
             }
         }
 
-        log_shooterVelocityRPS.accept(m_flywheelVelocity.in(RotationsPerSecond));
-        log_turretPositionRots.accept(m_turretPosition.in(Rotations));
+        log_shooterVelocityRPS.accept(m_latestFlywheelVelocityRotPerSec);
+        log_turretPositionRots.accept(m_latestTurretPositionRots);
         log_spunUp.accept(isShooterSpunUp());
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocityRotPerSec);
-        log_calcTurretPos.accept(m_calcTurret.in(Rotations));
+        log_calcTurretPos.accept(m_calcTurretRots);
 
         // m_periodicTracer.addEpoch("Logging");
 

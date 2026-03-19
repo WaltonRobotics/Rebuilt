@@ -132,7 +132,7 @@ public class Superstructure extends SubsystemBase {
 
             Commands.sequence(
                 // up("pre waituntil command"),
-                Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocity().gte(ShooterK.kShooterSpunUpMinimum)))).withTimeout(ShooterK.kShooterSpunUpTimeout),
+                Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocityRotPerSec() >= ShooterK.kShooterSpunUpMinimumD))).withTimeout(ShooterK.kShooterSpunUpTimeout),
                 m_indexer.startTunnelCmd(),
                 Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocity().gte(IndexerK.kTunnelSpunUpMinimum))).withTimeout(IndexerK.kTunnelSpunUpTimeout),
                 // up("post waituntil command"),
@@ -177,7 +177,7 @@ public class Superstructure extends SubsystemBase {
 
             Commands.sequence(
                 // up("pre waituntil command"),
-                Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocity().gte(ShooterK.kShooterSpunUpMinimum)))).withTimeout(ShooterK.kShooterSpunUpTimeout),
+                Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocityRotPerSec() >= ShooterK.kShooterSpunUpMinimumD))).withTimeout(ShooterK.kShooterSpunUpTimeout),
                 m_indexer.startTunnelCmd(),
                 Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocity().gte(IndexerK.kTunnelSpunUpMinimum))).withTimeout(IndexerK.kTunnelSpunUpTimeout),
                 // up("post waituntil command"),
@@ -260,23 +260,6 @@ public class Superstructure extends SubsystemBase {
 
     public Command shimmy() {
        return m_intake.shimmy();
-    }
-
-    /**
-     * Rotates the turret to the given degs
-     * @param degs degrees to rotate to.
-     */
-    public Command turretTo(Angle degs) {
-        // Command logCommand;
-        // if (degs.magnitude() == 180) {
-        //     logCommand = logActiveOverrideCommands("turret180", "turret0");
-        // } else {
-        //     logCommand = logActiveOverrideCommands("turret0", "turret180");
-        // }
-        return Commands.sequence(
-            m_shooter.setTurretPosCmd(Rotations.of(degs.in(Rotations)))
-            // logCommand
-        );
     }
 
     /**
