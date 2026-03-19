@@ -83,6 +83,12 @@ public class Constants {
 
         public static final Distance kFlywheelRadius = Inches.of(1.5);
 
+        // Precomputed doubles for hot-path shot calc (avoid measure allocations)
+        public static final double kTurretOffsetX_m = kTurretTransform.getTranslation().getX();
+        public static final double kTurretOffsetY_m = kTurretTransform.getTranslation().getY();
+        public static final double kTurretAngleOffsetRad = kTurretAngleOffset.getRadians();
+        public static final double kFlywheelRadiusM = kFlywheelRadius.in(Meters);
+
         public static final int kHopperCapacity = 55; //TODO: find true max
 
         public static final double kGravity = MetersPerSecondPerSecond.of(9.81).in(InchesPerSecondPerSecond);

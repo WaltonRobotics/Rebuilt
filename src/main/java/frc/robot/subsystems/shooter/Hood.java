@@ -57,6 +57,11 @@ public class Hood extends SubsystemBase {
         log_hoodControlPos.accept(degs.in(Degrees));
     }
 
+    public void setHoodPos(double rots) {
+        m_hood.setControl(m_hoodPVRequest.withPosition(rots));
+        log_hoodControlPos.accept(rots * 360.0);
+    }
+
     public Command setHoodPosCmd(Angle degs) {
         return runOnce(() -> setHoodPos(degs));
     }

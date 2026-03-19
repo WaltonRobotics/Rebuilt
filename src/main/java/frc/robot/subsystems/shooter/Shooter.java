@@ -108,7 +108,7 @@ public class Shooter extends SubsystemBase {
     private final BooleanLogger log_turretHomingHall = new BooleanLogger(kLogTab, "turretHomeHall");
 
     private Angle m_calcTurret = Rotations.zero();
-    private AngularVelocity m_calcFlywheelVelocity = RotationsPerSecond.of(44.81);
+    private double m_calcFlywheelVelocityRotPerSec = 44.81;
 
     // Precomputed: true if turret travel is less than one full rotation (sub-360
     // cope path)
@@ -241,7 +241,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command shootFromCalc() {
-        return run(() -> setShooterVelocity(m_calcFlywheelVelocity));
+        return run(() -> m_shooterA.setControl(m_velocityRequest.withVelocity(m_calcFlywheelVelocityRotPerSec)));
     }
 
     public void setShooterVelocity(AngularVelocity RPS) {
@@ -281,6 +281,12 @@ public class Shooter extends SubsystemBase {
         if (!m_isTurretHomed) { return; }
         m_turretMotor.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFF));
         log_turretControlPos.accept(rots.in(Rotations));
+    }
+
+    public void setTurretPos(double rots, double velocityFFRotPerSec) {
+        if (!m_isTurretHomed) { return; }
+        m_turretMotor.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFFRotPerSec));
+        log_turretControlPos.accept(rots);
     }
 
     public void setTurretNeutralMode(NeutralModeValue value) {
@@ -382,24 +388,19 @@ public class Shooter extends SubsystemBase {
 
         var calcData = m_shooterCalc.getLatestShotCalcOutputs();
 
-        // set turret reference             // set hood reference  
+        // All calcData fields are CTRE-native (rotations, rot/s) — no wrapping needed
         if (m_isTurretHomed && m_hood.isHoodHomed()) {
-            var turretReference = calcData.turretReference();
-            var hoodReference = calcData.hoodReference();
-
-            // set outputs
-            var turretVelocityFF = calcData.turretCalcDetails().turretVelocityFF();
             if (m_turretLocked) {
                 setTurretPos(m_turretLockAngle);
                 m_hood.setHoodPos(kHoodLockDegs);
-                m_calcFlywheelVelocity = kShooterRPS;
+                m_calcFlywheelVelocityRotPerSec = kShooterRPS.in(RotationsPerSecond);
             } else {
                 if (m_holdTurretAtIntakePos) {
                     setTurretPos(Rotations.of(-0.250));
                 } else {
-                    setTurretPos(turretReference, turretVelocityFF);
-                    m_hood.setHoodPos(hoodReference);   //comment out for LERP
-                    m_calcFlywheelVelocity = calcData.shooterReference();
+                    setTurretPos(calcData.turretReferenceRots(), calcData.turretCalcDetails().turretVelocityFFRotPerSec());
+                    m_hood.setHoodPos(calcData.hoodReferenceRots());
+                    m_calcFlywheelVelocityRotPerSec = calcData.shooterReferenceRotPerSec();
                 }
             }
         }
@@ -407,7 +408,7 @@ public class Shooter extends SubsystemBase {
         log_shooterVelocityRPS.accept(m_flywheelVelocity.in(RotationsPerSecond));
         log_turretPositionRots.accept(m_turretPosition.in(Rotations));
         log_spunUp.accept(isShooterSpunUp());
-        log_calcFlywheelVelocity.accept(m_calcFlywheelVelocity.in(RotationsPerSecond));
+        log_calcFlywheelVelocity.accept(m_calcFlywheelVelocityRotPerSec);
         log_calcTurretPos.accept(m_calcTurret.in(Rotations));
 
         // m_periodicTracer.addEpoch("Logging");
