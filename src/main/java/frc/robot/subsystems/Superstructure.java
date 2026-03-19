@@ -11,6 +11,7 @@ import frc.robot.Constants.IndexerK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.Turret;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.StringArrayLogger;
 import static edu.wpi.first.units.Units.Rotations;
@@ -28,6 +29,7 @@ public class Superstructure extends SubsystemBase {
     private final Intake m_intake;
     private final Indexer m_indexer;
     private final Shooter m_shooter;
+    private final Turret m_turret;
 
     /* LOGGERS */
     private HashSet<String> m_activeCommands = new HashSet<>();
@@ -39,10 +41,11 @@ public class Superstructure extends SubsystemBase {
     // private StringLogger log_shooterState = WaltLogger.logString(kLogTab, "ShooterState");
     
     /* CONSTRUCTOR */
-    public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
+    public Superstructure(Intake intake, Indexer indexer, Shooter shooter, Turret turret) {
         m_intake = intake;
         m_indexer = indexer;
         m_shooter = shooter;
+        m_turret = turret;
     }
 
     /* BUTTON BIND SEQUENCES */
@@ -60,14 +63,14 @@ public class Superstructure extends SubsystemBase {
             () -> {
                 boolean shooting = isShooting.getAsBoolean();
 
-                m_shooter.setIntaking(!shooting);
+                m_turret.setIntaking(!shooting);
                 m_intake.setIntakeRollersVelocity(12);
                 m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPS : IndexerK.kSpindexerIntakeRPS);
             })
         ).finallyDo(
             () -> {
                 boolean shooting = isShooting.getAsBoolean();
-                m_shooter.setIntaking(false);
+                m_turret.setIntaking(false);
                 m_intake.setIntakeRollersVelocity(0);
                 if (!shooting) {
                     m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
@@ -238,7 +241,7 @@ public class Superstructure extends SubsystemBase {
         //     logCommand = logActiveOverrideCommands("turret0", "turret180");
         // }
         return Commands.sequence(
-            m_shooter.setTurretPosCmd(Rotations.of(degs.in(Rotations)))
+            m_turret.setTurretPosCmd(Rotations.of(degs.in(Rotations)))
             // logCommand
         );
     }

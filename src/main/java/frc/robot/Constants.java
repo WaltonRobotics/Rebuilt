@@ -535,6 +535,15 @@ public class Constants {
             .withVoltage(kTunnelVoltageConfigs);
     }
 
+    public static class TurretK {
+        public static final String kLogTab = "Turret";
+        
+        public static final double kGearZeroToothCount = 100;
+        public static final double kGearOneToothCount = 10;
+        public static final double kGearTwoToothCount = 19;
+
+        public static final double kSlope = (kGearTwoToothCount * kGearOneToothCount) / ((kGearOneToothCount - kGearTwoToothCount) * kGearZeroToothCount);
+    }
     public static class AutonK {
         public static final String kLogTab = "Auton";
 

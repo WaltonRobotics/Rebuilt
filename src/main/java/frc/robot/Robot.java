@@ -40,6 +40,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.Constants.IntakeK;
+import frc.robot.subsystems.shooter.Turret;
 import frc.robot.Constants.RobotK;
 import frc.robot.dashboards.AutonChooser;
 import frc.robot.dashboards.TestingDashboard;
@@ -88,12 +89,13 @@ public class Robot extends TimedRobot {
         () -> m_drivetrain.getStateCopy(),
         () -> m_drivetrain.getChassisSpeeds());
     private final Hood m_hood = new Hood();
+    private final Turret m_turret = new Turret();
 
     private final Intake m_intake = new Intake();
     private final Indexer m_indexer = new Indexer();
 
     // private final WaltVisualSim m_visualSim;
-    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
+    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter, m_turret);
 
     //---AUTONS
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
@@ -325,8 +327,8 @@ public class Robot extends TimedRobot {
 
         // m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
 
-        m_driver.povDown().onTrue(m_shooter.setTurretLockCmd(false));
-        m_driver.povRight().onTrue(m_shooter.setTurretLockCmd(true));
+        m_driver.povDown().onTrue(m_turret.setTurretLockCmd(false));
+        m_driver.povRight().onTrue(m_turret.setTurretLockCmd(true));
 
         // m_driver.start().whileTrue(m_superstructure.activateOuttakeNOSHOOT());
         // trg_optimalPrefireTime.whileTrue(
@@ -449,7 +451,7 @@ public class Robot extends TimedRobot {
         if (m_disableChangeDelayTimer.hasElapsed(3.0)) {
             m_disableChangeDelayTimer.stop();
             m_disableChangeDelayTimer.reset();
-            m_shooter.setTurretNeutralMode(NeutralModeValue.Coast);
+            m_turret.setTurretNeutralMode(NeutralModeValue.Coast);
             m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
             m_hood.setHoodNeutralMode(NeutralModeValue.Coast);
         }
