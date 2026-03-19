@@ -134,7 +134,7 @@ public class Superstructure extends SubsystemBase {
                 // up("pre waituntil command"),
                 Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocityRotPerSec() >= ShooterK.kShooterSpunUpMinimumD))).withTimeout(ShooterK.kShooterSpunUpTimeout),
                 m_indexer.startTunnelCmd(),
-                Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocity().gte(IndexerK.kTunnelSpunUpMinimum))).withTimeout(IndexerK.kTunnelSpunUpTimeout),
+                Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocityRotPerSec() >= IndexerK.kTunnelSpunUpMinimumD)).withTimeout(IndexerK.kTunnelSpunUpTimeout),
                 // up("post waituntil command"),
 
                 // up("pre start indexer"),
@@ -179,7 +179,7 @@ public class Superstructure extends SubsystemBase {
                 // up("pre waituntil command"),
                 Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocityRotPerSec() >= ShooterK.kShooterSpunUpMinimumD))).withTimeout(ShooterK.kShooterSpunUpTimeout),
                 m_indexer.startTunnelCmd(),
-                Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocity().gte(IndexerK.kTunnelSpunUpMinimum))).withTimeout(IndexerK.kTunnelSpunUpTimeout),
+                Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocityRotPerSec() >= IndexerK.kTunnelSpunUpMinimumD)).withTimeout(IndexerK.kTunnelSpunUpTimeout),
                 // up("post waituntil command"),
 
                 // up("pre start indexer"),

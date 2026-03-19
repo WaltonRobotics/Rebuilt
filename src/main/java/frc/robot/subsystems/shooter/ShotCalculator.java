@@ -181,17 +181,24 @@ public class ShotCalculator {
     // If you're having trouble understanding this method, go mess with the values in desmos / read what those do, as this is just the same desmos calc.
     public static ShotData calculateShotFromFunnelClearance(Pose2d robot,
             Translation3d actualTarget, Translation3d predictedTarget) {
+        return calculateShotFromFunnelClearance(robot,
+                actualTarget.getX(), actualTarget.getY(),
+                predictedTarget.getX(), predictedTarget.getY(), predictedTarget.getZ());
+    }
+
+    /** Raw-double overload — zero allocation in the hot loop. */
+    static ShotData calculateShotFromFunnelClearance(Pose2d robot,
+            double actualTargetX, double actualTargetY,
+            double predX, double predY, double predZ) {
         double robotX = robot.getX();
         double robotY = robot.getY();
         double headingRad = robot.getRotation().getRadians();
 
-        double distPredM = getDistanceToTargetM(robotX, robotY, headingRad,
-                predictedTarget.getX(), predictedTarget.getY());
-        double distActualM = getDistanceToTargetM(robotX, robotY, headingRad,
-                actualTarget.getX(), actualTarget.getY());
+        double distPredM = getDistanceToTargetM(robotX, robotY, headingRad, predX, predY);
+        double distActualM = getDistanceToTargetM(robotX, robotY, headingRad, actualTargetX, actualTargetY);
 
         double x_dist = distPredM * kMetersToInches;
-        double y_dist = predictedTarget.getZ() * kMetersToInches - kTurretOffsetZ_in;
+        double y_dist = predZ * kMetersToInches - kTurretOffsetZ_in;
         double g = 386;
         double r = kFunnelRadiusIn * x_dist / (distActualM * kMetersToInches);
         double h = kFunnelHeightPlusAboveIn;
@@ -216,7 +223,7 @@ public class ShotCalculator {
 
         // v0 is in inches/sec — convert to rad/s via flywheel radius in inches
         double exitVelRadPerSec = v0 / kFlywheelRadiusIn;
-        return new ShotData(exitVelRadPerSec, Math.PI / 2 - theta, predictedTarget);
+        return new ShotData(exitVelRadPerSec, Math.PI / 2 - theta, new Translation3d(predX, predY, predZ));
     }
 
     // use an iterative lookahead approach to determine shot parameters for a moving robot
@@ -246,8 +253,7 @@ public class ShotCalculator {
             predX = targetX - vx * tofSec;
             predY = targetY - vy * tofSec;
 
-            Translation3d predictedTarget = new Translation3d(predX, predY, targetZ);
-            shot = calculateShotFromFunnelClearance(robot, target, predictedTarget);
+            shot = calculateShotFromFunnelClearance(robot, targetX, targetY, predX, predY, targetZ);
 
             distM = getDistanceToTargetM(robotX, robotY, headingRad, predX, predY);
             exitVelMps = shot.getExitVelocityMps();

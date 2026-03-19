@@ -475,6 +475,7 @@ public class Constants {
         public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(1.0);
 
         public static final AngularVelocity kTunnelSpunUpMinimum = RotationsPerSecond.of(10);
+        public static final double kTunnelSpunUpMinimumD = 10.0;
         public static final Time kTunnelSpunUpTimeout = Seconds.of(1);  //double expected spinup time
         
         /* CONFIGS */

@@ -59,7 +59,7 @@ public class Shooter extends SubsystemBase {
     double m_turretLockAngleRots = 0.0;
 
     private double m_latestFlywheelVelocityRotPerSec;
-    // private Angle m_turretTurnPosition;
+    private boolean m_isShooterSpunUp = false;
 
     private int m_fuelStored = 8;
 
@@ -247,13 +247,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public boolean isShooterSpunUp() {
-        sig_shooterCLErr.refresh();
-        log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
-
-        boolean isNear = sig_shooterCLErr.isNear(0, 3);
-
-        log_spunUp.accept(isNear);
-        return isNear;
+        return m_isShooterSpunUp;
     }
 
     public void setTurretPos(double positionRots, double velocityFFRotPerSec) {
@@ -354,6 +348,9 @@ public class Shooter extends SubsystemBase {
         // THIS IS USED SNEAKILY BY SHOTCALC DO NOT MOVE THIS
         m_latestTurretPositionRots = m_turretMotor.getPosition().getValueAsDouble();
         m_latestFlywheelVelocityRotPerSec = m_shooterA.getVelocity().getValueAsDouble();
+        sig_shooterCLErr.refresh();
+        log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
+        m_isShooterSpunUp = sig_shooterCLErr.isNear(0, 3);
 
         var calcData = m_shooterCalc.getLatestShotCalcOutputs();
 
@@ -376,7 +373,7 @@ public class Shooter extends SubsystemBase {
 
         log_shooterVelocityRPS.accept(m_latestFlywheelVelocityRotPerSec);
         log_turretPositionRots.accept(m_latestTurretPositionRots);
-        log_spunUp.accept(isShooterSpunUp());
+        log_spunUp.accept(m_isShooterSpunUp);
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocityRotPerSec);
         log_calcTurretPos.accept(m_calcTurretRots);
 
