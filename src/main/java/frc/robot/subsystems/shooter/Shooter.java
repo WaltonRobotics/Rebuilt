@@ -19,7 +19,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
@@ -55,8 +54,6 @@ public class Shooter extends SubsystemBase {
     private final Supplier<ChassisSpeeds> m_fieldSpeedsSupplier;
 
     private final FuelSim m_fuelSim;
-
-    public final EventLoop homingEventLoop = new EventLoop();
 
     // ---MOTORS + CONTROL REQUESTS
     private final TalonFX m_shooterA = new TalonFX(kShooterA_CANID, Constants.kShooterBus); // X60Foc
@@ -259,7 +256,7 @@ public class Shooter extends SubsystemBase {
         var calcData = m_shooterCalc.getLatestShotCalcOutputs();
 
         // set turret reference             // set hood reference  
-        if (m_isTurretHomed && m_hood.isHoodHomed()) {
+        if (m_turret.isTurretHomed() && m_hood.isHoodHomed()) {
             var turretReference = calcData.turretReference();
             var hoodReference = calcData.hoodReference();
 
@@ -291,44 +288,10 @@ public class Shooter extends SubsystemBase {
         // m_periodicTracer.printEpochs();
     }
 
-    public void fastPeriodic() {
-        homingEventLoop.poll();
-    }
-
     @Override
     public void simulationPeriodic() {
         WaltMotorSim.updateSimFX(m_shooterA, m_shooterSim);
     }
-
-    // public Command turretHomingCmd() {
-    //     Runnable init = () -> {
-    //         WaltLogger.timedPrint("TurretHoming BEGIN");
-    //         m_turretMotor.setControl(m_VoltageReq.withOutput(kHomingVoltage));
-    //         m_isTurretHomed = false;
-    //         log_turretHomed.accept(m_isTurretHomed);
-    //     };
-
-    //     Consumer<Boolean> end = (Boolean interrupted) -> {
-    //         if (interrupted) {
-    //             m_turretMotor.setControl(m_BrakeReq);
-    //             log_turretHomed.accept(m_isTurretHomed);
-    //             WaltLogger.timedPrint("TurretHoming INTERRUPTED!!!");
-    //             return;
-    //         }
-
-    //         m_turretMotor.setPosition(kHomePosition); // Flowkirkentologicalexpialibrostatenuinely
-    //         m_turretMotor.setControl(m_BrakeReq);
-    //         removeDefaultCommand();
-    //         m_isTurretHomed = true;
-    //         log_turretHomed.accept(m_isTurretHomed);
-    //     };
-
-    //     BooleanSupplier isFinished = () -> {
-    //         return !m_turretHomingHall.get() || m_isTurretHomed;
-    //     };
-
-    //     return new FunctionalCommand(init, () ->{}, end, isFinished, this);
-    // }
 
     public Command homingCmds() {
         return Commands.sequence(

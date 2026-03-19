@@ -8,7 +8,6 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static frc.robot.Constants.ShooterK.*;
@@ -16,7 +15,6 @@ import static frc.robot.Constants.ShooterK.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
@@ -51,48 +49,48 @@ public class ShotCalculator {
         maxDistance = 5.8;
 
         //right mid grid
-        m_shotMap.put(3.903, new ShotData(RotationsPerSecond.of(73.18), Degrees.of(327.75)));
+        m_shotMap.put(3.903, new ShotData(RotationsPerSecond.of(78.18), Degrees.of(327.75)));
         m_timeOfFlightMap.put(3.903, 1.35);
 
         //backright grid - THIS ONE IS INCONSISTENT UNTIL SHOOTER V3
-        m_shotMap.put(5.657, new ShotData(RotationsPerSecond.of(95.00), Degrees.of(374.20)));
+        m_shotMap.put(5.657, new ShotData(RotationsPerSecond.of(96.42), Degrees.of(374.20)));
         m_timeOfFlightMap.put(5.657, 1.56);
 
         //frontright grid
-        m_shotMap.put(3.763, new ShotData(RotationsPerSecond.of(77), Degrees.of(300)));
+        m_shotMap.put(3.763, new ShotData(RotationsPerSecond.of(82), Degrees.of(300)));
         m_timeOfFlightMap.put(3.763, 1.43);
 
         //frontleft grid
-        m_shotMap.put(1.476, new ShotData(RotationsPerSecond.of(57.72), Degrees.of(150.77)));
+        m_shotMap.put(1.476, new ShotData(RotationsPerSecond.of(62.72), Degrees.of(150.77)));
         m_timeOfFlightMap.put(1.476, 1.125);
 
         //backleft grid
-        m_shotMap.put(3.854, new ShotData(RotationsPerSecond.of(79), Degrees.of(345)));
+        m_shotMap.put(3.854, new ShotData(RotationsPerSecond.of(84), Degrees.of(345)));
         m_timeOfFlightMap.put(3.854, 1.38);
 
         //against the hub
-        m_shotMap.put(0.835, new ShotData(RotationsPerSecond.of(66.21), Degrees.of(85.51)));
+        m_shotMap.put(0.835, new ShotData(RotationsPerSecond.of(71.21), Degrees.of(85.51)));
         m_timeOfFlightMap.put(0.835, 1.17);
 
         //against the tower
-        m_shotMap.put(2.977, new ShotData(RotationsPerSecond.of(71.14), Degrees.of(338.81)));
+        m_shotMap.put(2.977, new ShotData(RotationsPerSecond.of(76.14), Degrees.of(338.81)));
         m_timeOfFlightMap.put(2.977, 1.03);
 
         //backleft grid
-        m_shotMap.put(4.348, new ShotData(RotationsPerSecond.of(77.94), Degrees.of(396.32)));
+        m_shotMap.put(4.348, new ShotData(RotationsPerSecond.of(82.94), Degrees.of(396.32)));
         m_timeOfFlightMap.put(4.348, 1.38);
 
         //left mid grid
-        m_shotMap.put(2.799, new ShotData(RotationsPerSecond.of(67.91), Degrees.of(308.94)));
+        m_shotMap.put(2.799, new ShotData(RotationsPerSecond.of(72.91), Degrees.of(308.94)));
         m_timeOfFlightMap.put(2.799, 1.08);
 
-        m_shotMap.put(3.561, new ShotData(RotationsPerSecond.of(79.30), Degrees.of(287.93)));
+        m_shotMap.put(3.561, new ShotData(RotationsPerSecond.of(84.30), Degrees.of(287.93)));
         m_timeOfFlightMap.put(3.561, 1.42);
 
-        m_shotMap.put(1.870, new ShotData(RotationsPerSecond.of(62.31), Degrees.of(231.52)));
+        m_shotMap.put(1.870, new ShotData(RotationsPerSecond.of(67.31), Degrees.of(231.52)));
         m_timeOfFlightMap.put(1.870, 1.1);
 
-        m_shotMap.put(3.259, new ShotData(RotationsPerSecond.of(75.64), Degrees.of(268.02)));
+        m_shotMap.put(3.259, new ShotData(RotationsPerSecond.of(80.64), Degrees.of(268.02)));
         m_timeOfFlightMap.put(3.259, 1.37);
     }
 
