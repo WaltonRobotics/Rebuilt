@@ -139,6 +139,7 @@ public class Superstructure extends SubsystemBase {
 
                 // up("pre start indexer"),
                 m_indexer.startSpindexerCmd(),
+                m_intake.setIntakeRollersVelocityCmd(IntakeK.kIntakeRollersShootRPS),
                 // up("post start indexer"),
 
                 // up("pre repeating sequence"),
@@ -184,6 +185,7 @@ public class Superstructure extends SubsystemBase {
 
                 // up("pre start indexer"),
                 m_indexer.startSpindexerCmd(),
+                m_intake.setIntakeRollersVelocityCmd(IntakeK.kIntakeRollersShootRPS),
                 // up("post start indexer"),
 
                 // up("pre repeating sequence"),
