@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import javax.naming.InitialContext;
+
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -431,19 +433,19 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      * @param desPose pose to move to
      */
     public Command roboToPose(Pose2d desPose) {
-        Pose2d curPose = getState().Pose;
         return Commands.runOnce(() -> {
+            Pose2d curPose = getState().Pose;
             double xSpeed = m_pathXController.calculate(curPose.getX(), desPose.getX());
             double ySpeed = m_pathYController.calculate(curPose.getY(), desPose.getY());
             double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), desPose.getRotation().getRadians());
             setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
-        }).andThen(Commands.waitUntil(() -> isNearPose(curPose, desPose, 0.05)))
+        }).andThen(Commands.waitUntil(() -> isNearPose(getState().Pose, desPose, 0.05)))
           .andThen(() -> setControl(swreq_drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0)));
     }
 
     public boolean isNearPose(Pose2d curPose, Pose2d desPose, double translationTolerance, double rotationTolerance) {
         return isNearTranslation(curPose.getTranslation(), desPose.getTranslation(), translationTolerance)
-            && isNearAngle(curPose.getRotation(), desPose.getRotation(), rotationTolerance);
+            && isNearRotation(curPose.getRotation(), desPose.getRotation(), rotationTolerance);
     }
 
     public boolean isNearPose(Pose2d curPose, Pose2d desPose, double translationTolerance) {
@@ -454,16 +456,16 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      * Robot turns to desired angle
      * @param desiredAngle angle to turn to
      */
-    public Command roboToAngle(Rotation2d desRotation) {
-        Rotation2d curRotation = getState().Pose.getRotation();
+    public Command roboToRotation(Rotation2d desRotation) {
         return Commands.runOnce(() -> {
+            Rotation2d curRotation = getState().Pose.getRotation();
             double thetaSpeed = m_pathThetaController.calculate(curRotation.getRadians(), desRotation.getRadians());
             setControl(swreq_drive.withRotationalRate(thetaSpeed));
-        }).andThen(Commands.waitUntil(() -> isNearAngle(curRotation, desRotation, 0.05)))
+        }).andThen(Commands.waitUntil(() -> isNearRotation(getState().Pose.getRotation(), desRotation, 0.05)))
           .andThen(() -> setControl(swreq_drive.withRotationalRate(0)));
     }
 
-    public boolean isNearAngle(Rotation2d curRotation, Rotation2d desRotation, double tolerance) {
+    public boolean isNearRotation(Rotation2d curRotation, Rotation2d desRotation, double tolerance) {
         return Radians.of(curRotation.getRadians()).isNear(Radians.of(desRotation.getRadians()), Radians.of(tolerance));
     }
 
@@ -472,12 +474,12 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      * @param desTranslation translation to go to
      */
     public Command roboToTranslation(Translation2d desTranslation) {
-        Translation2d curTranslation = getState().Pose.getTranslation();
         return Commands.runOnce(() -> {
+            Translation2d curTranslation = getState().Pose.getTranslation();
             double xSpeed = m_pathXController.calculate(curTranslation.getX(), desTranslation.getX());
             double ySpeed = m_pathYController.calculate(curTranslation.getY(), desTranslation.getY());
             setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed));
-        }).andThen(Commands.waitUntil(() -> isNearTranslation(curTranslation, desTranslation, 0.05)))
+        }).andThen(Commands.waitUntil(() -> isNearTranslation(getState().Pose.getTranslation(), desTranslation, 0.05)))
           .andThen(() -> setControl(swreq_drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0)));
     }
 
@@ -488,18 +490,18 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         ) <= tolerance;
     }
 
-    public Command shimmy(Pose2d positive, Pose2d negative, double secondsBetween, boolean waitBack) {
-        Pose2d intialPose = getState().Pose;
+    public Command shimmy(Translation2d positive, Translation2d negative, double secondsBetween, boolean waitBack) {
+        Translation2d intialTranslation = getState().Pose.getTranslation();
         return Commands.sequence(
-            roboToPose(positive),
+            roboToTranslation(positive),
             Commands.waitSeconds(secondsBetween),
-            roboToPose(negative),
+            roboToTranslation(negative),
             waitBack ? Commands.waitSeconds(secondsBetween) : Commands.none(),
-            roboToPose(intialPose)
+            roboToTranslation(intialTranslation)
         );
     }
 
-    private record SwerveShimmyData(Pose2d forward, Pose2d backward) {}
+    private record SwerveShimmyData(Translation2d forward, Translation2d backward) {}
 
     private SwerveShimmyData calcSwerveShimmyData(Supplier<Translation3d> targetSup) {
         Alliance alliance = DriverStation.getAlliance().get();
@@ -520,16 +522,14 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
         Distance yLimited = xLimited.times(slope); // y always equals x times slope
 
-        Pose2d positive = new Pose2d( // Calculate the 2 poses depending on blue or red alliance
+        Translation2d positive = new Translation2d( // Calculate the 2 poses depending on blue or red alliance
             alliance == Alliance.Blue ? curPose.getMeasureX().plus(xLimited) : curPose.getMeasureX().minus(xLimited),
-            alliance == Alliance.Blue ? curPose.getMeasureY().plus(yLimited) : curPose.getMeasureY().minus(yLimited),
-            curPose.getRotation()
+            alliance == Alliance.Blue ? curPose.getMeasureY().plus(yLimited) : curPose.getMeasureY().minus(yLimited)
         );
 
-        Pose2d negative = new Pose2d(
+        Translation2d negative = new Translation2d(
             alliance == Alliance.Blue ? curPose.getMeasureX().minus(xLimited) : curPose.getMeasureX().plus(xLimited),
-            alliance == Alliance.Blue ? curPose.getMeasureY().minus(yLimited) : curPose.getMeasureY().plus(yLimited),
-            curPose.getRotation()
+            alliance == Alliance.Blue ? curPose.getMeasureY().minus(yLimited) : curPose.getMeasureY().plus(yLimited)
         );
 
         // Distance xMovement = Meters.of(MathUtil.clamp(xDistance.in(Meters), -0.3, 0.3));
