@@ -255,28 +255,28 @@ public class WaltLogger {
         return new BooleanLogger(table, name, options);
     }
 
-    // public static final class DoubleArrayLogger implements Consumer<double[]> {
-    //     public final DoubleArrayPublisher ntPub;
-    //     public final DoubleArrayLogEntry logEntry;
+    public static final class DoubleArrayLogger implements Consumer<double[]> {
+        public final DoubleArrayPublisher ntPub;
+        public final DoubleArrayLogEntry logEntry;
 
-    //     public DoubleArrayLogger(String subTable, String name) {
-    //         ntPub = NTPublisherFactory.makeDoubleArrPub(logTable.getSubTable(subTable), name);
-    //         logEntry = new DoubleArrayLogEntry(DataLogManager.getLog(), "Robot/" + subTable + "/" + name);
-    //     }
+        public DoubleArrayLogger(String subTable, String name) {
+            ntPub = NTPublisherFactory.makeDoubleArrPub(logTable.getSubTable(subTable), name);
+            logEntry = new DoubleArrayLogEntry(DataLogManager.getLog(), "Robot/" + subTable + "/" + name);
+        }
 
-    //     @Override
-    //     public void accept(double[] value) {
-    //         if (shouldPublishNt()) {
-    //             ntPub.accept(value);
-    //         } else {
-    //             logEntry.append(value);
-    //         }
-    //     }
-    // }
+        @Override
+        public void accept(double[] value) {
+            if (shouldPublishNt()) {
+                ntPub.accept(value);
+            } else {
+                logEntry.append(value);
+            }
+        }
+    }
 
-    // public static DoubleArrayLogger logDoubleArray(String table, String name) {
-    //     return new DoubleArrayLogger(table, name);
-    // }
+    public static DoubleArrayLogger logDoubleArray(String table, String name) {
+        return new DoubleArrayLogger(table, name);
+    }
 
     public static final class StringLogger implements Consumer<String> {
         public final StringPublisher ntPub;

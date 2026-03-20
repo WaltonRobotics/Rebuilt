@@ -23,6 +23,7 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.util.WaltLogger;
+import frc.util.WaltLogger.DoubleArrayLogger;
 import frc.util.WaltLogger.IntLogger;
 
 import static frc.robot.Constants.VisionK;
@@ -79,10 +80,10 @@ public class WaltCamera extends PhotonCamera {
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.0, 1.0, 3); //1.5, 1.5, 6.24
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.25, 0.25, 1.25);  //0.5, 0.5, 5.24
 
-    // private final StructPublisher<Pose2d> log_camPose;
-    // private final StructPublisher<Transform3d> log_camTransform;
-    // private final DoubleArrayLogger log_stdDevs;
-    // private final IntLogger log_numResults;
+    private final StructPublisher<Pose2d> log_camPose;
+    private final StructPublisher<Transform3d> log_camTransform;
+    private final DoubleArrayLogger log_stdDevs;
+    private final IntLogger log_numResults;
 
     private Matrix<N3, N1> m_curStdDevs;
 
@@ -94,14 +95,14 @@ public class WaltCamera extends PhotonCamera {
         m_estimator = new PhotonPoseEstimator(FieldK.kTagLayout, m_robotToCam);
 
         final String ntPrefix = "Vision/" + cameraName + "/";
-        // log_camPose = NetworkTableInstance.getDefault()
-        //     .getStructTopic(ntPrefix + "estRobotPose", Pose2d.struct).publish();
-        // log_camTransform = NetworkTableInstance.getDefault()
-        //     .getStructTopic(ntPrefix + "transform", Transform3d.struct).publish();
-        // log_stdDevs = WaltLogger.logDoubleArray(ntPrefix, "stdDevs");
-        // log_numResults = WaltLogger.logInt(ntPrefix, "numResults");
+        log_camPose = NetworkTableInstance.getDefault()
+            .getStructTopic(ntPrefix + "estRobotPose", Pose2d.struct).publish();
+        log_camTransform = NetworkTableInstance.getDefault()
+            .getStructTopic(ntPrefix + "transform", Transform3d.struct).publish();
+        log_stdDevs = WaltLogger.logDoubleArray(ntPrefix, "stdDevs");
+        log_numResults = WaltLogger.logInt(ntPrefix, "numResults");
 
-        // log_camTransform.accept(robotToCam);
+        log_camTransform.accept(robotToCam);
     }
 
     /* VISION ESTIMATION METHODS */
@@ -118,7 +119,7 @@ public class WaltCamera extends PhotonCamera {
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
         List<PhotonPipelineResult> unreadCameraResults = this.getAllUnreadResults();
-        // log_numResults.accept(unreadCameraResults.size());
+        log_numResults.accept(unreadCameraResults.size());
 
         for (var change : unreadCameraResults) {
             if (!change.hasTargets()) { continue; }
@@ -127,11 +128,11 @@ public class WaltCamera extends PhotonCamera {
                 visionEst = m_estimator.estimateLowestAmbiguityPose(change);
             }
             updateEstimationStdDevs(visionEst, change.getTargets());
-            // log_stdDevs.accept(m_curStdDevs.getData());
+            log_stdDevs.accept(m_curStdDevs.getData());
         }
 
         if (visionEst.isPresent()) {
-            // log_camPose.accept(visionEst.get().estimatedPose.toPose2d());
+            log_camPose.accept(visionEst.get().estimatedPose.toPose2d());
         }
 
         return visionEst;
