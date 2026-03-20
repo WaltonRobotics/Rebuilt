@@ -233,11 +233,11 @@ public class WaltSimpleAutonFactory {
         routine.active().onTrue(traj1.cmd());
 
         Trigger stopIntk1Trg = traj1.atTime("stopIntake");
-        Trigger stopIntk2Trg = traj2.atTime("stopIntake");
-        Trigger startIntk2Trg = traj2.atTime(1.1);
+        // Trigger stopIntk2Trg = traj2.atTime("stopIntake");
+        Trigger startIntk2Trg = traj2.atTime(0.28);
 
         stopIntk1Trg.onChange(Commands.print("StopIntk1Trg Change!"));
-        stopIntk2Trg.onChange(Commands.print("StopIntk2Trg Change!"));
+        // stopIntk2Trg.onChange(Commands.print("StopIntk2Trg Change!"));
         startIntk2Trg.onChange(Commands.print("StartIntk2Trg Change!"));
 
         routine.active().onTrue(
@@ -268,19 +268,19 @@ public class WaltSimpleAutonFactory {
 
         // Phase 2: intake during reshoot path
         startIntk2Trg.onTrue(
-            m_superstructure.intake(() -> false).until(stopIntk2Trg)
+            m_superstructure.intake(() -> false) //.until(stopIntk2Trg)
         );
 
         // Final: xBrake + shoot after traj2
-        traj2.done().onTrue(m_swerve.xBrakeCmd());
+        // traj2.done().onTrue(m_swerve.xBrakeCmd());
 
-        traj2.doneFor(AutonK.kShootingTimeout).whileTrue(
-            m_superstructure.activateOuttakeShotCalc()
-        );
+        // traj2.doneFor(AutonK.kShootingTimeout).whileTrue(
+        //     m_superstructure.activateOuttakeShotCalc()
+        // );
 
-        traj2.doneDelayed(2.75).onTrue(
-            m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
-        );
+        // traj2.doneDelayed(2.75).onTrue(
+        //     m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+        // );
 
         return routine;
     }
