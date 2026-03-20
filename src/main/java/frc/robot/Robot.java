@@ -39,6 +39,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.Constants.IntakeK;
 import frc.robot.Constants.RobotK;
 import frc.robot.dashboards.AutonChooser;
 import frc.robot.dashboards.TestingDashboard;
@@ -276,6 +277,9 @@ public class Robot extends TimedRobot {
 
         // m_manipulator.povRight().onTrue(m_shooter.driverRPSIncrease(true));
         // m_manipulator.povLeft().onTrue(m_shooter.driverRPSIncrease(false));
+
+        m_manipulator.povUp().onTrue(m_intake.setIntakeFlapServoCmd(IntakeK.kIntakeFlapDeployPos));
+        m_manipulator.povDown().onTrue(m_intake.setIntakeFlapServoCmd(0));
 
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());

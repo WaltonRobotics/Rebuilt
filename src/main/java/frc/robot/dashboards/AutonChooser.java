@@ -26,6 +26,8 @@ public class AutonChooser {
             () -> simpleAutonFactory.fastTwoSweep_Reshoot(false));
         m_chooser.addRoutine("Reshoot Two Left Neutral Pickup",
             () -> simpleAutonFactory.fastTwoSweep_Reshoot(true));
+        m_chooser.addRoutine("Preload Auton",
+            () -> simpleAutonFactory.preloadAuton());
 
         SmartDashboard.putData("AutoChooser", m_chooser);
     }

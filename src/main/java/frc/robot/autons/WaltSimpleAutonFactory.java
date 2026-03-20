@@ -144,6 +144,22 @@ public class WaltSimpleAutonFactory {
         return routine;
     }
 
+    public AutoRoutine preloadAuton() {
+        String path = "PreHeat";
+        AutoRoutine routine = m_autoFactory.newRoutine("preloadAuton");
+        AutoTrajectory traj = createTraj(routine, path);
+
+        routine.active().onTrue(traj.cmd().withTimeout(5));
+
+        routine.active().onTrue(
+            homingCmd().andThen(
+                m_superstructure.activateOuttakeShotCalc()
+            )
+        );
+
+        return routine;
+    }
+
     public AutoRoutine fastOneSweep(boolean left) {
         String path = left ? AutonK.kFastLeftTwoSweepName
                            : AutonK.kFastRightTwoSweepName;
