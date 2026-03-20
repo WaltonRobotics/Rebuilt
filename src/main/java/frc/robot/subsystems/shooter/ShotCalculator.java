@@ -96,6 +96,14 @@ public class ShotCalculator {
 
         m_shotMap.put(3.259, new ShotData(RotationsPerSecond.of(75.64 + kRPSBoost), Degrees.of(268.02)));
         m_timeOfFlightMap.put(3.259, 1.37);
+
+        m_shotMap.put(2.755, new ShotData(RotationsPerSecond.of(75.41), Degrees.of(221.02)));
+        m_timeOfFlightMap.put(2.755, 1.28);
+
+        m_shotMap.put(2.352, new ShotData(RotationsPerSecond.of(75.41), Degrees.of(169.77)));
+        m_timeOfFlightMap.put(2.352, 0.9);
+
+        // m_shotMap.put(3.540, null);
     }
 
     /**
