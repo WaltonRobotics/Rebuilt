@@ -234,9 +234,11 @@ public class WaltSimpleAutonFactory {
 
         Trigger stopIntk1Trg = traj1.atTime("stopIntake");
         Trigger stopIntk2Trg = traj2.atTime("stopIntake");
+        Trigger startIntk2Trg = traj2.atTime(1.1);
 
         stopIntk1Trg.onChange(Commands.print("StopIntk1Trg Change!"));
         stopIntk2Trg.onChange(Commands.print("StopIntk2Trg Change!"));
+        startIntk2Trg.onChange(Commands.print("StartIntk2Trg Change!"));
 
         routine.active().onTrue(
             homingCmd().andThen(
@@ -265,7 +267,7 @@ public class WaltSimpleAutonFactory {
         traj1.doneDelayed(AutonK.kShootingTimeout + 0.04).onTrue(traj2.cmd());
 
         // Phase 2: intake during reshoot path
-        traj2.atTime("startIntake").onTrue(
+        startIntk2Trg.onTrue(
             m_superstructure.intake(() -> false).until(stopIntk2Trg)
         );
 
