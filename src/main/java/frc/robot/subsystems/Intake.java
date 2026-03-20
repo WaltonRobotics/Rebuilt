@@ -163,11 +163,20 @@ public class Intake extends SubsystemBase {
         return runOnce(() -> setIntakeRollersVelocity(volts));
     }
 
+    public void setIntakeFlapServo(double pos) {
+        m_intakeFlapServo.setAngle(pos);
+
+        log_intakeFlapServoDesiredPosition.accept(m_intakeFlapServo.getAngle());    //does getting angle use lots of time/cpu? should we just pass in pos?
+    }
+
+    public Command setIntakeFlapServoCmd(double pos) {
+        return runOnce(() -> setIntakeFlapServo(pos));
+    }
+
     // TESTING TO SEE IF WE CAN JUST SAY 0 AS 0
     public Command intakeArmHome() {
         return Commands.parallel(
-            runOnce(() -> m_intakeFlapServo.setAngle(kIntakeFlapDeployPos)),
-            runOnce(() -> log_intakeFlapServoDesiredPosition.accept(m_intakeFlapServo.getAngle())),
+            setIntakeFlapServoCmd(kIntakeFlapDeployPos),
             Commands.sequence(
                 runOnce(() -> m_intakeArm.setPosition(0)),
 
@@ -182,11 +191,10 @@ public class Intake extends SubsystemBase {
     public Command intakeArmCurrentSenseHoming() {
         Runnable init = () -> {
             m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(-3.25));
-            m_intakeFlapServo.setAngle(kIntakeFlapDeployPos);
+            setIntakeFlapServo(kIntakeFlapDeployPos);
 
             m_isIntakeArmHomed = false;
             log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
-            log_intakeFlapServoDesiredPosition.accept(m_intakeFlapServo.getAngle());
         };
 
         Runnable execute = () -> {};
