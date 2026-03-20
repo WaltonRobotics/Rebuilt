@@ -566,6 +566,7 @@ public class Constants {
         public static final String kReshootRightTwo = "RightSweepFast_Reshoot";
 
         public static final String kFastLeftTwoSweepName = "LeftSweepFast";
-        public static final String kReshootLeftTwo = "LeftSweepFast_Reshoot";
+        public static final String kReshootLeftTwo = "LeftSweepFast_copy1"; //TODO: MUST RENAME THIS
+        // public static final String kReshootLeftTwo = "LeftSweepFast_Reshoot";
     }
 }
