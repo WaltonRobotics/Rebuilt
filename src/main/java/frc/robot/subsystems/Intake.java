@@ -83,6 +83,8 @@ public class Intake extends SubsystemBase {
 
     private final BooleanLogger log_isIntakeArmHomed = WaltLogger.logBoolean(kLogTab, "isIntakeArmHomed");
 
+    private final DoubleLogger log_intakeFlapServoDesiredPosition = WaltLogger.logDouble(kLogTab, "servoDesiredPosition");
+
     /* CONSTRUCTOR */
     public Intake() {
         m_intakeArm.getConfigurator().apply(kIntakeArmConfiguration);
@@ -165,15 +167,14 @@ public class Intake extends SubsystemBase {
     public Command intakeArmHome() {
         return Commands.parallel(
             runOnce(() -> m_intakeFlapServo.setAngle(kIntakeFlapDeployPos)),
+            runOnce(() -> log_intakeFlapServoDesiredPosition.accept(m_intakeFlapServo.getAngle())),
             Commands.sequence(
                 runOnce(() -> m_intakeArm.setPosition(0)),
 
                 runOnce(() -> m_isIntakeArmHomed = true),
                 runOnce(() -> log_isIntakeArmHomed.accept(m_isIntakeArmHomed)),
                 
-                runOnce(() -> removeDefaultCommand()),
-
-                runOnce(() -> m_intakeFlapServo.setAngle(kIntakeFlapResetPos))
+                runOnce(() -> removeDefaultCommand())
             )
         );
     }
@@ -185,6 +186,7 @@ public class Intake extends SubsystemBase {
 
             m_isIntakeArmHomed = false;
             log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
+            log_intakeFlapServoDesiredPosition.accept(m_intakeFlapServo.getAngle());
         };
 
         Runnable execute = () -> {};
@@ -194,10 +196,10 @@ public class Intake extends SubsystemBase {
             m_intakeArm.setPosition(0);
             removeDefaultCommand();
             setIntakeArmPosCmd(IntakeArmPosition.RETRACTED);
-            m_intakeFlapServo.setAngle(kIntakeFlapResetPos);
-
             m_isIntakeArmHomed = true;
             log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
+
+            // DONT TELL FLAP_SERVO TO GO BACK ON END BECAUSE IF HOMING FINISHES TOO EARLY, THE SERVO WONT MOVE ENOUGH OUT TO DEPLOY FLAP
         };
 
         BooleanSupplier isFinished = () -> 

@@ -69,8 +69,6 @@ public class WaltSimpleAutonFactory {
         ).withTimeout(5);
     }
 
-
-
     private Command shootWithTimeout(AngularVelocity speed, double seconds) {
         return Commands.sequence(
             tp("shootWithTimeout.START(" + speed + "," + seconds + ")"),
