@@ -110,11 +110,15 @@ public class Constants {
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.in(Rotations));
 
         public static final AngularVelocity kShooterMaxRPS = MotorK.kX60MaxVelocity.div(kShooterGearing);
+        public static final double kShooterMaxRPSd = 96.42;
         public static final AngularVelocity kShooterRPS = kShooterMaxRPS.times(0.65);   //Kraken X60Foc Max (RPM: 5785) //(0.9)
+        public static final double kShooterRPSd = kShooterMaxRPSd * 0.65;
         public static final AngularVelocity kShooterAutonCloseRPS = kShooterMaxRPS.times(0.60);  //auton pose is closer to the hub than teleop scoring
         public static final AngularVelocity kShooterAuton_EndSweep_RPS = kShooterMaxRPS.times(0.70); // end of sweep paths
         public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.31);
         public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.zero();
+
+        public static final double kDriverRPSIncreaseD = 2.0;  //biggest cope of the century
 
         public static final AngularVelocity kShooterSpunUpMinimum = RotationsPerSecond.of(10);
         public static final Time kShooterSpunUpTimeout = Seconds.of(0.64);  //double expected spinup time
@@ -373,7 +377,7 @@ public class Constants {
         public static final AngularVelocity kIntakeRollersMaxRPS = MotorK.kX60FOCMaxVelocity.div(kIntakeRollersGearing);
         public static final AngularVelocity kIntakeRollersShootRPS = kIntakeRollersMaxRPS.times(0.2);
 
-        public static final double kIntakeFlapDeployPos = 180;
+        public static final double kIntakeFlapDeployPos = -360;
         public static final double kIntakeFlapResetPos = 0;
 
         /* IDS */

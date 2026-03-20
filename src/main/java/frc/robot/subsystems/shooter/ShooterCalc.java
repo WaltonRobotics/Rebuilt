@@ -53,7 +53,7 @@ public class ShooterCalc {
 
     private final ShotData kEmptyShotData = new ShotData(0, 0);
     private final AzimuthCalcDetails kEmptyAzimuthCalcDetails = new AzimuthCalcDetails(Rotations.zero(), new Pose3d(), new Pose3d(), 0, RotationsPerSecond.zero());
-    private final ShotCalcOutputs kEmptyShotCalcOutputs = new ShotCalcOutputs(kEmptyAzimuthCalcDetails, kEmptyShotData, Rotation.zero(), Rotation.zero(), RotationsPerSecond.zero());
+    private final ShotCalcOutputs kEmptyShotCalcOutputs = new ShotCalcOutputs(kEmptyAzimuthCalcDetails, kEmptyShotData, Rotation.zero(), Rotation.zero(), 0.0);
 
     private boolean m_useStaticShot = true;
     private Translation3d m_aimTarget = Translation3d.kZero;
@@ -209,7 +209,7 @@ public class ShooterCalc {
         ShotData shotData,
         Angle turretReference,
         Angle hoodReference,
-        AngularVelocity shooterReference
+        double shooterReferenceRps
     ) {}
 
     /**
@@ -240,6 +240,6 @@ public class ShooterCalc {
         var shooterReference = ShotCalculator.linearToAngularVelocity(
             calculatedShot.getExitVelocity(), kFlywheelRadius);
         return new ShotCalcOutputs(
-            azCalcDetails, calculatedShot, turretReference, hoodReference, shooterReference);
+            azCalcDetails, calculatedShot, turretReference, hoodReference, shooterReference.in(RotationsPerSecond));
     }
 }
