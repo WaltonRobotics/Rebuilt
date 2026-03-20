@@ -395,27 +395,37 @@ public class Shooter extends SubsystemBase {
 
         var calcData = m_shooterCalc.getLatestShotCalcOutputs();
 
-        // set turret reference             // set hood reference  
-        if (m_isTurretHomed && m_hood.isHoodHomed()) {
+        // set turret reference            
+        if (m_isTurretHomed) {
             var turretReference = calcData.turretReference();
-            var hoodReference = calcData.hoodReference();
 
             // set outputs
             var turretVelocityFF = calcData.turretCalcDetails().turretVelocityFF();
             if (m_turretLocked) {
                 setTurretPos(m_turretLockAngle);
-                m_hood.setHoodPos(kHoodLockDegs);
                 m_calcdFlywheelVelocityRps = kShooterRPSd;
             } else {
                 if (m_holdTurretAtIntakePos) {
                     setTurretPos(Rotations.of(-0.250));
                 } else {
                     setTurretPos(turretReference, turretVelocityFF);
-                    m_hood.setHoodPos(hoodReference);
                     m_calcdFlywheelVelocityRps = calcData.shooterReferenceRps();
                     if (true) { // ENABLE THIS TO ALLOW DRIVER RPS TWEAK
                         m_calcdFlywheelVelocityRps += m_driverRPSTweak;
                     }
+                }
+            }
+        }
+
+        // set hood reference
+        if (m_hood.isHoodHomed()) {
+            var hoodReference = calcData.hoodReference();
+
+            if (m_turretLocked) {
+                m_hood.setHoodPos(kHoodLockDegs);
+            } else {
+                if (!m_holdTurretAtIntakePos) {
+                    m_hood.setHoodPos(hoodReference);
                 }
             }
         }
