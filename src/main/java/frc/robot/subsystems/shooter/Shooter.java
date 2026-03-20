@@ -411,6 +411,8 @@ public class Shooter extends SubsystemBase {
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocity.in(RotationsPerSecond));
         log_calcTurretPos.accept(m_calcTurret.in(Rotations));
 
+        log_turretHomingHall.accept(trg_homingHallDirect.getAsBoolean());
+
         // m_periodicTracer.addEpoch("Logging");
 
         // m_periodicTracer.printEpochs();
