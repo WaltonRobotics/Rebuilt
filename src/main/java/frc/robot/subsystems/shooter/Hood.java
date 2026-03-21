@@ -48,7 +48,11 @@ public class Hood extends SubsystemBase {
     public Hood() {
         m_hood.getConfigurator().apply(kHoodTalonFXSConfiguration);
 
-        setDefaultCommand(hoodCurrentSenseHomingCmd());
+        m_hood.setPosition(kHoodMinPosition);
+        m_isHoodHomed = true;
+        log_hoodHomed.accept(m_isHoodHomed);
+
+        // setDefaultCommand(hoodCurrentSenseHomingCmd());
     }
 
     // ---HOOD

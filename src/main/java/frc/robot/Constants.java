@@ -149,7 +149,7 @@ public class Constants {
         /* HOMING */
         public static final Current kWireTugMinAmps = Amps.of(8);
         public static final double kWireTugMinSecs = 0.125;
-        public static final double kHomingVoltage = -0.75 * 1.5;
+        public static final double kHomingVoltage = -0.75 * 2.0;
         public static final Angle kHomingRetryReturnRots = Rotations.of(0.2);
         public static final Angle kHomePosition = Rotations.of(-0.2175);
         public static final Angle kInitPosition = Rotations.of(-0.145);
