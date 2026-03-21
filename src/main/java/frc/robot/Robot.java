@@ -178,7 +178,9 @@ public class Robot extends TimedRobot {
 
         DataLogManager.start();
         DriverStation.startDataLog(DataLogManager.getLog());
-        addPeriodic(m_shooter::fastPeriodic, 0.0025);
+        // MANUAL HOMING IS BEING USED
+        // addPeriodic(m_shooter::fastPeriodic, 0.0025);
+
 
         m_preheaterCommand = AutonChooser.getPreheater();
         CommandScheduler.getInstance().schedule(m_preheaterCommand);

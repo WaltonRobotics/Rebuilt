@@ -107,7 +107,7 @@ public class Shooter extends SubsystemBase {
     private final BooleanLogger log_turretHomingHall = new BooleanLogger(kLogTab, "turretHomeHall");
 
     private Angle m_calcTurret = Rotations.zero();
-    private double m_calcdFlywheelVelocityRps = 44.81;
+    private double m_calcdFlywheelVelocityRps = 65.00;
     private double m_driverRPSTweak = 0.0;
 
     // Precomputed: true if turret travel is less than one full rotation (sub-360
@@ -181,7 +181,11 @@ public class Shooter extends SubsystemBase {
 
         m_poseSupplier = poseSupplier;
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
-        setDefaultCommand(m_homingCommand);
+
+        // MANUAL HOMING REQUIRED
+        // setDefaultCommand(m_homingCommand);
+        m_turretMotor.setPosition(kInitPosition);
+        m_isTurretHomed = true;
 
         // m_turretVisualizer = new TurretVisualizer(
         //         () -> new Pose3d(m_poseSupplier.get().rotateAround(
@@ -198,7 +202,6 @@ public class Shooter extends SubsystemBase {
                 }),
                 Commands.runOnce(() -> homingEventLoop.clear())));
 
-        m_turretMotor.setPosition(kInitPosition);
 
         initSim();
     }
@@ -503,12 +506,5 @@ public class Shooter extends SubsystemBase {
         };
 
         return new FunctionalCommand(init, () ->{}, end, isFinished, this);
-    }
-
-    public Command homingCmds() {
-        return Commands.sequence(
-            // hoodCurrentSenseHomingCmd().asProxy(),
-            turretHomingCmd().asProxy()
-        );
     }
 }
