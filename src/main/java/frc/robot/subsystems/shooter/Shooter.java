@@ -248,9 +248,13 @@ public class Shooter extends SubsystemBase {
 
     public Command driverRPSAlter(boolean increase) {
         return Commands.runOnce(() -> {
-            m_driverRPSTweak += kDriverRPSIncreaseD * (increase ? 1 : -1);;
+            m_driverRPSTweak += kDriverRPSIncreaseD * (increase ? 1 : -1);
             log_driverAddedRPS.accept(m_driverRPSTweak);
         });
+    }
+
+    public Command driverResetRPSAlter() {
+        return Commands.runOnce(() -> m_driverRPSTweak = 0);
     }
 
     public void setShooterVelocity(AngularVelocity RPS) {
@@ -264,7 +268,6 @@ public class Shooter extends SubsystemBase {
             m_shooterA.setControl(m_velocityRequest.withVelocity(rotPerSec));
         }
     }
-
 
     // for TestingDashboard
     public Command setShooterVelocityCmd(DoubleSubscriber sub_RPS) {
@@ -412,6 +415,7 @@ public class Shooter extends SubsystemBase {
                     m_calcdFlywheelVelocityRps = calcData.shooterReferenceRps();
                     if (true) { // ENABLE THIS TO ALLOW DRIVER RPS TWEAK
                         m_calcdFlywheelVelocityRps += m_driverRPSTweak;
+                        m_calcdFlywheelVelocityRps = MathUtil.clamp(m_calcdFlywheelVelocityRps, 0, kShooterMaxRPSd);    //clamp here or clamp only when setShooterVel is called?
                     }
                 }
             }

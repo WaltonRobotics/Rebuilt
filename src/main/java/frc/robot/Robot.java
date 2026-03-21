@@ -275,8 +275,10 @@ public class Robot extends TimedRobot {
         // trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
         trg_shoot.whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
 
-        // m_manipulator.povRight().onTrue(m_shooter.driverRPSIncrease(true));
-        // m_manipulator.povLeft().onTrue(m_shooter.driverRPSIncrease(false));
+        // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));
+        // m_driver.a().onTrue(m_shooter.driverRPSAlter(false));
+
+        // m_driver.x().onTrue(m_shooter.driverResetRPSAlter());
 
         m_manipulator.povUp().onTrue(m_intake.setIntakeFlapServoCmd(IntakeK.kIntakeFlapDeployPos));
         m_manipulator.povDown().onTrue(m_intake.setIntakeFlapServoCmd(0));
