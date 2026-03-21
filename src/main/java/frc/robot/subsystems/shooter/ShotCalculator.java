@@ -103,7 +103,9 @@ public class ShotCalculator {
         m_shotMap.put(2.352, new ShotData(RotationsPerSecond.of(75.41), Degrees.of(169.77)));
         m_timeOfFlightMap.put(2.352, 0.9);
 
-        // m_shotMap.put(3.540, null);
+        //3/21/26 8:40 AM
+        m_shotMap.put(3.425, new ShotData(RotationsPerSecond.of(87), Degrees.of(280)));
+        m_timeOfFlightMap.put(3.425, 1.41);
     }
 
     /**
