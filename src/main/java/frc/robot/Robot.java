@@ -280,6 +280,8 @@ public class Robot extends TimedRobot {
 
         // m_driver.x().onTrue(m_shooter.driverResetRPSAlter());
 
+        m_driver.leftBumper().whileTrue(m_shooter.driverRPSIncreaseWhileHeldCmd());
+
         m_manipulator.povUp().onTrue(m_intake.setIntakeFlapServoCmd(IntakeK.kIntakeFlapDeployPos));
         m_manipulator.povDown().onTrue(m_intake.setIntakeFlapServoCmd(0));
 

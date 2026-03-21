@@ -246,7 +246,20 @@ public class Shooter extends SubsystemBase {
         return run(() -> setShooterVelocity(m_calcdFlywheelVelocityRps));
     }
 
-    public Command driverRPSAlter(boolean increase) {
+    public Command driverRPSIncreaseWhileHeldCmd() {
+        return Commands.runOnce(() -> {
+            driverRPSAlterStatic(true);
+        }).finallyDo(() -> driverResetRPSAlter());
+    }
+
+    public Command driverRPSAlterDynamic(boolean increase) {
+        return Commands.runOnce(() -> {
+            m_driverRPSTweak = increase ? (m_calcdFlywheelVelocityRps * 0.05) : (m_calcdFlywheelVelocityRps * -0.05);
+            log_driverAddedRPS.accept(m_driverRPSTweak);
+        });
+    }
+
+    public Command driverRPSAlterStatic(boolean increase) {
         return Commands.runOnce(() -> {
             m_driverRPSTweak += kDriverRPSIncreaseD * (increase ? 1 : -1);
             log_driverAddedRPS.accept(m_driverRPSTweak);
