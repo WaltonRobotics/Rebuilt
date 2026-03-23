@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.IndexerK;
 import frc.robot.Constants.ShooterK;
+import frc.robot.Constants.SuperstructureK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
@@ -383,7 +384,7 @@ public class Superstructure extends SubsystemBase {
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
 
             //run intake rollers
-            m_intake.setIntakeRollersVelocityCmd(IntakeK.kIntakeRollersMaxRPS),
+            m_intake.startIntakeRollers(),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
 
             //run spindexer
@@ -425,7 +426,7 @@ public class Superstructure extends SubsystemBase {
             Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
 
             //runs shooting cmd
-            activateOuttake(ShooterK.kShooterRPS).withTimeout(SuperstructureK.kShortOpsCheckShooterTime),
+            activateOuttakeShotCalc(),
             Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
 
             //Swerve test
@@ -433,25 +434,6 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
-    /**
-     * Adds and removes specified Command names from the ActiveCommands ArrayList, then logs the ArrayList.
-     * @param toAdd Command name to add.
-     * @param toRemove Command names to remove.
-     */
-    private Command logActiveCommands(String toAdd, String... toRemove) {
-        Command addTo = Commands.runOnce(
-            () -> m_activeCommands.add(toAdd)
-        );
-        Command removeFrom = Commands.runOnce(
-            () -> {
-                for (String s : toRemove) {
-                    m_activeCommands.remove(s);
-                }
-            }
-        );
-        Command updateLog = Commands.runOnce(
-            () -> log_activeCommands.accept(m_activeCommands.toArray(new String[m_activeCommands.size()]))
-        );
     // /**
     //  * Adds and removes specified Command names from the ActiveCommands ArrayList, then logs the ArrayList.
     //  * @param toAdd Command name to add.

@@ -39,6 +39,8 @@ public class TestingDashboard {
     // public static BooleanTopic BT_letIntakeArmPositionRotsChange = nte_inst.getBooleanTopic("/TestingDashboard/letIntakeArmPositionRotsChange");
     // public static BooleanTopic BT_letIntakeRollersVelocityRPSChange = nte_inst.getBooleanTopic("/TestingDashboard/letIntakeRollersVelocityRPSChange");
 
+    public static BooleanTopic BT_letOpsCheckBeLong = nte_inst.getBooleanTopic("/TestingDashboard/letOpsCheckBeLong");
+
     // /* PUBLISHERS */
     // //---SHOOTER
     public static DoublePublisher pub_shooterVelocityRPS;
@@ -63,6 +65,9 @@ public class TestingDashboard {
 
     // public static BooleanPublisher pub_letIntakeArmPositionRotsChange;
     // public static BooleanPublisher pub_letIntakeRollersVelocityRPSChange;
+
+    //---SELECT OPS CHECK SWITCHES
+    public static BooleanPublisher pub_letOpsCheckBeLong;
 
     // /* SUBSCRIBERS */
     // //---SHOOTER

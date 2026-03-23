@@ -423,7 +423,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                     .withRotationalRate(0)
             ),
             Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
-            xBrake(),
+            xBrakeCmd(),
             Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
 
             //Slow speed backward into high speed
@@ -439,7 +439,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                     .withRotationalRate(0)
             ),
             Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
-            xBrake(),
+            xBrakeCmd(),
             Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
 
             //Turn wheels
@@ -449,7 +449,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                     .withRotationalRate(RobotK.kMaxAngularRate)
             ),
             Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
-            xBrake()
+            xBrakeCmd()
         );
 
     }
