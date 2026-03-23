@@ -563,12 +563,19 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         return new SwerveShimmyData(positive, negative);
     }
 
-    public Command swerveShimmy(Supplier<Translation3d> targetSup) {
+    public Command swerveRotationShimmy(Supplier<Translation3d> targetSup) {
         return Commands.repeatingSequence(
             Commands.defer(() -> {
-                // var shimmyDat = calcSwerveShimmyData(targetSup);
-                // return translationShimmy(shimmyDat.forward, shimmyDat.backward, 0.2, true);
                 return rotationShimmy(new Rotation2d(0.5), 0.2, true);
+            }, Set.of(this))
+        );
+    }
+
+    public Command swerveTranslationShimmy(Supplier<Translation3d> targetSup) {
+        return Commands.repeatingSequence(
+            Commands.defer(() -> {
+                var shimmyDat = calcSwerveShimmyData(targetSup);
+                return translationShimmy(shimmyDat.forward, shimmyDat.backward, 0.2, true);
             }, Set.of(this))
         );
     }

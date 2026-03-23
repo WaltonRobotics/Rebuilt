@@ -210,11 +210,11 @@ public class Robot extends TimedRobot {
             var driverYVelo = translationSpeed.times(-m_driver.getLeftX());
             var driverYawRate = kDriverMaxAngularRate.times(-m_driver.getRightX());
 
-            log_stickDesiredFieldX.accept(driverXVelo.in(MetersPerSecond));
-            log_stickDesiredFieldY.accept(driverYVelo.in(MetersPerSecond));
-            log_stickDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond));
-            log_robotDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond)); // Should be equal to stick desired IN THIS CASE
-            log_swerveShimmying.accept(false);
+            // log_stickDesiredFieldX.accept(driverXVelo.in(MetersPerSecond));
+            // log_stickDesiredFieldY.accept(driverYVelo.in(MetersPerSecond));
+            // log_stickDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond));
+            // log_robotDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond)); // Should be equal to stick desired IN THIS CASE
+            // log_swerveShimmying.accept(false);
 
             return drive
                 .withVelocityX(driverXVelo) // Drive forward with Y (forward)
@@ -343,7 +343,7 @@ public class Robot extends TimedRobot {
 
         trg_shimmy.whileTrue(m_superstructure.intakeArmShimmy());
 
-        trg_swerveShimmy.whileTrue(m_drivetrain.swerveShimmy(() -> m_shooter.getCurrentTarget()));
+        trg_swerveShimmy.whileTrue(m_drivetrain.swerveTranslationShimmy(m_shooter.getTargetPose()));
 
         trg_unjam.and(trg_shoot.negate()).whileTrue(
             m_superstructure.unjamCmd(() -> false)
@@ -372,6 +372,7 @@ public class Robot extends TimedRobot {
 
         m_driver.povDown().onTrue(m_shooter.setTurretLockCmd(false));
         m_driver.povRight().onTrue(m_shooter.setTurretLockCmd(true));
+    }
 
     private void configureTestBindings() {
         m_driver.povLeft().onTrue(m_hood.setHoodPosCmd(kHoodMinPosition));

@@ -299,18 +299,6 @@ public class Shooter extends SubsystemBase {
         log_spunUp.accept(isNear);
         return isNear;
     }
-
-    public Translation3d getCurrentTarget() {
-        return m_currentTarget;
-    }
-
-    public Translation3d getCurrentCalcTarget() {
-        return m_currentCalcTarget;
-    }
-
-    public double getFlywheelStatorCurrent() {
-        return m_shooterA.getStatorCurrent().getValueAsDouble();
-    }
   
     // ---TURRET (Motionmagic Angle Control)
     public Command setTurretPosCmd(Angle rots) {
@@ -339,6 +327,14 @@ public class Shooter extends SubsystemBase {
     /* GETTERS */
     public AngularVelocity getShooterVelocity() {
         return m_flywheelVelocity;
+    }
+
+    public double getFlywheelStatorCurrent() {
+        return m_shooterA.getStatorCurrent().getValueAsDouble();
+    }
+
+    public Supplier<Translation3d> getTargetPose() {
+        return () -> m_shooterCalc.getLatestAimTarget();
     }
 
     /* SIMULATION */
