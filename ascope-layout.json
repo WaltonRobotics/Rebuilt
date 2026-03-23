@@ -1,13 +1,13 @@
 {
   "hubs": [
     {
-      "x": -1544,
+      "x": -8,
       "y": -8,
       "width": 1552,
       "height": 928,
       "state": {
         "sidebar": {
-          "width": 500,
+          "width": 298,
           "expanded": [
             "/Robot/Superstructure/Active Commands",
             "/Robot/Superstructure/Active Override Commands",
@@ -76,8 +76,26 @@
             "/Log3/NT/Robot",
             "/Log3/NT/Robot/Auton",
             "/NT/DriveState",
-            "/DriveState",
-            "/NT/DriveState/Speeds"
+            "/NT/DriveState/Speeds",
+            "/DriveState/Speeds",
+            "/Robot/Robot",
+            "/Robot/Shooter",
+            "/Robot/Shooter/Turret",
+            "/DS",
+            "/Robot/Indexer",
+            "/NT/Robot/Indexer",
+            "/Robot/Shooter/Flywheel",
+            "/Robot/Shooter/Hood",
+            "/Robot/Superstructure",
+            "/DriveState/Pose",
+            "/DriveState/Pose/rotation",
+            "/Robot/Swerve",
+            "/DriveState/Pose/translation",
+            "/Robot",
+            "/Robot/ShotCalc/globalTarget",
+            "/Robot/ShotCalc/globalTarget/translation",
+            "/Robot/ShotCalc/shotCalcTarget",
+            "/Pose"
           ]
         },
         "tabs": {
@@ -88,7 +106,7 @@
               "title": "",
               "controller": null,
               "controllerUUID": "97trp3s1hbs120v0mau6b3592qnv33bc",
-              "renderer": "#/",
+              "renderer": "",
               "controlsHeight": 0
             },
             {
@@ -130,17 +148,7 @@
                 "rightSources": [
                   {
                     "type": "stepped",
-                    "logKey": "NT:/Robot/ShotCalc/TurretDirection/rotation/value",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#d993aa",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "NT:/Robot/ShotCalc/calculatedShotTarget/translation/x",
+                    "logKey": "NT:/Robot/Shooter/Flywheel/shooterVelocityRPS",
                     "logType": "Number",
                     "visible": true,
                     "options": {
@@ -150,21 +158,11 @@
                   },
                   {
                     "type": "stepped",
-                    "logKey": "NT:/Robot/ShotCalc/calculatedShotTarget/translation/y",
+                    "logKey": "NT:/Robot/Shooter/Hood/shooterClosedLoopError",
                     "logType": "Number",
                     "visible": true,
                     "options": {
                       "color": "#3b875a",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "NT:/Robot/ShotCalc/calculatedShotTarget/translation/z",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#5f4528",
                       "size": "normal"
                     }
                   }
@@ -196,15 +194,6 @@
                     "options": {
                       "color": "#c0b487"
                     }
-                  },
-                  {
-                    "type": "stripes",
-                    "logKey": "NT:/Robot/Shooter/currentShootingGoal",
-                    "logType": "String",
-                    "visible": true,
-                    "options": {
-                      "color": "#2b66a2"
-                    }
                   }
                 ],
                 "leftLockedRange": null,
@@ -223,6 +212,125 @@
               "controllerUUID": "db51jbjproi2pz7pesjvxknr6ndtzrdr",
               "renderer": null,
               "controlsHeight": 257
+            },
+            {
+              "type": 1,
+              "title": "IndexerDebug",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Indexer/tunnelRPS",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Indexer/spindexerRPS",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [],
+                "discreteSources": [],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "nnraxom5om1ijfmivyeii8651vs178gd",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 1,
+              "title": "SpunUpDebug",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Indexer/desiredSpindexerRPS",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Shooter/Flywheel/shooterVelocityRPS",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#80588e",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Indexer/desiredTunnelRPS",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [],
+                "discreteSources": [
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/Robot/Shooter/spunUp",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/Robot/Superstructure/ShooterState",
+                    "logType": "String",
+                    "visible": true,
+                    "options": {
+                      "color": "#e48b32"
+                    }
+                  }
+                ],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "ube2cncwicp3rosia4ysfozjll827ff0",
+              "renderer": null,
+              "controlsHeight": 200
             },
             {
               "type": 6,
@@ -263,6 +371,24 @@
                       "format": "Pose2d",
                       "units": "degrees"
                     }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/Robot/ShotCalc/globalTarget",
+                    "logType": "Pose3d",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ff00"
+                    }
+                  },
+                  {
+                    "type": "robot",
+                    "logKey": "NT:/Robot/Swerve/shimmyPose",
+                    "logType": "Pose3d",
+                    "visible": true,
+                    "options": {
+                      "bumpers": "#ff0000"
+                    }
                   }
                 ],
                 "field": "FRC:2026 Field",
@@ -272,67 +398,6 @@
               "controllerUUID": "gpi4kmkzlyqdotfir1auzhcrw6onhfll",
               "renderer": null,
               "controlsHeight": 200
-            },
-            {
-              "type": 2,
-              "title": "2dVision",
-              "controller": {
-                "sources": [
-                  {
-                    "type": "robotLegacy",
-                    "logKey": "NT:/Pose/robotPose",
-                    "logType": "NumberArray",
-                    "visible": true,
-                    "options": {
-                      "bumpers": "",
-                      "format": "Pose2d",
-                      "units": "degrees"
-                    }
-                  },
-                  {
-                    "type": "ghost",
-                    "logKey": "NT:Vision/BL_HAT/estRobotPose",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "color": "#ff00ff"
-                    }
-                  },
-                  {
-                    "type": "ghost",
-                    "logKey": "NT:Vision/BR_HAT/estRobotPose",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "color": "#ffff00"
-                    }
-                  },
-                  {
-                    "type": "ghost",
-                    "logKey": "NT:Vision/FL_HAT/estRobotPose",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "color": "#00ffff"
-                    }
-                  },
-                  {
-                    "type": "ghost",
-                    "logKey": "NT:Vision/FR_HAT/estRobotPose",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "color": "#ff8c00"
-                    }
-                  }
-                ],
-                "field": "FRC:2026 Field",
-                "orientation": 0,
-                "size": "large"
-              },
-              "controllerUUID": "ti0ylp8p0cmh52s41yuspb27g8u4tiwh",
-              "renderer": null,
-              "controlsHeight": 208
             },
             {
               "type": 1,
@@ -686,14 +751,263 @@
               "controlsHeight": 230
             },
             {
+              "type": 2,
+              "title": "2dVision",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robotLegacy",
+                    "logKey": "NT:/Pose/robotPose",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "bumpers": "",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:Vision/BL_HAT/estRobotPose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "color": "#ff00ff"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:Vision/BR_HAT/estRobotPose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "color": "#ffff00"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:Vision/FL_HAT/estRobotPose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ffff"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:Vision/FR_HAT/estRobotPose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "color": "#ff8c00"
+                    }
+                  }
+                ],
+                "field": "FRC:2026 Field",
+                "orientation": 0,
+                "size": "large"
+              },
+              "controllerUUID": "ti0ylp8p0cmh52s41yuspb27g8u4tiwh",
+              "renderer": null,
+              "controlsHeight": 208
+            },
+            {
+              "type": 1,
+              "title": "RotationTuning",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/DriveState/Pose/translation/x",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/DriveState/Speeds/vx",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/ShotCalc/globalTarget/translation/x",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/ShotCalc/globalTarget/translation/y",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#80588e",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "discreteSources": [],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "a39qm8e3uiumpxv4op31497nc4qju4k7",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
               "type": 5,
               "title": "Console",
-              "controller": null,
+              "controller": "console",
               "controllerUUID": "tlizna3x6767e6emrrlim3r45cyvz5yy",
               "renderer": {
                 "highlight": false
               },
               "controlsHeight": 0
+            },
+            {
+              "type": 1,
+              "title": "AutonDebug",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/DriveState/Speeds/vx",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#858584",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/DriveState/Speeds/vy",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Auton/State",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#80588e",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Intake/targetIntakeArmRots",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e48b32",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Intake/intakeArmRots",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#c0b487",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "discreteSources": [
+                  {
+                    "type": "stripes",
+                    "logKey": "DS:autonomous",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/Robot/Auton/State",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "DS:enabled",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#3b875a"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/Robot/Intake/isIntakeArmHomed",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#d993aa"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/Robot/Shooter/Turret/Homed",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#5f4528"
+                    }
+                  }
+                ],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "aknu9aili1wbyfg0lxnhvhgm3mmsrs1g",
+              "renderer": null,
+              "controlsHeight": 200
             },
             {
               "type": 1,
@@ -758,151 +1072,6 @@
                 "rightFilter": 0
               },
               "controllerUUID": "pljmmw3gs7bjo24kvgiikvvrhkaav6me",
-              "renderer": null,
-              "controlsHeight": 200
-            },
-            {
-              "type": 1,
-              "title": "AutonDebug",
-              "controller": {
-                "leftSources": [
-                  {
-                    "type": "stepped",
-                    "logKey": "NT:/DriveState/ModuleStates/0/speed",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#2b66a2",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "NT:/Robot/Auton/State",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#80588e",
-                      "size": "normal"
-                    }
-                  }
-                ],
-                "rightSources": [
-                  {
-                    "type": "stepped",
-                    "logKey": "NT:/Robot/Intake/targetIntakeArmRots",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#e48b32",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "NT:/Robot/Intake/intakeArmRots",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#c0b487",
-                      "size": "normal"
-                    }
-                  }
-                ],
-                "discreteSources": [
-                  {
-                    "type": "stripes",
-                    "logKey": "DS:autonomous",
-                    "logType": "Boolean",
-                    "visible": true,
-                    "options": {
-                      "color": "#e5b31b"
-                    }
-                  }
-                ],
-                "leftLockedRange": null,
-                "rightLockedRange": null,
-                "leftUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
-                },
-                "rightUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
-                },
-                "leftFilter": 0,
-                "rightFilter": 0
-              },
-              "controllerUUID": "aknu9aili1wbyfg0lxnhvhgm3mmsrs1g",
-              "renderer": null,
-              "controlsHeight": 200
-            },
-            {
-              "type": 1,
-              "title": "Line Graph",
-              "controller": {
-                "leftSources": [],
-                "rightSources": [
-                  {
-                    "type": "stepped",
-                    "logKey": "Phoenix6/TalonFX-40/SupplyCurrent",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#af2437",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "Phoenix6/TalonFX-40/StatorCurrent",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#80588e",
-                      "size": "normal"
-                    }
-                  }
-                ],
-                "discreteSources": [],
-                "leftLockedRange": null,
-                "rightLockedRange": null,
-                "leftUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
-                },
-                "rightUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
-                },
-                "leftFilter": 0,
-                "rightFilter": 0
-              },
-              "controllerUUID": "cuc1j4a5yv43inprii86glfdksxd1pww",
-              "renderer": null,
-              "controlsHeight": 200
-            },
-            {
-              "type": 6,
-              "title": "Statistics",
-              "controller": {
-                "sources": [
-                  {
-                    "type": "independent",
-                    "logKey": "Phoenix6/TalonFX-40/StatorCurrent",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#2b66a2"
-                    }
-                  }
-                ],
-                "timeRange": "visible",
-                "rangeMin": 0,
-                "rangeMax": 10,
-                "stepSize": 1
-              },
-              "controllerUUID": "uv5a07wwviy3oyi8bh66aetvwjorz20o",
               "renderer": null,
               "controlsHeight": 200
             }

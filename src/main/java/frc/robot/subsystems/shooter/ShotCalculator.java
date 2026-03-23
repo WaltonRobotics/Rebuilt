@@ -8,12 +8,14 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static frc.robot.Constants.ShooterK.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
@@ -30,7 +32,8 @@ import edu.wpi.first.units.measure.Time;
 
 public class ShotCalculator {
     private static final DoubleLogger log_timeOfFlight = new DoubleLogger("Shooter/Calculator", "timeOfFlight");
-    private static final Tracer m_iterativeTracer = new Tracer();
+    private static final DoubleLogger log_distToTargetMeters = new DoubleLogger("Shooter/Calculator", "distTargetToMeters");
+    // private static final Tracer m_iterativeTracer = new Tracer();
 
     //see 5000's code (circa 2/16/2026 9:11 PM EST)
     public static final InterpolatingTreeMap<Double, ShotData> m_shotMap = new InterpolatingTreeMap<>(
@@ -41,48 +44,73 @@ public class ShotCalculator {
     private static final double minDistance;
     private static final double maxDistance;
 
+    private static final double kRPSBoost = 5.0;
 
-    //note that this is not being used as of now, but we will need to make our OWN lerp that way we shoot more accurately.
+    //LERP MADE ON 3/15/2025
     static {
         //TODO: find the actual minDistance and maxDistance for shooting
-        minDistance = 0.0;
-        maxDistance = 5.0;
+        minDistance = 0.94;
+        maxDistance = 5.8;
 
-        m_shotMap.put(5.34, new ShotData(RotationsPerSecond.of(2900 / 60), Degrees.of(27)));
-        m_timeOfFlightMap.put(5.34, 1.30);
+        //right mid grid
+        m_shotMap.put(3.903, new ShotData(RotationsPerSecond.of(73.18 + kRPSBoost), Degrees.of(327.75)));
+        m_timeOfFlightMap.put(3.903, 1.35);
 
-        m_shotMap.put(4.90, new ShotData(RotationsPerSecond.of(2700 / 60), Degrees.of(26)));
-        m_timeOfFlightMap.put(4.90, 1.42);
+        //backright grid - THIS ONE IS INCONSISTENT UNTIL SHOOTER V3
+        m_shotMap.put(5.657, new ShotData(RotationsPerSecond.of(96.42), Degrees.of(374.20)));   //real: 95.00
+        m_timeOfFlightMap.put(5.657, 1.56);
 
-        m_shotMap.put(4.44, new ShotData(RotationsPerSecond.of(2820 / 60), Degrees.of(25.5)));
-        m_timeOfFlightMap.put(4.44, 1.34);
+        //frontright grid
+        m_shotMap.put(3.763, new ShotData(RotationsPerSecond.of(77 + kRPSBoost), Degrees.of(300)));
+        m_timeOfFlightMap.put(3.763, 1.43);
 
-        m_shotMap.put(4.05, new ShotData(RotationsPerSecond.of(2800 / 60), Degrees.of(25)));
-        m_timeOfFlightMap.put(4.05, 1.36);
+        //frontleft grid
+        m_shotMap.put(1.476, new ShotData(RotationsPerSecond.of(57.72 + kRPSBoost), Degrees.of(150.77)));
+        m_timeOfFlightMap.put(1.476, 1.125);
 
-        m_shotMap.put(3.74, new ShotData(RotationsPerSecond.of(2750 / 60), Degrees.of(24)));
-        m_timeOfFlightMap.put(3.74, 1.21);
+        //backleft grid
+        m_shotMap.put(3.854, new ShotData(RotationsPerSecond.of(79 + kRPSBoost), Degrees.of(345)));
+        m_timeOfFlightMap.put(3.854, 1.38);
 
-        m_shotMap.put(3.42, new ShotData(RotationsPerSecond.of(2700 / 60), Degrees.of(23)));
-        m_timeOfFlightMap.put(3.42, 1.40);
+        //against the hub
+        m_shotMap.put(0.835, new ShotData(RotationsPerSecond.of(66.21 + kRPSBoost), Degrees.of(85.51)));
+        m_timeOfFlightMap.put(0.835, 1.17);
 
-        m_shotMap.put(3.06, new ShotData(RotationsPerSecond.of(2610 / 60), Degrees.of(22)));
-        m_timeOfFlightMap.put(3.06, 1.38);
+        //against the tower
+        m_shotMap.put(2.977, new ShotData(RotationsPerSecond.of(71.14 + kRPSBoost), Degrees.of(338.81)));
+        m_timeOfFlightMap.put(2.977, 1.03);
 
-        m_shotMap.put(2.73, new ShotData(RotationsPerSecond.of(2500 / 60), Degrees.of(20.5)));
-        m_timeOfFlightMap.put(2.73, 1.34);
+        //backleft grid
+        m_shotMap.put(4.348, new ShotData(RotationsPerSecond.of(77.94 + kRPSBoost), Degrees.of(396.32)));
+        m_timeOfFlightMap.put(4.348, 1.38);
 
-        m_shotMap.put(2.45, new ShotData(RotationsPerSecond.of(2450 / 60), Degrees.of(19.5)));
-        m_timeOfFlightMap.put(2.45, 1.28);
+        //left mid grid
+        m_shotMap.put(2.799, new ShotData(RotationsPerSecond.of(67.91 + kRPSBoost), Degrees.of(308.94)));
+        m_timeOfFlightMap.put(2.799, 1.08);
 
-        m_shotMap.put(2.14, new ShotData(RotationsPerSecond.of(2400 / 60), Degrees.of(18)));
-        m_timeOfFlightMap.put(2.14, 1.31);
+        m_shotMap.put(3.561, new ShotData(RotationsPerSecond.of(79.30 + kRPSBoost), Degrees.of(287.93)));
+        m_timeOfFlightMap.put(3.561, 1.42);
 
-        m_shotMap.put(1.86, new ShotData(RotationsPerSecond.of(2350 / 60), Degrees.of(17)));
-        m_timeOfFlightMap.put(1.86, 1.24);
+        m_shotMap.put(1.870, new ShotData(RotationsPerSecond.of(62.31 + kRPSBoost), Degrees.of(231.52)));
+        m_timeOfFlightMap.put(1.870, 1.1);
 
-        m_shotMap.put(1.55, new ShotData(RotationsPerSecond.of(2275 / 60), Degrees.of(15)));
-        m_timeOfFlightMap.put(1.55, 1.23);
+        m_shotMap.put(3.259, new ShotData(RotationsPerSecond.of(75.64 + kRPSBoost), Degrees.of(268.02)));
+        m_timeOfFlightMap.put(3.259, 1.37);
+
+        //AT COMPETITION
+
+        m_shotMap.put(2.755, new ShotData(RotationsPerSecond.of(75.41), Degrees.of(221.02)));
+        m_timeOfFlightMap.put(2.755, 1.28);
+
+        m_shotMap.put(2.352, new ShotData(RotationsPerSecond.of(75.41), Degrees.of(169.77)));
+        m_timeOfFlightMap.put(2.352, 0.9);
+
+        //3/21/26 8:40 AM
+        m_shotMap.put(3.425, new ShotData(RotationsPerSecond.of(87), Degrees.of(280)));
+        m_timeOfFlightMap.put(3.425, 1.41);
+
+        m_shotMap.put(3.933, new ShotData(RotationsPerSecond.of(80.5), Degrees.of(310)));
+        m_timeOfFlightMap.put(3.933, 1.38);
     }
 
     /**
@@ -93,7 +121,10 @@ public class ShotCalculator {
      * @return the distance between the Robot and the Target
      */
     public static Distance getDistanceToTarget(Pose2d robot, Translation3d target) {
-        return Meters.of(robot.getTranslation().getDistance(target.toTranslation2d()));
+        Pose3d turretPose = new Pose3d(robot).transformBy(kTurretTransform);
+        Distance dist = Meters.of(turretPose.getTranslation().toTranslation2d().getDistance(target.toTranslation2d()));
+        log_distToTargetMeters.accept(dist.magnitude());
+        return dist;
     }
 
     // see https://www.desmos.com/geometry/l4edywkmha
@@ -197,16 +228,16 @@ public class ShotCalculator {
     // use an iterative lookahead approach to determine shot parameters for a moving robot
     public static ShotData iterativeMovingShotFromFunnelClearance(Pose2d robot,
             ChassisSpeeds fieldSpeeds, Translation3d target, int iterations) {
-        m_iterativeTracer.clearEpochs();
+        // m_iterativeTracer.clearEpochs();
 
         // Perform initial estimation (assuming unmoving robot) to get time of flight estimate
         ShotData shot = calculateShotFromFunnelClearance(robot, target, target);
-        m_iterativeTracer.addEpoch("initialShot");
+        // m_iterativeTracer.addEpoch("initialShot");
 
         Distance distance = getDistanceToTarget(robot, target);
         Time timeOfFlight = calculateTimeOfFlight(shot.getExitVelocity(), shot.getHoodAngle(),
                 distance);
-        m_iterativeTracer.addEpoch("initialTOF");
+        // m_iterativeTracer.addEpoch("initialTOF");
 
         Translation3d predictedTarget = target;
 
@@ -221,7 +252,7 @@ public class ShotCalculator {
             shot = calculateShotFromFunnelClearance(robot, target, predictedTarget);
             timeOfFlight = calculateTimeOfFlight(shot.getExitVelocity(), shot.getHoodAngle(),
                     getDistanceToTarget(robot, predictedTarget));
-            m_iterativeTracer.addEpoch("iteration" + i);
+            // m_iterativeTracer.addEpoch("iteration" + i);
 
             // ShotData shotDataDiff = shot.minus(prevShot);
             // Distance distanceDiff = prevDistance.minus(distance);
