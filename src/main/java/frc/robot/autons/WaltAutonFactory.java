@@ -1,7 +1,10 @@
 package frc.robot.autons;
 
+import static frc.robot.Constants.SuperstructureK.kLogTab;
+
 import java.util.ArrayList;
 
+import choreo.Choreo;
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -9,6 +12,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.AutonK;
 import frc.robot.subsystems.Swerve;
 import frc.util.AllianceFlipUtil;
+import frc.util.WaltLogger.Pose2dArrayLogger;
+import frc.util.WaltLogger.Pose2dLogger;
 
 public class WaltAutonFactory {
     /* CLASS VARIABLES */
