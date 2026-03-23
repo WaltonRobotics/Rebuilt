@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
@@ -20,6 +22,7 @@ import static frc.robot.Constants.IndexerK.*;
 import frc.robot.Constants;
 import frc.util.WaltMotorSim;
 import frc.util.WaltLogger;
+import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
 public class Indexer extends SubsystemBase {
@@ -30,6 +33,8 @@ public class Indexer extends SubsystemBase {
 
     private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(0).withEnableFOC(false);
     private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(0).withEnableFOC(false);
+
+    private final NeutralOut m_neutralOutReq = new NeutralOut();
 
     /* SIM OBJECTS */
     private final DCMotorSim m_spindexerSim = new DCMotorSim(
@@ -56,6 +61,10 @@ public class Indexer extends SubsystemBase {
 
     private final DoubleLogger log_desiredSpindexerRPS = WaltLogger.logDouble(kLogTab, "desiredSpindexerRPS");
     private final DoubleLogger log_desiredTunnelRPS = WaltLogger.logDouble(kLogTab, "desiredTunnelRPS");
+
+    StatusSignal<Double> sig_tunnelCLErr = m_tunnel.getClosedLoopError();
+    private final DoubleLogger log_tunnelClosedLoopError = WaltLogger.logDouble(kLogTab, "tunnelClosedLoopError");
+    private final BooleanLogger log_isTunnelSpunUp = WaltLogger.logBoolean(kLogTab, "isTunnelSpunUp");
 
     /* CONSTRUCTOR */
     public Indexer() {
@@ -111,9 +120,24 @@ public class Indexer extends SubsystemBase {
         setTunnelVelocity(RotationsPerSecond.zero());
     }
 
+    public boolean isTunnelSpunUp() {
+        sig_tunnelCLErr.refresh();
+        log_tunnelClosedLoopError.accept(sig_tunnelCLErr.getValueAsDouble());
+
+        boolean isNear = sig_tunnelCLErr.isNear(0, 30);
+
+        log_isTunnelSpunUp.accept(isNear);
+        return isNear;
+    }
+
+    public AngularVelocity getTunnelVelocity() {
+        return m_tunnel.getVelocity().getValue();
+    }
+
     //---SPINDEXER
     public void setSpindexerVelocity(AngularVelocity RPS) {
         m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RPS));
+        log_desiredSpindexerRPS.accept(RPS.in(RotationsPerSecond));
     }
 
     public Command setSpindexerVelocityCmd(AngularVelocity RPS) {
@@ -128,6 +152,7 @@ public class Indexer extends SubsystemBase {
     //---TUNNEL
     public void setTunnelVelocity(AngularVelocity RPS) {
         m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS));
+        log_desiredTunnelRPS.accept(RPS.in(RotationsPerSecond));
     }
 
     public Command setTunnelVelocityCmd(AngularVelocity RPS) {
@@ -144,9 +169,6 @@ public class Indexer extends SubsystemBase {
     public void periodic() {
         log_spindexerRPS.accept(m_spindexer.getVelocity().getValueAsDouble());
         log_tunnelRPS.accept(m_tunnel.getVelocity().getValueAsDouble());
-
-        log_desiredSpindexerRPS.accept(m_spindexer.getClosedLoopReference().getValueAsDouble());
-        log_desiredTunnelRPS.accept(m_tunnel.getClosedLoopReference().getValueAsDouble());
     }
 
     @Override
