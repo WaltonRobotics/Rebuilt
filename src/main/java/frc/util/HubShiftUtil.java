@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import frc.robot.subsystems.shooter.ShotCalculator;
 
@@ -43,6 +44,8 @@ public class HubShiftUtil {
   private static final double approachingActiveFudge = -1 * (minTimeOfFlight + minFuelCountDelay);
   private static final double endingActiveFudge =
       shiftEndFuelCountExtension + -1 * (maxTimeOfFlight + maxFuelCountDelay);
+  private static final double approachingActiveComeback = approachingActiveFudge - 3.0;
+  private static final double endingActiveComeback = endingActiveFudge + 3.0;
 
   public static final double autoEndTime = 20.0;
   public static final double teleopDuration = 140.0;
@@ -155,7 +158,49 @@ public class HubShiftUtil {
     return getShiftInfo(getSchedule(), shiftStartTimes, shiftEndTimes);
   }
 
-  public static ShiftInfo getShiftedShiftInfo() {
+  public static ShiftInfo getComebackShiftInfo() {
+    boolean[] shiftSchedule = getSchedule();
+    // Starting active
+    if (shiftSchedule[1] == true) {
+      double[] shiftedShiftStartTimes = {
+        0.0,
+        10.0,
+        35.0 + endingActiveComeback,
+        60.0 + approachingActiveComeback,
+        85.0 + endingActiveComeback,
+        110.0 + approachingActiveComeback
+      };
+      double[] shiftedShiftEndTimes = {
+        10.0,
+        35.0 + endingActiveComeback,
+        60.0 + approachingActiveComeback,
+        85.0 + endingActiveComeback,
+        110.0 + approachingActiveComeback,
+        140.0
+      };
+      return getShiftInfo(shiftSchedule, shiftedShiftStartTimes, shiftedShiftEndTimes);
+    }
+    double[] shiftedShiftStartTimes = {
+      0.0,
+      10.0 + endingActiveComeback,
+      35.0 + approachingActiveComeback,
+      60.0 + endingActiveComeback,
+      85.0 + approachingActiveComeback,
+      110.0
+    };
+    double[] shiftedShiftEndTimes = {
+      10.0 + endingActiveComeback,
+      35.0 + approachingActiveComeback,
+      60.0 + endingActiveComeback,
+      85.0 + approachingActiveComeback,
+      110.0,
+      140.0
+    };
+    return getShiftInfo(shiftSchedule, shiftedShiftStartTimes, shiftedShiftEndTimes);
+    // }
+  }
+
+    public static ShiftInfo getShiftedShiftInfo() {
     boolean[] shiftSchedule = getSchedule();
     // Starting active
     if (shiftSchedule[1] == true) {
@@ -195,5 +240,28 @@ public class HubShiftUtil {
     };
     return getShiftInfo(shiftSchedule, shiftedShiftStartTimes, shiftedShiftEndTimes);
     // }
+  }
+  /**
+   * Determines whether the robot can prefire optimally in such a manner that you shoot before the hub turns active,
+   * and the fuel will count as scored
+   * <p> Meant to be used as a Rumble Trigger, so that the drivers will get rumble when optimal shooting.
+   * @return true if optimal prefire time
+   */
+  public static BooleanSupplier optimalPrefireTime() {
+   return () -> {
+        boolean shiftedActive = getShiftedShiftInfo().active;
+        boolean realActive = getOfficialShiftInfo().active;
+
+        return (shiftedActive && !realActive) || (!shiftedActive && realActive);
+    };
+  }
+
+  public static BooleanSupplier comebackTime() {
+    return () -> {
+      boolean realActive = getOfficialShiftInfo().active;
+      boolean comebackActive = getComebackShiftInfo().active;
+
+      return (comebackActive && !realActive) || (!comebackActive && realActive);
+    };
   }
 }

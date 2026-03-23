@@ -103,6 +103,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private final Pose2dLogger log_curPose = WaltLogger.logPose2d("Swerve", "curPose");
     private final Pose2dLogger log_targetPosePos = WaltLogger.logPose2d("Swerve", "targetPosePos");
     private final Pose2dLogger log_targetPoseNeg = WaltLogger.logPose2d("Swerve", "targetPoseNeg");
+    private final DoubleLogger log_absoluteRobotSpeed = new WaltLogger.DoubleLogger("Swerve", "absoluteRobotSpeed");
 
     private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
@@ -304,6 +305,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         }
 
         log_curPose.accept(getState().Pose);
+        ChassisSpeeds currentChassisSpeeds = this.getChassisSpeeds();
+        log_absoluteRobotSpeed.accept(Math.hypot(currentChassisSpeeds.vxMetersPerSecond, currentChassisSpeeds.vyMetersPerSecond));
     }
 
     private void startSimThread() {
@@ -395,7 +398,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         );
     }
 
-    public Command xBrake() {
+    public Command xBrakeCmd() {
         final SwerveRequest.SwerveDriveBrake stopReq = new SwerveDriveBrake();
         return runOnce(() -> setControl(stopReq));
     }
