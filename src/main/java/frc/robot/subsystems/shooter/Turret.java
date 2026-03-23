@@ -83,7 +83,7 @@ public class Turret extends SubsystemBase {
         m_crtEncB.setConnectedFrequencyThreshold(400);
         // m_crtEncB.setDutyCycleRange(1/2049, 2048/2049);
 
-        setDefaultCommand(m_homingCommand);
+        // setDefaultCommand(m_homingCommand);
 
         double startAngle = calcTurretAngleCRT(m_crtEncA.getAbsolutePosition().getValueAsDouble() * 360, m_crtEncB.get() * 360); //shift into range of 0-360
         log_turretCRTPos.accept(startAngle);

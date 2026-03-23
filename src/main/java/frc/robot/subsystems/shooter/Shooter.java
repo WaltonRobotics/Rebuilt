@@ -316,8 +316,8 @@ public class Shooter extends SubsystemBase {
 
         var calcData = m_shooterCalc.getLatestShotCalcOutputs();
 
-        // set turret reference             // set hood reference  
-        if (m_turret.isTurretHomed() && m_hood.isHoodHomed()) {
+        // set turret reference
+        if (m_turret.isTurretHomed()) {
             var turretReference = calcData.turretReference();
 
             // set outputs
@@ -369,34 +369,4 @@ public class Shooter extends SubsystemBase {
     public void simulationPeriodic() {
         WaltMotorSim.updateSimFX(m_shooterA, m_shooterSim);
     }
-
-    // public Command turretHomingCmd() {
-    //     Runnable init = () -> {
-    //         WaltLogger.timedPrint("TurretHoming BEGIN");
-    //         m_turretMotor.setControl(m_VoltageReq.withOutput(kHomingVoltage));
-    //         m_isTurretHomed = false;
-    //         log_turretHomed.accept(m_isTurretHomed);
-    //     };
-
-    //     Consumer<Boolean> end = (Boolean interrupted) -> {
-    //         if (interrupted) {
-    //             m_turretMotor.setControl(m_BrakeReq);
-    //             log_turretHomed.accept(m_isTurretHomed);
-    //             WaltLogger.timedPrint("TurretHoming INTERRUPTED!!!");
-    //             return;
-    //         }
-
-    //         m_turretMotor.setPosition(kHomePosition); // Flowkirkentologicalexpialibrostatenuinely
-    //         m_turretMotor.setControl(m_BrakeReq);
-    //         removeDefaultCommand();
-    //         m_isTurretHomed = true;
-    //         log_turretHomed.accept(m_isTurretHomed);
-    //     };
-
-    //     BooleanSupplier isFinished = () -> {
-    //         return !m_turretHomingHall.get() || m_isTurretHomed;
-    //     };
-
-    //     return new FunctionalCommand(init, () ->{}, end, isFinished, this);
-    // }
 }
