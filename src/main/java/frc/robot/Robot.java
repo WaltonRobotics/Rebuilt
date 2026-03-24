@@ -88,14 +88,12 @@ public class Robot extends TimedRobot {
         () -> m_drivetrain.getState().Pose, 
         () -> m_drivetrain.getStateCopy(),
         () -> m_drivetrain.getChassisSpeeds());
-    private final Hood m_hood = new Hood();
-    private final Turret m_turret = new Turret();
 
     private final Intake m_intake = new Intake();
     private final Indexer m_indexer = new Indexer();
 
     // private final WaltVisualSim m_visualSim;
-    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter, m_turret);
+    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
 
     //---AUTONS
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
@@ -207,9 +205,9 @@ public class Robot extends TimedRobot {
             var driverYVelo = translationSpeed.times(-m_driver.getLeftX());
             var driverYawRate = kMaxAngularRate.times(-m_driver.getRightX());
 
-            log_stickDesiredFieldX.accept(driverXVelo.in(MetersPerSecond));
-            log_stickDesiredFieldY.accept(driverYVelo.in(MetersPerSecond));
-            log_stickDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond));
+            // log_stickDesiredFieldX.accept(driverXVelo.in(MetersPerSecond));
+            // log_stickDesiredFieldY.accept(driverYVelo.in(MetersPerSecond));
+            // log_stickDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond));
             
             return drive
                 .withVelocityX(driverXVelo) // Drive forward with Y (forward)
@@ -327,8 +325,8 @@ public class Robot extends TimedRobot {
 
         // m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
 
-        m_driver.povDown().onTrue(m_turret.setTurretLockCmd(false));
-        m_driver.povRight().onTrue(m_turret.setTurretLockCmd(true));
+        m_driver.povDown().onTrue(m_shooter.m_turret.setTurretLockCmd(false));
+        m_driver.povRight().onTrue(m_shooter.m_turret.setTurretLockCmd(true));
 
         // m_driver.start().whileTrue(m_superstructure.activateOuttakeNOSHOOT());
         // trg_optimalPrefireTime.whileTrue(
@@ -341,8 +339,8 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
-        m_driver.povLeft().onTrue(m_hood.setHoodPosCmd(kHoodMinPosition));
-        m_driver.povUp().onTrue(m_hood.setHoodPosCmd(kHoodMaxDegs));
+        m_driver.povLeft().onTrue(m_shooter.m_hood.setHoodPosCmd(kHoodMinPosition));
+        m_driver.povUp().onTrue(m_shooter.m_hood.setHoodPosCmd(kHoodMaxDegs));
 
     }
 
@@ -356,7 +354,7 @@ public class Robot extends TimedRobot {
         // // // TestingDashboard.trg_letTurretPositionRotsChange
         // // //     .whileTrue(m_shooter.setTurretPositionCmd(TestingDashboard.sub_turretPositionRots));
         TestingDashboard.trg_letHoodPositionDegsChange
-            .whileTrue(m_hood.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
+            .whileTrue(m_shooter.m_hood.setHoodPositionCmd(TestingDashboard.sub_hoodPositionDegs));
 
         // TestingDashboard.trg_letSpindexerVelocityRPSChange
         //     .whileTrue(m_indexer.setSpindexerVelocityCmd(TestingDashboard.sub_spindexerVelocityRPS));
@@ -451,9 +449,9 @@ public class Robot extends TimedRobot {
         if (m_disableChangeDelayTimer.hasElapsed(3.0)) {
             m_disableChangeDelayTimer.stop();
             m_disableChangeDelayTimer.reset();
-            m_turret.setTurretNeutralMode(NeutralModeValue.Coast);
+            m_shooter.m_turret.setTurretNeutralMode(NeutralModeValue.Coast);
             m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
-            m_hood.setHoodNeutralMode(NeutralModeValue.Coast);
+            m_shooter.m_hood.setHoodNeutralMode(NeutralModeValue.Coast);
         }
     }
 

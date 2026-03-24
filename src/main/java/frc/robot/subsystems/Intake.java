@@ -221,11 +221,11 @@ public class Intake extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        log_targetIntakeArmRots.accept(m_MMVReq.Position);
-        // log_targetIntakeArmRots.accept(m_PVReq.Position);
-        log_targetIntakeRollersRPS.accept(m_VVReq.Output);
-        log_intakeRollersRPS.accept(m_intakeRollers.getVelocity().getValueAsDouble());
-        log_intakeArmRots.accept(m_intakeArm.getPosition().getValueAsDouble());
+        // log_targetIntakeArmRots.accept(m_MMVReq.Position);
+        // // log_targetIntakeArmRots.accept(m_PVReq.Position);
+        // log_targetIntakeRollersRPS.accept(m_VVReq.Output);
+        // log_intakeRollersRPS.accept(m_intakeRollers.getVelocity().getValueAsDouble());
+        // log_intakeArmRots.accept(m_intakeArm.getPosition().getValueAsDouble());
     }
 
     @Override

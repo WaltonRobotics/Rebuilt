@@ -58,36 +58,38 @@ public class Turret extends SubsystemBase {
 
     private final BooleanLogger log_turretHomed = WaltLogger.logBoolean("Shooter/Turret", "Homed");
     // ---LOGIC BOOLEANS
-    private boolean m_isTurretHomed = false;
+    private boolean m_isTurretHomed = true;
     public BooleanSupplier turretHomedSupp = () -> m_isTurretHomed;
 
-    private final CANcoder m_crtEncA = new CANcoder(19, Constants.kCanivoreBus);
-    private final DutyCycleEncoder m_crtEncB = new DutyCycleEncoder(3);
+    private final CANcoder m_lcmEncA = new CANcoder(19, Constants.kCanivoreBus);
+    private final DutyCycleEncoder m_lcmEncB = new DutyCycleEncoder(3);
 
     private final DigitalInput m_turretHomingHall = new DigitalInput(2);
     private final Trigger trg_homingHallDirect = new Trigger(homingEventLoop, () -> !m_turretHomingHall.get());
     private final BooleanLogger log_turretHomingHall = new BooleanLogger(kLogTab, "turretHomeHall");
 
-    private final DoubleLogger log_crtEncAPos = WaltLogger.logDouble(kLogTab, "EncA/Pos");
-    private final DoubleLogger log_crtEncBPos = WaltLogger.logDouble(kLogTab, "EncB/Pos");
-    private final IntLogger log_crtEncBFreq = WaltLogger.logInt(kLogTab, "EncB/Freq");
-    private final BooleanLogger log_crtEncBConn = WaltLogger.logBoolean(kLogTab, "EncB/Conn");
+    private final DoubleLogger log_lcmEncAPos = WaltLogger.logDouble(kLogTab, "EncA/Pos");
+    private final DoubleLogger log_lcmEncBPos = WaltLogger.logDouble(kLogTab, "EncB/Pos");
+    private final IntLogger log_lcmEncBFreq = WaltLogger.logInt(kLogTab, "EncB/Freq");
+    private final BooleanLogger log_lcmEncBConn = WaltLogger.logBoolean(kLogTab, "EncB/Conn");
 
     private final DoubleLogger log_turretControlPos = WaltLogger.logDouble(kLogTab, "turretControlPos");
-    private final DoubleLogger log_turretCRTPos = WaltLogger.logDouble(kLogTab, "turretCRTPos");
+    private final DoubleLogger log_turretLCMPos = WaltLogger.logDouble(kLogTab, "turretCRTPos");
     
 
     public Turret() {
         m_turretMotor.getConfigurator().apply(kTurretTalonFXConfiguration);
-        m_crtEncB.setAssumedFrequency(488);
-        m_crtEncB.setConnectedFrequencyThreshold(400);
-        // m_crtEncB.setDutyCycleRange(1/2049, 2048/2049);
+        m_lcmEncB.setAssumedFrequency(488);
+        m_lcmEncB.setConnectedFrequencyThreshold(400);
+
+        m_lcmEncA.getConfigurator().apply(kEncoderAConfiguration);
 
         // setDefaultCommand(m_homingCommand);
 
-        double startAngle = calcTurretAngleCRT(m_crtEncA.getAbsolutePosition().getValueAsDouble() * 360, m_crtEncB.get() * 360); //shift into range of 0-360
-        log_turretCRTPos.accept(startAngle);
-        m_turretMotor.setPosition(kInitPosition);
+        double lcmRots = calcTurretAngleLCM(m_lcmEncA.getAbsolutePosition().getValueAsDouble() * 360, -(m_lcmEncB.get() - kEncBOffset) * 360) / 360.0;
+        m_turretMotor.setPosition(lcmRots - kLCMAtHomeRots + kHomePosition.in(Rotations));
+
+        // m_turretMotor.setPosition(kInitPosition);
 
         // trg_homingHallDirect.onTrue(Commands.sequence(
         //         Commands.runOnce(() -> {
@@ -157,33 +159,46 @@ public class Turret extends SubsystemBase {
 
 
     public void periodic() {
-        log_crtEncAPos.accept(m_crtEncA.getAbsolutePosition().getValueAsDouble());
+        log_lcmEncAPos.accept(m_lcmEncA.getAbsolutePosition().getValueAsDouble());
+        log_lcmEncBPos.accept(m_lcmEncB.get());
+        log_lcmEncBFreq.accept(m_lcmEncB.getFrequency());
+        log_lcmEncBConn.accept(m_lcmEncB.isConnected());
 
-        log_crtEncBPos.accept(m_crtEncB.get());
-        log_crtEncBFreq.accept(m_crtEncB.getFrequency());
-        log_crtEncBConn.accept(m_crtEncB.isConnected());
+        Angle startAngle = Degrees.of(calcTurretAngleLCM(m_lcmEncA.getAbsolutePosition().getValueAsDouble() * 360, -(m_lcmEncB.get() - kEncBOffset) * 360));
+        log_turretLCMPos.accept(startAngle.in(Rotations));
     }
 
-    public static double calcTurretAngleCRT(double e1, double e2) {
-        double difference = e2 - e1;
-        if (difference > 250) {
-            difference -= 360;
-        }
-        if (difference < -250) {
-            difference += 360;
-        }
-        difference *= kSlope;
+    public static double calcTurretAngleLCM(double e1, double e2) {
+        double encARatio = kGearZeroToothCount / kGearOneToothCount; // 100/10.0
+        double encBRatio = kGearZeroToothCount / kGearTwoToothCount; // 100/19
+        double encAPeriod = 360.0 / encARatio;                       // 36° per turret rotation
 
-        double e1Rotations = (difference * kGearZeroToothCount / kGearOneToothCount) / 360.0;
-        double e1RotationsFloored = Math.floor(e1Rotations);
-        double turretAngle = (e1RotationsFloored * 360.0 + e1) * (kGearOneToothCount / kGearZeroToothCount);
-        if (turretAngle - difference < -100) {
-            turretAngle += kGearOneToothCount / kGearZeroToothCount * 360.0;
-        } else if (turretAngle - difference > 100) {
-            turretAngle -= kGearOneToothCount / kGearZeroToothCount * 360.0;
+        double bestAngle = 0;
+        double bestError = Double.MAX_VALUE;
+
+        // Center the search on the expected LCM output at home, spanning ±turret range
+        double centerDeg = kLCMAtHomeRots * 360.0;
+        double rangeDeg = kTurretMaxRotsFromHome.in(Degrees);
+        int kMin = (int) Math.floor((centerDeg - rangeDeg - e1 / encARatio) / encAPeriod);
+        int kMax = (int) Math.ceil((centerDeg + rangeDeg - e1 / encARatio) / encAPeriod);
+
+        for (int k = kMin; k <= kMax; k++) {
+            double candidate = (e1 / encARatio) + (encAPeriod * k);
+
+            double e2pred = (candidate * encBRatio) % 360.0;
+            if (e2pred < 0) e2pred += 360.0;
+
+            double error = e2pred - e2;
+            if (error > 180) error -= 360;
+            if (error < -180) error += 360;
+
+            if (Math.abs(error) < Math.abs(bestError)) {
+                bestError = error;
+                bestAngle = candidate;
+            }
         }
 
-        return turretAngle;
+        return bestAngle;
     }
 
     public void fastPeriodic() {

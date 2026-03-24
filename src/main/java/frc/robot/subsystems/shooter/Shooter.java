@@ -65,8 +65,8 @@ public class Shooter extends SubsystemBase {
 
     private final Supplier<SwerveDriveState> m_threadsafeSwerveSup;
 
-    private final Hood m_hood = new Hood();
-    private final Turret m_turret = new Turret();
+    public final Hood m_hood;
+    public final Turret m_turret;
 
     // thread copde
     private Angle m_turretPosition = Rotation.zero();
@@ -110,6 +110,8 @@ public class Shooter extends SubsystemBase {
 
     /* CONSTRUCTOR */
     public Shooter(Supplier<Pose2d> poseSupplier, Supplier<SwerveDriveState> threadsafeSwerveStateSup, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
+        m_hood = new Hood();
+        m_turret = new Turret();
         m_threadsafeSwerveSup = threadsafeSwerveStateSup;
         m_shooterCalc = new ShooterCalc(m_threadsafeSwerveSup, () -> m_turretPosition);
 
@@ -352,9 +354,9 @@ public class Shooter extends SubsystemBase {
             }
         }
 
-        log_shooterVelocityRPS.accept(m_flywheelVelocity.in(RotationsPerSecond));
+        // log_shooterVelocityRPS.accept(m_flywheelVelocity.in(RotationsPerSecond));
         log_turretPositionRots.accept(m_turretPosition.in(Rotations));
-        log_spunUp.accept(isShooterSpunUp());
+        // log_spunUp.accept(isShooterSpunUp());
         log_calcFlywheelVelocity.accept(m_calcdFlywheelVelocityRps);
         log_calcTurretPos.accept(m_calcTurret.in(Rotations));
 
