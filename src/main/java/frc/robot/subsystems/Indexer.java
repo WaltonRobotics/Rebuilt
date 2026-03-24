@@ -167,8 +167,8 @@ public class Indexer extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        log_spindexerRPS.accept(m_spindexer.getVelocity().getValueAsDouble());
-        log_tunnelRPS.accept(m_tunnel.getVelocity().getValueAsDouble());
+        // log_spindexerRPS.accept(m_spindexer.getVelocity().getValueAsDouble());
+        // log_tunnelRPS.accept(m_tunnel.getVelocity().getValueAsDouble());
     }
 
     @Override

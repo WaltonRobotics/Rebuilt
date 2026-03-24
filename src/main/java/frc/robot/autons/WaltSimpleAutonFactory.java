@@ -103,8 +103,8 @@ public class WaltSimpleAutonFactory {
         var poses = Choreo.loadTrajectory(name).get().getPoses();
         traj.active().onTrue(Commands.sequence(
             Commands.runOnce(() -> {
-                log_trajectoryName.accept(name);
-                log_trajectoryPoses.accept(poses);
+                // log_trajectoryName.accept(name);
+                // log_trajectoryPoses.accept(poses);
             }),
             tp("traj.START(" + name + ")")
         ));
