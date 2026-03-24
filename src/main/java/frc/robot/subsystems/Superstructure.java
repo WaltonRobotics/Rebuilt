@@ -222,7 +222,7 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
-    public Command shimmy() {
+    public Command intakeArmShimmy() {
        return m_intake.shimmy();
     }
 

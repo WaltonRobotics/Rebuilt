@@ -21,6 +21,9 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -62,14 +65,15 @@ public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
     //---CONSTANTS
     private final LinearVelocity kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts; // kSpeedAt12Volts desired top speed
-    private final AngularVelocity kMaxAngularRate = RotationsPerSecond.of(1.05); // 3/4 of a rotation per second max angular velocity
+    private final AngularVelocity kDriverMaxAngularRate = RotationsPerSecond.of(1.05); // 3/4 of a rotation per second max angular velocity
+    private final AngularVelocity kSwerveShimmyAngularRate = RotationsPerSecond.of(1.3 / 3);
 
     private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
     private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger(kLogTab, "VisionSeenLastSec");
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-        .withDeadband(kMaxTranslationSpeed.times(0.1)).withRotationalDeadband(kMaxAngularRate.times(0.1)) // Add a 10% deadband
+        .withDeadband(kMaxTranslationSpeed.times(0.1)).withRotationalDeadband(kDriverMaxAngularRate.times(0.1)) // Add a 10% deadband
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     // private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     // private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -121,6 +125,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_emergencyBarf = m_driver.rightTrigger().and(trg_driverOverride);
 
     private Trigger trg_shimmy = m_manipulator.leftBumper();
+    private Trigger trg_swerveShimmy = m_driver.leftBumper();
 
     //---OVERRIDE TRIGGERS
     private Trigger trg_deployIntakeOverride = trg_manipOverride.and(m_manipulator.rightTrigger());
@@ -188,8 +193,8 @@ public class Robot extends TimedRobot {
 
     /* COMMANDS */
     /**
-     * 
-     * @param speedMultiplier how much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
+     * Normal driveCommand which takes in drive stick requests. Is defaultCommand
+     * @param speedMultiplier How much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
      * @return swerve drive command
      */
     private Command driveCommand(double speedMultiplier) {
@@ -197,18 +202,20 @@ public class Robot extends TimedRobot {
         // and Y is defined as to the left according to WPILib convention.
         // Drivetrain will execute this command periodically
         return m_drivetrain.applyRequest(() -> {
-            LinearVelocity translationSpeed = (m_driver.leftTrigger().getAsBoolean() ? 
+            LinearVelocity translationSpeed = (m_driver.leftTrigger().getAsBoolean() ?
                 kMaxTranslationSpeed.times(speedMultiplier) :
                 kMaxTranslationSpeed);
-        
+
             var driverXVelo = translationSpeed.times(-m_driver.getLeftY());
             var driverYVelo = translationSpeed.times(-m_driver.getLeftX());
-            var driverYawRate = kMaxAngularRate.times(-m_driver.getRightX());
+            var driverYawRate = kDriverMaxAngularRate.times(-m_driver.getRightX());
 
-            log_stickDesiredFieldX.accept(driverXVelo.in(MetersPerSecond));
-            log_stickDesiredFieldY.accept(driverYVelo.in(MetersPerSecond));
-            log_stickDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond));
-            
+            // log_stickDesiredFieldX.accept(driverXVelo.in(MetersPerSecond));
+            // log_stickDesiredFieldY.accept(driverYVelo.in(MetersPerSecond));
+            // log_stickDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond));
+            // log_robotDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond)); // Should be equal to stick desired IN THIS CASE
+            // log_swerveShimmying.accept(false);
+
             return drive
                 .withVelocityX(driverXVelo) // Drive forward with Y (forward)
                 .withVelocityY(driverYVelo) // Drive left with X (left)
@@ -217,6 +224,42 @@ public class Robot extends TimedRobot {
         );
     }
 
+//     //(nonsotm (just for simulating entire robot)) BLARGHHHHHH get intake dude (alex?) to give me his code (idk if he finished it yet)
+//     private void configureFuelSim() {
+//         FuelSim instance = FuelSim.getInstance();
+//         // instance.spawnStartingFuel();
+
+//         instance.registerRobot(
+//                 kRobotFullWidth.in(Meters),
+//                 kRobotFullLength.in(Meters),
+//                 kBumperHeight.in(Meters),
+//                 () -> m_drivetrain.getState().Pose,
+//                 () -> m_drivetrain.getChassisSpeeds());
+//         // instance.registerIntake(
+//         //         -kRobotFullLength.div(2).in(Meters),
+//         //         kRobotFullLength.div(2).in(Meters),
+//         //         -kRobotFullWidth.div(2).plus(Inches.of(7)).in(Meters),
+//         //         -kRobotFullWidth.div(2).in(Meters),
+//         //         () -> intake.isRightDeployed() && m_shooter.simAbleToIntake(),
+//         //         m_shooter::simIntake);
+//         // instance.registerIntake(
+//         //         -kRobotFullLength.div(2).in(Meters),
+//         //         kRobotFullLength.div(2).in(Meters),
+//         //         kRobotFullWidth.div(2).in(Meters),
+//         //         kRobotFullWidth.div(2).plus(Inches.of(7)).in(Meters),
+//         //         () -> intake.isLeftDeployed() && m_shooter.simAbleToIntake(),
+//         //         m_shooter::simIntake);
+
+//         instance.start();
+//         instance.logFuels();
+//         SmartDashboard.putData(Commands.runOnce(() -> {
+//                     FuelSim.getInstance().clearFuel();
+//                     FuelSim.getInstance().spawnStartingFuel();
+//                 })
+//                 .withName("Reset Fuel")
+//                 .ignoringDisable(true));
+//     }
+  
     private void setBothRumble(RumbleType type, double intensity) {
         m_driver.setRumble(type, intensity);
         m_manipulator.setRumble(type, intensity);
@@ -254,7 +297,7 @@ public class Robot extends TimedRobot {
         // m_drivetrain.registerTelemetry(logger::telemeterize);
 
         /* CUSTOM BINDS */
-        trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   
+        trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));
         trg_unlimitFps.onTrue(WaltCamera.setFpsLimitCmd(false));
 
         //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
@@ -297,8 +340,10 @@ public class Robot extends TimedRobot {
         trg_emergencyBarf.whileTrue(
             m_superstructure.emergencyBarf()
         );
-        
-        trg_shimmy.whileTrue(m_superstructure.shimmy());
+
+        trg_shimmy.whileTrue(m_superstructure.intakeArmShimmy());
+
+        trg_swerveShimmy.whileTrue(m_drivetrain.swerveTranslationShimmy(m_shooter.getTargetPose()));
 
         trg_unjam.and(trg_shoot.negate()).whileTrue(
             m_superstructure.unjamCmd(() -> false)
@@ -327,21 +372,11 @@ public class Robot extends TimedRobot {
 
         m_driver.povDown().onTrue(m_shooter.setTurretLockCmd(false));
         m_driver.povRight().onTrue(m_shooter.setTurretLockCmd(true));
-
-        // m_driver.start().whileTrue(m_superstructure.activateOuttakeNOSHOOT());
-        // trg_optimalPrefireTime.whileTrue(
-        //     Commands.run(() -> setBothRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> setBothRumble(RumbleType.kBothRumble, 0))
-        // );
-
-        // trg_comebackTime.whileTrue(
-        //     Commands.run(() -> setBothRumble(RumbleType.kRightRumble, 0.5)).finallyDo(()-> setBothRumble(RumbleType.kRightRumble, 0))
-        // );
     }
 
     private void configureTestBindings() {
         m_driver.povLeft().onTrue(m_hood.setHoodPosCmd(kHoodMinPosition));
         m_driver.povUp().onTrue(m_hood.setHoodPosCmd(kHoodMaxDegs));
-
     }
 
     private void configureTestingDashboard() {
@@ -421,7 +456,7 @@ public class Robot extends TimedRobot {
         // );
 
         /* for the mechanism2D in 3D, drag all 3 mechanisms2ds onto the robot pose
-        and also log the shooter position pose */ 
+        and also log the shooter position pose */
         // m_periodicTracer.printEpochs();
     }
 
@@ -485,7 +520,7 @@ public class Robot extends TimedRobot {
     @Override
     public void testInit() {
         CommandScheduler.getInstance().cancelAll();
-        
+
         CommandScheduler.getInstance().schedule(
             Commands.sequence(
                 m_drivetrain.runOnce(m_drivetrain::seedFieldCentric),
@@ -509,7 +544,7 @@ public class Robot extends TimedRobot {
                 m_drivetrain.applyRequest(() ->
                     drive.withVelocityX(0)
                         .withVelocityY(0)
-                        .withRotationalRate(kMaxAngularRate)
+                        .withRotationalRate(kDriverMaxAngularRate)
                 ),
                 Commands.waitSeconds(2.5),
                 m_drivetrain.xBrakeCmd(),

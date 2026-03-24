@@ -162,6 +162,30 @@ public class WaltLogger {
         return new Pose3dLogger(name, table, options);
     }
 
+    public static final class Transform3dLogger implements Consumer<Transform3d> {
+        public final StructPublisher<Transform3d> ntPub;
+        public final StructLogEntry<Transform3d> logEntry;
+
+        public Transform3dLogger(String subTable, String name, PubSubOption... options) {
+            StructTopic<Transform3d> topic = logTable.getSubTable(subTable).getStructTopic(name, new Transform3dStruct());
+            ntPub = topic.publish(options);
+            logEntry = StructLogEntry.create(DataLogManager.getLog(), "Robot/" + subTable + "/" + name, new Transform3dStruct());
+        }
+
+        @Override
+        public void accept(Transform3d value) {
+            if (shouldPublishNt()) {
+                ntPub.set(value);
+            } else {
+                logEntry.append(value);
+            }
+        }
+    }
+
+    public static Transform3dLogger logTransform3d(String name, String table, PubSubOption... options) {
+        return new Transform3dLogger(name, table, options);
+    }
+
     // public static final class Translation2dLogger implements Consumer<Translation2d> {
     //     public final StructPublisher<Translation2d> ntPub;
     //     public final StructLogEntry<Translation2d> logEntry;
