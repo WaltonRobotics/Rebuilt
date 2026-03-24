@@ -87,7 +87,7 @@ public class Turret extends SubsystemBase {
         // setDefaultCommand(m_homingCommand);
 
         double lcmRots = calcTurretAngleLCM(m_lcmEncA.getAbsolutePosition().getValueAsDouble() * 360, -(m_lcmEncB.get() - kEncBOffset) * 360) / 360.0;
-        m_turretMotor.setPosition(lcmRots - kLCMAtHomeRots + kHomePosition.in(Rotations));
+        m_turretMotor.setPosition(lcmRots);
 
         // m_turretMotor.setPosition(kInitPosition);
 
