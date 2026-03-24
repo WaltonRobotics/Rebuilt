@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.IndexerK;
+import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
@@ -47,32 +48,6 @@ public class Superstructure extends SubsystemBase {
     /* BUTTON BIND SEQUENCES */
 
     /**
-     * Turns off rollers and spinner and moves deploy to given pos.
-     * @param pos the position to move deploy to.
-     */
-    public Command deactivateIntake(IntakeArmPosition pos) {
-        // Command logCommand;
-        // switch (pos) {
-        //     case SAFE:
-        //         if (m_intake.getIntakeArmStatorCurrent() < 40) {
-        //             logCommand = logActiveCommands("safeIntake", "activateIntake", "retractIntake");
-        //         } else {
-        //             return Commands.none();
-        //         }
-        //         break;
-        //     default:
-        //         // logCommand = logActiveCommands("retractIntake", "activateIntake", "safeIntake");
-        //         break;
-        // }
-        return Commands.sequence(
-            m_intake.stopIntakeRollers(),
-            m_intake.setIntakeArmPosCmd(pos),
-            m_indexer.stopSpindexerCmd()
-            // logCommand
-        );
-    }
-
-    /**
      * 
      * @param isShooting
      * @return
@@ -81,22 +56,23 @@ public class Superstructure extends SubsystemBase {
         return Commands.sequence(
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()).withTimeout(0.25),
-            Commands.runEnd(
+            Commands.run(
             () -> {
                 boolean shooting = isShooting.getAsBoolean();
 
                 m_shooter.setIntaking(!shooting);
-                m_intake.setIntakeRollersVelocity(Constants.IntakeK.kIntakeRollersMaxRPS);
+                m_intake.setIntakeRollersVelocity(12);
                 m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPS : IndexerK.kSpindexerIntakeRPS);
-            }, 
+            })
+        ).finallyDo(
             () -> {
                 boolean shooting = isShooting.getAsBoolean();
                 m_shooter.setIntaking(false);
-                m_intake.setIntakeRollersVelocity(RotationsPerSecond.zero());   //TODO: add a isNear0Vel for rollers so we don't bring to safe until rollers are low speed
+                m_intake.setIntakeRollersVelocity(0);
                 if (!shooting) {
                     m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
                 }
-            })
+            }
         );
     }
 
@@ -245,10 +221,10 @@ public class Superstructure extends SubsystemBase {
                 m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS);
                 m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS);
                 m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
-                m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersMaxRPS.unaryMinus());
+                m_intake.setIntakeRollersVelocity(-12);
             },
             () -> {
-                m_intake.setIntakeRollersVelocity(RotationsPerSecond.zero());
+                m_intake.setIntakeRollersVelocity(0);
                 m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
                 m_shooter.setShooterVelocity(RotationsPerSecond.zero());
                 // m_shooter.setHoodPosition(ShooterK.kHoodSafeDegs);

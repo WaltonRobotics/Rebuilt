@@ -49,7 +49,7 @@ import frc.util.AllianceFlipUtil;
 import frc.util.VisionUtil;
 
 public class Constants {
-    public static final boolean kDebugLoggingEnabled = true;
+    public static final boolean kDebugLoggingEnabled = false;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
     public static final CANBus kCanivoreBus = new CANBus("fd");
@@ -120,7 +120,9 @@ public class Constants {
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.in(Rotations));
 
         public static final AngularVelocity kShooterMaxRPS = MotorK.kX60MaxVelocity.div(kShooterGearing);
+        public static final double kShooterMaxRPSd = 96.42;
         public static final AngularVelocity kShooterRPS = kShooterMaxRPS.times(0.65);   //Kraken X60Foc Max (RPM: 5785) //(0.9)
+        public static final double kShooterRPSd = kShooterMaxRPSd * 0.65;
         public static final AngularVelocity kShooterAutonCloseRPS = kShooterMaxRPS.times(0.60);  //auton pose is closer to the hub than teleop scoring
         public static final AngularVelocity kShooterAuton_EndSweep_RPS = kShooterMaxRPS.times(0.70); // end of sweep paths
         public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.31);
@@ -128,17 +130,23 @@ public class Constants {
 
         public static final AngularVelocity kShooterSpunUpMinimum = RotationsPerSecond.of(10);
         public static final Time kShooterSpunUpTimeout = Seconds.of(0.64);  //double expected spinup time
-        public static final double kShooterRPSd = kShooterRPS.in(RotationsPerSecond);
         public static final double kShooterSpunUpMinimumD = kShooterSpunUpMinimum.in(RotationsPerSecond);
+
+        public static final double kDriverRPSIncreaseD = 2.0;  //biggest cope of the century
 
         //---HOOD CONSTANTS
         public static final double kHoodMoI = 0.00027505;
 
-        //i geniunely dont know if these are right bro like ARGHHHH
         public static final Angle kHoodMinPosition = Rotations.of(0.1);
         private static final Angle kHoodMaxRots = Rotations.of(1.82195); //apparently this is 26 or 27 degrees? idk thats where we're telling it to go sooo..
         public static final Angle kHoodMaxDegs = Degrees.of(kHoodMaxRots.in(Degrees));
         public static final Angle kHoodLockDegs = Degrees.of(kHoodMaxDegs.times(0.75).in(Degrees));
+
+        //double versions
+        public static final double kHoodMinPosition_double = 0.1;
+        public static final double kHoodMaxRots_double = 1.82195;
+        public static final double kHoodLockRots_double = kHoodMaxRots_double * 0.75;
+
         //TODO: ensure this is the home value
         // public static final Angle kHoodHomePosition = Degrees.of(10);
         public static final Angle kHoodTrenchPosition = Degrees.of(5);
@@ -157,7 +165,7 @@ public class Constants {
         /* HOMING */
         public static final Current kWireTugMinAmps = Amps.of(8);
         public static final double kWireTugMinSecs = 0.125;
-        public static final double kHomingVoltage = -0.75 * 1.5;
+        public static final double kHomingVoltage = -0.75 * 2.0;
         public static final Angle kHomingRetryReturnRots = Rotations.of(0.2);
         public static final Angle kHomePosition = Rotations.of(-0.2175);
         public static final Angle kInitPosition = Rotations.of(-0.145);
@@ -383,10 +391,15 @@ public class Constants {
         public static final double kIntakeRollersGearing = 12.0/30;
 
         public static final AngularVelocity kIntakeRollersMaxRPS = MotorK.kX60FOCMaxVelocity.div(kIntakeRollersGearing);
+        public static final AngularVelocity kIntakeRollersShootRPS = kIntakeRollersMaxRPS.times(0.2);
+
+        public static final double kIntakeFlapDeployPos = 300;
+        public static final double kIntakeFlapResetPos = 0;
 
         /* IDS */
         public static final int kIntakeArmCANID = 40;
         public static final int kIntakeRollersCANID = 41;
+        public static final int kIntakeFlapChannel = 0;
 
         /* CONFIGS */
         //IntakeArm Motor
@@ -554,7 +567,7 @@ public class Constants {
         public static final double kTwoSweepMaxTime = 20;
 
         public static final double kIntakeTimeout = 7.5;
-        public static final double kShootingTimeout = 4; //12
+        public static final double kShootingTimeout = 6; //12
 
         public static final String kLeftSweepPathName = "LeftSweep";
         public static final String kRightSweepPathName = "RightSweep";
@@ -570,6 +583,7 @@ public class Constants {
         public static final String kReshootRightTwo = "RightSweepFast_Reshoot";
 
         public static final String kFastLeftTwoSweepName = "LeftSweepFast";
-        public static final String kReshootLeftTwo = "LeftSweepFast_Reshoot";
+        public static final String kReshootLeftTwo = "LeftSweepFast_copy1"; //TODO: MUST RENAME THIS
+        // public static final String kReshootLeftTwo = "LeftSweepFast_Reshoot";
     }
 }

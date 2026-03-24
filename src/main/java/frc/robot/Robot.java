@@ -7,9 +7,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.RobotK.*;
-import static frc.robot.Constants.ShooterK.kHoodMaxDegs;
-import static frc.robot.Constants.ShooterK.kHoodMinPosition;
-
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -26,13 +23,10 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -40,14 +34,13 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-import frc.robot.subsystems.shooter.FuelSim;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.Constants.IntakeK;
 import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.dashboards.AutonChooser;
 import frc.robot.dashboards.TestingDashboard;
-import frc.robot.autons.WaltAutonFactory;
 import frc.robot.autons.WaltSimpleAutonFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
@@ -57,12 +50,11 @@ import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.WaltCamera;
 import frc.util.HubShiftUtil;
-import frc.util.Telemetry;
 // import frc.util.WaltVisualSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
-import frc.util.WaltLogger.StringLogger;
+import frc.util.WaltLogger.Pose2dLogger;
 
 public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
@@ -103,7 +95,6 @@ public class Robot extends TimedRobot {
 
     //---AUTONS
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
-    private final WaltAutonFactory m_waltAutonFactory = new WaltAutonFactory(m_autoFactory, m_drivetrain);
 
     private final WaltSimpleAutonFactory m_simpleAutonFactory = new WaltSimpleAutonFactory(m_superstructure, m_autoFactory, m_intake, m_shooter, m_drivetrain);
     //---VISION
@@ -143,8 +134,8 @@ public class Robot extends TimedRobot {
     private final DoubleLogger log_stickDesiredFieldX = WaltLogger.logDouble("Swerve", "stick desired teleop x");
     private final DoubleLogger log_stickDesiredFieldY = WaltLogger.logDouble("Swerve", "stick desired teleop y");
     private final DoubleLogger log_stickDesiredFieldZRot = WaltLogger.logDouble("Swerve", "stick desired teleop z rot");
-
     private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble(kLogTab, "MiniPC current");
+    private final Pose2dLogger log_robotPose = WaltLogger.logPose2d("Drive", "Pose");
 
     //DRIVERSTATION LOGS TELL US
     // private final BooleanLogger log_isDisabled = WaltLogger.logBoolean(kLogTab, "is robot disabled");
@@ -166,13 +157,9 @@ public class Robot extends TimedRobot {
     public Robot() {
         configureBindings();
         // configureTestBindings();    //this should be commented out during competition matches
-        configureTestingDashboard();
+        // configureTestingDashboard();
 
         lastGotTagMsmtTimer.start();
-        if (Robot.isSimulation()) {
-            configureFuelSim();
-            // FuelSim.getInstance().enableAirResistance();
-        }
 
         AutonChooser.initialize(m_simpleAutonFactory);
 
@@ -189,7 +176,9 @@ public class Robot extends TimedRobot {
 
         DataLogManager.start();
         DriverStation.startDataLog(DataLogManager.getLog());
-        addPeriodic(m_shooter::fastPeriodic, 0.0025);
+        // MANUAL HOMING IS BEING USED
+        // addPeriodic(m_shooter::fastPeriodic, 0.0025);
+
 
         m_preheaterCommand = AutonChooser.getPreheater();
         CommandScheduler.getInstance().schedule(m_preheaterCommand);
@@ -231,41 +220,6 @@ public class Robot extends TimedRobot {
         m_manipulator.setRumble(type, intensity);
     }
 
-    //(nonsotm (just for simulating entire robot)) BLARGHHHHHH get intake dude (alex?) to give me his code (idk if he finished it yet)
-    private void configureFuelSim() {
-        FuelSim instance = FuelSim.getInstance();
-        // instance.spawnStartingFuel();
-    
-        instance.registerRobot(
-                kRobotFullWidth.in(Meters),
-                kRobotFullLength.in(Meters),
-                kBumperHeight.in(Meters),
-                () -> m_drivetrain.getState().Pose,
-                () -> m_drivetrain.getChassisSpeeds());
-        // instance.registerIntake(
-        //         -kRobotFullLength.div(2).in(Meters),
-        //         kRobotFullLength.div(2).in(Meters),
-        //         -kRobotFullWidth.div(2).plus(Inches.of(7)).in(Meters),
-        //         -kRobotFullWidth.div(2).in(Meters),
-        //         () -> intake.isRightDeployed() && m_shooter.simAbleToIntake(),
-        //         m_shooter::simIntake);
-        // instance.registerIntake(
-        //         -kRobotFullLength.div(2).in(Meters),
-        //         kRobotFullLength.div(2).in(Meters),
-        //         kRobotFullWidth.div(2).in(Meters),
-        //         kRobotFullWidth.div(2).plus(Inches.of(7)).in(Meters),
-        //         () -> intake.isLeftDeployed() && m_shooter.simAbleToIntake(),
-        //         m_shooter::simIntake);
-
-        instance.start();
-        instance.logFuels();
-        SmartDashboard.putData(Commands.runOnce(() -> {
-                    FuelSim.getInstance().clearFuel();
-                    FuelSim.getInstance().spawnStartingFuel();
-                })
-                .withName("Reset Fuel")
-                .ignoringDisable(true));
-    }
 
     //---BINDINGS
     private void configureBindings() {
@@ -321,6 +275,16 @@ public class Robot extends TimedRobot {
         // trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
         trg_shoot.whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
 
+        // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));
+        // m_driver.a().onTrue(m_shooter.driverRPSAlter(false));
+
+        // m_driver.x().onTrue(m_shooter.driverResetRPSAlter());
+
+        // m_driver.leftBumper().whileTrue(m_shooter.driverRPSIncreaseWhileHeldCmd());
+
+        m_manipulator.povUp().onTrue(m_intake.setIntakeFlapServoCmd(IntakeK.kIntakeFlapDeployPos));
+        m_manipulator.povDown().onTrue(m_intake.setIntakeFlapServoCmd(0));
+
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
 
@@ -373,8 +337,8 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
-        m_driver.povLeft().onTrue(m_hood.setHoodPosCmd(kHoodMinPosition));
-        m_driver.povUp().onTrue(m_hood.setHoodPosCmd(kHoodMaxDegs));
+        m_driver.povLeft().onTrue(m_hood.setHoodPosCmd(ShooterK.kHoodMinPosition_double));
+        m_driver.povUp().onTrue(m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double));
 
     }
 
@@ -408,6 +372,7 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().run(); 
         // m_periodicTracer.addEpoch("CommandScheduler");
 
+        log_robotPose.accept(m_drivetrain.getState().Pose);
 
         for (var camera : WaltCamera.AllCameras) {
             Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
@@ -529,7 +494,7 @@ public class Robot extends TimedRobot {
                         .withRotationalRate(0)
                 ),
                 Commands.waitSeconds(2.5),
-                m_drivetrain.xBrake(),
+                m_drivetrain.xBrakeCmd(),
                 Commands.waitSeconds(2.5),
                 m_drivetrain.applyRequest(() ->
                     drive.withVelocityX(kMaxTranslationSpeed.unaryMinus())
@@ -537,7 +502,7 @@ public class Robot extends TimedRobot {
                         .withRotationalRate(0)
                 ),
                 Commands.waitSeconds(2.5),
-                m_drivetrain.xBrake(),
+                m_drivetrain.xBrakeCmd(),
                 Commands.waitSeconds(2.5),
                 m_drivetrain.applyRequest(() ->
                     drive.withVelocityX(0)
@@ -545,7 +510,7 @@ public class Robot extends TimedRobot {
                         .withRotationalRate(kMaxAngularRate)
                 ),
                 Commands.waitSeconds(2.5),
-                m_drivetrain.xBrake(),
+                m_drivetrain.xBrakeCmd(),
                 Commands.waitSeconds(2.5),
                 m_drivetrain.applyRequest(() ->
                     drive.withVelocityX(0)
@@ -564,14 +529,14 @@ public class Robot extends TimedRobot {
 
     @Override
     public void simulationInit() {
-        FuelSim.getInstance().start();
+        // FuelSim.getInstance().start();
     }
 
     @Override
     public void simulationPeriodic() {
-        FuelSim instance = FuelSim.getInstance();
-        instance.logFuels();
-        instance.updateSim();
+        // FuelSim instance = FuelSim.getInstance();
+        // instance.logFuels();
+        // instance.updateSim();
 
         // m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();

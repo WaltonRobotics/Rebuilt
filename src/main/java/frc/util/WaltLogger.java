@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.geometry.struct.*;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.util.datalog.*;
+import edu.wpi.first.util.function.BooleanConsumer;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -160,101 +161,29 @@ public class WaltLogger {
         return new Pose3dLogger(name, table, options);
     }
 
-    public static final class Transform3dLogger implements Consumer<Transform3d> {
-        public final StructPublisher<Transform3d> ntPub;
-        public final StructLogEntry<Transform3d> logEntry;
+    // public static final class Translation2dLogger implements Consumer<Translation2d> {
+    //     public final StructPublisher<Translation2d> ntPub;
+    //     public final StructLogEntry<Translation2d> logEntry;
 
-        public Transform3dLogger(String subTable, String name, PubSubOption... options) {
-            StructTopic<Transform3d> topic = logTable.getSubTable(subTable).getStructTopic(name, new Transform3dStruct());
-            ntPub = topic.publish(options);
-            logEntry = StructLogEntry.create(DataLogManager.getLog(), "Robot/" + subTable + "/" + name, new Transform3dStruct());
-        }
+    //     public Translation2dLogger(String subTable, String name, PubSubOption... options) {
+    //         StructTopic<Translation2d> topic = logTable.getSubTable(subTable).getStructTopic(name, new Translation2dStruct());
+    //         ntPub = topic.publish(options);
+    //         logEntry = StructLogEntry.create(DataLogManager.getLog(), "Robot/" + subTable + "/" + name, new Translation2dStruct());
+    //     }
 
-        @Override
-        public void accept(Transform3d value) {
-            if (shouldPublishNt()) {
-                ntPub.set(value);
-            } else {
-                logEntry.append(value);
-            }
-        }
-    }
+    //     @Override
+    //     public void accept(Translation2d value) {
+    //         if (shouldPublishNt()) {
+    //             ntPub.set(value);
+    //         } else {
+    //             logEntry.append(value);
+    //         }
+    //     }
+    // }
 
-    public static Transform3dLogger logTransform3d(String table, String name, PubSubOption... options) {
-        return new Transform3dLogger(table, name, options);
-    }
-
-    public static final class Translation3dLogger implements Consumer<Translation3d> {
-        public final StructPublisher<Translation3d> ntPub;
-        public final StructLogEntry<Translation3d> logEntry;
-
-        public Translation3dLogger(String subTable, String name, PubSubOption... options) {
-            StructTopic<Translation3d> topic = logTable.getSubTable(subTable).getStructTopic(name, new Translation3dStruct());
-            ntPub = topic.publish(options);
-            logEntry = StructLogEntry.create(DataLogManager.getLog(), "Robot/" + subTable + "/" + name, new Translation3dStruct());
-        }
-
-        @Override
-        public void accept(Translation3d value) {
-            if (shouldPublishNt()) {
-                ntPub.set(value);
-            } else {
-                logEntry.append(value);
-            }
-        }
-    }
-
-    public static Translation3dLogger logTranslation3d(String table, String name, PubSubOption... options) {
-        return new Translation3dLogger(table, name, options);
-    }
-
-    public static final class Translation3dArrayLogger implements Consumer<Translation3d[]> {
-        public final StructArrayPublisher<Translation3d> ntPub;
-        public final StructArrayLogEntry<Translation3d> logEntry;
-
-        public Translation3dArrayLogger(String subTable, String name, PubSubOption... options) {
-            StructArrayTopic<Translation3d> topic = logTable.getSubTable(subTable).getStructArrayTopic(name, new Translation3dStruct());
-            ntPub = topic.publish(options);
-            logEntry = StructArrayLogEntry.create(DataLogManager.getLog(), "Robot/" + subTable + "/" + name, new Translation3dStruct());
-        }
-
-        @Override
-        public void accept(Translation3d[] values) {
-            if (shouldPublishNt()) {
-                ntPub.set(values);
-            } else {
-                logEntry.append(values);
-            }
-        }
-    }
-
-    public static Translation3dArrayLogger logTranslation3dArray(String table, String name, PubSubOption... options) {
-        return new Translation3dArrayLogger(table, name, options);
-    }
-
-    public static final class Translation2dLogger implements Consumer<Translation2d> {
-        public final StructPublisher<Translation2d> ntPub;
-        public final StructLogEntry<Translation2d> logEntry;
-
-        public Translation2dLogger(String subTable, String name, PubSubOption... options) {
-            StructTopic<Translation2d> topic = logTable.getSubTable(subTable).getStructTopic(name, new Translation2dStruct());
-            ntPub = topic.publish(options);
-            logEntry = StructLogEntry.create(DataLogManager.getLog(), "Robot/" + subTable + "/" + name, new Translation2dStruct());
-        }
-
-        @Override
-        public void accept(Translation2d value) {
-            if (shouldPublishNt()) {
-                ntPub.set(value);
-            } else {
-                logEntry.append(value);
-            }
-        }
-    }
-
-    public static Translation2dLogger logTranslation2d(String table, String name, PubSubOption... options) {
-        return new Translation2dLogger(table, name, options);
-    }
+    // public static Translation2dLogger logTranslation2d(String table, String name, PubSubOption... options) {
+    //     return new Translation2dLogger(table, name, options);
+    // }
 
     public static final class IntLogger implements IntConsumer {
         public final IntegerPublisher ntPub;
@@ -298,7 +227,7 @@ public class WaltLogger {
         return new DoubleLogger(table, name, options);
     }
 
-    public static final class BooleanLogger {
+    public static final class BooleanLogger implements BooleanConsumer {
         public final BooleanPublisher ntPub;
         public final BooleanLogEntry logEntry;
 
@@ -307,6 +236,7 @@ public class WaltLogger {
             logEntry = new BooleanLogEntry(DataLogManager.getLog(), "Robot/" + subTable + "/" + name);
         }
 
+        @Override
         public void accept(boolean value) {
             if (shouldPublishNt()) {
                 ntPub.set(value);

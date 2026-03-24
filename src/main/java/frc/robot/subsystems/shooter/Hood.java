@@ -48,27 +48,26 @@ public class Hood extends SubsystemBase {
     public Hood() {
         m_hood.getConfigurator().apply(kHoodTalonFXSConfiguration);
 
-        setDefaultCommand(hoodCurrentSenseHomingCmd());
+        m_hood.setPosition(kHoodMinPosition);
+        m_isHoodHomed = true;
+        log_hoodHomed.accept(m_isHoodHomed);
+
+        // setDefaultCommand(hoodCurrentSenseHomingCmd());
     }
 
     // ---HOOD
-    public void setHoodPos(Angle degs) {
-        m_hood.setControl(m_hoodPVRequest.withPosition(degs));
-        log_hoodControlPos.accept(degs.in(Degrees));
-    }
-
     public void setHoodPos(double rots) {
         m_hood.setControl(m_hoodPVRequest.withPosition(rots));
-        log_hoodControlPos.accept(rots * 360.0);
+        log_hoodControlPos.accept(rots);
     }
 
-    public Command setHoodPosCmd(Angle degs) {
-        return runOnce(() -> setHoodPos(degs));
+    public Command setHoodPosCmd(double rots) {
+        return runOnce(() -> setHoodPos(rots));
     }
 
     //for TestingDashboard
-    public Command setHoodPositionCmd(DoubleSubscriber sub_degs) {
-        return run(() -> setHoodPos(Degrees.of(sub_degs.get())));
+    public Command setHoodPositionCmd(DoubleSubscriber sub_rots) {
+        return run(() -> setHoodPos(sub_rots.get()));
     }
 
     private Angle getHoodAngle() {

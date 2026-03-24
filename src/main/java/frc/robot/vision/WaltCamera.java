@@ -14,17 +14,16 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleArrayLogger;
 import frc.util.WaltLogger.IntLogger;
+import frc.util.WaltLogger.Pose2dLogger;
+import frc.util.WaltLogger.Pose3dLogger;
 
 import static frc.robot.Constants.VisionK;
 import static frc.robot.Constants.FieldK;
@@ -80,10 +79,10 @@ public class WaltCamera extends PhotonCamera {
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.0, 1.0, 3); //1.5, 1.5, 6.24
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.25, 0.25, 1.25);  //0.5, 0.5, 5.24
 
-    // private final StructPublisher<Pose2d> log_camPose;
-    // private final StructPublisher<Transform3d> log_camTransform;
-    // private final DoubleArrayLogger log_stdDevs;
-    // private final IntLogger log_numResults;
+    private final Pose2dLogger log_camPose;
+    private final Pose3dLogger log_camTransform;
+    private final DoubleArrayLogger log_stdDevs;
+    private final IntLogger log_numResults;
 
     private Matrix<N3, N1> m_curStdDevs;
 
@@ -95,12 +94,10 @@ public class WaltCamera extends PhotonCamera {
         m_estimator = new PhotonPoseEstimator(FieldK.kTagLayout, m_robotToCam);
 
         final String ntPrefix = "Vision/" + cameraName + "/";
-        // log_camPose = NetworkTableInstance.getDefault()
-        //     .getStructTopic(ntPrefix + "estRobotPose", Pose2d.struct).publish();
-        // log_camTransform = NetworkTableInstance.getDefault()
-        //     .getStructTopic(ntPrefix + "transform", Transform3d.struct).publish();
-        // log_stdDevs = WaltLogger.logDoubleArray(ntPrefix, "stdDevs");
-        // log_numResults = WaltLogger.logInt(ntPrefix, "numResults");
+        log_camPose = WaltLogger.logPose2d(ntPrefix, "estRobotPose");
+        log_camTransform = WaltLogger.logPose3d(ntPrefix, "transform");
+        log_stdDevs = WaltLogger.logDoubleArray(ntPrefix, "stdDevs");
+        log_numResults = WaltLogger.logInt(ntPrefix, "numResults");
 
         // log_camTransform.accept(robotToCam);
     }

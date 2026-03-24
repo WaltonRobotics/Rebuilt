@@ -8,6 +8,7 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.StaticBrake;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -37,6 +38,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static edu.wpi.first.units.Units.Hertz;
+import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
@@ -46,6 +48,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import frc.robot.Constants;
+import frc.robot.subsystems.shooter.ShooterCalc.ShotCalcOutputs;
 import frc.util.WaltMotorSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
@@ -66,8 +69,8 @@ public class Shooter extends SubsystemBase {
     private final Supplier<Pose2d> m_poseSupplier;
     private final Supplier<ChassisSpeeds> m_fieldSpeedsSupplier;
 
-    private final TurretVisualizer m_turretVisualizer;
-    private final FuelSim m_fuelSim;
+    // private final TurretVisualizer m_turretVisualizer;
+    // private final FuelSim m_fuelSim;
 
     public final EventLoop homingEventLoop = new EventLoop();
 
@@ -108,6 +111,7 @@ public class Shooter extends SubsystemBase {
 
     private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
     private final DoubleLogger log_calcTurretPos = new DoubleLogger("Shooter/Turret", "calcTurretPos");
+    private final DoubleLogger log_driverAddedRPS = WaltLogger.logDouble(kLogTab, "driverAddedRPS");
 
 
     // private static final DoubleLogger log_timeOfFlight = new
@@ -140,7 +144,6 @@ public class Shooter extends SubsystemBase {
     private final DoubleLogger log_shooterClosedLoopError = WaltLogger.logDouble("Shooter", "shooterClosedLoopError");
 
     private final DoubleLogger log_turretControlPos = WaltLogger.logDouble("Shooter/Turret", "turretControlPos");
-    private final DoubleLogger log_turretControlVeloFF = WaltLogger.logDouble("Shooter/Turret", "turretCtrlVeloFF");
     // private final DoubleLogger log_hoodControlPos = WaltLogger.logDouble("Shooter/Hood", "hoodControlPos");
 
     // private final Tracer m_periodicTracer = new Tracer();
@@ -168,15 +171,19 @@ public class Shooter extends SubsystemBase {
 
         m_poseSupplier = poseSupplier;
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
-        setDefaultCommand(m_homingCommand);
 
-        m_turretVisualizer = new TurretVisualizer(
-                () -> new Pose3d(m_poseSupplier.get().rotateAround(
-                        poseSupplier.get().getTranslation(), new Rotation2d(turretTurnPosition * 2.0 * Math.PI)))
-                        .transformBy(kTurretTransform),
-                fieldSpeedsSupplier);
+        // MANUAL HOMING REQUIRED
+        // setDefaultCommand(m_homingCommand);
+        m_turretMotor.setPosition(kInitPosition);
+        m_isTurretHomed = true;
 
-        m_fuelSim = FuelSim.getInstance();
+        // m_turretVisualizer = new TurretVisualizer(
+        //         () -> new Pose3d(m_poseSupplier.get().rotateAround(
+        //                 poseSupplier.get().getTranslation(), new Rotation2d(turretTurnPosition)))
+        //                 .transformBy(kTurretTransform),
+        //         fieldSpeedsSupplier);
+
+        // m_fuelSim = FuelSim.getInstance();
 
         trg_homingHallDirect.onTrue(Commands.sequence(
                 Commands.runOnce(() -> {
@@ -185,7 +192,6 @@ public class Shooter extends SubsystemBase {
                 }),
                 Commands.runOnce(() -> homingEventLoop.clear())));
 
-        m_turretMotor.setPosition(kInitPosition);
 
         initSim();
     }
@@ -201,6 +207,7 @@ public class Shooter extends SubsystemBase {
     // }
 
     public void setIntaking(boolean intaking) {
+        System.out.println("setIntaking: " + intaking);
         m_holdTurretAtIntakePos = intaking;
     }
 
@@ -230,16 +237,44 @@ public class Shooter extends SubsystemBase {
 
     public Command shootFromCalc() {
         return run(() -> m_shooterA.setControl(m_velocityRequest.withVelocity(m_calcFlywheelVelocityRotPerSec)));
+        // return run(() -> setShooterVelocity(m_calcdFlywheelVelocityRps));
     }
+
+    // public Command driverRPSIncreaseWhileHeldCmd() {
+    //     return Commands.runOnce(() -> {
+    //         driverRPSAlterStatic(true);
+    //     }).finallyDo(() -> driverResetRPSAlter());
+    // }
+
+    // public Command driverRPSAlterDynamic(boolean increase) {
+    //     return Commands.runOnce(() -> {
+    //         m_driverRPSTweak = increase ? (m_calcdFlywheelVelocityRps * 0.05) : (m_calcdFlywheelVelocityRps * -0.05);
+    //         log_driverAddedRPS.accept(m_driverRPSTweak);
+    //     });
+    // }
+
+    // public Command driverRPSAlterStatic(boolean increase) {
+    //     return Commands.runOnce(() -> {
+    //         m_driverRPSTweak += kDriverRPSIncreaseD * (increase ? 1 : -1);
+    //         log_driverAddedRPS.accept(m_driverRPSTweak);
+    //     });
+    // }
+
+    // public Command driverResetRPSAlter() {
+    //     return Commands.runOnce(() -> m_driverRPSTweak = 0);
+    // }
 
     public void setShooterVelocity(AngularVelocity RPS) {
-        if (RPS.isEquivalent(RotationsPerSecond.zero())) {
-            m_shooterA.setControl(m_neutralOutReq);
-        } else {
-            m_shooterA.setControl(m_velocityRequest.withVelocity(RPS));
-        }
+        setShooterVelocity(RPS.in(RotationsPerSecond));
     }
 
+    public void setShooterVelocity(double rotPerSec) {
+        if (rotPerSec == 0) {
+            m_shooterA.setControl(m_neutralOutReq);
+        } else {
+            m_shooterA.setControl(m_velocityRequest.withVelocity(rotPerSec));
+        }
+    }
 
     // for TestingDashboard
     public Command setShooterVelocityCmd(DoubleSubscriber sub_RPS) {
@@ -254,7 +289,6 @@ public class Shooter extends SubsystemBase {
         if (!m_isTurretHomed) { return; }
         m_turretMotor.setControl(m_PVRequest.withPosition(positionRots).withVelocity(velocityFFRotPerSec));
         log_turretControlPos.accept(positionRots);
-        log_turretControlVeloFF.accept(velocityFFRotPerSec);
     }
 
     public void setTurretNeutralMode(NeutralModeValue value) {
@@ -343,8 +377,7 @@ public class Shooter extends SubsystemBase {
         m_turret.periodic();
         // m_periodicTracer.addEpoch("Entry (Unused Time)");
 
-        // Cache all signals at the top so every consumer in this loop sees the same
-        // values
+        // Cache all signals at the top so every consumer in this loop sees the same values
         // THIS IS USED SNEAKILY BY SHOTCALC DO NOT MOVE THIS
         m_latestTurretPositionRots = m_turretMotor.getPosition().getValueAsDouble();
         m_latestFlywheelVelocityRotPerSec = m_shooterA.getVelocity().getValueAsDouble();
@@ -352,21 +385,33 @@ public class Shooter extends SubsystemBase {
         log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
         m_isShooterSpunUp = sig_shooterCLErr.isNear(0, 3);
 
-        var calcData = m_shooterCalc.getLatestShotCalcOutputs();
+        ShotCalcOutputs calcData = m_shooterCalc.getLatestShotCalcOutputs();
 
         // All calcData fields are CTRE-native (rotations, rot/s) — no wrapping needed
-        if (m_isTurretHomed && m_hood.isHoodHomed()) {
+        if (m_isTurretHomed) {
+            double turretReference = calcData.turretReferenceRots();
+
             if (m_turretLocked) {
                 setTurretPos(m_turretLockAngleRots, 0.0);
-                m_hood.setHoodPos(kHoodLockDegs);
                 m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
             } else {
                 if (m_holdTurretAtIntakePos) {
                     setTurretPos(kIntakeTurretPosRots, 0.0);
                 } else {
-                    setTurretPos(calcData.turretReferenceRots(), calcData.turretCalcDetails().turretVelocityFFRotPerSec());
-                    m_hood.setHoodPos(calcData.hoodReferenceRots());
-                    m_calcFlywheelVelocityRotPerSec = calcData.shooterReferenceRotPerSec();
+                    setTurretPos(turretReference, calcData.turretCalcDetails().turretVelocityFF());
+                    m_calcFlywheelVelocityRotPerSec = calcData.shooterReferenceRps();
+                }
+            }
+        }
+
+        if (m_hood.isHoodHomed()) {
+            double hoodReference = calcData.hoodReference();
+
+            if (m_turretLocked) {
+                m_hood.setHoodPos(kHoodLockRots_double);
+            } else {
+                if (!m_holdTurretAtIntakePos) {
+                    m_hood.setHoodPos(hoodReference);
                 }
             }
         }
@@ -376,6 +421,8 @@ public class Shooter extends SubsystemBase {
         log_spunUp.accept(m_isShooterSpunUp);
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocityRotPerSec);
         log_calcTurretPos.accept(m_calcTurretRots);
+
+        log_turretHomingHall.accept(trg_homingHallDirect.getAsBoolean());
 
         // m_periodicTracer.addEpoch("Logging");
 
@@ -432,5 +479,5 @@ public class Shooter extends SubsystemBase {
             // hoodCurrentSenseHomingCmd().asProxy(),
             turretHomingCmd().asProxy()
         );
-    }
+    } 
 }
