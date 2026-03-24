@@ -65,7 +65,7 @@ public class Robot extends TimedRobot {
     private final AngularVelocity kMaxAngularRate = RotationsPerSecond.of(1.05); // 3/4 of a rotation per second max angular velocity
 
     private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
-    private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger(kLogTab, "VisionSeenLastSec");
+    private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger("Robot", "VisionSeenLastSec");
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -135,7 +135,7 @@ public class Robot extends TimedRobot {
     private final DoubleLogger log_stickDesiredFieldX = WaltLogger.logDouble("Swerve", "stick desired teleop x");
     private final DoubleLogger log_stickDesiredFieldY = WaltLogger.logDouble("Swerve", "stick desired teleop y");
     private final DoubleLogger log_stickDesiredFieldZRot = WaltLogger.logDouble("Swerve", "stick desired teleop z rot");
-    private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble(kLogTab, "MiniPC current");
+    private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble("Robot", "MiniPC current");
     private final Pose2dLogger log_robotPose = WaltLogger.logPose2d("Drive", "Pose");
 
     //DRIVERSTATION LOGS TELL US
