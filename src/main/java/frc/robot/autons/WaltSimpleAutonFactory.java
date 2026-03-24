@@ -243,6 +243,41 @@ public class WaltSimpleAutonFactory {
         return routine;
     }
 
+    /**
+     * one sweep auton path that complements an auton ON THE SAME SIDE from a trench bot
+     * @param left
+     * @return
+     */
+    public AutoRoutine oneTrenchSweep(boolean left) {
+        String path = left ? AutonK.kLeftTrenchSweep : AutonK.kRightTrenchSweep;
+        AutoRoutine routine = m_autoFactory.newRoutine("oneTrenchSweep_" + (left ? "L" : "R"));
+        AutoTrajectory traj = createTraj(routine, path);
+
+        Trigger stopIntakeTrg = traj.atTime("stopIntake");
+
+        routine.active().onTrue(traj.cmd().withTimeout(8));
+
+        routine.active().onTrue(
+            homingCmd().andThen(
+                m_superstructure.intake(() -> false)
+            ).until(stopIntakeTrg)
+        );
+
+        traj.done().onTrue(
+            m_swerve.xBrakeCmd()
+        );
+
+        traj.doneFor(AutonK.kShootingTimeout).whileTrue(
+            m_superstructure.activateOuttakeShotCalc()
+        );
+
+        traj.doneDelayed(2.5).onTrue(
+            m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+        );
+
+        return routine;
+    }
+
     // --- UNUSED AutoRoutine auton methods ---
     //TODO: should confirm if these even need to exist
 
