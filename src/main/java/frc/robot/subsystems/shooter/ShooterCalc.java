@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
@@ -33,7 +34,7 @@ import static frc.robot.Constants.ShooterK.*;
 
 public class ShooterCalc {
     private final Supplier<SwerveDriveState> m_threadsafeSwerveDriveStateSup;
-    private final Supplier<Angle> m_turretPosSup;
+    private final DoubleSupplier m_turretPosSup;
     private final SwerveDriveKinematics m_swerveKinematics = new SwerveDriveKinematics(TunerConstants.moduleTranslations);
 
     private final Pose3dLogger log_globalShotTarget = WaltLogger.logPose3d("ShotCalc", "globalTarget");
@@ -52,8 +53,8 @@ public class ShooterCalc {
     private static final double kTurretMaxRotsMagnitudeD = kTurretMaxRots.magnitude();
 
     private final ShotData kEmptyShotData = new ShotData(0, 0);
-    private final AzimuthCalcDetails kEmptyAzimuthCalcDetails = new AzimuthCalcDetails(Rotations.zero(), new Pose3d(), new Pose3d(), 0, RotationsPerSecond.zero());
-    private final ShotCalcOutputs kEmptyShotCalcOutputs = new ShotCalcOutputs(kEmptyAzimuthCalcDetails, kEmptyShotData, Rotation.zero(), Rotation.zero(), 0.0);
+    private final AzimuthCalcDetails kEmptyAzimuthCalcDetails = new AzimuthCalcDetails(0, new Pose3d(), new Pose3d(), 0, 0);
+    private final ShotCalcOutputs kEmptyShotCalcOutputs = new ShotCalcOutputs(kEmptyAzimuthCalcDetails, kEmptyShotData, 0, 0, 0);
 
     private boolean m_useStaticShot = true;
     private Translation3d m_aimTarget = Translation3d.kZero;
@@ -62,7 +63,7 @@ public class ShooterCalc {
     private final Notifier m_notifier = new Notifier(this::calcCallback);
     private final Timer m_calcTimer = new Timer();
 
-    public ShooterCalc(Supplier<SwerveDriveState> threadsafeSwerveDriveStateSup, Supplier<Angle> turretPosSup) {
+    public ShooterCalc(Supplier<SwerveDriveState> threadsafeSwerveDriveStateSup, DoubleSupplier turretPosSup) {
         m_threadsafeSwerveDriveStateSup = threadsafeSwerveDriveStateSup;
         m_turretPosSup = turretPosSup;
 
@@ -89,7 +90,7 @@ public class ShooterCalc {
         Pose2d robotPose = swerveState.Pose;
         ChassisSpeeds robotChassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
             m_swerveKinematics.toChassisSpeeds(swerveState.ModuleStates), robotPose.getRotation());
-        Angle turretPosition = m_turretPosSup.get();
+        double turretPosition = m_turretPosSup.getAsDouble();
 
         m_aimTarget = calculateTarget(robotPose);
         m_shotCalcOutputs = calcShot(robotPose, m_useStaticShot, m_aimTarget, turretPosition, robotChassisSpeeds);
@@ -124,7 +125,7 @@ public class ShooterCalc {
         return AllianceFlipUtil.apply(theTarget);
     }
 
-    public record AzimuthCalcDetails(Angle turretReference, Pose3d desiredAimPose, Pose3d currentAimPose, double rawDesiredRotations, AngularVelocity turretVelocityFF) {}
+    public record AzimuthCalcDetails(double turretReferenceRots, Pose3d desiredAimPose, Pose3d currentAimPose, double rawDesiredRotations, double turretVelocityFF) {}
 
     /**
      * Calculates the turret's *TARGET* angle while ensuring it stays within
@@ -140,9 +141,9 @@ public class ShooterCalc {
      *         of kTurretMaxAngle
      *         and kTurretMinAngle
      */
-    public static AzimuthCalcDetails calcAzimuth(Translation3d target, Pose2d robotPose, Angle turretPosition, ChassisSpeeds fieldSpeeds) {
+    public static AzimuthCalcDetails calcAzimuth(Translation3d target, Pose2d robotPose, double turretPosition, ChassisSpeeds fieldSpeeds) {
         // Convert once; reused below in both snapback and current-aim logging
-        double turretPositionRots = turretPosition.in(Rotations);
+        double turretPositionRots = turretPosition;
 
         /* Calculation Zone */
         // turret pivot location in field space (no extra rotateBy — that's for
@@ -188,7 +189,7 @@ public class ShooterCalc {
         }
 
 
-        var turretReference = Rotations.of(snapbackSafeAngleRotations);
+        double turretReference = snapbackSafeAngleRotations;
 
         double dx = distance.getX();
         double dy = distance.getY();
@@ -198,8 +199,8 @@ public class ShooterCalc {
                 - fieldSpeeds.omegaRadiansPerSecond
             : 0.0;
 
-        var calcDetails = new AzimuthCalcDetails(
-            turretReference, desiredAimPose, currentAimPose, angleRotations, RotationsPerSecond.of(turretFFRadPerSec));
+        AzimuthCalcDetails calcDetails = new AzimuthCalcDetails(
+            turretReference, desiredAimPose, currentAimPose, angleRotations, turretFFRadPerSec);
         // logger.accept(calcDetails);
         return calcDetails;
     }
@@ -207,8 +208,8 @@ public class ShooterCalc {
     public final record ShotCalcOutputs(
         AzimuthCalcDetails turretCalcDetails,
         ShotData shotData,
-        Angle turretReference,
-        Angle hoodReference,
+        double turretReferenceRots,
+        double hoodReference,
         double shooterReferenceRps
     ) {}
 
@@ -222,7 +223,7 @@ public class ShooterCalc {
         Pose2d robotPose,
         boolean staticShot,
         Translation3d target,
-        Angle turretPosition,
+        double turretPosition,
         ChassisSpeeds chassisSpeeds
     ) {
         // How fast the robot is currently going, (CURRENT ROBOT VELOCITY)
@@ -233,13 +234,13 @@ public class ShooterCalc {
             robotPose, fieldSpeeds, target, 3);
 
         // The turret angle according to the Calculated shot
-        var azCalcDetails = calcAzimuth(calculatedShot.getTarget(), robotPose, turretPosition, fieldSpeeds);
+        AzimuthCalcDetails azCalcDetails = calcAzimuth(calculatedShot.getTarget(), robotPose, turretPosition, fieldSpeeds);
 
-        var turretReference = azCalcDetails.turretReference();
-        var hoodReference = Degrees.of(calculatedShot.getHoodAngle().in(Degrees));
-        var shooterReference = ShotCalculator.linearToAngularVelocity(
-            calculatedShot.getExitVelocity(), kFlywheelRadius);
+        double turretReference = azCalcDetails.turretReferenceRots();
+        double hoodReference = calculatedShot.getHoodAngle().in(Rotations);
+        double shooterReference = ShotCalculator.linearToAngularVelocity(
+            calculatedShot.getExitVelocity(), kFlywheelRadius).in(RotationsPerSecond);
         return new ShotCalcOutputs(
-            azCalcDetails, calculatedShot, turretReference, hoodReference, shooterReference.in(RotationsPerSecond));
+            azCalcDetails, calculatedShot, turretReference, hoodReference, shooterReference);
     }
 }

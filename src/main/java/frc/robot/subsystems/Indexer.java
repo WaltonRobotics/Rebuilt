@@ -62,9 +62,12 @@ public class Indexer extends SubsystemBase {
     private final DoubleLogger log_desiredSpindexerRPS = WaltLogger.logDouble(kLogTab, "desiredSpindexerRPS");
     private final DoubleLogger log_desiredTunnelRPS = WaltLogger.logDouble(kLogTab, "desiredTunnelRPS");
 
-    StatusSignal<Double> sig_tunnelCLErr = m_tunnel.getClosedLoopError();
+    private final StatusSignal<Double> sig_tunnelCLErr = m_tunnel.getClosedLoopError();
     private final DoubleLogger log_tunnelClosedLoopError = WaltLogger.logDouble(kLogTab, "tunnelClosedLoopError");
     private final BooleanLogger log_isTunnelSpunUp = WaltLogger.logBoolean(kLogTab, "isTunnelSpunUp");
+
+    private boolean m_isTunnelSpunUp = false;
+    private double m_tunnelVelocityRotPerSec = 0.0;
 
     /* CONSTRUCTOR */
     public Indexer() {
@@ -121,17 +124,11 @@ public class Indexer extends SubsystemBase {
     }
 
     public boolean isTunnelSpunUp() {
-        sig_tunnelCLErr.refresh();
-        log_tunnelClosedLoopError.accept(sig_tunnelCLErr.getValueAsDouble());
-
-        boolean isNear = sig_tunnelCLErr.isNear(0, 30);
-
-        log_isTunnelSpunUp.accept(isNear);
-        return isNear;
+        return m_isTunnelSpunUp;
     }
 
-    public AngularVelocity getTunnelVelocity() {
-        return m_tunnel.getVelocity().getValue();
+    public double getTunnelVelocityRotPerSec() {
+        return m_tunnelVelocityRotPerSec;
     }
 
     //---SPINDEXER

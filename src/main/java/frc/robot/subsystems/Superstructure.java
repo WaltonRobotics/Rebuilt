@@ -109,9 +109,9 @@ public class Superstructure extends SubsystemBase {
 
             Commands.sequence(
                 // up("pre waituntil command"),
-                Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocity().gte(ShooterK.kShooterSpunUpMinimum)))).withTimeout(ShooterK.kShooterSpunUpTimeout),
+                Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocityRotPerSec() >= ShooterK.kShooterSpunUpMinimumD))).withTimeout(ShooterK.kShooterSpunUpTimeout),
                 m_indexer.startTunnelCmd(),
-                Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocity().gte(IndexerK.kTunnelSpunUpMinimum))).withTimeout(IndexerK.kTunnelSpunUpTimeout),
+                Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocityRotPerSec() >= IndexerK.kTunnelSpunUpMinimumD)).withTimeout(IndexerK.kTunnelSpunUpTimeout),
                 // up("post waituntil command"),
 
                 // up("pre start indexer"),
@@ -154,15 +154,27 @@ public class Superstructure extends SubsystemBase {
 
             Commands.sequence(
                 // up("pre waituntil command"),
-                Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocity().gte(ShooterK.kShooterSpunUpMinimum)))).withTimeout(ShooterK.kShooterSpunUpTimeout),
+                Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocityRotPerSec() >= ShooterK.kShooterSpunUpMinimumD))).withTimeout(ShooterK.kShooterSpunUpTimeout),
                 m_indexer.startTunnelCmd(),
-                Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocity().gte(IndexerK.kTunnelSpunUpMinimum))).withTimeout(IndexerK.kTunnelSpunUpTimeout),
+                Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocityRotPerSec() >= IndexerK.kTunnelSpunUpMinimumD)).withTimeout(IndexerK.kTunnelSpunUpTimeout),
                 // up("post waituntil command"),
 
                 // up("pre start indexer"),
-                m_indexer.startSpindexerCmd()
+                m_indexer.startSpindexerCmd(),
                 // up("post start indexer"),
+
+                // up("pre repeating sequence"),
+                Commands.repeatingSequence(
+                    // up("in repeating sequence"),
+                    // m_indexer.stopIndexerCmd()
+                    //     .onlyIf(() -> !m_shooter.isShooterSpunUp())
+                    //     .andThen(m_indexer.startIndexerCmd()).beforeStarting(Commands.waitUntil(() -> m_shooter.isShooterSpunUp()))
+                    // up("end repeating sequence")
+                    // Commands.print("shotCalc cope sequence: INITIATED")
+                    Commands.none()
+                )
             )
+            // up("post repeating sequence")
         )
         .finallyDo(
             () -> {
@@ -225,23 +237,6 @@ public class Superstructure extends SubsystemBase {
 
     public Command shimmy() {
        return m_intake.shimmy();
-    }
-
-    /**
-     * Rotates the turret to the given degs
-     * @param degs degrees to rotate to.
-     */
-    public Command turretTo(Angle degs) {
-        // Command logCommand;
-        // if (degs.magnitude() == 180) {
-        //     logCommand = logActiveOverrideCommands("turret180", "turret0");
-        // } else {
-        //     logCommand = logActiveOverrideCommands("turret0", "turret180");
-        // }
-        return Commands.sequence(
-            m_shooter.m_turret.setTurretPosCmd(Rotations.of(degs.in(Rotations)))
-            // logCommand
-        );
     }
 
     /**

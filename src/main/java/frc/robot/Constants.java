@@ -82,6 +82,16 @@ public class Constants {
 
         public static final Distance kFlywheelRadius = Inches.of(1.5);
 
+        // Precomputed doubles for hot-path shot calc (avoid measure allocations)
+        public static final double kTurretOffsetX_m = kTurretTransform.getTranslation().getX();
+        public static final double kTurretOffsetY_m = kTurretTransform.getTranslation().getY();
+        public static final double kTurretAngleOffsetRad = kTurretAngleOffset.getRadians();
+        public static final double kFlywheelRadiusM = kFlywheelRadius.in(Meters);
+        public static final double kFlywheelRadiusIn = kFlywheelRadius.in(Inches);
+        public static final double kTurretOffsetZ_in = kTurretTransform.getTranslation().getMeasureZ().in(Inches);
+        public static final double kFunnelRadiusIn = FieldConstants.Hub.funnelRadius.in(Inches);
+        public static final double kFunnelHeightPlusAboveIn = FieldConstants.Hub.funnelHeight.plus(kInchesAboveFunnel).in(Inches);
+
         public static final int kHopperCapacity = 55; //TODO: find true max
 
         public static final double kGravity = MetersPerSecondPerSecond.of(9.81).in(InchesPerSecondPerSecond);
@@ -117,19 +127,25 @@ public class Constants {
         public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.31);
         public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.zero();
 
-        public static final double kDriverRPSIncreaseD = 2.0;  //biggest cope of the century
-
         public static final AngularVelocity kShooterSpunUpMinimum = RotationsPerSecond.of(10);
         public static final Time kShooterSpunUpTimeout = Seconds.of(0.64);  //double expected spinup time
+        public static final double kShooterSpunUpMinimumD = kShooterSpunUpMinimum.in(RotationsPerSecond);
+
+        public static final double kDriverRPSIncreaseD = 2.0;  //biggest cope of the century
 
         //---HOOD CONSTANTS
         public static final double kHoodMoI = 0.00027505;
 
-        //i geniunely dont know if these are right bro like ARGHHHH
         public static final Angle kHoodMinPosition = Rotations.of(0.1);
         private static final Angle kHoodMaxRots = Rotations.of(1.82195); //apparently this is 26 or 27 degrees? idk thats where we're telling it to go sooo..
         public static final Angle kHoodMaxDegs = Degrees.of(kHoodMaxRots.in(Degrees));
         public static final Angle kHoodLockDegs = Degrees.of(kHoodMaxDegs.times(0.75).in(Degrees));
+
+        //double versions
+        public static final double kHoodMinPosition_double = 0.1;
+        public static final double kHoodMaxRots_double = 1.82195;
+        public static final double kHoodLockRots_double = kHoodMaxRots_double * 0.75;
+
         //TODO: ensure this is the home value
         // public static final Angle kHoodHomePosition = Degrees.of(10);
         public static final Angle kHoodTrenchPosition = Degrees.of(5);
@@ -476,6 +492,7 @@ public class Constants {
         public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(1.0);
 
         public static final AngularVelocity kTunnelSpunUpMinimum = RotationsPerSecond.of(10);
+        public static final double kTunnelSpunUpMinimumD = 10.0;
         public static final Time kTunnelSpunUpTimeout = Seconds.of(1);  //double expected spinup time
         
         /* CONFIGS */

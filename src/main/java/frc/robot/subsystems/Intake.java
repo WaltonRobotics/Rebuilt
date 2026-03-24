@@ -12,6 +12,7 @@ import static frc.robot.Constants.IntakeK.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
+import com.ctre.phoenix6.controls.DynamicMotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 

@@ -95,6 +95,10 @@ public class Turret extends SubsystemBase {
         log_turretControlPos.accept(rots.in(Rotations));
     }
 
+    public void setTurretPos(double rots, double velocityFF) {
+        setTurretPos(Rotations.of(rots), RotationsPerSecond.of(velocityFF));
+    }
+
     public void setTurretNeutralMode(NeutralModeValue value) {
         m_turret.setNeutralMode(value);
     }

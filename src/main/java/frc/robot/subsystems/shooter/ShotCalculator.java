@@ -2,7 +2,6 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.InchesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -31,6 +30,8 @@ import edu.wpi.first.units.measure.Time;
 public class ShotCalculator {
     private static final DoubleLogger log_timeOfFlight = new DoubleLogger("Shooter/Calculator", "timeOfFlight");
     private static final DoubleLogger log_distToTargetMeters = new DoubleLogger("Shooter/Calculator", "distTargetToMeters");
+
+    private static final double kMetersToInches = 1.0 / 0.0254;
     // private static final Tracer m_iterativeTracer = new Tracer();
 
     //see 5000's code (circa 2/16/2026 9:11 PM EST)
@@ -111,26 +112,43 @@ public class ShotCalculator {
         m_timeOfFlightMap.put(3.933, 1.38);
     }
 
+    
+    /**
+     * Gets the 2D distance from turret pivot to target in meters, using raw doubles.
+     * Zero-allocation hot-path version.
+     */
+    public static double getDistanceToTargetM(double robotX, double robotY, double robotHeadingRad,
+            double targetX, double targetY) {
+        double cosR = Math.cos(robotHeadingRad);
+        double sinR = Math.sin(robotHeadingRad);
+        double turretX = robotX + kTurretOffsetX_m * cosR - kTurretOffsetY_m * sinR;
+        double turretY = robotY + kTurretOffsetX_m * sinR + kTurretOffsetY_m * cosR;
+        double dx = turretX - targetX;
+        double dy = turretY - targetY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
     /**
      * Gets the Distance from current robot position to desired target.
-     * Intended for shot calculation
-     * @param robot current robot Pose
-     * @param target desired target pose
-     * @return the distance between the Robot and the Target
+     * Allocates Pose3d/Distance — use {@link #getDistanceToTargetM} on hot paths.
      */
     public static Distance getDistanceToTarget(Pose2d robot, Translation3d target) {
         Pose3d turretPose = new Pose3d(robot).transformBy(kTurretTransform);
-        Distance dist = Meters.of(turretPose.getTranslation().toTranslation2d().getDistance(target.toTranslation2d()));
-        log_distToTargetMeters.accept(dist.magnitude());
-        return dist;
+        double dist = getDistanceToTargetM(
+            turretPose.getX(), turretPose.getY(), turretPose.getRotation().getAngle(),
+            target.getX(), target.getY());
+        log_distToTargetMeters.accept(dist);
+        return Meters.of(dist);
     }
 
     // see https://www.desmos.com/geometry/l4edywkmha
     public static Angle calculateAngleFromVelocity(Pose2d robot, LinearVelocity velocity,
             Translation3d target) {
         double vel = velocity.in(InchesPerSecond);
-        double x_dist = getDistanceToTarget(robot, target).in(Inches);
-        double y_dist = target.getMeasureZ().minus(kTurretTransform.getMeasureZ()).in(Inches);
+        double x_dist = getDistanceToTargetM(
+            robot.getX(), robot.getY(), robot.getRotation().getRadians(),
+            target.getX(), target.getY()) * kMetersToInches;
+        double y_dist = target.getZ() * kMetersToInches - kTurretOffsetZ_in;
 
         double angle = Math.atan(((vel * vel) + Math.sqrt(
                 Math.pow(vel, 4) - kGravity * (kGravity * x_dist * x_dist + 2 * y_dist * vel * vel)))
@@ -142,13 +160,17 @@ public class ShotCalculator {
     //calculate how long it will take for a projectile to travel a certain amount of distance given its initial velocity and angle
     public static Time calculateTimeOfFlight(LinearVelocity exitVelocity, Angle hoodAngle,
             Distance distance) {
-        double vel = exitVelocity.in(MetersPerSecond);
-        double angle = Math.PI / 2 - hoodAngle.in(Radians);
-        double dist = distance.in(Meters);
+        double tofSec = calculateTimeOfFlightSec(
+            exitVelocity.in(MetersPerSecond), hoodAngle.in(Radians), distance.in(Meters));
+        return Seconds.of(tofSec);
+    }
 
-        log_timeOfFlight.accept(Seconds.of(dist / (vel * Math.cos(angle))).magnitude());
-
-        return Seconds.of(dist / (vel * Math.cos(angle)));
+    /** Raw-double TOF in seconds. Zero-allocation. */
+    public static double calculateTimeOfFlightSec(double velMps, double hoodAngleRad, double distM) {
+        double launchAngle = Math.PI / 2 - hoodAngleRad;
+        double tofSec = distM / (velMps * Math.cos(launchAngle));
+        log_timeOfFlight.accept(tofSec);
+        return tofSec;
     }
 
     public static AngularVelocity linearToAngularVelocity(LinearVelocity vel, Distance radius) {
@@ -157,6 +179,16 @@ public class ShotCalculator {
 
     public static LinearVelocity angularToLinearVelocity(AngularVelocity vel, Distance radius) {
         return MetersPerSecond.of(vel.in(RadiansPerSecond) * radius.in(Meters));
+    }
+
+    /** Raw double: rad/s from m/s and radius in meters. */
+    public static double linearToAngularVelocityRadPerSec(double mps, double radiusM) {
+        return mps / radiusM;
+    }
+
+    /** Raw double: m/s from rad/s and radius in meters. */
+    public static double angularToLinearVelocityMps(double radPerSec, double radiusM) {
+        return radPerSec * radiusM;
     }
 
     public static double getMinTimeOfFlight() {
@@ -192,13 +224,27 @@ public class ShotCalculator {
     // If you're having trouble understanding this method, go mess with the values in desmos / read what those do, as this is just the same desmos calc.
     public static ShotData calculateShotFromFunnelClearance(Pose2d robot,
             Translation3d actualTarget, Translation3d predictedTarget) {
-        double x_dist = getDistanceToTarget(robot, predictedTarget).in(Inches);
-        double y_dist = predictedTarget.getMeasureZ().minus(kTurretTransform.getMeasureZ())
-                .in(Inches);
+        return calculateShotFromFunnelClearance(robot,
+                actualTarget.getX(), actualTarget.getY(),
+                predictedTarget.getX(), predictedTarget.getY(), predictedTarget.getZ());
+    }
+
+    /** Raw-double overload — zero allocation in the hot loop. */
+    static ShotData calculateShotFromFunnelClearance(Pose2d robot,
+            double actualTargetX, double actualTargetY,
+            double predX, double predY, double predZ) {
+        double robotX = robot.getX();
+        double robotY = robot.getY();
+        double headingRad = robot.getRotation().getRadians();
+
+        double distPredM = getDistanceToTargetM(robotX, robotY, headingRad, predX, predY);
+        double distActualM = getDistanceToTargetM(robotX, robotY, headingRad, actualTargetX, actualTargetY);
+
+        double x_dist = distPredM * kMetersToInches;
+        double y_dist = predZ * kMetersToInches - kTurretOffsetZ_in;
         double g = 386;
-        double r = FieldConstants.Hub.funnelRadius.in(Inches) * x_dist
-                / getDistanceToTarget(robot, actualTarget).in(Inches);
-        double h = FieldConstants.Hub.funnelHeight.plus(kInchesAboveFunnel).in(Inches);
+        double r = kFunnelRadiusIn * x_dist / (distActualM * kMetersToInches);
+        double h = kFunnelHeightPlusAboveIn;
         double A1 = x_dist * x_dist;
         double B1 = x_dist;
         double D1 = y_dist;
@@ -218,58 +264,52 @@ public class ShotCalculator {
             theta = 0;
         }
 
-        return new ShotData(linearToAngularVelocity(InchesPerSecond.of(v0), kFlywheelRadius),
-                Radians.of(Math.PI / 2 - theta), predictedTarget);
-
+        // v0 is in inches/sec — convert to rad/s via flywheel radius in inches
+        double exitVelRadPerSec = v0 / kFlywheelRadiusIn;
+        return new ShotData(exitVelRadPerSec, Math.PI / 2 - theta, new Translation3d(predX, predY, predZ));
     }
 
     // use an iterative lookahead approach to determine shot parameters for a moving robot
     public static ShotData iterativeMovingShotFromFunnelClearance(Pose2d robot,
             ChassisSpeeds fieldSpeeds, Translation3d target, int iterations) {
-        // m_iterativeTracer.clearEpochs();
+        double robotX = robot.getX();
+        double robotY = robot.getY();
+        double headingRad = robot.getRotation().getRadians();
+        double targetX = target.getX();
+        double targetY = target.getY();
+        double targetZ = target.getZ();
+        double vx = fieldSpeeds.vxMetersPerSecond;
+        double vy = fieldSpeeds.vyMetersPerSecond;
 
-        // Perform initial estimation (assuming unmoving robot) to get time of flight estimate
+        // Initial estimation (assuming unmoving robot)
         ShotData shot = calculateShotFromFunnelClearance(robot, target, target);
-        // m_iterativeTracer.addEpoch("initialShot");
 
-        Distance distance = getDistanceToTarget(robot, target);
-        Time timeOfFlight = calculateTimeOfFlight(shot.getExitVelocity(), shot.getHoodAngle(),
-                distance);
-        // m_iterativeTracer.addEpoch("initialTOF");
+        double distM = getDistanceToTargetM(robotX, robotY, headingRad, targetX, targetY);
+        double exitVelMps = shot.getExitVelocityMps();
+        double tofSec = calculateTimeOfFlightSec(exitVelMps, shot.hoodAngle(), distM);
 
-        Translation3d predictedTarget = target;
+        double predX = targetX;
+        double predY = targetY;
 
-        // Iterate the process, getting better time of flight estimations and updating the predicted target accordingly
         for (int i = 0; i < iterations; i++) {
-            // ShotData prevShot = shot;
-            // Distance prevDistance = distance;
-            // Time prevTOF = timeOfFlight;
-            // Translation3d prevPredTarget = predictedTarget;
+            // Inline predictTargetPos
+            predX = targetX - vx * tofSec;
+            predY = targetY - vy * tofSec;
 
-            predictedTarget = predictTargetPos(target, fieldSpeeds, timeOfFlight);
-            shot = calculateShotFromFunnelClearance(robot, target, predictedTarget);
-            timeOfFlight = calculateTimeOfFlight(shot.getExitVelocity(), shot.getHoodAngle(),
-                    getDistanceToTarget(robot, predictedTarget));
-            // m_iterativeTracer.addEpoch("iteration" + i);
+            shot = calculateShotFromFunnelClearance(robot, targetX, targetY, predX, predY, targetZ);
 
-            // ShotData shotDataDiff = shot.minus(prevShot);
-            // Distance distanceDiff = prevDistance.minus(distance);
-            // Time timeOfFlightDiff = prevTOF.minus(timeOfFlight);
-
-            // if (shotDataDiff.hoodAngle() < .05 && shotDataDiff.exitVelocity() < .05 && prevShot.target().getDistance(shot.getTarget()) < .05
-            //         && distanceDiff.magnitude() < .05 && timeOfFlightDiff.magnitude() < .005 && prevPredTarget.getDistance(predictedTarget) < .05) {
-            //     break;
-            // }
+            distM = getDistanceToTargetM(robotX, robotY, headingRad, predX, predY);
+            exitVelMps = shot.getExitVelocityMps();
+            tofSec = calculateTimeOfFlightSec(exitVelMps, shot.hoodAngle(), distM);
         }
 
-        // m_iterativeTracer.printEpochs();
         return shot;
     }
 
     /**
-     * Use an iterative interpolation approach to determine shot parameters for a moving robot 
+     * Use an iterative interpolation approach to determine shot parameters for a moving robot
      * compensating for speed, and the target.
-     * 
+     *
      * @param robot current robot pose
      * @param fieldSpeeds current robot speeds (w direction)
      * @param target target you are aiming for (either the passing point OR the HUB)
@@ -279,37 +319,58 @@ public class ShotCalculator {
     public static ShotData iterativeMovingShotFromInterpolationMap(Pose2d robot,
             ChassisSpeeds fieldSpeeds, Translation3d target, int iterations) {
 
-        double distance = getDistanceToTarget(robot, target).in(Meters);
+        // Extract raw doubles once at entry
+        double robotX = robot.getX();
+        double robotY = robot.getY();
+        double headingRad = robot.getRotation().getRadians();
+        double targetX = target.getX();
+        double targetY = target.getY();
+        double targetZ = target.getZ();
+        double vx = fieldSpeeds.vxMetersPerSecond;
+        double vy = fieldSpeeds.vyMetersPerSecond;
+
+        double distance = getDistanceToTargetM(robotX, robotY, headingRad, targetX, targetY);
         ShotData shot = m_shotMap.get(distance);
-        shot = new ShotData(shot.exitVelocity(), shot.hoodAngle(), target);
-        Time timeOfFlight = Seconds.of(m_timeOfFlightMap.get(distance));
-        Translation3d predictedTarget = target;
+        double exitVel = shot.exitVelocity();
+        double hoodAngle = shot.hoodAngle();
+        double tofSec = m_timeOfFlightMap.get(distance);
+
+        double predX = targetX;
+        double predY = targetY;
 
         //meant to iterate the process, and converge on one specific value.
         //gets a better ToF estimation & updates predictedTarget accordingly!
         for (int i = 0; i < iterations; i++) {
-            ShotData prevShot = shot;
-            Time prevTOF = timeOfFlight;
-            Translation3d prevPredTarget = predictedTarget;
+            double prevExitVel = exitVel;
+            double prevHoodAngle = hoodAngle;
+            double prevTOF = tofSec;
+            double prevPredX = predX;
+            double prevPredY = predY;
 
-            predictedTarget = predictTargetPos(target, fieldSpeeds, timeOfFlight);
-            distance = getDistanceToTarget(robot, predictedTarget).in(Meters);
+            // Inline predictTargetPos — no Translation3d/Time allocation
+            predX = targetX - vx * tofSec;
+            predY = targetY - vy * tofSec;
+
+            distance = getDistanceToTargetM(robotX, robotY, headingRad, predX, predY);
             shot = m_shotMap.get(distance);
-            shot = new ShotData(shot.exitVelocity, shot.hoodAngle, predictedTarget);
-            timeOfFlight = Seconds.of(m_timeOfFlightMap.get(distance));
+            exitVel = shot.exitVelocity();
+            hoodAngle = shot.hoodAngle();
+            tofSec = m_timeOfFlightMap.get(distance);
 
-            ShotData shotDataDiff = shot.minus(prevShot);
-            Time timeOfFlightDiff = prevTOF.minus(timeOfFlight);
+            double dExitVel = prevExitVel - exitVel;
+            double dHood = prevHoodAngle - hoodAngle;
+            double dTOF = prevTOF - tofSec;
+            double dPredX = prevPredX - predX;
+            double dPredY = prevPredY - predY;
 
-            if (shotDataDiff.hoodAngle() < .05 && shotDataDiff.exitVelocity() < .05
-                    && prevShot.target().getDistance(shot.getTarget()) < .05
-                    && timeOfFlightDiff.magnitude() < .005
-                    && prevPredTarget.getDistance(predictedTarget) < .05) {
+            if (Math.abs(dHood) < .05 && Math.abs(dExitVel) < .05
+                    && Math.sqrt(dPredX * dPredX + dPredY * dPredY) < .05
+                    && Math.abs(dTOF) < .005) {
                 break;
             }
         }
 
-        return shot;
+        return new ShotData(exitVel, hoodAngle, new Translation3d(predX, predY, targetZ));
     }
 
     public record ShotData(double exitVelocity, double hoodAngle, Translation3d target) {
@@ -335,6 +396,11 @@ public class ShotCalculator {
 
         public LinearVelocity getExitVelocity() {
             return angularToLinearVelocity(RadiansPerSecond.of(this.exitVelocity), kFlywheelRadius);
+        }
+
+        /** Raw double: exit velocity in m/s (no allocation). */
+        public double getExitVelocityMps() {
+            return angularToLinearVelocityMps(this.exitVelocity, kFlywheelRadiusM);
         }
 
         public Angle getHoodAngle() {
