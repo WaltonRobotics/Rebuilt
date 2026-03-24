@@ -164,14 +164,8 @@ public class Indexer extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        log_spindexerRPS.accept(m_spindexer.getVelocity().getValueAsDouble());
-        m_tunnelVelocityRotPerSec = m_tunnel.getVelocity().getValueAsDouble();
-        log_tunnelRPS.accept(m_tunnelVelocityRotPerSec);
-
-        sig_tunnelCLErr.refresh();
-        log_tunnelClosedLoopError.accept(sig_tunnelCLErr.getValueAsDouble());
-        m_isTunnelSpunUp = sig_tunnelCLErr.isNear(0, 30);
-        log_isTunnelSpunUp.accept(m_isTunnelSpunUp);
+        // log_spindexerRPS.accept(m_spindexer.getVelocity().getValueAsDouble());
+        // log_tunnelRPS.accept(m_tunnel.getVelocity().getValueAsDouble());
     }
 
     @Override

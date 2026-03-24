@@ -49,7 +49,7 @@ import frc.util.AllianceFlipUtil;
 import frc.util.VisionUtil;
 
 public class Constants {
-    public static final boolean kDebugLoggingEnabled = false;
+    public static final boolean kDebugLoggingEnabled = true;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
     public static final CANBus kCanivoreBus = new CANBus("fd");
@@ -70,7 +70,6 @@ public class Constants {
         public static final ChassisSpeeds kZeroChassisSpeeds = new ChassisSpeeds(0, 0, 0);
     }
     public static class ShooterK {
-
         public static final String kLogTab = "Shooter";
         private static final Rotation2d kTurretAngleOffset = Rotation2d.fromDegrees(-135);
         public static final Transform3d kTurretTransform = new Transform3d(new Translation3d(Inches.of(-4.744), Inches.of(-4.239), Inches.of(17.260)), new Rotation3d(kTurretAngleOffset)); //DUMMY VALS
@@ -293,6 +292,11 @@ public class Constants {
             .withSoftwareLimitSwitch(kTurretSoftwareLimitSwitchConfigs)
             .withFeedback(kTurretFeedbackConfigs)
             .withVoltage(kTurretVoltageConfigs);
+
+        public static final MagnetSensorConfigs kEncoderAMagnetSensorConfigs = new MagnetSensorConfigs()
+            .withMagnetOffset(0.4365234375);
+        public static final CANcoderConfiguration kEncoderAConfiguration = new CANcoderConfiguration()
+            .withMagnetSensor(kEncoderAMagnetSensorConfigs);
 
         //Left, Center (Climb), Center (Hub), Right - Driver POV
         public static final Pose2d kShooterOverridePose[] = {
@@ -552,6 +556,16 @@ public class Constants {
             .withVoltage(kTunnelVoltageConfigs);
     }
 
+    public static class TurretK {
+        public static final String kLogTab = "Turret";
+        
+        public static final double kGearZeroToothCount = 100;
+        public static final double kGearOneToothCount = 10;
+        public static final double kGearTwoToothCount = 19;
+
+        public static final double kLCMAtHomeRots = 0.0; // measure: turretLCMPos log value when turret is at home
+        public static final double kEncBOffset = 0.176723; // measure: encB reading when turret is at encA=0
+    }
     public static class AutonK {
         public static final String kLogTab = "Auton";
 
