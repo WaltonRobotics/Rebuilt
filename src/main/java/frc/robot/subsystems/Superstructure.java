@@ -19,6 +19,18 @@ public class Superstructure extends SubsystemBase {
     private final Indexer m_indexer;
     private final Shooter m_shooter;
 
+    /*TRUTH MACHINE SUPPLIERS*/
+    private BooleanSupplier supp_intakeArmIsDeployed;
+    private BooleanSupplier supp_intakeArmIsSafe;
+    private BooleanSupplier supp_intakeArmIsShimmying;
+    private BooleanSupplier supp_isIntaking;
+
+    private BooleanSupplier supp_turretIsLocked;
+    private BooleanSupplier supp_isShooting;
+
+    private BooleanSupplier supp_isBarfing;
+    private BooleanSupplier supp_isUnjamming;
+
     /* LOGGERS */
 
     
@@ -27,6 +39,17 @@ public class Superstructure extends SubsystemBase {
         m_intake = intake;
         m_indexer = indexer;
         m_shooter = shooter;
+
+        supp_intakeArmIsDeployed = () -> m_intake.intakeArmAtSpecifiedPos(IntakeArmPosition.DEPLOYED, 0.01);
+        supp_intakeArmIsSafe = () -> m_intake.intakeArmAtSpecifiedPos(IntakeArmPosition.SAFE, 0.01);
+        supp_intakeArmIsShimmying = () -> false;
+        supp_isIntaking = () -> (supp_intakeArmIsDeployed.getAsBoolean() && m_intake.rollersAtMaxSpeed(5));
+
+        supp_turretIsLocked = () -> false;
+        supp_isShooting = () -> false;
+
+        supp_isBarfing = () -> false;
+        supp_isUnjamming = () -> false;
     }
 
     /* SUBSYSTEM COMMANDS */
@@ -40,7 +63,7 @@ public class Superstructure extends SubsystemBase {
     public Command intakeCmd(BooleanSupplier isShooting) {
         return Commands.sequence(
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
-            Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()).withTimeout(0.25),
+            Commands.waitUntil(() -> m_intake.intakeArmAtTargetPos(0.01)).withTimeout(0.25),
             Commands.run(
             () -> {
                 boolean shooting = isShooting.getAsBoolean();

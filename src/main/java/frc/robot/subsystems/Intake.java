@@ -121,11 +121,15 @@ public class Intake extends SubsystemBase {
         m_intakeArm.setControl(m_MMVReq.withPosition(rots).withAcceleration(RPSPS));
     }
 
-    public boolean isIntakeArmAtPos() {
+    public boolean intakeArmAtTargetPos(double tolerance) {
         var err = m_intakeArm.getClosedLoopError();
         log_intakeArmClosedLoopError.accept(err.getValueAsDouble());
-        boolean isNear = m_intakeArm.getClosedLoopError().isNear(0, 0.01);
-        return isNear;
+        return err.isNear(0, tolerance);
+    }
+
+    public boolean intakeArmAtSpecifiedPos(IntakeArmPosition pos, double tolerance) {
+        double err = Math.abs(pos.rots.minus(m_intakeArm.getPosition().getValue()).in(Rotations));
+        return err <= tolerance;
     }
 
     public Command retractIntakeArmCmd() {
@@ -140,9 +144,9 @@ public class Intake extends SubsystemBase {
             setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             setIntakeRollersVelocityCmd(0),
             setIntakeArmPosCmd(IntakeArmPosition.SHIMMY),
-            Commands.waitUntil(() -> isIntakeArmAtPos()),
+            Commands.waitUntil(() -> intakeArmAtTargetPos(0.01)),
             setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
-            Commands.waitUntil(() -> isIntakeArmAtPos())
+            Commands.waitUntil(() -> intakeArmAtTargetPos(0.01))
         ).finallyDo(() -> setIntakeArmPosCmd(IntakeArmPosition.SAFE));
     }
 
@@ -169,6 +173,12 @@ public class Intake extends SubsystemBase {
 
     public Command setIntakeRollersVelocityCmd(double volts) {
         return runOnce(() -> setIntakeRollersVelocity(volts));
+    }
+
+    public boolean rollersAtMaxSpeed(double tolerance) {
+        var err = m_intakeRollers.getClosedLoopError();
+        log_intakeArmClosedLoopError.accept(err.getValueAsDouble());
+        return err.isNear(0, tolerance);
     }
 
     public void setIntakeFlapServo(double pos) {
