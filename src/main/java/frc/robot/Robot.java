@@ -7,7 +7,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.RobotK.*;
-import static frc.robot.Constants.ShooterK.*;
+import static frc.robot.Constants.ShooterK;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -65,7 +65,7 @@ public class Robot extends TimedRobot {
     private final AngularVelocity kMaxAngularRate = RotationsPerSecond.of(1.05); // 3/4 of a rotation per second max angular velocity
 
     private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
-    private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger("Robot", "VisionSeenLastSec");
+    private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger(kLogTab, "VisionSeenLastSec");
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -135,7 +135,7 @@ public class Robot extends TimedRobot {
     private final DoubleLogger log_stickDesiredFieldX = WaltLogger.logDouble("Swerve", "stick desired teleop x");
     private final DoubleLogger log_stickDesiredFieldY = WaltLogger.logDouble("Swerve", "stick desired teleop y");
     private final DoubleLogger log_stickDesiredFieldZRot = WaltLogger.logDouble("Swerve", "stick desired teleop z rot");
-    private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble("Robot", "MiniPC current");
+    private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble(kLogTab, "MiniPC current");
     private final Pose2dLogger log_robotPose = WaltLogger.logPose2d("Drive", "Pose");
 
     //DRIVERSTATION LOGS TELL US
@@ -338,9 +338,8 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
-        m_driver.povLeft().onTrue(m_shooter.m_hood.setHoodPosCmd(kHoodMinPosition.magnitude()));
-        m_driver.povUp().onTrue(m_shooter.m_hood.setHoodPosCmd(kHoodMaxDegs.magnitude()));
-
+        m_driver.povLeft().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMinPosition_double));
+        m_driver.povUp().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double));
     }
 
     private void configureTestingDashboard() {
