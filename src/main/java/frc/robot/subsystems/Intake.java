@@ -56,8 +56,6 @@ public class Intake extends SubsystemBase {
 
     public final BooleanSupplier intakeHomedSupp = () -> m_isIntakeArmHomed;
 
-    public BooleanLogger log_atTgt = new BooleanLogger(kLogTab, "atTgt");
-
     /* SIM OBJECTS */
     private final DCMotorSim m_intakeArmSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
@@ -80,7 +78,6 @@ public class Intake extends SubsystemBase {
     /* LOGGERS */
     private final DoubleLogger log_intakeArmRots = WaltLogger.logDouble(kLogTab, "intakeArmRots");
     private final DoubleLogger log_targetIntakeArmRots = WaltLogger.logDouble(kLogTab, "targetIntakeArmRots");
-    private final DoubleLogger log_intakeArmClosedLoopError = WaltLogger.logDouble(kLogTab, "intakeArmClosedLoopError");
 
     private final DoubleLogger log_intakeRollersRPS = WaltLogger.logDouble(kLogTab, "intakeRollersRPS");
     private final DoubleLogger log_targetIntakeRollersRPS = WaltLogger.logDouble(kLogTab, "targetIntakeRollersRPS");
@@ -124,22 +121,8 @@ public class Intake extends SubsystemBase {
         m_intakeArm.setControl(m_MMVReq.withPosition(rots).withAcceleration(RPSPS));
     }
 
-    // slimed out cause inaccurate (prob should figure out why one day)
-
-    // public boolean isIntakeArmAtPos() {
-    //     var err = m_intakeArm.getClosedLoopError().refresh().getValueAsDouble();
-    //     log_intakeArmClosedLoopError.accept(err);
-    //     boolean isNear = m_intakeArm.getClosedLoopError().isNear(0, 0.01);
-    //     log_atTgt.accept(isNear);
-    //     return isNear;
-    // }
-
     public boolean isIntakeArmAtDest() {
-        double error = Math.abs(m_MMVReq.Position - m_intakeArm.getPosition().getValueAsDouble());
-        log_intakeArmClosedLoopError.accept(error);
-        boolean isNear = error < 0.01;
-        log_atTgt.accept(isNear);
-        return isNear;
+       return m_intakeArm.getMotionMagicAtTarget().getValue();
     }
 
     public Command shimmy() {
