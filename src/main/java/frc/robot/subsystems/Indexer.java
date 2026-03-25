@@ -124,10 +124,22 @@ public class Indexer extends SubsystemBase {
     }
 
     public boolean isTunnelSpunUp() {
+        sig_tunnelCLErr.refresh();
+        log_tunnelClosedLoopError.accept(sig_tunnelCLErr.getValueAsDouble());
+
+        boolean isNear = sig_tunnelCLErr.isNear(0, 30);
+
+        log_isTunnelSpunUp.accept(isNear);
+        return isNear;
+    }
+
+    public boolean getTunnelSpunUp() {
         return m_isTunnelSpunUp;
     }
 
     public double getTunnelVelocityRotPerSec() {
+        m_tunnelVelocityRotPerSec = m_tunnel.getVelocity().getValueAsDouble();
+        
         return m_tunnelVelocityRotPerSec;
     }
 
