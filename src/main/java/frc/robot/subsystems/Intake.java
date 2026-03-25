@@ -128,7 +128,14 @@ public class Intake extends SubsystemBase {
         return isNear;
     }
 
-    public Command shimmy() {
+    public Command retractIntakeArmCmd() {
+        return Commands.sequence(
+            stopIntakeRollers(),
+            setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+        );
+    }
+
+    public Command intakeArmShimmy() {
         return Commands.repeatingSequence(
             setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             setIntakeRollersVelocityCmd(0),

@@ -72,7 +72,7 @@ public class WaltSimpleAutonFactory {
     private Command shootWithTimeout(AngularVelocity speed, double seconds) {
         return Commands.sequence(
             tp("shootWithTimeout.START(" + speed + "," + seconds + ")"),
-            m_superstructure.activateOuttakeShotCalc(), //(() -> speed).withTimeout(seconds),
+            m_superstructure.shootWithShotCalc(), //(() -> speed).withTimeout(seconds),
             tp("shootWithTimeout.END")
         );
     }
@@ -153,7 +153,7 @@ public class WaltSimpleAutonFactory {
 
         routine.active().onTrue(
             homingCmd().andThen(
-                m_superstructure.activateOuttakeShotCalc()
+                m_superstructure.shootWithShotCalc()
             )
         );
 
@@ -261,7 +261,7 @@ public class WaltSimpleAutonFactory {
         );
 
         traj1.doneFor(AutonK.kShootingTimeout).whileTrue(
-            m_superstructure.activateOuttakeShotCalc()
+            m_superstructure.shootWithShotCalc()
         );
 
         traj1.doneDelayed(AutonK.kShootingTimeout + 0.04).onTrue(traj2.cmd());
