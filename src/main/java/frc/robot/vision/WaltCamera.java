@@ -99,7 +99,7 @@ public class WaltCamera extends PhotonCamera {
         log_stdDevs = WaltLogger.logDoubleArray(ntPrefix, "stdDevs");
         log_numResults = WaltLogger.logInt(ntPrefix, "numResults");
 
-        // log_camTransform.accept(robotToCam);
+        log_camTransform.accept(robotToCam);
     }
 
     /* VISION ESTIMATION METHODS */
@@ -116,7 +116,7 @@ public class WaltCamera extends PhotonCamera {
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
         List<PhotonPipelineResult> unreadCameraResults = this.getAllUnreadResults();
-        // log_numResults.accept(unreadCameraResults.size());
+        log_numResults.accept(unreadCameraResults.size());
 
         for (var change : unreadCameraResults) {
             if (!change.hasTargets()) { continue; }
@@ -125,11 +125,11 @@ public class WaltCamera extends PhotonCamera {
                 visionEst = m_estimator.estimateLowestAmbiguityPose(change);
             }
             updateEstimationStdDevs(visionEst, change.getTargets());
-            // log_stdDevs.accept(m_curStdDevs.getData());
+            log_stdDevs.accept(m_curStdDevs.getData());
         }
 
         if (visionEst.isPresent()) {
-            // log_camPose.accept(visionEst.get().estimatedPose.toPose2d());
+            log_camPose.accept(visionEst.get().estimatedPose.toPose2d());
         }
 
         return visionEst;

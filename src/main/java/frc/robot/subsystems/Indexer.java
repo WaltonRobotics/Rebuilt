@@ -34,8 +34,6 @@ public class Indexer extends SubsystemBase {
     private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(0).withEnableFOC(false);
     private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(0).withEnableFOC(false);
 
-    private final NeutralOut m_neutralOutReq = new NeutralOut();
-
     /* SIM OBJECTS */
     private final DCMotorSim m_spindexerSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
@@ -124,10 +122,22 @@ public class Indexer extends SubsystemBase {
     }
 
     public boolean isTunnelSpunUp() {
+        sig_tunnelCLErr.refresh();
+        log_tunnelClosedLoopError.accept(sig_tunnelCLErr.getValueAsDouble());
+
+        boolean isNear = sig_tunnelCLErr.isNear(0, 30);
+
+        log_isTunnelSpunUp.accept(isNear);
+        return isNear;
+    }
+
+    public boolean getTunnelSpunUp() {
         return m_isTunnelSpunUp;
     }
 
     public double getTunnelVelocityRotPerSec() {
+        m_tunnelVelocityRotPerSec = m_tunnel.getVelocity().getValueAsDouble();
+        
         return m_tunnelVelocityRotPerSec;
     }
 
@@ -164,8 +174,8 @@ public class Indexer extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        // log_spindexerRPS.accept(m_spindexer.getVelocity().getValueAsDouble());
-        // log_tunnelRPS.accept(m_tunnel.getVelocity().getValueAsDouble());
+        log_spindexerRPS.accept(m_spindexer.getVelocity().getValueAsDouble());
+        log_tunnelRPS.accept(m_tunnel.getVelocity().getValueAsDouble());
     }
 
     @Override
