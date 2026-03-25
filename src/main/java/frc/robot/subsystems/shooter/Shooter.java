@@ -121,6 +121,8 @@ public class Shooter extends SubsystemBase {
         m_threadsafeSwerveSup = threadsafeSwerveStateSup;
         m_shooterCalc = new ShooterCalc(m_threadsafeSwerveSup, () -> m_latestTurretPositionRots);
 
+        m_shooterCalc.shouldUseStaticShot(kUseStaticShot);
+
         m_shooterA.getConfigurator().apply(kShooterATalonFXConfiguration);
         m_shooterB.getConfigurator().apply(kShooterBTalonFXConfiguration);
         // m_hood.getConfigurator().apply(kHoodTalonFXSConfiguration);
