@@ -12,7 +12,6 @@ import static frc.robot.Constants.IntakeK.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-import com.ctre.phoenix6.controls.DynamicMotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 
@@ -21,7 +20,6 @@ import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.networktables.DoubleSubscriber;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -222,11 +220,10 @@ public class Intake extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        // log_targetIntakeArmRots.accept(m_MMVReq.Position);
-        // // log_targetIntakeArmRots.accept(m_PVReq.Position);
-        // log_targetIntakeRollersRPS.accept(m_VVReq.Output);
-        // log_intakeRollersRPS.accept(m_intakeRollers.getVelocity().getValueAsDouble());
-        // log_intakeArmRots.accept(m_intakeArm.getPosition().getValueAsDouble());
+        log_targetIntakeArmRots.accept(m_MMVReq.Position);
+        log_targetIntakeRollersRPS.accept(m_VVReq.Output);
+        log_intakeRollersRPS.accept(m_intakeRollers.getVelocity().getValueAsDouble());
+        log_intakeArmRots.accept(m_intakeArm.getPosition().getValueAsDouble());
     }
 
     @Override
