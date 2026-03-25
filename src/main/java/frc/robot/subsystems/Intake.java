@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltMotorSim;
@@ -52,7 +53,10 @@ public class Intake extends SubsystemBase {
     private Debouncer m_velocityDebouncer = new Debouncer(0.125, DebounceType.kRising);
 
     private boolean m_isIntakeArmHomed = false;
+
     public final BooleanSupplier intakeHomedSupp = () -> m_isIntakeArmHomed;
+
+    public BooleanLogger log_atTgt = new BooleanLogger(kLogTab, "atTgt");
 
     /* SIM OBJECTS */
     private final DCMotorSim m_intakeArmSim = new DCMotorSim(
@@ -77,7 +81,7 @@ public class Intake extends SubsystemBase {
     private final DoubleLogger log_intakeArmRots = WaltLogger.logDouble(kLogTab, "intakeArmRots");
     private final DoubleLogger log_targetIntakeArmRots = WaltLogger.logDouble(kLogTab, "targetIntakeArmRots");
     private final DoubleLogger log_intakeArmClosedLoopError = WaltLogger.logDouble(kLogTab, "intakeArmClosedLoopError");
-    
+
     private final DoubleLogger log_intakeRollersRPS = WaltLogger.logDouble(kLogTab, "intakeRollersRPS");
     private final DoubleLogger log_targetIntakeRollersRPS = WaltLogger.logDouble(kLogTab, "targetIntakeRollersRPS");
 
@@ -120,21 +124,36 @@ public class Intake extends SubsystemBase {
         m_intakeArm.setControl(m_MMVReq.withPosition(rots).withAcceleration(RPSPS));
     }
 
-    public boolean isIntakeArmAtPos() {
-        var err = m_intakeArm.getClosedLoopError();
-        log_intakeArmClosedLoopError.accept(err.getValueAsDouble());
-        boolean isNear = m_intakeArm.getClosedLoopError().isNear(0, 0.01);
+    // slimed out cause inaccurate (prob should figure out why one day)
+
+    // public boolean isIntakeArmAtPos() {
+    //     var err = m_intakeArm.getClosedLoopError().refresh().getValueAsDouble();
+    //     log_intakeArmClosedLoopError.accept(err);
+    //     boolean isNear = m_intakeArm.getClosedLoopError().isNear(0, 0.01);
+    //     log_atTgt.accept(isNear);
+    //     return isNear;
+    // }
+
+    public boolean isIntakeArmAtDest() {
+        double error = Math.abs(m_MMVReq.Position - m_intakeArm.getPosition().getValueAsDouble());
+        log_intakeArmClosedLoopError.accept(error);
+        boolean isNear = error < 0.01;
+        log_atTgt.accept(isNear);
         return isNear;
     }
 
     public Command shimmy() {
+        BooleanSupplier intakeArmAtPos = () -> isIntakeArmAtDest();
+
+        setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED);
+        Commands.waitUntil(intakeArmAtPos);
+
         return Commands.repeatingSequence(
-            setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             setIntakeRollersVelocityCmd(0),
             setIntakeArmPosCmd(IntakeArmPosition.SHIMMY),
-            Commands.waitUntil(() -> isIntakeArmAtPos()),
+            Commands.waitUntil(intakeArmAtPos),
             setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
-            Commands.waitUntil(() -> isIntakeArmAtPos())
+            Commands.waitUntil(intakeArmAtPos)
         ).finallyDo(() -> setIntakeArmPosCmd(IntakeArmPosition.SAFE));
     }
 
@@ -182,7 +201,7 @@ public class Intake extends SubsystemBase {
 
                 runOnce(() -> m_isIntakeArmHomed = true),
                 runOnce(() -> log_isIntakeArmHomed.accept(m_isIntakeArmHomed)),
-                
+
                 runOnce(() -> removeDefaultCommand())
             )
         );
@@ -210,7 +229,7 @@ public class Intake extends SubsystemBase {
             // DONT TELL FLAP_SERVO TO GO BACK ON END BECAUSE IF HOMING FINISHES TOO EARLY, THE SERVO WONT MOVE ENOUGH OUT TO DEPLOY FLAP
         };
 
-        BooleanSupplier isFinished = () -> 
+        BooleanSupplier isFinished = () ->
             m_currentDebouncer.calculate(m_currentSpike.getAsBoolean()) &&
             m_velocityDebouncer.calculate(m_veloIsNearZero.getAsBoolean());
 
