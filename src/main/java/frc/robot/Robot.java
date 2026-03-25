@@ -265,7 +265,7 @@ public class Robot extends TimedRobot {
         //---NORMAL SEQUENCES
         //Intake
         trg_intake.and(trg_shoot.negate()).whileTrue(
-            m_superstructure.intake(() -> false)
+            m_superstructure.intakeCmd(() -> false)
         );
 
         trg_retractIntake.onTrue(
@@ -275,7 +275,7 @@ public class Robot extends TimedRobot {
         //Shooting
         // NORMAL FIXED SHOT
         // trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
-        trg_shoot.whileTrue(m_superstructure.shootWithShotCalc());    //comment out for LERP with above
+        trg_shoot.whileTrue(m_superstructure.shootWithShotCalcCmd());    //comment out for LERP with above
 
         // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));
         // m_driver.a().onTrue(m_shooter.driverRPSAlter(false));
@@ -291,14 +291,14 @@ public class Robot extends TimedRobot {
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
 
         trg_intake.and(trg_shoot).whileTrue(
-            m_superstructure.intake(() -> true)
+            m_superstructure.intakeCmd(() -> true)
         );
 
         trg_emergencyBarf.whileTrue(
-            m_superstructure.emergencyBarf()
+            m_superstructure.emergencyBarfCmd()
         );
         
-        trg_shimmy.whileTrue(m_superstructure.intakeArmShimmy());
+        trg_shimmy.whileTrue(m_superstructure.intakeArmShimmyCmd());
 
         trg_unjam.and(trg_shoot.negate()).whileTrue(
             m_superstructure.unjamCmd(() -> false)

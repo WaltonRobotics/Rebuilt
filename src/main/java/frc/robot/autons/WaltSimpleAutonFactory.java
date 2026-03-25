@@ -72,7 +72,7 @@ public class WaltSimpleAutonFactory {
     private Command shootWithTimeout(AngularVelocity speed, double seconds) {
         return Commands.sequence(
             tp("shootWithTimeout.START(" + speed + "," + seconds + ")"),
-            m_superstructure.shootWithShotCalc(), //(() -> speed).withTimeout(seconds),
+            m_superstructure.shootWithShotCalcCmd(), //(() -> speed).withTimeout(seconds),
             tp("shootWithTimeout.END")
         );
     }
@@ -126,7 +126,7 @@ public class WaltSimpleAutonFactory {
         // Homing then intake in parallel with trajectory (no .asProxy() needed)
         routine.active().onTrue(
             homingCmd().andThen(
-                m_superstructure.intake(() -> false).withTimeout(AutonK.kIntakeTimeout)
+                m_superstructure.intakeCmd(() -> false).withTimeout(AutonK.kIntakeTimeout)
             )
         );
 
@@ -153,7 +153,7 @@ public class WaltSimpleAutonFactory {
 
         routine.active().onTrue(
             homingCmd().andThen(
-                m_superstructure.shootWithShotCalc()
+                m_superstructure.shootWithShotCalcCmd()
             )
         );
 
@@ -170,7 +170,7 @@ public class WaltSimpleAutonFactory {
 
         routine.active().onTrue(
             homingCmd().andThen(
-                m_superstructure.intake(() -> false).withTimeout(3.5)
+                m_superstructure.intakeCmd(() -> false).withTimeout(3.5)
             )
         );
 
@@ -196,7 +196,7 @@ public class WaltSimpleAutonFactory {
 
         routine.active().onTrue(
             homingCmd().andThen(
-                m_superstructure.intake(() -> false).withTimeout(3.5)
+                m_superstructure.intakeCmd(() -> false).withTimeout(3.5)
             )
         );
 
@@ -213,7 +213,7 @@ public class WaltSimpleAutonFactory {
 
         // Phase 2: intake during zigzag (no final shoot)
         traj2.atTime(2).onTrue(
-            m_superstructure.intake(() -> false).withTimeout(10)
+            m_superstructure.intakeCmd(() -> false).withTimeout(10)
         );
 
         traj2.done().onTrue(m_swerve.xBrakeCmd());
@@ -242,7 +242,7 @@ public class WaltSimpleAutonFactory {
 
         routine.active().onTrue(
             homingCmd().andThen(
-                m_superstructure.intake(() -> false)
+                m_superstructure.intakeCmd(() -> false)
             ).until(stopIntk1Trg)
         );
 
@@ -261,14 +261,14 @@ public class WaltSimpleAutonFactory {
         );
 
         traj1.doneFor(AutonK.kShootingTimeout).whileTrue(
-            m_superstructure.shootWithShotCalc()
+            m_superstructure.shootWithShotCalcCmd()
         );
 
         traj1.doneDelayed(AutonK.kShootingTimeout + 0.04).onTrue(traj2.cmd());
 
         // Phase 2: intake during reshoot path
         startIntk2Trg.onTrue(
-            m_superstructure.intake(() -> false) //.until(stopIntk2Trg)
+            m_superstructure.intakeCmd(() -> false) //.until(stopIntk2Trg)
         );
 
         // Final: xBrake + shoot after traj2

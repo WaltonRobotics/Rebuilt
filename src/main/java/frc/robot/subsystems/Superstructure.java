@@ -34,10 +34,10 @@ public class Superstructure extends SubsystemBase {
     //---INTAKE COMMANDS
 
     /**
-     * @param isShooting
-     * @return
+     * @param isShooting if the robot is currently shooting
+     * @return a Command that deploys the intake arm and runs the overall intaking logic
      */
-    public Command intake(BooleanSupplier isShooting) {
+    public Command intakeCmd(BooleanSupplier isShooting) {
         return Commands.sequence(
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()).withTimeout(0.25),
@@ -61,21 +61,27 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
+    /**
+     * @return a Command that turns off the intake rollers and puts the intake arm in the RETRACTED position
+     */
     public Command retractIntakeCmd() {
         return m_intake.retractIntakeArmCmd();
     }
 
-    public Command intakeArmShimmy() {
+    /**
+     * @return a Command that calls intakeArmShimmy (oscillates the intakeArm between the DEPLOYED and SHIMMY position)
+     */
+    public Command intakeArmShimmyCmd() {
        return m_intake.intakeArmShimmy();
     }
 
+    //---SHOOTING COMMANDS
+
     /**
-     * Turns on spinner and exhaust and sets shooter speed to RPS.
-     * <p>
-     * Note: does not move turret or hood.
-     * @param RPS the speed for the shooter
+     * @param RPS Supplier for the desired shooter speed
+     * @return a Command that starts and controls the overall shooting sequence logic
      */
-    public Command shoot(Supplier<AngularVelocity> RPS) {
+    public Command shootCmd(Supplier<AngularVelocity> RPS) {
         return Commands.parallel(
             m_shooter.setShooterVelocityCmdSupp(RPS),
 
@@ -99,12 +105,9 @@ public class Superstructure extends SubsystemBase {
     }
 
     /**
-     * Turns on spinner and exhaust and sets shooter speed to CALCULATE SHOT RPS
-     * <p>
-     * Note: does not move turret or hood.
-     * @param RPS the speed for the shooter
+     * @return a Command that starts and controls the overall shooting sequence logic using the shotClauclator value
      */
-    public Command shootWithShotCalc() {
+    public Command shootWithShotCalcCmd() {
         return Commands.parallel(
             m_shooter.shootFromCalc(),
 
@@ -124,9 +127,7 @@ public class Superstructure extends SubsystemBase {
     }
 
     /**
-     * Turns off spinner, exhaust, and shooter.
-     * <p>
-     * Note: does not move turret or hood.
+     * Stops shooting by turning off the spindexer, tunnel, and shooter
      */
     public void stopShooting() {
         m_indexer.stopSpindexer();
@@ -135,7 +136,12 @@ public class Superstructure extends SubsystemBase {
 
     }
 
-    public Command emergencyBarf() {
+    //---COPE COMMANDS
+
+    /**
+     * @return a Command that ejects fuel from the intake and shooter while active
+     */
+    public Command emergencyBarfCmd() {
         return Commands.startEnd(
             () -> {
                 m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
@@ -154,8 +160,10 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
-    
-
+    /**
+     * @param isShooting if the shooter is currently shooting
+     * @return a Command that unjams the shooter by running the spindexer, tunnel, and shooter (if it is running) backwards
+     */
     public Command unjamCmd(BooleanSupplier isShooting) {
         return Commands.runEnd(
             () -> {
