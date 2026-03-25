@@ -34,7 +34,7 @@ import static frc.robot.Constants.ShooterK.*;
 
 public class ShooterCalc {
     private final Supplier<SwerveDriveState> m_threadsafeSwerveDriveStateSup;
-    private final DoubleSupplier m_turretPosSup;
+    private final DoubleSupplier m_turretPosRotsSup;
     private final SwerveDriveKinematics m_swerveKinematics = new SwerveDriveKinematics(TunerConstants.moduleTranslations);
 
     private final Pose3dLogger log_globalShotTarget = WaltLogger.logPose3d("ShotCalc", "globalTarget");
@@ -65,7 +65,7 @@ public class ShooterCalc {
 
     public ShooterCalc(Supplier<SwerveDriveState> threadsafeSwerveDriveStateSup, DoubleSupplier turretPosSup) {
         m_threadsafeSwerveDriveStateSup = threadsafeSwerveDriveStateSup;
-        m_turretPosSup = turretPosSup;
+        m_turretPosRotsSup = turretPosSup;
 
         m_notifier.setName("ShooterCalc");
         m_notifier.startPeriodic(Hertz.of(25)); // 2x slower than robot loop
@@ -90,10 +90,10 @@ public class ShooterCalc {
         Pose2d robotPose = swerveState.Pose;
         ChassisSpeeds robotChassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
             m_swerveKinematics.toChassisSpeeds(swerveState.ModuleStates), robotPose.getRotation());
-        double turretPosition = m_turretPosSup.getAsDouble();
+        double turretPositionRots = m_turretPosRotsSup.getAsDouble();
 
         m_aimTarget = calculateTarget(robotPose);
-        m_shotCalcOutputs = calcShot(robotPose, m_useStaticShot, m_aimTarget, turretPosition, robotChassisSpeeds);
+        m_shotCalcOutputs = calcShot(robotPose, m_useStaticShot, m_aimTarget, turretPositionRots, robotChassisSpeeds);
 
         // Logging
         log_globalShotTarget.accept(m_aimTarget);
@@ -189,7 +189,7 @@ public class ShooterCalc {
         }
 
 
-        double turretReference = snapbackSafeAngleRotations;
+        double turretReferenceRots = snapbackSafeAngleRotations;
 
         double dx = distance.getX();
         double dy = distance.getY();
@@ -200,7 +200,7 @@ public class ShooterCalc {
             : 0.0;
 
         AzimuthCalcDetails calcDetails = new AzimuthCalcDetails(
-            turretReference, desiredAimPose, currentAimPose, angleRotations, turretFFRadPerSec);
+            turretReferenceRots, desiredAimPose, currentAimPose, angleRotations, turretFFRadPerSec);
         // logger.accept(calcDetails);
         return calcDetails;
     }
@@ -209,7 +209,7 @@ public class ShooterCalc {
         AzimuthCalcDetails turretCalcDetails,
         ShotData shotData,
         double turretReferenceRots,
-        double hoodReference,
+        double hoodReferenceRots,
         double shooterReferenceRps
     ) {}
 
@@ -223,7 +223,7 @@ public class ShooterCalc {
         Pose2d robotPose,
         boolean staticShot,
         Translation3d target,
-        double turretPosition,
+        double turretPositionRots,
         ChassisSpeeds chassisSpeeds
     ) {
         // How fast the robot is currently going, (CURRENT ROBOT VELOCITY)
@@ -234,13 +234,13 @@ public class ShooterCalc {
             robotPose, fieldSpeeds, target, 3);
 
         // The turret angle according to the Calculated shot
-        AzimuthCalcDetails azCalcDetails = calcAzimuth(calculatedShot.getTarget(), robotPose, turretPosition, fieldSpeeds);
+        AzimuthCalcDetails azCalcDetails = calcAzimuth(calculatedShot.getTarget(), robotPose, turretPositionRots, fieldSpeeds);
 
-        double turretReference = azCalcDetails.turretReferenceRots();
-        double hoodReference = calculatedShot.getHoodAngle().in(Rotations);
-        double shooterReference = ShotCalculator.linearToAngularVelocity(
+        double turretReferenceRots = azCalcDetails.turretReferenceRots();
+        double hoodReferenceRots = calculatedShot.getHoodAngle().in(Rotations);
+        double shooterReferenceRPS = ShotCalculator.linearToAngularVelocity(
             calculatedShot.getExitVelocity(), kFlywheelRadius).in(RotationsPerSecond);
         return new ShotCalcOutputs(
-            azCalcDetails, calculatedShot, turretReference, hoodReference, shooterReference);
+            azCalcDetails, calculatedShot, turretReferenceRots, hoodReferenceRots, shooterReferenceRPS);
     }
 }

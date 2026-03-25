@@ -325,7 +325,7 @@ public class Shooter extends SubsystemBase {
         }
 
         if (m_hood.isHoodHomed()) {
-            double hoodReference = calcData.hoodReference();
+            double hoodReference = calcData.hoodReferenceRots();
 
             if (m_turret.getTurretLocked()) {
                 m_hood.setHoodPos(kHoodLockRots_double);
