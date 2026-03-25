@@ -108,8 +108,8 @@ public class Turret extends SubsystemBase {
         return run(() -> setTurretPos(Rotations.of(sub_rots.get())));
     }
 
-    public Angle getCurrTurretPos() {
-        return m_turret.getPosition().getValue();
+    public double getCurrTurretPos() {
+        return m_turret.getPosition().getValueAsDouble();
     }
 
     public boolean getTurretLocked() {
