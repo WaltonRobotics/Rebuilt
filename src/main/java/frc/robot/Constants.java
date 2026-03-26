@@ -144,6 +144,8 @@ public class Constants {
         //double versions
         public static final double kHoodMinPosition_double = 0.1;
         public static final double kHoodMaxRots_double = 1.82195;
+        public static final double kPhysicalHoodMinPosition_double = 10;
+        public static final double kPhysicalHoodMaxPosition_double = 48;
         public static final double kHoodLockRots_double = kHoodMaxRots_double * 0.75;
 
         //TODO: ensure this is the home value

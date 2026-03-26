@@ -68,11 +68,11 @@ public class Hood extends SubsystemBase {
         return run(() -> setHoodPos(sub_rots.get()));
     }
 
-    //TODO: REMOVE MAGIC NUMBERS
     private double getHoodAngleDeg() {
         double hoodPositionDeg = m_hood.getPosition().getValue().in(Degrees);
+        double absoluteToPhysicalAngleRatio = (360 * (kHoodMaxRots_double - kHoodMinPosition_double))/(kPhysicalHoodMaxPosition_double - kPhysicalHoodMinPosition_double);
 
-        return 10 + (hoodPositionDeg - 36) * (38/619.902);
+        return kPhysicalHoodMinPosition_double + (hoodPositionDeg - (kHoodMinPosition_double * 360)) * (absoluteToPhysicalAngleRatio);
     }
 
     public boolean isHoodHomed() {
