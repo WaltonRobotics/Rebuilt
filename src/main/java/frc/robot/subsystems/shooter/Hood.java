@@ -68,10 +68,13 @@ public class Hood extends SubsystemBase {
         return run(() -> setHoodPos(sub_rots.get()));
     }
 
-    private Angle getHoodAngle() {
-        return m_hood.getPosition().getValue();
+    //TODO: REMOVE MAGIC NUMBERS
+    private double getHoodAngleDeg() {
+        double hoodPositionDeg = m_hood.getPosition().getValue().in(Degrees);
+
+        return 10 + (hoodPositionDeg - 36) * (38/619.902);
     }
-    
+
     public boolean isHoodHomed() {
         return m_isHoodHomed;
     }
@@ -111,6 +114,6 @@ public class Hood extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // log_hoodCurrentPos.accept(getHoodAngle().in(Degrees)); 
+        log_hoodCurrentPos.accept(getHoodAngleDeg()); 
     }
 }
