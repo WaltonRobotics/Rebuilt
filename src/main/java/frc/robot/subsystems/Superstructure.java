@@ -20,6 +20,7 @@ public class Superstructure extends SubsystemBase {
     private final Shooter m_shooter;
 
     /*TRUTH MACHINE SUPPLIERS*/
+    // these aren't being used but i'm keebing them bc i spent too much time on them and they may be useful in the future
     private BooleanSupplier supp_intakeArmDeployed;
     private BooleanSupplier supp_intakeArmSafe;
     private BooleanSupplier supp_intakeArmShimmying;
@@ -33,6 +34,8 @@ public class Superstructure extends SubsystemBase {
 
     private BooleanSupplier supp_isBarfing;
     private BooleanSupplier supp_isUnjamming;
+
+    private BooleanSupplier supp_canShoot;
 
     /* LOGGERS */
 
@@ -56,6 +59,8 @@ public class Superstructure extends SubsystemBase {
 
         supp_isBarfing = () -> emergencyBarfCmd().isScheduled();
         supp_isUnjamming = () -> unjamCmd(supp_isShooting).isScheduled();
+
+        supp_canShoot = () -> !supp_isBarfing.getAsBoolean();
     }
 
     /* SUBSYSTEM COMMANDS */
@@ -111,48 +116,56 @@ public class Superstructure extends SubsystemBase {
      * @return a Command that starts and controls the overall shooting sequence logic
      */
     public Command shootCmd(Supplier<AngularVelocity> RPS) {
-        return Commands.parallel(
-            m_shooter.setShooterVelocityCmdSupp(RPS),
+        if (supp_canShoot.getAsBoolean()) {
+            return Commands.parallel(
+                m_shooter.setShooterVelocityCmdSupp(RPS),
 
-            Commands.sequence(
-                Commands.waitUntil(supp_shooterReadyToShoot).withTimeout(ShooterK.kShooterSpunUpTimeout),
-                m_indexer.startTunnelCmd(),
-                Commands.waitUntil(supp_tunnelReadyToShoot).withTimeout(IndexerK.kTunnelSpunUpTimeout),
+                Commands.sequence(
+                    Commands.waitUntil(supp_shooterReadyToShoot).withTimeout(ShooterK.kShooterSpunUpTimeout),
+                    m_indexer.startTunnelCmd(),
+                    Commands.waitUntil(supp_tunnelReadyToShoot).withTimeout(IndexerK.kTunnelSpunUpTimeout),
 
-                m_indexer.startSpindexerCmd(),
+                    m_indexer.startSpindexerCmd(),
 
-                Commands.repeatingSequence(
-                    Commands.none()
+                    Commands.repeatingSequence(
+                        Commands.none()
+                    )
                 )
             )
-        )
-        .finallyDo(
-            () -> {
-                stopShooting();
-            }
-        );
+            .finallyDo(
+                () -> {
+                    stopShooting();
+                }
+            );
+        } else {
+            return Commands.none();
+        }
     }
 
     /**
      * @return a Command that starts and controls the overall shooting sequence logic using the shotClauclator value
      */
     public Command shootWithShotCalcCmd() {
-        return Commands.parallel(
-            m_shooter.shootFromCalc(),
+        if (supp_canShoot.getAsBoolean()) {
+            return Commands.parallel(
+                m_shooter.shootFromCalc(),
 
-            Commands.sequence(
-                Commands.waitUntil(supp_shooterReadyToShoot).withTimeout(ShooterK.kShooterSpunUpTimeout),
-                m_indexer.startTunnelCmd(),
-                Commands.waitUntil(supp_tunnelReadyToShoot).withTimeout(IndexerK.kTunnelSpunUpTimeout),
+                Commands.sequence(
+                    Commands.waitUntil(supp_shooterReadyToShoot).withTimeout(ShooterK.kShooterSpunUpTimeout),
+                    m_indexer.startTunnelCmd(),
+                    Commands.waitUntil(supp_tunnelReadyToShoot).withTimeout(IndexerK.kTunnelSpunUpTimeout),
 
-                m_indexer.startSpindexerCmd()
+                    m_indexer.startSpindexerCmd()
+                )
             )
-        )
-        .finallyDo(
-            () -> {
-                stopShooting();
-            }
-        );
+            .finallyDo(
+                () -> {
+                    stopShooting();
+                }
+            );
+        } else {
+            return Commands.none();
+        }
     }
 
     /**

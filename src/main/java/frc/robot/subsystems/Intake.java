@@ -167,6 +167,10 @@ public class Intake extends SubsystemBase {
         return setIntakeRollersVelocityCmd(0);
     }
 
+    public Command barfIntakeRollers() {
+        return barfIntakeRollers();
+    }
+
     public void setIntakeRollersVelocity(double volts) {
         m_intakeRollers.setControl(m_VVReq.withOutput(volts));
     }
