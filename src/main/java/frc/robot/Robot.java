@@ -300,12 +300,8 @@ public class Robot extends TimedRobot {
         
         trg_shimmy.whileTrue(m_superstructure.intakeArmShimmyCmd());
 
-        trg_unjam.and(trg_shoot.negate()).whileTrue(
-            m_superstructure.unjamCmd(() -> false)
-        );
-
-        trg_unjam.and(trg_shoot).whileTrue(
-            m_superstructure.unjamCmd(()-> true)
+        trg_unjam.whileTrue(
+            m_superstructure.unjamCmd(() -> trg_shoot.getAsBoolean())
         );
 
         //---OVERRIDE COMMANDS
@@ -325,8 +321,8 @@ public class Robot extends TimedRobot {
 
         // m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
 
-        m_driver.povDown().onTrue(m_shooter.m_turret.setTurretLockCmd(false));
-        m_driver.povRight().onTrue(m_shooter.m_turret.setTurretLockCmd(true));
+        m_driver.povDown().onTrue(m_superstructure.lockTurret());
+        m_driver.povRight().onTrue(m_superstructure.unlockTurret());
 
         // m_driver.start().whileTrue(m_superstructure.activateOuttakeNOSHOOT());
         // trg_optimalPrefireTime.whileTrue(

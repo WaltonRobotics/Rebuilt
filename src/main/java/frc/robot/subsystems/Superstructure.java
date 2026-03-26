@@ -20,10 +20,13 @@ public class Superstructure extends SubsystemBase {
     private final Shooter m_shooter;
 
     /*TRUTH MACHINE SUPPLIERS*/
-    private BooleanSupplier supp_intakeArmIsDeployed;
-    private BooleanSupplier supp_intakeArmIsSafe;
-    private BooleanSupplier supp_intakeArmIsShimmying;
-    private BooleanSupplier supp_isIntaking;
+    private BooleanSupplier supp_intakeArmDeployed;
+    private BooleanSupplier supp_intakeArmSafe;
+    private BooleanSupplier supp_intakeArmShimmying;
+    private BooleanSupplier supp_intaking;
+
+    private BooleanSupplier supp_shooterReadyToShoot;
+    private BooleanSupplier supp_tunnelReadyToShoot;
 
     private BooleanSupplier supp_turretIsLocked;
     private BooleanSupplier supp_isShooting;
@@ -40,16 +43,19 @@ public class Superstructure extends SubsystemBase {
         m_indexer = indexer;
         m_shooter = shooter;
 
-        supp_intakeArmIsDeployed = () -> m_intake.intakeArmAtSpecifiedPos(IntakeArmPosition.DEPLOYED, 0.01);
-        supp_intakeArmIsSafe = () -> m_intake.intakeArmAtSpecifiedPos(IntakeArmPosition.SAFE, 0.01);
-        supp_intakeArmIsShimmying = () -> false;
-        supp_isIntaking = () -> (supp_intakeArmIsDeployed.getAsBoolean() && m_intake.rollersAtMaxSpeed(5));
+        supp_intakeArmDeployed = () -> m_intake.intakeArmAtSpecifiedPos(IntakeArmPosition.DEPLOYED, 0.01);
+        supp_intakeArmSafe = () -> m_intake.intakeArmAtSpecifiedPos(IntakeArmPosition.SAFE, 0.01);
+        supp_intakeArmShimmying = () -> intakeArmShimmyCmd().isScheduled();
+        supp_intaking = () -> (supp_intakeArmDeployed.getAsBoolean() && m_intake.rollersAtMaxSpeed(5));
 
-        supp_turretIsLocked = () -> false;
-        supp_isShooting = () -> false;
+        supp_shooterReadyToShoot = () -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocity().gte(ShooterK.kShooterSpunUpMinimum)));
+        supp_tunnelReadyToShoot = () -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocity().gte(IndexerK.kTunnelSpunUpMinimum));
 
-        supp_isBarfing = () -> false;
-        supp_isUnjamming = () -> false;
+        supp_turretIsLocked = () -> m_shooter.m_turret.getTurretLocked();
+        supp_isShooting = () -> supp_shooterReadyToShoot.getAsBoolean() && supp_tunnelReadyToShoot.getAsBoolean();
+
+        supp_isBarfing = () -> emergencyBarfCmd().isScheduled();
+        supp_isUnjamming = () -> unjamCmd(supp_isShooting).isScheduled();
     }
 
     /* SUBSYSTEM COMMANDS */
@@ -109,9 +115,9 @@ public class Superstructure extends SubsystemBase {
             m_shooter.setShooterVelocityCmdSupp(RPS),
 
             Commands.sequence(
-                Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocity().gte(ShooterK.kShooterSpunUpMinimum)))).withTimeout(ShooterK.kShooterSpunUpTimeout),
+                Commands.waitUntil(supp_shooterReadyToShoot).withTimeout(ShooterK.kShooterSpunUpTimeout),
                 m_indexer.startTunnelCmd(),
-                Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocity().gte(IndexerK.kTunnelSpunUpMinimum))).withTimeout(IndexerK.kTunnelSpunUpTimeout),
+                Commands.waitUntil(supp_tunnelReadyToShoot).withTimeout(IndexerK.kTunnelSpunUpTimeout),
 
                 m_indexer.startSpindexerCmd(),
 
@@ -135,9 +141,9 @@ public class Superstructure extends SubsystemBase {
             m_shooter.shootFromCalc(),
 
             Commands.sequence(
-                Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocity().gte(ShooterK.kShooterSpunUpMinimum)))).withTimeout(ShooterK.kShooterSpunUpTimeout),
+                Commands.waitUntil(supp_shooterReadyToShoot).withTimeout(ShooterK.kShooterSpunUpTimeout),
                 m_indexer.startTunnelCmd(),
-                Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocity().gte(IndexerK.kTunnelSpunUpMinimum))).withTimeout(IndexerK.kTunnelSpunUpTimeout),
+                Commands.waitUntil(supp_tunnelReadyToShoot).withTimeout(IndexerK.kTunnelSpunUpTimeout),
 
                 m_indexer.startSpindexerCmd()
             )
@@ -156,7 +162,6 @@ public class Superstructure extends SubsystemBase {
         m_indexer.stopSpindexer();
         m_indexer.stopTunnel();
         m_shooter.setShooterVelocity(ShooterK.kShooterZeroRPS);
-
     }
 
     //---COPE COMMANDS
@@ -181,6 +186,14 @@ public class Superstructure extends SubsystemBase {
                 m_indexer.setTunnelVelocity(RotationsPerSecond.zero());
             }
         );
+    }
+
+    public Command lockTurret() {
+        return m_shooter.m_turret.setTurretLockCmd(true);
+    }
+
+    public Command unlockTurret() {
+        return m_shooter.m_turret.setTurretLockCmd(false);
     }
 
     /**
