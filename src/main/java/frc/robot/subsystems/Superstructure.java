@@ -29,12 +29,13 @@ public class Superstructure extends SubsystemBase {
     private BooleanSupplier supp_shooterReadyToShoot;
     private BooleanSupplier supp_tunnelReadyToShoot;
 
-    private BooleanSupplier supp_turretIsLocked;
-    private BooleanSupplier supp_isShooting;
+    private BooleanSupplier supp_turretLocked;
+    private BooleanSupplier supp_shooting;
 
-    private BooleanSupplier supp_isBarfing;
-    private BooleanSupplier supp_isUnjamming;
+    private BooleanSupplier supp_barfing;
+    private BooleanSupplier supp_unjamming;
 
+    private BooleanSupplier supp_canIntake;
     private BooleanSupplier supp_canShoot;
 
     /* LOGGERS */
@@ -54,13 +55,14 @@ public class Superstructure extends SubsystemBase {
         supp_shooterReadyToShoot = () -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocity().gte(ShooterK.kShooterSpunUpMinimum)));
         supp_tunnelReadyToShoot = () -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocity().gte(IndexerK.kTunnelSpunUpMinimum));
 
-        supp_turretIsLocked = () -> m_shooter.m_turret.getTurretLocked();
-        supp_isShooting = () -> supp_shooterReadyToShoot.getAsBoolean() && supp_tunnelReadyToShoot.getAsBoolean();
+        supp_turretLocked = () -> m_shooter.m_turret.getTurretLocked();
+        supp_shooting = () -> supp_shooterReadyToShoot.getAsBoolean() && supp_tunnelReadyToShoot.getAsBoolean();
 
-        supp_isBarfing = () -> emergencyBarfCmd().isScheduled();
-        supp_isUnjamming = () -> unjamCmd(supp_isShooting).isScheduled();
+        supp_barfing = () -> emergencyBarfCmd().isScheduled();
+        supp_unjamming = () -> unjamCmd(supp_shooting).isScheduled();
 
-        supp_canShoot = () -> !supp_isBarfing.getAsBoolean();
+        supp_canIntake = () -> !supp_barfing.getAsBoolean();
+        supp_canShoot = () -> !supp_barfing.getAsBoolean();
     }
 
     /* SUBSYSTEM COMMANDS */
@@ -72,27 +74,31 @@ public class Superstructure extends SubsystemBase {
      * @return a Command that deploys the intake arm and runs the overall intaking logic
      */
     public Command intakeCmd(BooleanSupplier isShooting) {
-        return Commands.sequence(
-            m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
-            Commands.waitUntil(() -> m_intake.intakeArmAtTargetPos(0.01)).withTimeout(0.25),
-            Commands.run(
-            () -> {
-                boolean shooting = isShooting.getAsBoolean();
+        if (supp_canIntake.getAsBoolean()) {
+            return Commands.sequence(
+                m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
+                Commands.waitUntil(() -> m_intake.intakeArmAtTargetPos(0.01)).withTimeout(0.25),
+                Commands.run(
+                () -> {
+                    boolean shooting = isShooting.getAsBoolean();
 
-                m_shooter.m_turret.setIntaking(!shooting);
-                m_intake.setIntakeRollersVelocity(12);
-                m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPS : IndexerK.kSpindexerIntakeRPS);
-            })
-        ).finallyDo(
-            () -> {
-                boolean shooting = isShooting.getAsBoolean();
-                m_shooter.m_turret.setIntaking(false);
-                m_intake.setIntakeRollersVelocity(0);
-                if (!shooting) {
-                    m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
+                    m_shooter.m_turret.setIntaking(!shooting);
+                    m_intake.setIntakeRollersVelocity(12);
+                    m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPS : IndexerK.kSpindexerIntakeRPS);
+                })
+            ).finallyDo(
+                () -> {
+                    boolean shooting = isShooting.getAsBoolean();
+                    m_shooter.m_turret.setIntaking(false);
+                    m_intake.setIntakeRollersVelocity(0);
+                    if (!shooting) {
+                        m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
+                    }
                 }
-            }
-        );
+            );
+        } else {
+            return Commands.none();
+        }
     }
 
     /**
