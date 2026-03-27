@@ -119,6 +119,8 @@ public class Constants {
         public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.75); //0.75 rots in each direction from home
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.in(Rotations));
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.in(Rotations));
+        public static final double kTurretMaxErrD = Rotations.of(0.05).in(Rotations);
+
 
         public static final AngularVelocity kShooterMaxRPS = MotorK.kX60MaxVelocity.div(kShooterGearing);
         public static final double kShooterMaxRPSd = 96.42;
@@ -146,7 +148,7 @@ public class Constants {
         //double versions
         public static final double kHoodMinPosition_double = 0.1;
         public static final double kHoodMaxRots_double = 1.82195;
-        public static final double kHoodLockRots_double = kHoodMaxRots_double * 0.75;
+        public static final double kHoodLockRots_double = kHoodMaxRots_double * 0.50;
 
         //TODO: ensure this is the home value
         // public static final Angle kHoodHomePosition = Degrees.of(10);
