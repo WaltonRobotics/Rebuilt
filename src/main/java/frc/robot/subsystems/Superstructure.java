@@ -37,7 +37,7 @@ public class Superstructure extends SubsystemBase {
     public Command intake(BooleanSupplier isShooting) {
         return Commands.sequence(
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
-            Commands.waitUntil(() -> m_intake.isIntakeArmAtPos()).withTimeout(0.25),
+            Commands.waitUntil(() -> m_intake.isIntakeArmAtDest()).withTimeout(0.25),
             Commands.run(
             () -> {
                 boolean shooting = isShooting.getAsBoolean();
@@ -143,7 +143,7 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
-    public Command shimmy() {
+    public Command intakeShimmy() {
        return m_intake.shimmy();
     }
 
