@@ -1,7 +1,6 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.Constants.kCanivoreBus;
 import static frc.robot.Constants.kShooterBus;
 import static frc.robot.Constants.ShooterK.*;
 
@@ -19,7 +18,6 @@ import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.WaltLogger;
@@ -56,18 +54,18 @@ public class Hood extends SubsystemBase {
     }
 
     // ---HOOD
-    public void setHoodPos(Angle degs) {
-        m_hood.setControl(m_hoodPVRequest.withPosition(degs));
-        log_hoodControlPos.accept(degs.in(Degrees));
+    public void setHoodPos(double rots) {
+        m_hood.setControl(m_hoodPVRequest.withPosition(rots));
+        log_hoodControlPos.accept(rots);
     }
 
-    public Command setHoodPosCmd(Angle degs) {
-        return runOnce(() -> setHoodPos(degs));
+    public Command setHoodPosCmd(double rots) {
+        return runOnce(() -> setHoodPos(rots));
     }
 
     //for TestingDashboard
-    public Command setHoodPositionCmd(DoubleSubscriber sub_degs) {
-        return run(() -> setHoodPos(Degrees.of(sub_degs.get())));
+    public Command setHoodPositionCmd(DoubleSubscriber sub_rots) {
+        return run(() -> setHoodPos(sub_rots.get()));
     }
 
     private Angle getHoodAngle() {

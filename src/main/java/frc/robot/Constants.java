@@ -51,7 +51,7 @@ import frc.util.AllianceFlipUtil;
 import frc.util.VisionUtil;
 
 public class Constants {
-    public static final boolean kDebugLoggingEnabled = false;
+    public static final boolean kDebugLoggingEnabled = true;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
     public static final CANBus kCanivoreBus = new CANBus("fd");
@@ -72,7 +72,6 @@ public class Constants {
         public static final ChassisSpeeds kZeroChassisSpeeds = new ChassisSpeeds(0, 0, 0);
     }
     public static class ShooterK {
-
         public static final String kLogTab = "Shooter";
         private static final Rotation2d kTurretAngleOffset = Rotation2d.fromDegrees(-135);
         public static final Transform3d kTurretTransform = new Transform3d(new Translation3d(Inches.of(-4.744), Inches.of(-4.239), Inches.of(17.260)), new Rotation3d(kTurretAngleOffset)); //DUMMY VALS
@@ -84,6 +83,16 @@ public class Constants {
         // }
 
         public static final Distance kFlywheelRadius = Inches.of(1.5);
+
+        // Precomputed doubles for hot-path shot calc (avoid measure allocations)
+        public static final double kTurretOffsetX_m = kTurretTransform.getTranslation().getX();
+        public static final double kTurretOffsetY_m = kTurretTransform.getTranslation().getY();
+        public static final double kTurretAngleOffsetRad = kTurretAngleOffset.getRadians();
+        public static final double kFlywheelRadiusM = kFlywheelRadius.in(Meters);
+        public static final double kFlywheelRadiusIn = kFlywheelRadius.in(Inches);
+        public static final double kTurretOffsetZ_in = kTurretTransform.getTranslation().getMeasureZ().in(Inches);
+        public static final double kFunnelRadiusIn = FieldConstants.Hub.funnelRadius.in(Inches);
+        public static final double kFunnelHeightPlusAboveIn = FieldConstants.Hub.funnelHeight.plus(kInchesAboveFunnel).in(Inches);
 
         public static final int kHopperCapacity = 55; //TODO: find true max
 
@@ -120,19 +129,25 @@ public class Constants {
         public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.31);
         public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.zero();
 
-        public static final double kDriverRPSIncreaseD = 2.0;  //biggest cope of the century
-
         public static final AngularVelocity kShooterSpunUpMinimum = RotationsPerSecond.of(10);
         public static final Time kShooterSpunUpTimeout = Seconds.of(0.64);  //double expected spinup time
+        public static final double kShooterSpunUpMinimumD = kShooterSpunUpMinimum.in(RotationsPerSecond);
+
+        public static final double kDriverRPSIncreaseD = 2.0;  //biggest cope of the century
 
         //---HOOD CONSTANTS
         public static final double kHoodMoI = 0.00027505;
 
-        //i geniunely dont know if these are right bro like ARGHHHH
         public static final Angle kHoodMinPosition = Rotations.of(0.1);
         private static final Angle kHoodMaxRots = Rotations.of(1.82195); //apparently this is 26 or 27 degrees? idk thats where we're telling it to go sooo..
         public static final Angle kHoodMaxDegs = Degrees.of(kHoodMaxRots.in(Degrees));
         public static final Angle kHoodLockDegs = Degrees.of(kHoodMaxDegs.times(0.75).in(Degrees));
+
+        //double versions
+        public static final double kHoodMinPosition_double = 0.1;
+        public static final double kHoodMaxRots_double = 1.82195;
+        public static final double kHoodLockRots_double = kHoodMaxRots_double * 0.75;
+
         //TODO: ensure this is the home value
         // public static final Angle kHoodHomePosition = Degrees.of(10);
         public static final Angle kHoodTrenchPosition = Degrees.of(5);
@@ -279,6 +294,11 @@ public class Constants {
             .withSoftwareLimitSwitch(kTurretSoftwareLimitSwitchConfigs)
             .withFeedback(kTurretFeedbackConfigs)
             .withVoltage(kTurretVoltageConfigs);
+
+        public static final MagnetSensorConfigs kEncoderAMagnetSensorConfigs = new MagnetSensorConfigs()
+            .withMagnetOffset(0.4365234375);
+        public static final CANcoderConfiguration kEncoderAConfiguration = new CANcoderConfiguration()
+            .withMagnetSensor(kEncoderAMagnetSensorConfigs);
 
         //Left, Center (Climb), Center (Hub), Right - Driver POV
         public static final Pose2d kShooterOverridePose[] = {
@@ -485,6 +505,7 @@ public class Constants {
         public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(1.0);
 
         public static final AngularVelocity kTunnelSpunUpMinimum = RotationsPerSecond.of(10);
+        public static final double kTunnelSpunUpMinimumD = 10.0;
         public static final Time kTunnelSpunUpTimeout = Seconds.of(1);  //double expected spinup time
         
         /* CONFIGS */
@@ -548,6 +569,16 @@ public class Constants {
             .withVoltage(kTunnelVoltageConfigs);
     }
 
+    public static class TurretK {
+        public static final String kLogTab = "Turret";
+        
+        public static final double kGearZeroToothCount = 100;
+        public static final double kGearOneToothCount = 10;
+        public static final double kGearTwoToothCount = 19;
+
+        public static final double kLCMAtHomeRots = 0.0; // measure: turretLCMPos log value when turret is at home
+        public static final double kEncBOffset = 0.176723; // measure: encB reading when turret is at encA=0
+    }
     public static class AutonK {
         public static final String kLogTab = "Auton";
 
