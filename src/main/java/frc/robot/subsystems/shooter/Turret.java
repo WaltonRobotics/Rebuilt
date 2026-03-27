@@ -67,7 +67,6 @@ public class Turret extends SubsystemBase {
     }
 
     public void setIntaking(boolean intaking) {
-        System.out.println("setIntaking: " + intaking);
         m_holdTurretAtIntakePos = intaking;
     }
 

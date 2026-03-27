@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static frc.robot.Constants.ShooterK.*;
@@ -98,18 +99,25 @@ public class ShotCalculator {
 
         //AT COMPETITION
 
-        m_shotMap.put(2.755, new ShotData(RotationsPerSecond.of(75.41), Degrees.of(221.02)));
-        m_timeOfFlightMap.put(2.755, 1.28);
+        // m_shotMap.put(2.755, new ShotData(RotationsPerSecond.of(75.41), Degrees.of(221.02)));
+        // m_timeOfFlightMap.put(2.755, 1.28);
 
-        m_shotMap.put(2.352, new ShotData(RotationsPerSecond.of(75.41), Degrees.of(169.77)));
-        m_timeOfFlightMap.put(2.352, 0.9);
+        // m_shotMap.put(2.352, new ShotData(RotationsPerSecond.of(75.41), Degrees.of(169.77)));
+        // m_timeOfFlightMap.put(2.352, 0.9);
 
-        //3/21/26 8:40 AM
-        m_shotMap.put(3.425, new ShotData(RotationsPerSecond.of(87), Degrees.of(280)));
-        m_timeOfFlightMap.put(3.425, 1.41);
+        // //3/21/26 8:40 AM
+        // m_shotMap.put(3.425, new ShotData(RotationsPerSecond.of(87), Degrees.of(280)));
+        // m_timeOfFlightMap.put(3.425, 1.41);
 
-        m_shotMap.put(3.933, new ShotData(RotationsPerSecond.of(80.5), Degrees.of(310)));
-        m_timeOfFlightMap.put(3.933, 1.38);
+        // m_shotMap.put(3.933, new ShotData(RotationsPerSecond.of(80.5), Degrees.of(310)));
+        // m_timeOfFlightMap.put(3.933, 1.38);
+
+        //3/26
+        m_shotMap.put(2.462, new ShotData(RotationsPerSecond.of(69.27), Rotations.of(0.67)));
+        m_timeOfFlightMap.put(2.462, 1.15);
+
+        m_shotMap.put(3.335, new ShotData(RotationsPerSecond.of(81.37), Rotations.of(0.68)));
+        m_timeOfFlightMap.put(3.335, 1.38);
     }
 
     
@@ -125,7 +133,9 @@ public class ShotCalculator {
         double turretY = robotY + kTurretOffsetX_m * sinR + kTurretOffsetY_m * cosR;
         double dx = turretX - targetX;
         double dy = turretY - targetY;
-        return Math.sqrt(dx * dx + dy * dy);
+        double dist = Math.sqrt(dx * dx + dy * dy);
+        log_distToTargetMeters.accept(dist);
+        return dist;
     }
 
     /**
