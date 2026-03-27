@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -35,6 +36,8 @@ public class Turret extends SubsystemBase {
     // ---LOGIC BOOLEANS
     private boolean m_isTurretHomed = true;
     public BooleanSupplier turretHomedSupp = () -> m_isTurretHomed;
+    private boolean m_turretAtPos = false;
+    public BooleanSupplier turretAtPosSupp = () -> m_turretAtPos;
 
     private final CANcoder m_lcmEncA = new CANcoder(19, Constants.kCanivoreBus);
     private final DutyCycleEncoder m_lcmEncB = new DutyCycleEncoder(3);
@@ -46,6 +49,10 @@ public class Turret extends SubsystemBase {
 
     private final DoubleLogger log_turretControlPos = WaltLogger.logDouble(kLogTab, "turretControlPos");
     private final DoubleLogger log_turretLCMPos = WaltLogger.logDouble(kLogTab, "turretCRTPos");
+    private final DoubleLogger log_turretClosedLoopError = WaltLogger.logDouble(kLogTab, "turretCLE");
+    private final BooleanLogger log_atPos = WaltLogger.logBoolean(kLogTab, "atPos");
+
+    StatusSignal<Double> sig_turretCLErr = m_turret.getClosedLoopError();
 
     public Turret() {
         m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
@@ -64,6 +71,16 @@ public class Turret extends SubsystemBase {
         } else {
             m_turret.setPosition(kInitPosition);
         }
+    }
+
+    public boolean atPosition() {
+        sig_turretCLErr.refresh();
+        boolean isNear = sig_turretCLErr.isNear(0, kTurretMaxErrD);
+        log_turretClosedLoopError.accept(sig_turretCLErr.getValueAsDouble());
+
+        m_turretAtPos = isNear;
+        log_atPos.accept(isNear);
+        return isNear;
     }
 
     public void setIntaking(boolean intaking) {
