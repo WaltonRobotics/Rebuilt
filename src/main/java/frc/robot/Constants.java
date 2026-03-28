@@ -186,10 +186,10 @@ public class Constants {
         /* CONFIGS */
         // TODO: Check what more configs would be necessary
         private static final Slot0Configs kShooterASlot0Configs = new Slot0Configs()   //Note to self (hrehaan) (and saarth cuz i did the same thing): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
-            .withKS(0)
-            .withKV(0.12)
+            .withKS(0.2998046875)
+            .withKV(0.09)
             .withKA(0)
-            .withKP(0.5)
+            .withKP(0.3)
             .withKI(0)
             .withKD(0); // kP was causing the werid sinusoid behavior, kS and kA were adding inconsistency with the destination values
         private static final CurrentLimitsConfigs kShooterACurrentLimitConfigs = new CurrentLimitsConfigs()
