@@ -119,6 +119,7 @@ public class Constants {
         public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.75); //0.75 rots in each direction from home
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.in(Rotations));
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.in(Rotations));
+        public static final Angle kTurretIntakeLockPos = Rotations.of(-0.250);
 
         public static final AngularVelocity kShooterMaxRPS = MotorK.kX60MaxVelocity.div(kShooterGearing);
         public static final double kShooterMaxRPSd = 96.42;
@@ -241,6 +242,9 @@ public class Constants {
         private static final VoltageConfigs kHoodVoltageConfigs = new VoltageConfigs()
             .withPeakForwardVoltage(16)
             .withPeakReverseVoltage(-16);
+        private static final SoftwareLimitSwitchConfigs kHoodSoftwareLimitSwitchConfigs = new SoftwareLimitSwitchConfigs()
+            .withForwardSoftLimitEnable(true)
+            .withForwardSoftLimitThreshold(kHoodMaxRots_double);
         private static final CommutationConfigs kHoodCommutationConfigs = new CommutationConfigs()
             .withAdvancedHallSupport(AdvancedHallSupportValue.Enabled)
             .withMotorArrangement(MotorArrangementValue.NEO550_JST);
@@ -252,6 +256,7 @@ public class Constants {
             .withMotorOutput(kHoodOutputConfigs)
             .withExternalFeedback(kHoodFeedbackConfigs)
             .withVoltage(kHoodVoltageConfigs)
+            .withSoftwareLimitSwitch(kHoodSoftwareLimitSwitchConfigs)
             .withCommutation(kHoodCommutationConfigs);
 
         //---TURRET

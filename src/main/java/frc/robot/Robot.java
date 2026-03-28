@@ -478,13 +478,15 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopExit() {}
 
+    private final Trigger trg_letOpsCheckBeLong = new Trigger(() -> true);
+
     @Override
     public void testInit() {
         CommandScheduler.getInstance().cancelAll();
 
-        TestingDashboard.initialize();
+        // TestingDashboard.initialize();
 
-        TestingDashboard.trg_letOpsCheckBeLong
+        trg_letOpsCheckBeLong
             .onTrue(m_superstructure.longOpsCheck())
             .onFalse(m_superstructure.shortOpsCheck());
 

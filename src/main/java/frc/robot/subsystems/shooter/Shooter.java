@@ -312,7 +312,7 @@ public class Shooter extends SubsystemBase {
                 m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
             } else {
                 if (m_turret.getHoldTurretAtIntake()) {
-                    m_turret.setTurretPos(Rotations.of(-0.250));
+                    m_turret.setTurretPos(kTurretIntakeLockPos);
                 } else {
                     m_turret.setTurretPos(turretReference, turretVelocityFF);
                     m_calcFlywheelVelocityRotPerSec = calcData.shooterReferenceRps();

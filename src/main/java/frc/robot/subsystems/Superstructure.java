@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IndexerK;
+import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.SuperstructureK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
@@ -196,31 +197,49 @@ public class Superstructure extends SubsystemBase {
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
 
             //deploy intake
+            Commands.print("================================= DEPLOY INTAKE ================================="),
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
 
             //run intake rollers
+            Commands.print("================================= RUN INTAKE ROLLERS ================================="),
             m_intake.startIntakeRollers(),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
 
             //run spindexer
+            Commands.print("================================= RUN SPINDEXER ================================="),
             m_intake.stopIntakeRollers(),
             m_indexer.setSpindexerVelocityCmd(IndexerK.kSpindexerShootRPS),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
 
             //Stop Spindexer; run tunnel
+            Commands.print("================================= RUN TUNNEL ================================="),
             m_indexer.stopSpindexerCmd(),
             m_indexer.setTunnelVelocityCmd(IndexerK.kTunnelShootRPS),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
 
             //Stop tunnel; run shooter
+            Commands.print("================================= RUN SHOOTER ================================="),
             m_indexer.stopTunnelCmd(),
             m_shooter.setShooterVelocityCmd(ShooterK.kShooterRPS),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
 
             //shooter stopped
+            Commands.print("================================= STOP SHOOTER ================================="),
             m_shooter.setShooterVelocityCmd(RotationsPerSecond.zero()),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
+
+            //turret move
+            Commands.print("================================= TURRET MOVE ================================="),
+            m_shooter.m_turret.setTurretPosCmd(ShooterK.kTurretIntakeLockPos),
+            Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
+            m_shooter.m_turret.setTurretPosCmd(ShooterK.kHomePosition),
+
+            //hood move
+            Commands.print("================================= HOOD MOVE ================================="),
+            m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodLockRots_double),
+            Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
+            m_shooter.m_hood.setHoodPosCmd(0.1),
 
             //Run short Ops check (intake, shoot, swerve)
             shortOpsCheck()

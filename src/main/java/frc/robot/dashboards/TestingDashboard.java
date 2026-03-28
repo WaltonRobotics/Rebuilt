@@ -108,7 +108,7 @@ public class TestingDashboard {
     // public static Trigger trg_letIntakeArmPositionRotsChange;
     // public static Trigger trg_letIntakeRollersVelocityRPSChange;
 
-    public static Trigger trg_letOpsCheckBeLong;
+    // public static Trigger trg_letOpsCheckBeLong;
 
     public static void initialize() {
         //---SHOOTER
