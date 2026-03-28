@@ -82,6 +82,8 @@ public class Shooter extends SubsystemBase {
     private double m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
     private double m_driverRPSTweak = 0.0;
 
+    public int m_ballsShot = 0;
+
     private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
     private final DoubleLogger log_calcTurretPos = new DoubleLogger("Shooter/Turret", "calcTurretPos");
     private final DoubleLogger log_driverAddedRPS = WaltLogger.logDouble(kLogTab, "driverAddedRPS");
@@ -91,6 +93,8 @@ public class Shooter extends SubsystemBase {
     // ---LOGIC BOOLEANS
     private boolean m_isTurretHomed = false;
     public BooleanSupplier turretHomedSupp = () -> m_isTurretHomed;
+    private BooleanSupplier shooterAVeloDropSupp = () ->  Math.abs(m_shooterA.getClosedLoopError().getValueAsDouble()) < 1.0;
+    private BooleanSupplier shooterBVeloDropSUpp = () -> Math.abs(m_shooterB.getVelocity().getValueAsDouble()) < 1.0;
     // private boolean m_isHoodHomed = false;
 
     /* SIM OBJECTS */
