@@ -583,14 +583,6 @@ public class Constants {
         public static final double kIntakeTimeout = 7.5;
         public static final double kShootingTimeout = 6; //12
 
-        public static final String kLeftSweepPathName = "LeftSweep";
-        public static final String kRightSweepPathName = "RightSweep";
-
-        public static final String kLeftOptimizedSweepPathName = "LeftSweepOptimized";
-        public static final String kRightOptimizedSweepPathName = "RightSweepOptimized";
-
-        public static final String kRightTwoSweepName = "RightSweepTwo";
-
         public static final String kFastRightTwoSweepName = "RightSweepFast";
         public static final String kSweepRightTwo = "RightSweepFast_two";
         public static final String kReshootRightTwo = "RightSweepFast_Reshoot";
@@ -600,6 +592,6 @@ public class Constants {
         public static final String kFastLeftTwoSweepName = "LeftSweepFast";
         public static final String kSweepLeftTwo = "LeftSweepFast_two";
         public static final String kReshootLeftTwo = "LeftSweepFast_Reshoot";
-        public static final String kLeftTrenchSweep = "LeftSweep_trnech";
+        public static final String kLeftTrenchSweep = "LeftSweep_trench";
     }
 }

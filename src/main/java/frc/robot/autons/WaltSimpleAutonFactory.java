@@ -343,8 +343,7 @@ public class WaltSimpleAutonFactory {
     // }
 
     // public AutoRoutine firstSweep_NoPreload(boolean left) {
-    //     String path = left ? AutonK.kLeftOptimizedSweepPathName
-    //                        : AutonK.kRightOptimizedSweepPathName;
+    //     String path1 = left ? AutonK.kFastLeftTwoSweepName : AutonK.kFastRightTwoSweepName;
     //     AutoRoutine routine = m_autoFactory.newRoutine("firstSweep_" + (left ? "L" : "R"));
     //     AutoTrajectory traj = createTraj(routine, path);
 
