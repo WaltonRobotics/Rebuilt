@@ -111,9 +111,6 @@ public class Robot extends TimedRobot {
     private Trigger trg_manipOverride = m_manipulator.b();
 
     //---COMMAND SEQUENCE TRIGGERS
-
-    // private Trigger trg_activateIntake = m_manipulator.a().and(trg_manipOverride.negate());
-    // private Trigger trg_safeIntake = m_manipulator.x().and(trg_manipOverride.negate());
     private Trigger trg_intake = m_manipulator.rightTrigger().and(trg_manipOverride.negate());
     private Trigger trg_retractIntake = m_manipulator.rightBumper().and(trg_manipOverride.negate());
 
@@ -130,6 +127,10 @@ public class Robot extends TimedRobot {
     private final Trigger trg_unlimitFps = RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop());
 
     private Trigger trg_unjam = m_driver.rightBumper();
+
+    //---SAFETY TRIGGERS
+    private Trigger trg_canIntake = trg_emergencyBarf.negate();
+    private Trigger trg_canShoot = trg_emergencyBarf.negate();
 
 
     /* LOGGERS */
@@ -264,8 +265,8 @@ public class Robot extends TimedRobot {
 
         //---NORMAL SEQUENCES
         //Intake
-        trg_intake.and(trg_shoot.negate()).whileTrue(
-            m_superstructure.intakeCmd(() -> false)
+        trg_intake.and(trg_canIntake).whileTrue(
+            m_superstructure.intakeCmd(() -> trg_shoot.getAsBoolean())
         );
 
         trg_retractIntake.onTrue(
@@ -275,7 +276,7 @@ public class Robot extends TimedRobot {
         //Shooting
         // NORMAL FIXED SHOT
         // trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
-        trg_shoot.whileTrue(m_superstructure.shootWithShotCalcCmd());    //comment out for LERP with above
+        trg_shoot.and(trg_canShoot).whileTrue(m_superstructure.shootWithShotCalcCmd());    //comment out for LERP with above
 
         // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));
         // m_driver.a().onTrue(m_shooter.driverRPSAlter(false));
@@ -289,10 +290,6 @@ public class Robot extends TimedRobot {
 
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
-
-        trg_intake.and(trg_shoot).whileTrue(
-            m_superstructure.intakeCmd(() -> true)
-        );
 
         trg_emergencyBarf.whileTrue(
             m_superstructure.emergencyBarfCmd()

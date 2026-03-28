@@ -4,6 +4,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.IndexerK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
@@ -35,9 +36,6 @@ public class Superstructure extends SubsystemBase {
     private BooleanSupplier supp_barfing;
     private BooleanSupplier supp_unjamming;
 
-    private BooleanSupplier supp_canIntake;
-    private BooleanSupplier supp_canShoot;
-
     /* LOGGERS */
 
     
@@ -60,9 +58,6 @@ public class Superstructure extends SubsystemBase {
 
         supp_barfing = () -> emergencyBarfCmd().isScheduled();
         supp_unjamming = () -> unjamCmd(supp_shooting).isScheduled();
-
-        supp_canIntake = () -> !supp_barfing.getAsBoolean();
-        supp_canShoot = () -> !supp_barfing.getAsBoolean();
     }
 
     /* SUBSYSTEM COMMANDS */
@@ -74,31 +69,27 @@ public class Superstructure extends SubsystemBase {
      * @return a Command that deploys the intake arm and runs the overall intaking logic
      */
     public Command intakeCmd(BooleanSupplier isShooting) {
-        if (supp_canIntake.getAsBoolean()) {
-            return Commands.sequence(
-                m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
-                Commands.waitUntil(() -> m_intake.intakeArmAtTargetPos(0.01)).withTimeout(0.25),
-                Commands.run(
-                () -> {
-                    boolean shooting = isShooting.getAsBoolean();
+        return Commands.sequence(
+            m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
+            Commands.waitUntil(() -> m_intake.intakeArmAtTargetPos(0.01)).withTimeout(0.25),
+            Commands.run(
+            () -> {
+                boolean shooting = isShooting.getAsBoolean();
 
-                    m_shooter.m_turret.setIntaking(!shooting);
-                    m_intake.setIntakeRollersVelocity(12);
-                    m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPS : IndexerK.kSpindexerIntakeRPS);
-                })
-            ).finallyDo(
-                () -> {
-                    boolean shooting = isShooting.getAsBoolean();
-                    m_shooter.m_turret.setIntaking(false);
-                    m_intake.setIntakeRollersVelocity(0);
-                    if (!shooting) {
-                        m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
-                    }
+                m_shooter.m_turret.setIntaking(!shooting);
+                m_intake.setIntakeRollersVelocity(12);
+                m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPS : IndexerK.kSpindexerIntakeRPS);
+            })
+        ).finallyDo(
+            () -> {
+                boolean shooting = isShooting.getAsBoolean();
+                m_shooter.m_turret.setIntaking(false);
+                m_intake.setIntakeRollersVelocity(0);
+                if (!shooting) {
+                    m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
                 }
-            );
-        } else {
-            return Commands.none();
-        }
+            }
+        );
     }
 
     /**
@@ -122,56 +113,46 @@ public class Superstructure extends SubsystemBase {
      * @return a Command that starts and controls the overall shooting sequence logic
      */
     public Command shootCmd(Supplier<AngularVelocity> RPS) {
-        if (supp_canShoot.getAsBoolean()) {
-            return Commands.parallel(
-                m_shooter.setShooterVelocityCmdSupp(RPS),
+        return Commands.parallel(
+            m_shooter.setShooterVelocityCmdSupp(RPS),
 
-                Commands.sequence(
-                    Commands.waitUntil(supp_shooterReadyToShoot).withTimeout(ShooterK.kShooterSpunUpTimeout),
-                    m_indexer.startTunnelCmd(),
-                    Commands.waitUntil(supp_tunnelReadyToShoot).withTimeout(IndexerK.kTunnelSpunUpTimeout),
+            Commands.sequence(
+                Commands.waitUntil(supp_shooterReadyToShoot).withTimeout(ShooterK.kShooterSpunUpTimeout),
+                m_indexer.startTunnelCmd(),
+                Commands.waitUntil(supp_tunnelReadyToShoot).withTimeout(IndexerK.kTunnelSpunUpTimeout),
 
-                    m_indexer.startSpindexerCmd(),
+                m_indexer.startSpindexerCmd(),
 
-                    Commands.repeatingSequence(
-                        Commands.none()
-                    )
-                )
+                Commands.none().repeatedly()
             )
-            .finallyDo(
-                () -> {
-                    stopShooting();
-                }
-            );
-        } else {
-            return Commands.none();
-        }
+        )
+        .finallyDo(
+            () -> {
+                stopShooting();
+            }
+        );
     }
 
     /**
      * @return a Command that starts and controls the overall shooting sequence logic using the shotClauclator value
      */
     public Command shootWithShotCalcCmd() {
-        if (supp_canShoot.getAsBoolean()) {
-            return Commands.parallel(
-                m_shooter.shootFromCalc(),
+        return Commands.parallel(
+            m_shooter.shootFromCalc(),
 
-                Commands.sequence(
-                    Commands.waitUntil(supp_shooterReadyToShoot).withTimeout(ShooterK.kShooterSpunUpTimeout),
-                    m_indexer.startTunnelCmd(),
-                    Commands.waitUntil(supp_tunnelReadyToShoot).withTimeout(IndexerK.kTunnelSpunUpTimeout),
+            Commands.sequence(
+                Commands.waitUntil(supp_shooterReadyToShoot).withTimeout(ShooterK.kShooterSpunUpTimeout),
+                m_indexer.startTunnelCmd(),
+                Commands.waitUntil(supp_tunnelReadyToShoot).withTimeout(IndexerK.kTunnelSpunUpTimeout),
 
-                    m_indexer.startSpindexerCmd()
-                )
+                m_indexer.startSpindexerCmd()
             )
-            .finallyDo(
-                () -> {
-                    stopShooting();
-                }
-            );
-        } else {
-            return Commands.none();
-        }
+        )
+        .finallyDo(
+            () -> {
+                stopShooting();
+            }
+        );
     }
 
     /**
