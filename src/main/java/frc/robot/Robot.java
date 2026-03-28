@@ -274,7 +274,7 @@ public class Robot extends TimedRobot {
         //Shooting
         // NORMAL FIXED SHOT
         // trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
-        trg_shoot.and(() -> m_shooter.m_turret.atPosition()).whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
+        trg_shoot/*.and(() -> m_shooter.m_turret.atPosition()).*/.whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
 
         // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));
         // m_driver.a().onTrue(m_shooter.driverRPSAlter(false));

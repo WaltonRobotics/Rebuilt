@@ -122,9 +122,9 @@ public class Constants {
         public static final double kTurretMaxErrD = Rotations.of(0.05).in(Rotations);
 
 
-        public static final AngularVelocity kShooterMaxRPS = MotorK.kX60MaxVelocity.div(kShooterGearing);
-        public static final double kShooterMaxRPSd = 96.42;
-        public static final AngularVelocity kShooterRPS = kShooterMaxRPS.times(0.65);   //Kraken X60Foc Max (RPM: 5785) //(0.9)
+        public static final AngularVelocity kShooterMaxRPS = MotorK.kX44MaxVelocity.div(kShooterGearing);
+        public static final double kShooterMaxRPSd = kShooterMaxRPS.in(RotationsPerSecond);
+        public static final AngularVelocity kShooterRPS = kShooterMaxRPS.times(0.65);   //Kraken X44 Max RPM: 7758
         public static final double kShooterRPSd = kShooterMaxRPSd * 0.65;
         public static final AngularVelocity kShooterAutonCloseRPS = kShooterMaxRPS.times(0.60);  //auton pose is closer to the hub than teleop scoring
         public static final AngularVelocity kShooterAuton_EndSweep_RPS = kShooterMaxRPS.times(0.70); // end of sweep paths
@@ -198,7 +198,7 @@ public class Constants {
             .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kShooterAOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.Clockwise_Positive)
+            .withInverted(InvertedValue.CounterClockwise_Positive   )
             .withNeutralMode(NeutralModeValue.Coast);
         private static final FeedbackConfigs kShooterAFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kShooterGearing);
