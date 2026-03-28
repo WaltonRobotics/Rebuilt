@@ -75,6 +75,8 @@ public class Constants {
         public static final Transform3d kTurretTransform = new Transform3d(new Translation3d(Inches.of(-4.744), Inches.of(-4.239), Inches.of(17.260)), new Rotation3d(kTurretAngleOffset)); //DUMMY VALS
         public static final Distance kInchesAboveFunnel = Inches.of(20);// distance the ball must travel above the funnel opening to arc correctly into the hub
 
+        public static final boolean kUseStaticShot = false;
+
         // private static final Pose3dLogger log_turretTransform = WaltLogger.logPose3d(kLogTab, "TurretTransformRaw");
         // static {
         //     log_turretTransform.accept(kTurretTransform);
@@ -117,6 +119,8 @@ public class Constants {
         public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.75); //0.75 rots in each direction from home
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.in(Rotations));
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.in(Rotations));
+        public static final double kTurretMaxErrD = Rotations.of(0.05).in(Rotations);
+
 
         public static final AngularVelocity kShooterMaxRPS = MotorK.kX60MaxVelocity.div(kShooterGearing);
         public static final double kShooterMaxRPSd = 96.42;
@@ -144,7 +148,7 @@ public class Constants {
         //double versions
         public static final double kHoodMinPosition_double = 0.1;
         public static final double kHoodMaxRots_double = 1.82195;
-        public static final double kHoodLockRots_double = kHoodMaxRots_double * 0.75;
+        public static final double kHoodLockRots_double = kHoodMaxRots_double * 0.50;
 
         //TODO: ensure this is the home value
         // public static final Angle kHoodHomePosition = Degrees.of(10);
