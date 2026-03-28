@@ -27,7 +27,9 @@ import frc.util.AllianceFlipUtil;
 import frc.util.AllianceZoneUtil;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.Pose2dArrayLogger;
 import frc.util.WaltLogger.Pose3dLogger;
+import frc.util.WaltLogger.Translation3dArrayLogger;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.ShooterK.*;
@@ -43,6 +45,7 @@ public class ShooterCalc {
     private final DoubleLogger log_desiredTurretRot = new DoubleLogger("ShotCalc", "desiredTurretRotations");
     private final Pose3dLogger log_desiredAimPose = WaltLogger.logPose3d("ShotCalc", "DesiredAimPose");
     private final Pose3dLogger log_currentAimPose = WaltLogger.logPose3d("ShotCalc", "CurrentAimPose");
+    private final Translation3dArrayLogger log_ballTrajectory = WaltLogger.logTranslation3dArray("ShotCalc", "ballTrajectory");
     private final DoubleLogger log_loopTime = WaltLogger.logDouble("ShotCalc", "LoopTimeMsec");
 
 
@@ -124,6 +127,7 @@ public class ShooterCalc {
                     : robotPose.getMeasureY().gt(AllianceZoneUtil.centerField_y_pos);
             theTarget = robotLeftOfCenter ? leftPassPoseShifted : rightPassPoseShifted;
         }
+        log_ballTrajectory.accept(new Translation3d[]{new Translation3d(FieldConstants.fieldLength - robotPose.getX(), FieldConstants.fieldWidth - robotPose.getY(), 0), theTarget});
         return AllianceFlipUtil.apply(theTarget);
     }
 
