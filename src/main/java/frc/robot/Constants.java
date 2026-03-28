@@ -570,7 +570,7 @@ public class Constants {
         public static final double kGearTwoToothCount = 19;
 
         public static final double kLCMAtHomeRots = 0.0; // measure: turretLCMPos log value when turret is at home
-        public static final double kEncBOffset = 0.610415; // measure: encB reading when turret is at encA=0
+        public static final double kEncBOffset = 0.610415; // measure: encB reading when turret is at encA=0 //NEW ONE
     }
     public static class AutonK {
         public static final String kLogTab = "Auton";
