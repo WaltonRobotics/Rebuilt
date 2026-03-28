@@ -71,7 +71,7 @@ public class Constants {
     }
     public static class ShooterK {
         public static final String kLogTab = "Shooter";
-        private static final Rotation2d kTurretAngleOffset = Rotation2d.fromDegrees(-135);
+        private static final Rotation2d kTurretAngleOffset = Rotation2d.fromDegrees(180 + -135);
         public static final Transform3d kTurretTransform = new Transform3d(new Translation3d(Inches.of(-4.744), Inches.of(-4.239), Inches.of(17.260)), new Rotation3d(kTurretAngleOffset)); //DUMMY VALS
         public static final Distance kInchesAboveFunnel = Inches.of(20);// distance the ball must travel above the funnel opening to arc correctly into the hub
 
@@ -116,7 +116,7 @@ public class Constants {
 
         public static final int kPeakShooterVolts = 16;
 
-        public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.75); //0.75 rots in each direction from home
+        public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.60 ); //0.75 rots in each direction from home
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.in(Rotations));
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.in(Rotations));
         public static final double kTurretMaxErrD = Rotations.of(0.05).in(Rotations);
