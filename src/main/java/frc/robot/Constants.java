@@ -148,7 +148,9 @@ public class Constants {
         //double versions
         public static final double kHoodMinPosition_double = 0.1;
         public static final double kHoodMaxRots_double = 1.82195;
-        public static final double kHoodLockRots_double = kHoodMaxRots_double * 0.50;
+        public static final double kPhysicalHoodMinPosition_double = 10;
+        public static final double kPhysicalHoodMaxPosition_double = 48;
+        public static final double kHoodLockRots_double = kHoodMaxRots_double * 0.75;
 
         //TODO: ensure this is the home value
         // public static final Angle kHoodHomePosition = Degrees.of(10);
@@ -298,7 +300,7 @@ public class Constants {
             .withVoltage(kTurretVoltageConfigs);
 
         public static final MagnetSensorConfigs kEncoderAMagnetSensorConfigs = new MagnetSensorConfigs()
-            .withMagnetOffset(0.4365234375);
+            .withMagnetOffset(-0.331787109375);
         public static final CANcoderConfiguration kEncoderAConfiguration = new CANcoderConfiguration()
             .withMagnetSensor(kEncoderAMagnetSensorConfigs);
 
@@ -568,7 +570,7 @@ public class Constants {
         public static final double kGearTwoToothCount = 19;
 
         public static final double kLCMAtHomeRots = 0.0; // measure: turretLCMPos log value when turret is at home
-        public static final double kEncBOffset = 0.176723; // measure: encB reading when turret is at encA=0
+        public static final double kEncBOffset = 0.610415; // measure: encB reading when turret is at encA=0
     }
     public static class AutonK {
         public static final String kLogTab = "Auton";
