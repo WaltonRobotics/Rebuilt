@@ -121,8 +121,8 @@ public class ShooterCalc {
                 : robotPose.getMeasureX().gt(AllianceZoneUtil.blueHubCenter.getMeasureX());
 
         if (robotPastOurZoneX) {
-            Translation3d leftPassPoseShifted = new Translation3d(ShooterK.kPassingX.baseUnitMagnitude(), FieldConstants.fieldWidth / 2 + robotPose.getY(), 0);
-            Translation3d rightPassPoseShifted = new Translation3d(ShooterK.kPassingX.baseUnitMagnitude(), robotPose.getY() - FieldConstants.fieldWidth / 2, 0);
+            Translation3d leftPassPoseShifted = new Translation3d(ShooterK.kPassingX.baseUnitMagnitude(), MathUtil.clamp(FieldConstants.fieldWidth / 2 + robotPose.getY(), FieldConstants.fieldWidth / 2 + 1, FieldConstants.fieldWidth - 1), 0);
+            Translation3d rightPassPoseShifted = new Translation3d(ShooterK.kPassingX.baseUnitMagnitude(), MathUtil.clamp(robotPose.getY() - FieldConstants.fieldWidth / 2, 1, FieldConstants.fieldWidth / 2 - 1), 0);
             boolean robotLeftOfCenter = isRed ? robotPose.getMeasureY().lt(AllianceZoneUtil.centerField_y_pos)
                     : robotPose.getMeasureY().gt(AllianceZoneUtil.centerField_y_pos);
             theTarget = robotLeftOfCenter ? leftPassPoseShifted : rightPassPoseShifted;
