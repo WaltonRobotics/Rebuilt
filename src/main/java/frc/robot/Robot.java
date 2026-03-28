@@ -119,7 +119,7 @@ public class Robot extends TimedRobot {
     private Trigger trg_shoot = m_driver.rightTrigger().and(trg_driverOverride.negate());
     private Trigger trg_emergencyBarf = m_driver.rightTrigger().and(trg_driverOverride);
 
-    private Trigger trg_shimmy = m_manipulator.leftBumper();
+    private Trigger trg_intakeShimmy = m_manipulator.leftBumper();
 
     //---OVERRIDE TRIGGERS
     private Trigger trg_deployIntakeOverride = trg_manipOverride.and(m_manipulator.rightTrigger());
@@ -297,7 +297,7 @@ public class Robot extends TimedRobot {
             m_superstructure.emergencyBarf()
         );
         
-        trg_shimmy.whileTrue(m_superstructure.shimmy());
+        trg_intakeShimmy.whileTrue(m_superstructure.intakeShimmy());
 
         trg_unjam.and(trg_shoot.negate()).whileTrue(
             m_superstructure.unjamCmd(() -> false)
