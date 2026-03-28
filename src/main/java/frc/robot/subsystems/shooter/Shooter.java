@@ -83,6 +83,7 @@ public class Shooter extends SubsystemBase {
 
     private int m_ballsShot = 0;
 
+    private final DoubleLogger log_ballsShot = new DoubleLogger("Shooter/Flywheel", "balls shot");
     private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
     private final DoubleLogger log_calcTurretPos = new DoubleLogger("Shooter/Turret", "calcTurretPos");
     private final DoubleLogger log_driverAddedRPS = WaltLogger.logDouble(kLogTab, "driverAddedRPS");
@@ -133,7 +134,7 @@ public class Shooter extends SubsystemBase {
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
 
         trg_ballDetected = new Trigger(() -> detectShot(RotationsPerSecond.of(5.0)));
-        trg_ballDetected.onTrue(Commands.run(() -> {m_ballsShot++;}));
+        trg_ballDetected.onTrue(Commands.runOnce(() -> {m_ballsShot++;}));
 
         // m_turretVisualizer = new TurretVisualizer(
         //         () -> new Pose3d(m_poseSupplier.get().rotateAround(
@@ -341,6 +342,7 @@ public class Shooter extends SubsystemBase {
             }
         }
 
+        log_ballsShot.accept(m_ballsShot);
         log_shooterVelocityRPS.accept(m_latestFlywheelVelocityRotPerSec);
         log_turretPositionRots.accept(m_latestTurretPositionRots);
         log_spunUp.accept(isShooterSpunUp());
