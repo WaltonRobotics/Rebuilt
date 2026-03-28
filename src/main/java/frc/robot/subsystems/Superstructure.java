@@ -5,6 +5,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.IndexerK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.SuperstructureK;
@@ -21,6 +22,8 @@ public class Superstructure extends SubsystemBase {
     private final Indexer m_indexer;
     private final Shooter m_shooter;
     private final Swerve m_drivetrain;
+
+    public boolean m_isLongOpsCheck = true;
     
     /* CONSTRUCTOR */
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter, Swerve drivetrain) {
@@ -238,10 +241,13 @@ public class Superstructure extends SubsystemBase {
             //hood move
             Commands.print("================================= HOOD MOVE ================================="),
             m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodLockRots_double),
+            Commands.print("================================= LOCK HOOD POS ================================="),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
+            Commands.print("================================= SET HOOD POS TO MIN ================================="),
             m_shooter.m_hood.setHoodPosCmd(0.1),
 
             //Run short Ops check (intake, shoot, swerve)
+            Commands.print("================================= START SHORT OPS CHECK ================================="),
             shortOpsCheck()
         );
     }
@@ -257,14 +263,17 @@ public class Superstructure extends SubsystemBase {
     public Command shortOpsCheck() {
         return Commands.sequence(
             //runs intaking cmd
+            Commands.print("================================= ACTIVATE INTAKE CMD ================================="),
             intake(() -> false).withTimeout(SuperstructureK.kShortOpsCheckIntakeTime),
             Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
 
             //runs shooting cmd
-            activateOuttakeShotCalc(),
+            Commands.print("================================= ACTIVATE OUTTAKE CMD ================================="),
+            activateOuttakeShotCalc().withTimeout(SuperstructureK.kShortOpsCheckShooterTime),
             Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
 
             //Swerve test
+            Commands.print("================================= START SWERVE OPSP CHECK ================================="),
             m_drivetrain.swerveAutomatedOpsCheck()
         );
     }
