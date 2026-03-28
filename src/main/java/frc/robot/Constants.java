@@ -589,15 +589,17 @@ public class Constants {
         public static final String kLeftOptimizedSweepPathName = "LeftSweepOptimized";
         public static final String kRightOptimizedSweepPathName = "RightSweepOptimized";
 
-        public static final String kLeftTwoSweepName = "LeftSweepTwo"; //NO LEFT TWO SWEEP PATH AS OF NOW
         public static final String kRightTwoSweepName = "RightSweepTwo";
 
         public static final String kFastRightTwoSweepName = "RightSweepFast";
-        public static final String kZigzagRightTwo = "RightSweepFast_ZigZag";
+        public static final String kSweepRightTwo = "RightSweepFast_two";
         public static final String kReshootRightTwo = "RightSweepFast_Reshoot";
+        public static final String kZigzagRightTwo = "RightSweepFast_ZigZag";
+        public static final String kRightTrenchSweep = "RightSweep_trench";
 
         public static final String kFastLeftTwoSweepName = "LeftSweepFast";
-        public static final String kReshootLeftTwo = "LeftSweepFast_copy1"; //TODO: MUST RENAME THIS
-        // public static final String kReshootLeftTwo = "LeftSweepFast_Reshoot";
+        public static final String kSweepLeftTwo = "LeftSweepFast_two";
+        public static final String kReshootLeftTwo = "LeftSweepFast_Reshoot";
+        public static final String kLeftTrenchSweep = "LeftSweep_trnech";
     }
 }
