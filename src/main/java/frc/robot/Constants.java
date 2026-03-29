@@ -2,6 +2,8 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.Constants.ShooterK.kPassingXAsDouble;
+
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CommutationConfigs;
@@ -102,6 +104,7 @@ public class Constants {
         // public static final Translation3d kPassingSpotLeft = new Translation3d(
         //     Meters.of(2), Meters.of(6.5), Meters.zero());
         public static final Distance kPassingX = Meters.of(2);
+        public static final double kPassingXAsDouble = kPassingX.baseUnitMagnitude();
         
         public static final double kShooterTimeout = 1.0;
 
