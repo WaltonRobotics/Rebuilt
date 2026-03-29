@@ -402,84 +402,83 @@ public class Constants {
         public static final AngularVelocity kIntakeRollersShootRPS = kIntakeRollersMaxRPS.times(0.2);
 
         /* IDS */
-        public static final int kIntakeArmA_CANID = 40;
-        public static final int kIntakeArmB_CANID = 41;
-        public static final int kIntakeRollersCANID = 42;
+        public static final int kIntakeArmCANID = 40;
+        public static final int kIntakeRollersA_CANID = 41;
+        public static final int kIntakeRollersB_CANID = 42;
 
         /* CONFIGS */
-        // IntakeArm Motors
-        private static final CurrentLimitsConfigs kIntakeArmACurrentLimitConfigs = new CurrentLimitsConfigs()
+        // IntakeArm Motor
+        private static final CurrentLimitsConfigs kIntakeArmCurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(20)
             .withSupplyCurrentLimit(20)
             .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
-        private static final Slot0Configs kIntakeArmASlot0Configs = new Slot0Configs()
+        private static final Slot0Configs kIntakeArmSlot0Configs = new Slot0Configs()
             .withKS(1.5)
             .withKV(0)
             .withKA(0)
             .withKP(50)
             .withKI(0)
             .withKD(0);
-        public static final MotorOutputConfigs kIntakeArmAMotorOutputConfigs = new MotorOutputConfigs()
+        public static final MotorOutputConfigs kIntakeArmMotorOutputConfigs = new MotorOutputConfigs()
             .withNeutralMode(NeutralModeValue.Brake)
             .withInverted(InvertedValue.Clockwise_Positive);
-        private static final MotionMagicConfigs kIntakeArmAMotionMagicConfigs = new MotionMagicConfigs()
+        private static final MotionMagicConfigs kIntakeArmMotionMagicConfigs = new MotionMagicConfigs()
             .withMotionMagicCruiseVelocity(0.75)
             .withMotionMagicAcceleration(10)
             .withMotionMagicJerk(0);
-        public static final FeedbackConfigs kIntakeArmAFeedbackConfigs = new FeedbackConfigs()
+        public static final FeedbackConfigs kIntakeArmFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kIntakeArmGearing);
-        private static final VoltageConfigs kIntakeArmAVoltageConfigs = new VoltageConfigs()
+        private static final VoltageConfigs kIntakeArmVoltageConfigs = new VoltageConfigs()
             .withPeakForwardVoltage(12)
             .withPeakReverseVoltage(-12);
-        public static final TalonFXConfiguration kIntakeArmAConfiguration = new TalonFXConfiguration()
-            .withCurrentLimits(kIntakeArmACurrentLimitConfigs)
-            .withSlot0(kIntakeArmASlot0Configs)
-            .withMotorOutput(kIntakeArmAMotorOutputConfigs)
-            .withMotionMagic(kIntakeArmAMotionMagicConfigs)
-            .withVoltage(kIntakeArmAVoltageConfigs)
-            .withFeedback(kIntakeArmAFeedbackConfigs);
-        
-        public static final MotorOutputConfigs kIntakeArmBMotorOutputConfigs = new MotorOutputConfigs()
-            .withNeutralMode(NeutralModeValue.Brake)
-            .withInverted(InvertedValue.CounterClockwise_Positive);
-        public static final TalonFXConfiguration kIntakeArmBConfiguration = new TalonFXConfiguration()
-            .withCurrentLimits(kIntakeArmACurrentLimitConfigs)
-            .withSlot0(kIntakeArmASlot0Configs)
-            .withMotorOutput(kIntakeArmBMotorOutputConfigs)
-            .withMotionMagic(kIntakeArmAMotionMagicConfigs)
-            .withVoltage(kIntakeArmAVoltageConfigs)
-            .withFeedback(kIntakeArmAFeedbackConfigs);
+        public static final TalonFXConfiguration kIntakeArmConfiguration = new TalonFXConfiguration()
+            .withCurrentLimits(kIntakeArmCurrentLimitConfigs)
+            .withSlot0(kIntakeArmSlot0Configs)
+            .withMotorOutput(kIntakeArmMotorOutputConfigs)
+            .withMotionMagic(kIntakeArmMotionMagicConfigs)
+            .withVoltage(kIntakeArmVoltageConfigs)
+            .withFeedback(kIntakeArmFeedbackConfigs);
 
-        // IntakeRollers Motor
-        private static final CurrentLimitsConfigs kIntakeRollersCurrentLimitConfigs = new CurrentLimitsConfigs()
+        // IntakeRollers Motors
+        private static final CurrentLimitsConfigs kIntakeRollersACurrentLimitConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(85)
             .withSupplyCurrentLimit(50)
             .withSupplyCurrentLowerTime(0)
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
-        private static final Slot0Configs kIntakeRollersSlot0Configs = new Slot0Configs()
+        private static final Slot0Configs kIntakeRollersASlot0Configs = new Slot0Configs()
             .withKS(0)
             .withKV(0.488599348534) // 0.19543973941
             .withKA(0)
             .withKP(0)
             .withKI(0)
             .withKD(0);
-        public static final MotorOutputConfigs kIntakeRollersMotorOutputConfigs = new MotorOutputConfigs()
+        public static final MotorOutputConfigs kIntakeRollersAMotorOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.Clockwise_Positive)
             .withNeutralMode(NeutralModeValue.Coast);
-        public static final FeedbackConfigs kIntakeRollersFeedbackConfigs = new FeedbackConfigs()
+        public static final FeedbackConfigs kIntakeRollersAFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kIntakeRollersGearing);
-        private static final VoltageConfigs kIntakeRollersVoltageConfigs = new VoltageConfigs()
+        private static final VoltageConfigs kIntakeRollersAVoltageConfigs = new VoltageConfigs()
             .withPeakForwardVoltage(12)    //1.2
             .withPeakReverseVoltage(-12);  //-1.2
-        public static final TalonFXConfiguration kIntakeRollersConfiguration = new TalonFXConfiguration()
-            .withCurrentLimits(kIntakeRollersCurrentLimitConfigs)
-            .withSlot0(kIntakeRollersSlot0Configs)
-            .withMotorOutput(kIntakeRollersMotorOutputConfigs)
-            .withFeedback(kIntakeRollersFeedbackConfigs)
-            .withVoltage(kIntakeRollersVoltageConfigs);
+        public static final TalonFXConfiguration kIntakeRollersAConfiguration = new TalonFXConfiguration()
+            .withCurrentLimits(kIntakeRollersACurrentLimitConfigs)
+            .withSlot0(kIntakeRollersASlot0Configs)
+            .withMotorOutput(kIntakeRollersAMotorOutputConfigs)
+            .withFeedback(kIntakeRollersAFeedbackConfigs)
+            .withVoltage(kIntakeRollersAVoltageConfigs);
+
+        public static final MotorOutputConfigs kIntakeRollersBMotorOutputConfigs = new MotorOutputConfigs()
+            .withInverted(InvertedValue.CounterClockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Coast);
+        public static final TalonFXConfiguration kIntakeRollersBConfiguration = new TalonFXConfiguration()
+            .withCurrentLimits(kIntakeRollersACurrentLimitConfigs)
+            .withSlot0(kIntakeRollersASlot0Configs)
+            .withMotorOutput(kIntakeRollersBMotorOutputConfigs)
+            .withFeedback(kIntakeRollersAFeedbackConfigs)
+            .withVoltage(kIntakeRollersAVoltageConfigs);
     }
 
     public static class IndexerK {
