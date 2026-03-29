@@ -173,7 +173,7 @@ public class WaltSimpleAutonFactory {
         return routine;
     }
 
-    //TODO: OPTIMIZE SO THAT IT CAN ACTUALLY SHOOT TWO CYCLES DURNG AUTON
+    //TODO: THIS LOGIC NEEDS TO CHANGE
     /**
      * 2 full cycle auto routine
      * <p> (goes to neutral zone, picks up balls, goes back to alliance zone to shoot them) x2
@@ -280,19 +280,24 @@ public class WaltSimpleAutonFactory {
     }
 
     /**
-     * one sweep auton + going to the depot after the first sweep
+     * one sweep auton, going to the depot after the first sweep, and then heading back to the neutral zone + coming back to reshoot
      * <p> once the first sweep traj ends, the robot starts shooting and continues to shoot until auton ends
      * @return
      */
     public AutoRoutine oneSweepToDepot() {
         String path1 = AutonK.kFastLeftSweep;
-        String path2 = "LeftSweepFast_Depot";
+        String path2 = "LeftSweepTwo_Depot_copy1"; //AutonK.kDepotLeftTwo;
+        String path3 = AutonK.kReshootLeftTwo;
         AutoRoutine routine = m_autoFactory.newRoutine("oneSweepToDepot");
         AutoTrajectory traj1 = createTraj(routine, path1);
         AutoTrajectory traj2 = createTraj(routine, path2);
+        AutoTrajectory traj3 = createTraj(routine, path3);
 
         Trigger stopIntk1Trg = traj1.atTime("stopIntake");
-        Trigger startIntakeTrg = traj2.atTime("startIntake");
+        Trigger startIntk1Trg = traj2.atTime("startIntake");
+        Trigger retractIntakeTrg = traj2.atTime("retractIntake");
+        Trigger startIntk2Trg = traj3.atTime("startIntake");
+        Trigger stopIntk2Trg = traj3.atTime("stopIntake");
 
         routine.active().onTrue(
             homingCmd().andThen(
@@ -311,8 +316,22 @@ public class WaltSimpleAutonFactory {
 
         traj1.done().onTrue(traj2.cmd());
 
-        startIntakeTrg.onTrue(
+        startIntk1Trg.onTrue(
             m_superstructure.intake(() -> false)
+        );
+
+        retractIntakeTrg.onTrue(
+            m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+        );
+
+        traj2.done().onTrue(traj3.cmd());
+
+        startIntk2Trg.onTrue(
+            m_superstructure.intake(() -> false).until(stopIntk2Trg)
+        );
+
+        traj3.done().onTrue(
+            m_superstructure.activateOuttakeShotCalc()
         );
 
         return routine;
