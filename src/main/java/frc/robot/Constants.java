@@ -550,10 +550,10 @@ public class Constants {
             .withVoltage(kSpindexerVoltageConfigs);
 
         private static final Slot0Configs kTunnelSlot0Configs = new Slot0Configs()
-            .withKS(0.1124)
-            .withKV(0.102)
+            .withKS(0.4)
+            .withKV(0.047)
             .withKA(0)
-            .withKP(0.06)
+            .withKP(0.1)
             .withKI(0)
             .withKD(0);
         private static final CurrentLimitsConfigs kTunnelCurrentLimitConfigs = new CurrentLimitsConfigs()
