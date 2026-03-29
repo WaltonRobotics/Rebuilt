@@ -33,6 +33,7 @@ public class Hood extends SubsystemBase {
     private final BooleanLogger log_hoodHomed = WaltLogger.logBoolean("Shooter/Hood", "Homed");
     private final DoubleLogger log_hoodControlPos = WaltLogger.logDouble("Shooter/Hood", "hoodControlPos");
     private final DoubleLogger log_hoodCurrentPos = WaltLogger.logDouble("Shooter/Hood", "hoodCurrentPos");
+    private final DoubleLogger log_hoodPositionDeg = WaltLogger.logDouble("Shooter/Hood", "hoodPositionDeg"); //for debugging purposes
 
     private Debouncer m_currentDebouncer = new Debouncer(0.125, DebounceType.kRising);
 
@@ -114,6 +115,7 @@ public class Hood extends SubsystemBase {
 
     @Override
     public void periodic() {
-        log_hoodCurrentPos.accept(getHoodAngleDeg()); 
+        log_hoodCurrentPos.accept(getHoodAngleDeg());
+        log_hoodPositionDeg.accept(m_hood.getPosition().getValue().in(Degrees));
     }
 }
