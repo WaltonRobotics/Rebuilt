@@ -124,7 +124,7 @@ public class WaltSimpleAutonFactory {
      * @return
      */
     public AutoRoutine fastTwoSweep_noReshoot(boolean left) {
-        String path1 = left ? AutonK.kFastLeftTwoSweepName : AutonK.kFastRightTwoSweepName;
+        String path1 = left ? AutonK.kFastLeftSweep : AutonK.kFastRightSweep;
         String path2 = left ? AutonK.kSweepLeftTwo : AutonK.kSweepRightTwo;
         AutoRoutine routine = m_autoFactory.newRoutine(
             "fastTwoSweep_Reshoot_" + (left ? "L" : "R"));
@@ -173,6 +173,7 @@ public class WaltSimpleAutonFactory {
         return routine;
     }
 
+    //TODO: OPTIMIZE SO THAT IT CAN ACTUALLY SHOOT TWO CYCLES DURNG AUTON
     /**
      * 2 full cycle auto routine
      * <p> (goes to neutral zone, picks up balls, goes back to alliance zone to shoot them) x2
@@ -180,7 +181,7 @@ public class WaltSimpleAutonFactory {
      * @return
      */
     public AutoRoutine fastTwoSweep_Reshoot(boolean left) {
-        String path1 = left ? AutonK.kFastLeftTwoSweepName : AutonK.kFastRightTwoSweepName;
+        String path1 = left ? AutonK.kFastLeftSweep : AutonK.kFastRightSweep;
         String path2 = left ? AutonK.kReshootLeftTwo : AutonK.kReshootRightTwo;
         AutoRoutine routine = m_autoFactory.newRoutine(
             "fastTwoSweep_Reshoot_" + (left ? "L" : "R"));
@@ -249,7 +250,7 @@ public class WaltSimpleAutonFactory {
      * @return
      */
     public AutoRoutine oneTrenchSweep(boolean left) {
-        String path = left ? AutonK.kLeftTrenchSweep : AutonK.kRightTrenchSweep;
+        String path = left ? AutonK.kTrenchLeftSweep : AutonK.kTrenchRightSweep;
         AutoRoutine routine = m_autoFactory.newRoutine("oneTrenchSweep_" + (left ? "L" : "R"));
         AutoTrajectory traj = createTraj(routine, path);
 
@@ -273,6 +274,45 @@ public class WaltSimpleAutonFactory {
 
         traj.doneDelayed(2.5).onTrue(
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+        );
+
+        return routine;
+    }
+
+    /**
+     * one sweep auton + going to the depot after the first sweep
+     * <p> once the first sweep traj ends, the robot starts shooting and continues to shoot until auton ends
+     * @return
+     */
+    public AutoRoutine oneSweepToDepot() {
+        String path1 = AutonK.kFastLeftSweep;
+        String path2 = "LeftSweepFast_Depot";
+        AutoRoutine routine = m_autoFactory.newRoutine("oneSweepToDepot");
+        AutoTrajectory traj1 = createTraj(routine, path1);
+        AutoTrajectory traj2 = createTraj(routine, path2);
+
+        Trigger stopIntk1Trg = traj1.atTime("stopIntake");
+        Trigger startIntakeTrg = traj2.atTime("startIntake");
+
+        routine.active().onTrue(
+            homingCmd().andThen(
+                m_superstructure.intake(() -> false)
+            ).until(stopIntk1Trg)
+        );
+
+        // cope to "stop" superstructure intaking
+        traj1.done().onTrue(
+            m_intake.setIntakeRollersVelocityCmd(4)
+        );
+
+        traj1.done().onTrue(
+            m_superstructure.activateOuttakeShotCalc()
+        );
+
+        traj1.done().onTrue(traj2.cmd());
+
+        startIntakeTrg.onTrue(
+            m_superstructure.intake(() -> false)
         );
 
         return routine;

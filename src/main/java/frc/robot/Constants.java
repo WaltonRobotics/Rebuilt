@@ -583,15 +583,19 @@ public class Constants {
         public static final double kIntakeTimeout = 7.5;
         public static final double kShootingTimeout = 6; //12
 
-        public static final String kFastRightTwoSweepName = "RightSweepFast";
-        public static final String kSweepRightTwo = "RightSweepFast_two";
-        public static final String kReshootRightTwo = "RightSweepFast_Reshoot";
-        public static final String kZigzagRightTwo = "RightSweepFast_ZigZag";
-        public static final String kRightTrenchSweep = "RightSweep_trench";
+        public static final String kFastRightSweep = "RightSweep_Fast";
+        public static final String kTrenchRightSweep = "RightSweep_Trench";
 
-        public static final String kFastLeftTwoSweepName = "LeftSweepFast";
-        public static final String kSweepLeftTwo = "LeftSweepFast_two";
-        public static final String kReshootLeftTwo = "LeftSweepFast_Reshoot";
-        public static final String kLeftTrenchSweep = "LeftSweep_trench";
+        public static final String kSweepRightTwo = "RightSweepTwo_Sweep";
+        public static final String kReshootRightTwo = "RightSweepTwo_Reshoot";
+        public static final String kZigzagRightTwo = "RightSweepTwo_ZigZag";
+
+        public static final String kFastLeftSweep = "LeftSweep_Fast";
+        public static final String kTrenchLeftSweep = "LeftSweep_Trench";
+
+        public static final String kDepotLeftTwo = "LeftSweepTwo_Depot";
+        public static final String kSweepLeftTwo = "LeftSweepTwo_Sweep";
+        public static final String kReshootLeftTwo = "LeftSweepTwo_Reshoot";
+        public static final String kZigZagLeftTwo = "LeftSweepTwo_ZigZag";
     }
 }

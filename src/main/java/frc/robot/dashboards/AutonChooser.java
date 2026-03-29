@@ -20,6 +20,8 @@ public class AutonChooser {
             () -> simpleAutonFactory.fastTwoSweep_Reshoot(true));
         m_chooser.addRoutine("Preload Auton",
             () -> simpleAutonFactory.preloadAuton());
+        m_chooser.addRoutine("Left Neutral To Depot Pickup",
+            () -> simpleAutonFactory.oneSweepToDepot());
 
         SmartDashboard.putData("AutoChooser", m_chooser);
     }
