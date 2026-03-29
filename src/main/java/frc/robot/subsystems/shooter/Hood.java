@@ -20,6 +20,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.ShooterK;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -33,11 +34,9 @@ public class Hood extends SubsystemBase {
     private final DoubleLogger log_hoodControlPos = WaltLogger.logDouble("Shooter/Hood", "hoodControlPos");
     private final DoubleLogger log_hoodCurrentPos = WaltLogger.logDouble("Shooter/Hood", "hoodCurrentPos");
 
-    private Debouncer m_currentDebouncer = new Debouncer(0.100, DebounceType.kRising);
-    private Debouncer m_velocityDebouncer = new Debouncer(0.125, DebounceType.kRising);
+    private Debouncer m_currentDebouncer = new Debouncer(0.125, DebounceType.kRising);
 
-    private BooleanSupplier m_currentSpike = () -> m_hood.getStatorCurrent().getValueAsDouble() > 10.0;
-    private BooleanSupplier m_veloIsNearZero = () -> Math.abs(m_hood.getVelocity().getValueAsDouble()) < 0.005;
+    private BooleanSupplier m_currentSpike = () -> m_hood.getStatorCurrent().getValueAsDouble() > 5.0;
 
     private final StaticBrake m_BrakeReq = new StaticBrake();
 
@@ -46,7 +45,7 @@ public class Hood extends SubsystemBase {
     public Hood() {
         m_hood.getConfigurator().apply(kHoodTalonFXSConfiguration);
 
-        m_hood.setPosition(kHoodMinPosition);
+        m_hood.setPosition(0);
         m_isHoodHomed = true;
         log_hoodHomed.accept(m_isHoodHomed);
 
@@ -70,9 +69,9 @@ public class Hood extends SubsystemBase {
 
     private double getHoodAngleDeg() {
         double hoodPositionDeg = m_hood.getPosition().getValue().in(Degrees);
-        double absoluteToPhysicalAngleRatio = (360 * (kHoodMaxRots_double - kHoodMinPosition_double))/(kPhysicalHoodMaxPosition_double - kPhysicalHoodMinPosition_double);
+        double absoluteToPhysicalAngleRatio = (360 * (kHoodMaxRots_double - kHoodMinRots_double))/(kPhysicalHoodMaxPosition_double - kPhysicalHoodMinPosition_double);
 
-        return kPhysicalHoodMinPosition_double + (hoodPositionDeg - (kHoodMinPosition_double * 360)) * (absoluteToPhysicalAngleRatio);
+        return kPhysicalHoodMinPosition_double + (hoodPositionDeg - (kHoodMinRots_double * 360)) * (absoluteToPhysicalAngleRatio);
     }
 
     public boolean isHoodHomed() {
@@ -81,7 +80,8 @@ public class Hood extends SubsystemBase {
 
     public Command hoodCurrentSenseHomingCmd(){
         Runnable init = () -> {
-            m_hood.setControl(m_hoodZeroReq.withOutput(kHomingVoltage));
+            m_hood.getConfigurator().apply(ShooterK.kHoodTalonFXSConfigurationNoSoftLimit);
+            m_hood.setControl(m_hoodZeroReq.withOutput(kHoodHomingVoltage));
             m_isHoodHomed = false;
             log_hoodHomed.accept(m_isHoodHomed);
         };
@@ -94,16 +94,16 @@ public class Hood extends SubsystemBase {
                 return;
             }
 
-            m_hood.setPosition(kHoodMinPosition);
+            m_hood.setPosition(kHoodAbsoluteMinRots);
             m_hood.setControl(m_BrakeReq);
             removeDefaultCommand();
             m_isHoodHomed = true;
+            m_hood.getConfigurator().apply(ShooterK.kHoodTalonFXSConfiguration);
             log_hoodHomed.accept(m_isHoodHomed);
         };
 
         BooleanSupplier isFinished = () -> 
-            m_currentDebouncer.calculate(m_currentSpike.getAsBoolean()) &&
-            m_velocityDebouncer.calculate(m_veloIsNearZero.getAsBoolean());
+            m_currentDebouncer.calculate(m_currentSpike.getAsBoolean());
 
         return new FunctionalCommand(init, () -> {}, end, isFinished, this).withTimeout(5);
     }

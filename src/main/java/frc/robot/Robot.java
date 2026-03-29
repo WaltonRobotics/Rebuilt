@@ -122,9 +122,6 @@ public class Robot extends TimedRobot {
     private Trigger trg_intakeShimmy = m_manipulator.leftBumper();
 
     //---OVERRIDE TRIGGERS
-    private Trigger trg_deployIntakeOverride = trg_manipOverride.and(m_manipulator.rightTrigger());
-    private Trigger trg_intakeUpOverride = trg_manipOverride.and(m_manipulator.leftTrigger());
-
     private final Trigger trg_limitFPS = RobotModeTriggers.disabled();
     private final Trigger trg_unlimitFps = RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop());
 
@@ -267,14 +264,14 @@ public class Robot extends TimedRobot {
             m_superstructure.intake(() -> false)
         );
 
-        trg_retractIntake.onTrue(
-            m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
-        );
+        // trg_retractIntake.onTrue(
+        //     m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+        // );
 
         //Shooting
         // NORMAL FIXED SHOT
         // trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
-        trg_shoot/*.and(() -> m_shooter.m_turret.atPosition()).*/.whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
+        trg_shoot.and(() -> m_shooter.m_turret.atPosition()).whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
 
         // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));
         // m_driver.a().onTrue(m_shooter.driverRPSAlter(false));
@@ -283,8 +280,8 @@ public class Robot extends TimedRobot {
 
         // m_driver.leftBumper().whileTrue(m_shooter.driverRPSIncreaseWhileHeldCmd());
 
-        m_manipulator.povUp().onTrue(m_intake.setIntakeFlapServoCmd(IntakeK.kIntakeFlapDeployPos));
-        m_manipulator.povDown().onTrue(m_intake.setIntakeFlapServoCmd(0));
+        // m_manipulator.povUp().onTrue(m_intake.setIntakeFlapServoCmd(IntakeK.kIntakeFlapDeployPos));
+        // m_manipulator.povDown().onTrue(m_intake.setIntakeFlapServoCmd(0));
 
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
@@ -310,17 +307,10 @@ public class Robot extends TimedRobot {
         //---OVERRIDE COMMANDS
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
 
-        // m_manipulator.y().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(35)));
-        // m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(1)));
-
-        trg_deployIntakeOverride.onTrue(
-            m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)
-        ).onFalse(
-            m_superstructure.intakeTo(IntakeArmPosition.SAFE)
-        );
-        trg_intakeUpOverride.onTrue(
-            m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
-        );
+        m_manipulator.y().and(trg_manipOverride).onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double));
+        m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMinRots_double));
+        m_manipulator.start().and(trg_manipOverride).onTrue(m_shooter.m_hood.hoodCurrentSenseHomingCmd());
+        m_manipulator.leftTrigger().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double / 2.0));
 
         // m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
 
@@ -338,7 +328,7 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
-        m_driver.povLeft().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMinPosition_double));
+        m_driver.povLeft().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMinRots_double));
         m_driver.povUp().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double));
     }
 
@@ -448,7 +438,7 @@ public class Robot extends TimedRobot {
             m_disableChangeDelayTimer.stop();
             m_disableChangeDelayTimer.reset();
             m_shooter.m_turret.setTurretNeutralMode(NeutralModeValue.Coast);
-            m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
+            // m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
             m_shooter.m_hood.setHoodNeutralMode(NeutralModeValue.Coast);
         }
     }

@@ -140,15 +140,15 @@ public class Constants {
         //---HOOD CONSTANTS
         public static final double kHoodMoI = 0.00027505;
 
-        public static final Angle kHoodMinPosition = Rotations.of(0.1);
-        private static final Angle kHoodMaxRots = Rotations.of(1.82195); //apparently this is 26 or 27 degrees? idk thats where we're telling it to go sooo..
-        public static final Angle kHoodMaxDegs = Degrees.of(kHoodMaxRots.in(Degrees));
+        public static final Angle kHoodAbsoluteMinRots = Rotations.of(0.0); //ABSOLUTE MIN
+        private static final Angle kHoodAbsoluteMaxRots = Rotations.of(1.174805); //ABSOLUTE MAX
+        public static final Angle kHoodMaxDegs = Degrees.of(kHoodAbsoluteMaxRots.in(Degrees));
         public static final Angle kHoodLockDegs = Degrees.of(kHoodMaxDegs.times(0.75).in(Degrees));
 
         //double versions
-        public static final double kHoodMinPosition_double = 0.1;
-        public static final double kHoodMaxRots_double = 1.82195;
-        public static final double kPhysicalHoodMinPosition_double = 10;
+        public static final double kHoodMinRots_double = 0.0;
+        public static final double kHoodMaxRots_double = kHoodAbsoluteMaxRots.in(Rotations);
+        public static final double kPhysicalHoodMinPosition_double = 0;
         public static final double kPhysicalHoodMaxPosition_double = 48;
         public static final double kHoodLockRots_double = kHoodMaxRots_double * 0.75;
 
@@ -170,7 +170,7 @@ public class Constants {
         /* HOMING */
         public static final Current kWireTugMinAmps = Amps.of(8);
         public static final double kWireTugMinSecs = 0.125;
-        public static final double kHomingVoltage = -0.75 * 2.0;
+        public static final double kHoodHomingVoltage = -0.75;
         public static final Angle kHomingRetryReturnRots = Rotations.of(0.2);
         public static final Angle kHomePosition = Rotations.of(-0.2175);
         public static final Angle kInitPosition = Rotations.of(-0.145);
@@ -250,13 +250,30 @@ public class Constants {
             .withMotorArrangement(MotorArrangementValue.NEO550_JST);
         private static final ExternalFeedbackConfigs kHoodFeedbackConfigs = new ExternalFeedbackConfigs()
             .withSensorToMechanismRatio(kHoodGearing);
+        public static final SoftwareLimitSwitchConfigs kHoodSoftLimitConfigs = new SoftwareLimitSwitchConfigs()
+            .withForwardSoftLimitThreshold(kHoodAbsoluteMaxRots.minus(Rotations.of(0.05)))
+            .withReverseSoftLimitThreshold(kHoodAbsoluteMinRots.plus(Rotations.of(0.05)))
+            .withForwardSoftLimitEnable(true)
+            .withReverseSoftLimitEnable(true);
+        public static final SoftwareLimitSwitchConfigs kHoodSoftLimitConfigsNoEnable = kHoodSoftLimitConfigs
+            .withForwardSoftLimitEnable(false)
+            .withReverseSoftLimitEnable(false); 
         public static final TalonFXSConfiguration kHoodTalonFXSConfiguration = new TalonFXSConfiguration()
             .withSlot0(kHoodSlot0Configs)
             .withCurrentLimits(kHoodCurrentLimitConfig)
             .withMotorOutput(kHoodOutputConfigs)
             .withExternalFeedback(kHoodFeedbackConfigs)
             .withVoltage(kHoodVoltageConfigs)
-            .withCommutation(kHoodCommutationConfigs);
+            .withCommutation(kHoodCommutationConfigs)
+            .withSoftwareLimitSwitch(kHoodSoftLimitConfigs);
+        public static final TalonFXSConfiguration kHoodTalonFXSConfigurationNoSoftLimit = new TalonFXSConfiguration()
+            .withSlot0(kHoodSlot0Configs)
+            .withCurrentLimits(kHoodCurrentLimitConfig)
+            .withMotorOutput(kHoodOutputConfigs)
+            .withExternalFeedback(kHoodFeedbackConfigs)
+            .withVoltage(kHoodVoltageConfigs)
+            .withCommutation(kHoodCommutationConfigs)
+            .withSoftwareLimitSwitch(kHoodSoftLimitConfigsNoEnable);
 
         //---TURRET
         private static final Slot0Configs kTurretSlot0Configs = new Slot0Configs()
