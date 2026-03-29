@@ -52,8 +52,28 @@ public class ShotCalculator {
         minDistance = 0.94;
         maxDistance = 5.8;
 
-        m_shotMap.put(5.303, new ShotData(RotationsPerSecond.of(58.47), Rotations.of(0.90)));
-        m_timeOfFlightMap.put(5.303, 1.65);
+        //Ordered via DistanceToTarget
+        addLerpPoint(5.700, 59.47, 0.88, 1.33);
+        addLerpPoint(5.628, 59.47, 0.91, 1.39);
+        addLerpPoint(5.515, 59.50, 0.87, 1.30);
+        addLerpPoint(5.412, 58.50, 0.86, 1.27);
+        addLerpPoint(5.303, 58.47, 0.90, 1.65);
+        addLerpPoint(5.060, 57.00, 0.85, 1.26);
+        addLerpPoint(4.910, 56.00, 0.81, 1.17);
+        addLerpPoint(4.874, 55.50, 0.80, 1.29);
+        addLerpPoint(4.684, 54.00, 0.77, 1.21);
+        addLerpPoint(4.562, 54.50, 0.55, 1.13);
+        addLerpPoint(4.496, 55.86, 0.45, 1.40);
+        addLerpPoint(4.407, 55.86, 0.45, 1.38);
+        addLerpPoint(4.108, 55.86, 0.42, 1.40);
+        addLerpPoint(4.000, 55.46, 0.42, 1.37);
+        addLerpPoint(3.944, 54.90, 0.37, 1.33);
+        addLerpPoint(3.823, 55.20, 0.20, 1.47);
+    }
+
+    public static void addLerpPoint(double distanceToTarget, double shooterRPS, double hoodRots, double timeOfFlight) {
+        m_shotMap.put(distanceToTarget, new ShotData(RotationsPerSecond.of(shooterRPS), Rotations.of(hoodRots)));
+        m_timeOfFlightMap.put(distanceToTarget, timeOfFlight);
     }
 
     
