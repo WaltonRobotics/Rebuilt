@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.sim.ChassisReference;
@@ -37,14 +39,16 @@ import frc.util.WaltLogger;
 public class Intake extends SubsystemBase {
     /* CLASS VARIABLES */
     //---MOTORS + CONTROL REQUESTS
-    private final TalonFX m_intakeArm = new TalonFX(kIntakeArmA_CANID); //x44Foc
+    private final TalonFX m_intakeArmA = new TalonFX(kIntakeArmA_CANID); //x60Foc
+    private final TalonFX m_intakeArmB = new TalonFX(kIntakeArmB_CANID); //x60Foc
+
     private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID); //x60Foc
 
     private DynamicMotionMagicVoltage m_MMVReq = new DynamicMotionMagicVoltage(0, 1, 1).withEnableFOC(true);
     private VoltageOut m_VVReq = new VoltageOut(0).withEnableFOC(false);
 
-    private BooleanSupplier m_currentSpike = () -> m_intakeArm.getStatorCurrent().getValueAsDouble() > 5.0;
-    private BooleanSupplier m_veloIsNearZero = () -> Math.abs(m_intakeArm.getVelocity().getValueAsDouble()) < 0.005;
+    private BooleanSupplier m_currentSpike = () -> m_intakeArmA.getStatorCurrent().getValueAsDouble() > 5.0;
+    private BooleanSupplier m_veloIsNearZero = () -> Math.abs(m_intakeArmA.getVelocity().getValueAsDouble()) < 0.005;
 
     private VoltageOut m_intakeArmZeroingReq = new VoltageOut(0);
 
@@ -85,8 +89,12 @@ public class Intake extends SubsystemBase {
 
     /* CONSTRUCTOR */
     public Intake() {
-        m_intakeArm.getConfigurator().apply(kIntakeArmConfiguration);
+        m_intakeArmA.getConfigurator().apply(kIntakeArmAConfiguration);
+        m_intakeArmB.getConfigurator().apply(kIntakeArmBConfiguration);
+
         m_intakeRollers.getConfigurator().apply(kIntakeRollersConfiguration);
+
+        m_intakeArmB.setControl(new Follower(kIntakeArmA_CANID, MotorAlignmentValue.Opposed));
 
         if (Robot.isReal()) {
             setDefaultCommand(intakeArmCurrentSenseHoming());
@@ -97,7 +105,7 @@ public class Intake extends SubsystemBase {
     }
 
     private void initSim() {
-        WaltMotorSim.initSimFX(m_intakeArm, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
+        WaltMotorSim.initSimFX(m_intakeArmA, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
         WaltMotorSim.initSimFX(m_intakeRollers, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
     }
 
@@ -115,11 +123,11 @@ public class Intake extends SubsystemBase {
     }
 
     public void setIntakeArmPos(Angle rots, double RPSPS) {
-        m_intakeArm.setControl(m_MMVReq.withPosition(rots).withAcceleration(RPSPS));
+        m_intakeArmA.setControl(m_MMVReq.withPosition(rots).withAcceleration(RPSPS));
     }
 
     public boolean isIntakeArmAtDest() {
-       return m_intakeArm.getMotionMagicAtTarget().getValue();
+       return m_intakeArmA.getMotionMagicAtTarget().getValue();
     }
 
     public Command shimmy() {
@@ -138,12 +146,12 @@ public class Intake extends SubsystemBase {
     }
 
      public void setIntakeArmNeutralMode(NeutralModeValue value) {
-        m_intakeArm.setNeutralMode(value);
+        m_intakeArmA.setNeutralMode(value);
     }
 
     //for TestingDashboard
     public Command setIntakeArmPos(DoubleSubscriber sub_rots) {
-        return run(() -> m_intakeArm.setControl(m_MMVReq.withPosition(Rotations.of(sub_rots.get()))));
+        return run(() -> m_intakeArmA.setControl(m_MMVReq.withPosition(Rotations.of(sub_rots.get()))));
     }
 
     public Command startIntakeRollers() {
@@ -166,7 +174,7 @@ public class Intake extends SubsystemBase {
     public Command intakeArmHome() {
         return Commands.parallel(
             Commands.sequence(
-                runOnce(() -> m_intakeArm.setPosition(0)),
+                runOnce(() -> m_intakeArmA.setPosition(0)),
 
                 runOnce(() -> m_isIntakeArmHomed = true),
                 runOnce(() -> log_isIntakeArmHomed.accept(m_isIntakeArmHomed)),
@@ -178,7 +186,7 @@ public class Intake extends SubsystemBase {
 
     public Command intakeArmCurrentSenseHoming() {
         Runnable init = () -> {
-            m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(-3.25));
+            m_intakeArmA.setControl(m_intakeArmZeroingReq.withOutput(-3.25));
 
             m_isIntakeArmHomed = false;
             log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
@@ -187,8 +195,8 @@ public class Intake extends SubsystemBase {
         Runnable execute = () -> {};
 
         Consumer<Boolean> onEnd = (Boolean interrupted) -> {
-            m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(0));
-            m_intakeArm.setPosition(0);
+            m_intakeArmA.setControl(m_intakeArmZeroingReq.withOutput(0));
+            m_intakeArmA.setPosition(0);
             removeDefaultCommand();
             setIntakeArmPosCmd(IntakeArmPosition.RETRACTED);
             m_isIntakeArmHomed = true;
@@ -208,12 +216,12 @@ public class Intake extends SubsystemBase {
         log_targetIntakeArmRots.accept(m_MMVReq.Position);
         log_targetIntakeRollersRPS.accept(m_VVReq.Output);
         log_intakeRollersRPS.accept(m_intakeRollers.getVelocity().getValueAsDouble());
-        log_intakeArmRots.accept(m_intakeArm.getPosition().getValueAsDouble());
+        log_intakeArmRots.accept(m_intakeArmA.getPosition().getValueAsDouble());
     }
 
     @Override
     public void simulationPeriodic() {
-        WaltMotorSim.updateSimFX(m_intakeArm, m_intakeArmSim);
+        WaltMotorSim.updateSimFX(m_intakeArmA, m_intakeArmSim);
         WaltMotorSim.updateSimFX(m_intakeRollers, m_intakeRollersSim);
     }
 
