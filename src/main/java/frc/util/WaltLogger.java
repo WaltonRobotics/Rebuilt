@@ -161,6 +161,30 @@ public class WaltLogger {
         return new Pose3dLogger(name, table, options);
     }
 
+    public static final class Translation3dArrayLogger implements Consumer<Translation3d[]> {
+        public final StructArrayPublisher<Translation3d> ntPub;
+        public final StructArrayLogEntry<Translation3d> logEntry;
+
+        public Translation3dArrayLogger(String subTable, String name, PubSubOption... options) {
+            StructArrayTopic<Translation3d> topic = logTable.getSubTable(subTable).getStructArrayTopic(name, new Translation3dStruct());
+            ntPub = topic.publish(options);
+            logEntry = StructArrayLogEntry.create(DataLogManager.getLog(), "Robot/" + subTable + "/" + name, new Translation3dStruct());
+        }
+
+        @Override
+        public void accept(Translation3d[] value) {
+            if (shouldPublishNt()) {
+                ntPub.set(value);
+            } else {
+                logEntry.append(value);
+            }
+        }
+    }
+
+    public static Translation3dArrayLogger logTranslation3dArray(String table, String name, PubSubOption... options) {
+        return new Translation3dArrayLogger(table, name, options);
+    }
+
     // public static final class Translation2dLogger implements Consumer<Translation2d> {
     //     public final StructPublisher<Translation2d> ntPub;
     //     public final StructLogEntry<Translation2d> logEntry;
