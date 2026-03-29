@@ -111,9 +111,6 @@ public class Robot extends TimedRobot {
     private Trigger trg_manipOverride = m_manipulator.b();
 
     //---COMMAND SEQUENCE TRIGGERS
-
-    // private Trigger trg_activateIntake = m_manipulator.a().and(trg_manipOverride.negate());
-    // private Trigger trg_safeIntake = m_manipulator.x().and(trg_manipOverride.negate());
     private Trigger trg_intake = m_manipulator.rightTrigger().and(trg_manipOverride.negate());
     private Trigger trg_retractIntake = m_manipulator.rightBumper().and(trg_manipOverride.negate());
 
@@ -128,11 +125,6 @@ public class Robot extends TimedRobot {
 
     private Trigger trg_unjam = m_driver.rightBumper();
 
-
-    /* LOGGERS */
-    private final DoubleLogger log_stickDesiredFieldX = WaltLogger.logDouble("Swerve", "stick desired teleop x");
-    private final DoubleLogger log_stickDesiredFieldY = WaltLogger.logDouble("Swerve", "stick desired teleop y");
-    private final DoubleLogger log_stickDesiredFieldZRot = WaltLogger.logDouble("Swerve", "stick desired teleop z rot");
     private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble(kLogTab, "MiniPC current");
     private final Pose2dLogger log_robotPose = WaltLogger.logPose2d("Drive", "Pose");
 
@@ -156,7 +148,7 @@ public class Robot extends TimedRobot {
     public Robot() {
         configureBindings();
         // configureTestBindings();    //this should be commented out during competition matches
-        configureTestingDashboard();
+        // configureTestingDashboard();
 
         lastGotTagMsmtTimer.start();
 
@@ -271,8 +263,8 @@ public class Robot extends TimedRobot {
 
         //Shooting
         // NORMAL FIXED SHOT
-        trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
-        // trg_shoot.and(() -> m_shooter.m_turret.atPosition()).whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
+        // trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
+        trg_shoot.and(() -> m_shooter.m_turret.atPosition()).whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
 
         // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));
         // m_driver.a().onTrue(m_shooter.driverRPSAlter(false));
@@ -287,6 +279,8 @@ public class Robot extends TimedRobot {
         trg_intake.and(trg_shoot).whileTrue(
             m_superstructure.intake(() -> true)
         );
+
+        trg_retractIntake.onTrue(m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED));
 
         trg_emergencyBarf.whileTrue(
             m_superstructure.emergencyBarf()
@@ -319,7 +313,6 @@ public class Robot extends TimedRobot {
         m_driver.povUp().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX(), m_drivetrain.getState().Pose.getY() + Inches.of(20).magnitude()), 0.001));
         m_driver.povRight().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX() + Inches.of(20).magnitude(), m_drivetrain.getState().Pose.getY()), 0.001));
         m_driver.povLeft().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX() - Inches.of(20).magnitude(), m_drivetrain.getState().Pose.getY()), 0.001));
-
 
         // m_driver.start().whileTrue(m_superstructure.activateOuttakeNOSHOOT());
         // trg_optimalPrefireTime.whileTrue(
@@ -442,7 +435,7 @@ public class Robot extends TimedRobot {
             m_disableChangeDelayTimer.stop();
             m_disableChangeDelayTimer.reset();
             m_shooter.m_turret.setTurretNeutralMode(NeutralModeValue.Coast);
-            // m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
+            m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
             m_shooter.m_hood.setHoodNeutralMode(NeutralModeValue.Coast);
         }
     }

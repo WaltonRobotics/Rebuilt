@@ -304,13 +304,13 @@ public class Shooter extends SubsystemBase {
             var turretVelocityFF = calcData.turretCalcDetails().turretVelocityFF();
             if (m_turret.getTurretLocked()) {
                 m_turret.setTurretPos(m_turret.getTurretLockAngle());
-                // m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
+                m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
             } else {
                 if (m_turret.getHoldTurretAtIntake()) {
                     // m_turret.setTurretPos(Rotations.of(-0.250));
                 } else {
                     m_turret.setTurretPos(turretReference, turretVelocityFF);
-                    // m_calcFlywheelVelocityRotPerSec = calcData.shooterReferenceRps();
+                    m_calcFlywheelVelocityRotPerSec = calcData.shooterReferenceRps();
                     if (false) { // ENABLE THIS TO ALLOW DRIVER RPS TWEAK
                         m_calcFlywheelVelocityRotPerSec += m_driverRPSTweak;
                         m_calcFlywheelVelocityRotPerSec = MathUtil.clamp(m_calcFlywheelVelocityRotPerSec, 0, kShooterMaxRPSd);    //clamp here or clamp only when setShooterVel is called?
@@ -323,10 +323,10 @@ public class Shooter extends SubsystemBase {
             double hoodReference = calcData.hoodReferenceRots();
 
             if (m_turret.getTurretLocked()) {
-                // m_hood.setHoodPos(kHoodLockRots_double);
+                m_hood.setHoodPos(kHoodLockRots_double);
             } else {
                 if (!m_turret.getHoldTurretAtIntake()) {
-                    // m_hood.setHoodPos(hoodReference);
+                    m_hood.setHoodPos(hoodReference);
                 }
             }
         }
