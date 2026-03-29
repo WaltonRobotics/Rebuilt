@@ -45,7 +45,7 @@ public class Intake extends SubsystemBase {
     private final TalonFX m_intakeRollersB = new TalonFX(kIntakeRollersB_CANID); //x60Foc
 
     private DynamicMotionMagicVoltage m_MMVReq = new DynamicMotionMagicVoltage(0, 1, 1).withEnableFOC(true);
-    private VoltageOut m_VVReq = new VoltageOut(0).withEnableFOC(false);
+    private VoltageOut m_VVReq = new VoltageOut(0).withEnableFOC(true);
 
     private BooleanSupplier m_currentSpike = () -> m_intakeArm.getStatorCurrent().getValueAsDouble() > 5.0;
     private BooleanSupplier m_veloIsNearZero = () -> Math.abs(m_intakeArm.getVelocity().getValueAsDouble()) < 0.005;
@@ -62,20 +62,20 @@ public class Intake extends SubsystemBase {
     /* SIM OBJECTS */
     private final DCMotorSim m_intakeArmSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX44Foc(1),
+            DCMotor.getKrakenX60Foc(1),
             kIntakeArmMOI,
             kIntakeArmGearing
         ),
-        DCMotor.getKrakenX44Foc(1)
+        DCMotor.getKrakenX60Foc(1)
     );
 
     private final DCMotorSim m_intakeRollersSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX60Foc(1),
+            DCMotor.getKrakenX60Foc(2),
             kIntakeRollersMOI,
             kIntakeRollersGearing
         ),
-        DCMotor.getKrakenX44Foc(1) // returns gearbox
+        DCMotor.getKrakenX60Foc(2) // returns gearbox
     );
 
     /* LOGGERS */
