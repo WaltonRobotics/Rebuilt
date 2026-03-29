@@ -10,7 +10,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -28,6 +27,7 @@ import frc.util.AllianceFlipUtil;
 import frc.util.AllianceZoneUtil;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.Pose2dLogger;
 import frc.util.WaltLogger.Pose3dLogger;
 
 import static edu.wpi.first.units.Units.*;
@@ -45,6 +45,7 @@ public class ShooterCalc {
     private final Pose3dLogger log_desiredAimPose = WaltLogger.logPose3d("ShotCalc", "DesiredAimPose");
     private final Pose3dLogger log_currentAimPose = WaltLogger.logPose3d("ShotCalc", "CurrentAimPose");
     private final DoubleLogger log_loopTime = WaltLogger.logDouble("ShotCalc", "LoopTimeMsec");
+    private static final Pose3dLogger log_turretRobotPose = WaltLogger.logPose3d("ShotCalc", "turretRobotPose");
     private static final Pose3dLogger log_turretFieldPose = WaltLogger.logPose3d("ShotCalc", "turretFieldPose");
     // private static final Pose3dLogger log_turret
 
@@ -100,6 +101,10 @@ public class ShooterCalc {
 
         // Logging
         log_globalShotTarget.accept(m_aimTarget);
+        log_desiredAimPose.accept(m_shotCalcOutputs.turretCalcDetails().desiredAimPose());
+        log_currentAimPose.accept(m_shotCalcOutputs.turretCalcDetails().currentAimPose());
+        log_rawDesiredTurretRot.accept(m_shotCalcOutputs.turretCalcDetails().rawDesiredRotations());
+        log_desiredTurretRot.accept(m_shotCalcOutputs.turretCalcDetails().turretReferenceRots());
 
         log_loopTime.accept(m_calcTimer.get() * 1000.0);
     }
@@ -144,17 +149,23 @@ public class ShooterCalc {
      *         of kTurretMaxAngle
      *         and kTurretMinAngle
      */
-    public static AzimuthCalcDetails calcAzimuth(Translation3d target, Pose2d robotPose, double turretPosition, ChassisSpeeds fieldSpeeds) {
+    public static AzimuthCalcDetails calcAzimuth(Translation3d target, Pose2d robotPose, double turretHeading, ChassisSpeeds fieldSpeeds) {
+        Pose3d turretPose = new Pose3d(robotPose).transformBy(kTurretTransform);
+        
         // Convert once; reused below in both snapback and current-aim logging
-        double turretPositionRots = turretPosition;
+        double turretHeadingRots = turretHeading;
+        // Field-space pose: turret pivot in field space, rotated by (turret zero field direction + encoder position)
+        Pose3d turretRobotPose = new Pose3d(
+            turretPose.getTranslation(),
+            new Rotation3d(0, 0, turretPose.getRotation().toRotation2d().getRadians() + turretHeadingRots * (2 * Math.PI)));
+        log_turretRobotPose.accept(turretRobotPose);
 
         /* Calculation Zone */
         // turret pivot location in field space (no extra rotateBy — that's for
         // visualization only)
-        Pose3d turretPose = new Pose3d(robotPose).transformBy(kTurretTransform).rotateBy(new Rotation3d(new Rotation2d(turretPosition)));
+        Pose3d turretRealPose = new Pose3d(turretPose.getTranslation(), new Rotation3d(0, 0, (-kTurretAngleOffset.plus(Rotation2d.fromDegrees(180)).getRadians())));
         Translation3d turretTranslation = turretPose.getTranslation();
-
-        log_turretFieldPose.accept(turretPose);
+        log_turretFieldPose.accept(turretRealPose);
 
         // vector from turret pivot to target in field space
         Translation3d distance = target.minus(turretTranslation);
@@ -176,7 +187,7 @@ public class ShooterCalc {
         var desiredAimPose = new Pose3d(turretTranslation, new Rotation3d(0, 0, fieldYawRad));
         // current aim: turret pivot with X-axis showing where the turret is actually
         // pointing right now
-        double currentFieldYaw = turretZeroFieldDir.getRadians() + turretPositionRots * (2 * Math.PI);
+        double currentFieldYaw = turretZeroFieldDir.getRadians() + turretHeadingRots * (2 * Math.PI);
         var currentAimPose = new Pose3d(turretTranslation, new Rotation3d(0, 0, currentFieldYaw));
 
         // normalizes the angle to be fit in the range of the max rotations
@@ -187,9 +198,9 @@ public class ShooterCalc {
         double snapbackSafeAngleRotations = angleRotations;
         // this is the snapback function, to make sure that you will always be tracking
         // and you will not go over your physical limits.
-        if (turretPositionRots > 0 && angleRotations + 1 <= kTurretMaxRotsD) {
+        if (turretHeadingRots > 0 && angleRotations + 1 <= kTurretMaxRotsD) {
             snapbackSafeAngleRotations += 1;
-        } else if (turretPositionRots < 0 && angleRotations - 1 >= kTurretMinRotsD) {
+        } else if (turretHeadingRots < 0 && angleRotations - 1 >= kTurretMinRotsD) {
             snapbackSafeAngleRotations -= 1;
         }
 
@@ -232,7 +243,8 @@ public class ShooterCalc {
         ChassisSpeeds chassisSpeeds
     ) {
         // How fast the robot is currently going, (CURRENT ROBOT VELOCITY)
-        ChassisSpeeds fieldSpeeds = staticShot ? WpiK.kZeroChassisSpeeds : chassisSpeeds;
+        // double speedMps = Math.hypot(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond);
+        ChassisSpeeds fieldSpeeds = (staticShot /*|| speedMps < 0.1*/) ? WpiK.kZeroChassisSpeeds : chassisSpeeds;
         // The Calculated shot itself, according to the current robotPose, robotSpeeds,
         // and the currentTarget
         ShotData calculatedShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
