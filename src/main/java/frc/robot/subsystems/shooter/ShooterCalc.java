@@ -29,6 +29,7 @@ import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.Pose2dLogger;
 import frc.util.WaltLogger.Pose3dLogger;
+import frc.util.WaltLogger.Translation3dArrayLogger;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.ShooterK.*;
@@ -44,6 +45,7 @@ public class ShooterCalc {
     private final DoubleLogger log_desiredTurretRot = new DoubleLogger("ShotCalc", "desiredTurretRotations");
     private final Pose3dLogger log_desiredAimPose = WaltLogger.logPose3d("ShotCalc", "DesiredAimPose");
     private final Pose3dLogger log_currentAimPose = WaltLogger.logPose3d("ShotCalc", "CurrentAimPose");
+    private final Translation3dArrayLogger log_ballTrajectory = WaltLogger.logTranslation3dArray("ShotCalc", "ballTrajectory");
     private final DoubleLogger log_loopTime = WaltLogger.logDouble("ShotCalc", "LoopTimeMsec");
     private static final Pose3dLogger log_turretRobotPose = WaltLogger.logPose3d("ShotCalc", "turretRobotPose");
     private static final Pose3dLogger log_turretFieldPose = WaltLogger.logPose3d("ShotCalc", "turretFieldPose");
@@ -126,10 +128,13 @@ public class ShooterCalc {
                 : robotPose.getMeasureX().gt(AllianceZoneUtil.blueHubCenter.getMeasureX());
 
         if (robotPastOurZoneX) {
+            Translation3d leftPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, MathUtil.clamp(FieldConstants.fieldWidth / 2 + robotPose.getY(), FieldConstants.fieldWidth / 2 + 1, FieldConstants.fieldWidth - 1), 0);
+            Translation3d rightPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, MathUtil.clamp(robotPose.getY() - FieldConstants.fieldWidth / 2, 1, FieldConstants.fieldWidth / 2 - 1), 0);
             boolean robotLeftOfCenter = isRed ? robotPose.getMeasureY().lt(AllianceZoneUtil.centerField_y_pos)
                     : robotPose.getMeasureY().gt(AllianceZoneUtil.centerField_y_pos);
-            theTarget = robotLeftOfCenter ? ShooterK.kPassingSpotLeft : ShooterK.kPassingSpotRight;
+            theTarget = robotLeftOfCenter ? leftPassPoseShifted : rightPassPoseShifted;
         }
+        log_ballTrajectory.accept(new Translation3d[]{new Translation3d(FieldConstants.fieldLength - robotPose.getX(), FieldConstants.fieldWidth - robotPose.getY(), 0), theTarget});
         return AllianceFlipUtil.apply(theTarget);
     }
 

@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.sim.ChassisReference;
@@ -37,12 +39,13 @@ import frc.util.WaltLogger;
 public class Intake extends SubsystemBase {
     /* CLASS VARIABLES */
     //---MOTORS + CONTROL REQUESTS
-    private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID); //x44Foc
-    private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID); //x60Foc
-    private final GobildaServoAngled m_intakeFlapServo = new GobildaServoAngled(kIntakeFlapChannel);
+    private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID); //x60Foc
+
+    private final TalonFX m_intakeRollersA = new TalonFX(kIntakeRollersA_CANID); //x60Foc
+    private final TalonFX m_intakeRollersB = new TalonFX(kIntakeRollersB_CANID); //x60Foc
 
     private DynamicMotionMagicVoltage m_MMVReq = new DynamicMotionMagicVoltage(0, 1, 1).withEnableFOC(true);
-    private VoltageOut m_VVReq = new VoltageOut(0).withEnableFOC(false);
+    private VoltageOut m_VVReq = new VoltageOut(0).withEnableFOC(true);
 
     private BooleanSupplier m_currentSpike = () -> m_intakeArm.getStatorCurrent().getValueAsDouble() > 5.0;
     private BooleanSupplier m_veloIsNearZero = () -> Math.abs(m_intakeArm.getVelocity().getValueAsDouble()) < 0.005;
@@ -59,20 +62,20 @@ public class Intake extends SubsystemBase {
     /* SIM OBJECTS */
     private final DCMotorSim m_intakeArmSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX44Foc(1),
+            DCMotor.getKrakenX60Foc(1),
             kIntakeArmMOI,
             kIntakeArmGearing
         ),
-        DCMotor.getKrakenX44Foc(1)
+        DCMotor.getKrakenX60Foc(1)
     );
 
     private final DCMotorSim m_intakeRollersSim = new DCMotorSim(
         LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX60Foc(1),
+            DCMotor.getKrakenX60Foc(2),
             kIntakeRollersMOI,
             kIntakeRollersGearing
         ),
-        DCMotor.getKrakenX44Foc(1) // returns gearbox
+        DCMotor.getKrakenX60Foc(2) // returns gearbox
     );
 
     /* LOGGERS */
@@ -84,12 +87,14 @@ public class Intake extends SubsystemBase {
 
     private final BooleanLogger log_isIntakeArmHomed = WaltLogger.logBoolean(kLogTab, "isIntakeArmHomed");
 
-    private final DoubleLogger log_intakeFlapServoDesiredPosition = WaltLogger.logDouble(kLogTab, "servoDesiredPosition");
-
     /* CONSTRUCTOR */
     public Intake() {
         m_intakeArm.getConfigurator().apply(kIntakeArmConfiguration);
-        m_intakeRollers.getConfigurator().apply(kIntakeRollersConfiguration);
+
+        m_intakeRollersA.getConfigurator().apply(kIntakeRollersAConfiguration);
+        m_intakeRollersB.getConfigurator().apply(kIntakeRollersBConfiguration);
+
+        m_intakeRollersB.setControl(new Follower(kIntakeRollersA_CANID, MotorAlignmentValue.Opposed));
 
         if (Robot.isReal()) {
             setDefaultCommand(intakeArmCurrentSenseHoming());
@@ -101,7 +106,7 @@ public class Intake extends SubsystemBase {
 
     private void initSim() {
         WaltMotorSim.initSimFX(m_intakeArm, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
-        WaltMotorSim.initSimFX(m_intakeRollers, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
+        WaltMotorSim.initSimFX(m_intakeRollersA, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
     }
 
     /* COMMANDS */
@@ -158,27 +163,16 @@ public class Intake extends SubsystemBase {
     }
 
     public void setIntakeRollersVelocity(double volts) {
-        m_intakeRollers.setControl(m_VVReq.withOutput(volts));
+        m_intakeRollersA.setControl(m_VVReq.withOutput(volts));
     }
 
     public Command setIntakeRollersVelocityCmd(double volts) {
         return runOnce(() -> setIntakeRollersVelocity(volts));
     }
 
-    public void setIntakeFlapServo(double pos) {
-        m_intakeFlapServo.setAngle(pos);
-
-        log_intakeFlapServoDesiredPosition.accept(m_intakeFlapServo.getAngle());    //does getting angle use lots of time/cpu? should we just pass in pos?
-    }
-
-    public Command setIntakeFlapServoCmd(double pos) {
-        return runOnce(() -> setIntakeFlapServo(pos));
-    }
-
     // TESTING TO SEE IF WE CAN JUST SAY 0 AS 0
     public Command intakeArmHome() {
         return Commands.parallel(
-            setIntakeFlapServoCmd(kIntakeFlapDeployPos),
             Commands.sequence(
                 runOnce(() -> m_intakeArm.setPosition(0)),
 
@@ -193,7 +187,6 @@ public class Intake extends SubsystemBase {
     public Command intakeArmCurrentSenseHoming() {
         Runnable init = () -> {
             m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(-3.25));
-            setIntakeFlapServo(kIntakeFlapDeployPos);
 
             m_isIntakeArmHomed = false;
             log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
@@ -208,8 +201,6 @@ public class Intake extends SubsystemBase {
             setIntakeArmPosCmd(IntakeArmPosition.RETRACTED);
             m_isIntakeArmHomed = true;
             log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
-
-            // DONT TELL FLAP_SERVO TO GO BACK ON END BECAUSE IF HOMING FINISHES TOO EARLY, THE SERVO WONT MOVE ENOUGH OUT TO DEPLOY FLAP
         };
 
         BooleanSupplier isFinished = () ->
@@ -224,14 +215,14 @@ public class Intake extends SubsystemBase {
     public void periodic() {
         log_targetIntakeArmRots.accept(m_MMVReq.Position);
         log_targetIntakeRollersRPS.accept(m_VVReq.Output);
-        log_intakeRollersRPS.accept(m_intakeRollers.getVelocity().getValueAsDouble());
+        log_intakeRollersRPS.accept(m_intakeRollersA.getVelocity().getValueAsDouble());
         log_intakeArmRots.accept(m_intakeArm.getPosition().getValueAsDouble());
     }
 
     @Override
     public void simulationPeriodic() {
         WaltMotorSim.updateSimFX(m_intakeArm, m_intakeArmSim);
-        WaltMotorSim.updateSimFX(m_intakeRollers, m_intakeRollersSim);
+        WaltMotorSim.updateSimFX(m_intakeRollersA, m_intakeRollersSim);
     }
 
     /* ENUMS */
