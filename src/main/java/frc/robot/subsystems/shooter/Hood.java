@@ -69,10 +69,9 @@ public class Hood extends SubsystemBase {
     }
 
     private double getHoodAngleDeg() {
-        double hoodPositionDeg = m_hood.getPosition().getValue().in(Degrees);
-        double absoluteToPhysicalAngleRatio = (360 * (kHoodMaxRots_double - kHoodMinRots_double))/(kPhysicalHoodMaxPosition_double - kPhysicalHoodMinPosition_double);
+        double absoluteToPhysicalAngleRatio = (kPhysicalHoodMaxPosition_double - kPhysicalHoodMinPosition_double)/(360 * (kHoodMaxRots_double - kHoodMinRots_double));
 
-        return kPhysicalHoodMinPosition_double + (hoodPositionDeg - (kHoodMinRots_double * 360)) * (absoluteToPhysicalAngleRatio);
+        return kPhysicalHoodMinPosition_double + (m_hood.getPosition().getValue().in(Degrees) - (kHoodMinRots_double * 360)) * (absoluteToPhysicalAngleRatio);
     }
 
     public boolean isHoodHomed() {

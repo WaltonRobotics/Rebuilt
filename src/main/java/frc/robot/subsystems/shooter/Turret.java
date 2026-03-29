@@ -6,6 +6,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -24,6 +25,7 @@ import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.IntLogger;
+import frc.util.WaltLogger.Pose3dLogger;
 
 public class Turret extends SubsystemBase {
     private boolean m_holdTurretAtIntakePos = false;
@@ -51,6 +53,7 @@ public class Turret extends SubsystemBase {
     private final DoubleLogger log_turretLCMPos = WaltLogger.logDouble(kLogTab, "turretCRTPos");
     private final DoubleLogger log_turretClosedLoopError = WaltLogger.logDouble(kLogTab, "turretCLE");
     private final BooleanLogger log_atPos = WaltLogger.logBoolean(kLogTab, "atPos");
+    private final Pose3dLogger log_turretTransform = WaltLogger.logPose3d(kLogTab, "turretTransform");
 
     StatusSignal<Double> sig_turretCLErr = m_turret.getClosedLoopError();
 
@@ -60,6 +63,8 @@ public class Turret extends SubsystemBase {
 
         m_lcmEncB.setAssumedFrequency(488);
         m_lcmEncB.setConnectedFrequencyThreshold(400);
+
+        log_turretTransform.accept(kTurretTransform);
 
         homeTurret(true);
     }

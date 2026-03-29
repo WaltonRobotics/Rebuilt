@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -44,6 +45,8 @@ public class ShooterCalc {
     private final Pose3dLogger log_desiredAimPose = WaltLogger.logPose3d("ShotCalc", "DesiredAimPose");
     private final Pose3dLogger log_currentAimPose = WaltLogger.logPose3d("ShotCalc", "CurrentAimPose");
     private final DoubleLogger log_loopTime = WaltLogger.logDouble("ShotCalc", "LoopTimeMsec");
+    private static final Pose3dLogger log_turretFieldPose = WaltLogger.logPose3d("ShotCalc", "turretFieldPose");
+    // private static final Pose3dLogger log_turret
 
 
     // Precomputed doubles for hot-path unit conversions
@@ -148,8 +151,10 @@ public class ShooterCalc {
         /* Calculation Zone */
         // turret pivot location in field space (no extra rotateBy — that's for
         // visualization only)
-        Pose3d turretPose = new Pose3d(robotPose).transformBy(kTurretTransform);
+        Pose3d turretPose = new Pose3d(robotPose).transformBy(kTurretTransform).rotateBy(new Rotation3d(new Rotation2d(turretPosition)));
         Translation3d turretTranslation = turretPose.getTranslation();
+
+        log_turretFieldPose.accept(turretPose);
 
         // vector from turret pivot to target in field space
         Translation3d distance = target.minus(turretTranslation);

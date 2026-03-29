@@ -52,72 +52,8 @@ public class ShotCalculator {
         minDistance = 0.94;
         maxDistance = 5.8;
 
-        //right mid grid
-        m_shotMap.put(3.903, new ShotData(RotationsPerSecond.of(73.18), Degrees.of(327.75)));
-        m_timeOfFlightMap.put(3.903, 1.35);
-
-        //backright grid - THIS ONE IS INCONSISTENT UNTIL SHOOTER V3
-        m_shotMap.put(5.657, new ShotData(RotationsPerSecond.of(96.42), Degrees.of(374.20)));   //real: 95.00
-        m_timeOfFlightMap.put(5.657, 1.56);
-
-        //frontright grid
-        m_shotMap.put(3.763, new ShotData(RotationsPerSecond.of(77), Degrees.of(300)));
-        m_timeOfFlightMap.put(3.763, 1.43);
-
-        //frontleft grid
-        m_shotMap.put(1.476, new ShotData(RotationsPerSecond.of(57.72), Degrees.of(150.77)));
-        m_timeOfFlightMap.put(1.476, 1.125);
-
-        //backleft grid
-        m_shotMap.put(3.854, new ShotData(RotationsPerSecond.of(79), Degrees.of(345)));
-        m_timeOfFlightMap.put(3.854, 1.38);
-
-        //against the hub
-        m_shotMap.put(0.835, new ShotData(RotationsPerSecond.of(66.21), Degrees.of(85.51)));
-        m_timeOfFlightMap.put(0.835, 1.17);
-
-        //against the tower
-        m_shotMap.put(2.977, new ShotData(RotationsPerSecond.of(71.14), Degrees.of(338.81)));
-        m_timeOfFlightMap.put(2.977, 1.03);
-
-        //backleft grid
-        m_shotMap.put(4.348, new ShotData(RotationsPerSecond.of(77.94), Degrees.of(396.32)));
-        m_timeOfFlightMap.put(4.348, 1.38);
-
-        //left mid grid
-        m_shotMap.put(2.799, new ShotData(RotationsPerSecond.of(67.91), Degrees.of(308.94)));
-        m_timeOfFlightMap.put(2.799, 1.08);
-
-        m_shotMap.put(3.561, new ShotData(RotationsPerSecond.of(79.30), Degrees.of(287.93)));
-        m_timeOfFlightMap.put(3.561, 1.42);
-
-        m_shotMap.put(1.870, new ShotData(RotationsPerSecond.of(62.31), Degrees.of(231.52)));
-        m_timeOfFlightMap.put(1.870, 1.1);
-
-        m_shotMap.put(3.259, new ShotData(RotationsPerSecond.of(75.64), Degrees.of(268.02)));
-        m_timeOfFlightMap.put(3.259, 1.37);
-
-        //AT COMPETITION
-
-        // m_shotMap.put(2.755, new ShotData(RotationsPerSecond.of(75.41), Degrees.of(221.02)));
-        // m_timeOfFlightMap.put(2.755, 1.28);
-
-        // m_shotMap.put(2.352, new ShotData(RotationsPerSecond.of(75.41), Degrees.of(169.77)));
-        // m_timeOfFlightMap.put(2.352, 0.9);
-
-        // //3/21/26 8:40 AM
-        // m_shotMap.put(3.425, new ShotData(RotationsPerSecond.of(87), Degrees.of(280)));
-        // m_timeOfFlightMap.put(3.425, 1.41);
-
-        // m_shotMap.put(3.933, new ShotData(RotationsPerSecond.of(80.5), Degrees.of(310)));
-        // m_timeOfFlightMap.put(3.933, 1.38);
-
-        //3/26
-        m_shotMap.put(2.462, new ShotData(RotationsPerSecond.of(69.27), Rotations.of(0.67)));
-        m_timeOfFlightMap.put(2.462, 1.15);
-
-        m_shotMap.put(3.335, new ShotData(RotationsPerSecond.of(81.37), Rotations.of(0.68)));
-        m_timeOfFlightMap.put(3.335, 1.38);
+        m_shotMap.put(5.303, new ShotData(RotationsPerSecond.of(58.47), Rotations.of(0.90)));
+        m_timeOfFlightMap.put(5.303, 1.65);
     }
 
     
