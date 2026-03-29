@@ -37,9 +37,8 @@ import frc.util.WaltLogger;
 public class Intake extends SubsystemBase {
     /* CLASS VARIABLES */
     //---MOTORS + CONTROL REQUESTS
-    private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID); //x44Foc
+    private final TalonFX m_intakeArm = new TalonFX(kIntakeArmA_CANID); //x44Foc
     private final TalonFX m_intakeRollers = new TalonFX(kIntakeRollersCANID); //x60Foc
-    private final GobildaServoAngled m_intakeFlapServo = new GobildaServoAngled(kIntakeFlapChannel);
 
     private DynamicMotionMagicVoltage m_MMVReq = new DynamicMotionMagicVoltage(0, 1, 1).withEnableFOC(true);
     private VoltageOut m_VVReq = new VoltageOut(0).withEnableFOC(false);
@@ -83,8 +82,6 @@ public class Intake extends SubsystemBase {
     private final DoubleLogger log_targetIntakeRollersRPS = WaltLogger.logDouble(kLogTab, "targetIntakeRollersRPS");
 
     private final BooleanLogger log_isIntakeArmHomed = WaltLogger.logBoolean(kLogTab, "isIntakeArmHomed");
-
-    private final DoubleLogger log_intakeFlapServoDesiredPosition = WaltLogger.logDouble(kLogTab, "servoDesiredPosition");
 
     /* CONSTRUCTOR */
     public Intake() {
@@ -165,20 +162,9 @@ public class Intake extends SubsystemBase {
         return runOnce(() -> setIntakeRollersVelocity(volts));
     }
 
-    public void setIntakeFlapServo(double pos) {
-        m_intakeFlapServo.setAngle(pos);
-
-        log_intakeFlapServoDesiredPosition.accept(m_intakeFlapServo.getAngle());    //does getting angle use lots of time/cpu? should we just pass in pos?
-    }
-
-    public Command setIntakeFlapServoCmd(double pos) {
-        return runOnce(() -> setIntakeFlapServo(pos));
-    }
-
     // TESTING TO SEE IF WE CAN JUST SAY 0 AS 0
     public Command intakeArmHome() {
         return Commands.parallel(
-            setIntakeFlapServoCmd(kIntakeFlapDeployPos),
             Commands.sequence(
                 runOnce(() -> m_intakeArm.setPosition(0)),
 
@@ -193,7 +179,6 @@ public class Intake extends SubsystemBase {
     public Command intakeArmCurrentSenseHoming() {
         Runnable init = () -> {
             m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(-3.25));
-            setIntakeFlapServo(kIntakeFlapDeployPos);
 
             m_isIntakeArmHomed = false;
             log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
@@ -208,8 +193,6 @@ public class Intake extends SubsystemBase {
             setIntakeArmPosCmd(IntakeArmPosition.RETRACTED);
             m_isIntakeArmHomed = true;
             log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
-
-            // DONT TELL FLAP_SERVO TO GO BACK ON END BECAUSE IF HOMING FINISHES TOO EARLY, THE SERVO WONT MOVE ENOUGH OUT TO DEPLOY FLAP
         };
 
         BooleanSupplier isFinished = () ->
