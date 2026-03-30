@@ -7,6 +7,7 @@ import static frc.robot.Constants.ShooterK.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.StaticBrake;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -17,10 +18,12 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterK;
+import frc.util.SignalManager;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -39,7 +42,10 @@ public class Hood extends SubsystemBase {
 
     private Debouncer m_currentDebouncer = new Debouncer(0.125, DebounceType.kRising);
 
-    private BooleanSupplier m_currentSpike = () -> m_hood.getStatorCurrent().getValueAsDouble() > 5.0;
+    private final StatusSignal<Current> sig_hoodStatorCurrent = m_hood.getStatorCurrent();
+    private final StatusSignal<Angle> sig_hoodPos = m_hood.getPosition();
+
+    private BooleanSupplier m_currentSpike = () -> sig_hoodStatorCurrent.getValueAsDouble() > 5.0;
 
     private final StaticBrake m_BrakeReq = new StaticBrake();
 
@@ -47,6 +53,8 @@ public class Hood extends SubsystemBase {
 
     public Hood() {
         m_hood.getConfigurator().apply(kHoodTalonFXSConfiguration);
+
+        SignalManager.register(kShooterBus, sig_hoodStatorCurrent, sig_hoodPos);
 
         m_hood.setPosition(0);
         m_isHoodHomed = true;
@@ -114,7 +122,7 @@ public class Hood extends SubsystemBase {
 
     @Override
     public void periodic() {
-        double posRots = m_hood.getPosition().getValueAsDouble();
+        double posRots = sig_hoodPos.getValueAsDouble();
         log_hoodCurrentPos.accept(getHoodAngleDeg(posRots));
         log_hoodPositionDeg.accept(posRots * 360.0);
     }

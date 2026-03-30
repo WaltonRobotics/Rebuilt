@@ -20,6 +20,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IndexerK.*;
 
 import frc.robot.Constants;
+import frc.util.SignalManager;
 import frc.util.WaltMotorSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
@@ -60,6 +61,8 @@ public class Indexer extends SubsystemBase {
     private final DoubleLogger log_desiredSpindexerRPS = WaltLogger.logDouble(kLogTab, "desiredSpindexerRPS");
     private final DoubleLogger log_desiredTunnelRPS = WaltLogger.logDouble(kLogTab, "desiredTunnelRPS");
 
+    private final StatusSignal<AngularVelocity> sig_spindexerVelo = m_spindexer.getVelocity();
+    private final StatusSignal<AngularVelocity> sig_tunnelVelo = m_tunnel.getVelocity();
     private final StatusSignal<Double> sig_tunnelCLErr = m_tunnel.getClosedLoopError();
     private final DoubleLogger log_tunnelClosedLoopError = WaltLogger.logDouble(kLogTab, "tunnelClosedLoopError");
     private final BooleanLogger log_isTunnelSpunUp = WaltLogger.logBoolean(kLogTab, "isTunnelSpunUp");
@@ -71,6 +74,8 @@ public class Indexer extends SubsystemBase {
     public Indexer() {
         m_spindexer.getConfigurator().apply(kSpindexerTalonFXConfiguration);
         m_tunnel.getConfigurator().apply(kTunnelTalonFXConfiguration);
+
+        SignalManager.register(Constants.kCanivoreBus, sig_spindexerVelo, sig_tunnelVelo, sig_tunnelCLErr);
 
         initSim();
     }
@@ -122,10 +127,9 @@ public class Indexer extends SubsystemBase {
     }
 
     private void refreshTunnelState() {
-        m_tunnelVelocityRotPerSec = m_tunnel.getVelocity().getValueAsDouble();
+        m_tunnelVelocityRotPerSec = sig_tunnelVelo.getValueAsDouble();
         log_tunnelRPS.accept(m_tunnelVelocityRotPerSec);
 
-        sig_tunnelCLErr.refresh();
         log_tunnelClosedLoopError.accept(sig_tunnelCLErr.getValueAsDouble());
         m_isTunnelSpunUp = sig_tunnelCLErr.isNear(0, 30);
         log_isTunnelSpunUp.accept(m_isTunnelSpunUp);
@@ -172,7 +176,7 @@ public class Indexer extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        log_spindexerRPS.accept(m_spindexer.getVelocity().getValueAsDouble());
+        log_spindexerRPS.accept(sig_spindexerVelo.getValueAsDouble());
         refreshTunnelState();
     }
 

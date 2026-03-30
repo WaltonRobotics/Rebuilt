@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
@@ -23,6 +24,8 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -34,6 +37,7 @@ import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltMotorSim;
 import frc.robot.Robot;
 import frc.util.GobildaServoAngled;
+import frc.util.SignalManager;
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
@@ -47,8 +51,14 @@ public class Intake extends SubsystemBase {
     private DynamicMotionMagicVoltage m_MMVReq = new DynamicMotionMagicVoltage(0, 1, 1).withEnableFOC(true);
     private VoltageOut m_VVReq = new VoltageOut(0).withEnableFOC(true);
 
-    private BooleanSupplier m_currentSpike = () -> m_intakeArm.getStatorCurrent().getValueAsDouble() > 5.0;
-    private BooleanSupplier m_veloIsNearZero = () -> Math.abs(m_intakeArm.getVelocity().getValueAsDouble()) < 0.005;
+    private final StatusSignal<Current> sig_intakeArmStatorCurrent = m_intakeArm.getStatorCurrent();
+    private final StatusSignal<AngularVelocity> sig_intakeArmVelo = m_intakeArm.getVelocity();
+    private final StatusSignal<AngularVelocity> sig_intakeRollersAVelo = m_intakeRollersA.getVelocity();
+    private final StatusSignal<Angle> sig_intakeArmPos = m_intakeArm.getPosition();
+    private final StatusSignal<Boolean> sig_intakeArmMMAtTarget = m_intakeArm.getMotionMagicAtTarget();
+
+    private BooleanSupplier m_currentSpike = () -> sig_intakeArmStatorCurrent.getValueAsDouble() > 5.0;
+    private BooleanSupplier m_veloIsNearZero = () -> Math.abs(sig_intakeArmVelo.getValueAsDouble()) < 0.005;
 
     private VoltageOut m_intakeArmZeroingReq = new VoltageOut(0);
 
@@ -96,6 +106,8 @@ public class Intake extends SubsystemBase {
 
         m_intakeRollersB.setControl(new Follower(kIntakeRollersA_CANID, MotorAlignmentValue.Opposed));
 
+        SignalManager.register("rio", sig_intakeArmStatorCurrent, sig_intakeArmVelo, sig_intakeRollersAVelo, sig_intakeArmPos, sig_intakeArmMMAtTarget);
+
         if (Robot.isReal()) {
             setDefaultCommand(intakeArmCurrentSenseHoming());
             // setDefaultCommand(intakeArmHome());
@@ -127,7 +139,7 @@ public class Intake extends SubsystemBase {
     }
 
     public boolean isIntakeArmAtDest() {
-       return m_intakeArm.getMotionMagicAtTarget().getValue();
+       return sig_intakeArmMMAtTarget.getValue();
     }
 
     public Command shimmy() {
@@ -218,8 +230,8 @@ public class Intake extends SubsystemBase {
     public void periodic() {
         log_targetIntakeArmRots.accept(m_MMVReq.Position);
         log_targetIntakeRollersRPS.accept(m_VVReq.Output);
-        log_intakeRollersRPS.accept(m_intakeRollersA.getVelocity().getValueAsDouble());
-        log_intakeArmRots.accept(m_intakeArm.getPosition().getValueAsDouble());
+        log_intakeRollersRPS.accept(sig_intakeRollersAVelo.getValueAsDouble());
+        log_intakeArmRots.accept(sig_intakeArmPos.getValueAsDouble());
     }
 
     @Override

@@ -42,6 +42,7 @@ import java.util.function.Supplier;
 
 import frc.robot.Constants;
 import frc.robot.subsystems.shooter.ShooterCalc.ShotCalcOutputs;
+import frc.util.SignalManager;
 import frc.util.WaltMotorSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
@@ -105,7 +106,8 @@ public class Shooter extends SubsystemBase {
 
     // private final Tracer m_periodicTracer = new Tracer();
 
-    StatusSignal<Double> sig_shooterCLErr = m_shooterA.getClosedLoopError();
+    private final StatusSignal<Double> sig_shooterCLErr = m_shooterA.getClosedLoopError();
+    private final StatusSignal<AngularVelocity> sig_shooterAVelo = m_shooterA.getVelocity();
 
     /* CONSTRUCTOR */
     public Shooter(Supplier<Pose2d> poseSupplier, Supplier<SwerveDriveState> threadsafeSwerveStateSup, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
@@ -123,7 +125,10 @@ public class Shooter extends SubsystemBase {
         m_shooterB.setControl(new Follower(kShooterA_CANID, MotorAlignmentValue.Opposed));
 
         sig_shooterCLErr.setUpdateFrequency(Hertz.of(50));
-        m_latestFlywheelVelocityRotPerSec = m_shooterA.getVelocity().getValueAsDouble();
+
+        SignalManager.register(Constants.kShooterBus, sig_shooterAVelo, sig_shooterCLErr);
+
+        m_latestFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
 
         m_poseSupplier = poseSupplier;
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
@@ -198,7 +203,6 @@ public class Shooter extends SubsystemBase {
     }
 
     private void refreshShooterSpunUp() {
-        sig_shooterCLErr.refresh();
         log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
         m_isShooterSpunUp = sig_shooterCLErr.isNear(0, 3);
     }
@@ -290,7 +294,7 @@ public class Shooter extends SubsystemBase {
         // Cache all signals at the top so every consumer in this loop sees the same values
         // THIS IS USED SNEAKILY BY SHOTCALC DO NOT MOVE THIS
         m_latestTurretPositionRots = m_turret.getCurrTurretPos();
-        m_latestFlywheelVelocityRotPerSec = m_shooterA.getVelocity().getValueAsDouble();
+        m_latestFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
 
         ShotCalcOutputs calcData = m_shooterCalc.getLatestShotCalcOutputs();
 

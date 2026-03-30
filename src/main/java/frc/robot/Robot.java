@@ -53,6 +53,7 @@ import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.WaltCamera;
 import frc.util.HubShiftUtil;
+import frc.util.SignalManager;
 // import frc.util.WaltVisualSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
@@ -356,7 +357,8 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         // m_periodicTracer.addEpoch("Entry (Unused Time)");
-        CommandScheduler.getInstance().run(); 
+        SignalManager.refreshAll();
+        CommandScheduler.getInstance().run();
         // m_periodicTracer.addEpoch("CommandScheduler");
 
         log_robotPose.accept(m_drivetrain.getState().Pose);

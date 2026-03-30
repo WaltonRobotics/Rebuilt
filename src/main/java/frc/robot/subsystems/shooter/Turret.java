@@ -21,6 +21,7 @@ import static frc.robot.Constants.TurretK.kLogTab;
 import static frc.robot.Constants.TurretK.*;
 
 import java.util.function.BooleanSupplier;
+import frc.util.SignalManager;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -56,7 +57,9 @@ public class Turret extends SubsystemBase {
     private final BooleanLogger log_atPos = WaltLogger.logBoolean(kLogTab, "atPos");
     private final Pose3dLogger log_turretTransform = WaltLogger.logPose3d(kLogTab, "turretTransform");
 
-    StatusSignal<Double> sig_turretCLErr = m_turret.getClosedLoopError();
+    private final StatusSignal<Double> sig_turretCLErr = m_turret.getClosedLoopError();
+    private final StatusSignal<Angle> sig_turretPos = m_turret.getPosition();
+    private final StatusSignal<Angle> sig_lcmEncAAbsPos = m_lcmEncA.getAbsolutePosition();
 
     public Turret() {
         m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
@@ -65,6 +68,8 @@ public class Turret extends SubsystemBase {
         m_lcmEncB.setAssumedFrequency(488);
         m_lcmEncB.setConnectedFrequencyThreshold(400);
 
+        SignalManager.register(Constants.kCanivoreBus, sig_turretCLErr, sig_turretPos, sig_lcmEncAAbsPos);
+
         log_turretTransform.accept(kTurretTransform);
 
         homeTurret(true);
@@ -72,7 +77,7 @@ public class Turret extends SubsystemBase {
 
     private void homeTurret(boolean useLCM) {
         if (useLCM) {
-            double lcmRots = calcTurretAngleLCM(m_lcmEncA.getAbsolutePosition().getValueAsDouble() * 360, -(m_lcmEncB.get() - kEncBOffset) * 360) / 360.0;
+            double lcmRots = calcTurretAngleLCM(sig_lcmEncAAbsPos.getValueAsDouble() * 360, -(m_lcmEncB.get() - kEncBOffset) * 360) / 360.0;
             m_turret.setPosition(lcmRots);
         } else {
             m_turret.setPosition(kInitPosition);
@@ -80,7 +85,6 @@ public class Turret extends SubsystemBase {
     }
 
     private void refreshTurretAtPos() {
-        sig_turretCLErr.refresh();
         log_turretClosedLoopError.accept(sig_turretCLErr.getValueAsDouble());
         m_turretAtPos = sig_turretCLErr.isNear(0, kTurretMaxErrD);
         log_atPos.accept(m_turretAtPos);
@@ -97,7 +101,7 @@ public class Turret extends SubsystemBase {
     public void setTurretLock(boolean locked) {
         m_turretLocked = locked;
         if (m_turretLocked) {
-            m_turretLockAngleRots = m_turret.getPosition().getValueAsDouble();
+            m_turretLockAngleRots = sig_turretPos.getValueAsDouble();
         }
     }
 
@@ -133,7 +137,7 @@ public class Turret extends SubsystemBase {
     }
 
     public double getCurrTurretPos() {
-        return m_turret.getPosition().getValueAsDouble();
+        return sig_turretPos.getValueAsDouble();
     }
 
     public boolean getTurretLocked() {
@@ -154,7 +158,7 @@ public class Turret extends SubsystemBase {
 
 
     public void periodic() {
-        double encAVal = m_lcmEncA.getAbsolutePosition().getValueAsDouble();
+        double encAVal = sig_lcmEncAAbsPos.getValueAsDouble();
         double encBVal = m_lcmEncB.get();
         log_lcmEncAPos.accept(encAVal);
         log_lcmEncBPos.accept(encBVal);
