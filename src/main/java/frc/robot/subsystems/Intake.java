@@ -111,11 +111,11 @@ public class Intake extends SubsystemBase {
 
     /* COMMANDS */
     public void setIntakeArmPos(IntakeArmPosition rots) {
-        setIntakeArmPos(rots.rots, rots == IntakeArmPosition.RETRACTED ? 4 : 2);
+        setIntakeArmPos(rots.rots, rots == IntakeArmPosition.RETRACTED ? 6 : 3);
     }
 
     public Command setIntakeArmPosCmd(IntakeArmPosition rots) {
-        return setIntakeArmPosCmd(rots.rots, rots == IntakeArmPosition.RETRACTED ? 4 : 2);
+        return setIntakeArmPosCmd(rots.rots, rots == IntakeArmPosition.RETRACTED ? 6 : 3);
     }
 
     public Command setIntakeArmPosCmd(Angle rots, double RPSPS) {
@@ -137,12 +137,15 @@ public class Intake extends SubsystemBase {
         Commands.waitUntil(intakeArmAtDest);
 
         return Commands.repeatingSequence(
-            setIntakeRollersVelocityCmd(0),
+            setIntakeRollersVelocityCmd(kIntakeRollersShimmyRPS.baseUnitMagnitude()),
             setIntakeArmPosCmd(IntakeArmPosition.SHIMMY),
             Commands.waitUntil(intakeArmAtDest),
             setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(intakeArmAtDest)
-        ).finallyDo(() -> setIntakeArmPosCmd(IntakeArmPosition.SAFE));
+        ).finallyDo(() -> {
+            setIntakeArmPosCmd(IntakeArmPosition.SAFE);
+            setIntakeRollersVelocityCmd(0);
+        });
     }
 
      public void setIntakeArmNeutralMode(NeutralModeValue value) {
