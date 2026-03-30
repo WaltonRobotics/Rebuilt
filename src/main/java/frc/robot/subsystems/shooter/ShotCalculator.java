@@ -58,6 +58,7 @@ public class ShotCalculator {
         addLerpPoint(5.515, 59.50, 0.87, 1.30);
         addLerpPoint(5.412, 58.50, 0.86, 1.27);
         addLerpPoint(5.303, 58.47, 0.90, 1.65);
+//add 5.15
         addLerpPoint(5.060, 57.00, 0.85, 1.26);
         addLerpPoint(4.910, 56.00, 0.81, 1.17);
         addLerpPoint(4.874, 55.50, 0.80, 1.29);
@@ -69,6 +70,17 @@ public class ShotCalculator {
         addLerpPoint(4.000, 55.46, 0.42, 1.37);
         addLerpPoint(3.944, 54.90, 0.37, 1.33);
         addLerpPoint(3.823, 55.20, 0.20, 1.47);
+//add 3.6
+//add 3.4
+        addLerpPoint(3.201, 52.58, 0.10, 1.27);
+        addLerpPoint(3.055, 51.58, 0.10, 1.41);
+        addLerpPoint(2.734, 50.68, 0.10, 1.16);
+//add 2.5 ish
+        addLerpPoint(2.318, 48.12, 0.10, 1.12);
+//add 2.something here
+        addLerpPoint(2.014, 48.12, 0.00, 1.22);
+        addLerpPoint(1.562, 46.12, 0.00, 1.36);
+        addLerpPoint(1.072, 40.04, 0.00, 1.04);
     }
 
     public static void addLerpPoint(double distanceToTarget, double shooterRPS, double hoodRots, double timeOfFlight) {

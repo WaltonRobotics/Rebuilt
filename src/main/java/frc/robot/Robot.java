@@ -306,13 +306,13 @@ public class Robot extends TimedRobot {
 
         // m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
 
-        // m_driver.povDown().onTrue(m_shooter.m_turret.setTurretLockCmd(false));
-        // m_driver.povRight().onTrue(m_shooter.m_turret.setTurretLockCmd(true));
+        m_driver.povDown().onTrue(m_shooter.m_turret.setTurretLockCmd(false));
+        m_driver.povRight().onTrue(m_shooter.m_turret.setTurretLockCmd(true));
         
-        m_driver.povDown().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX(), m_drivetrain.getState().Pose.getY() - Inches.of(20).magnitude()), 0.001));
-        m_driver.povUp().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX(), m_drivetrain.getState().Pose.getY() + Inches.of(20).magnitude()), 0.001));
-        m_driver.povRight().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX() + Inches.of(20).magnitude(), m_drivetrain.getState().Pose.getY()), 0.001));
-        m_driver.povLeft().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX() - Inches.of(20).magnitude(), m_drivetrain.getState().Pose.getY()), 0.001));
+        // m_driver.povDown().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX(), m_drivetrain.getState().Pose.getY() - Inches.of(20).magnitude()), 0.001));
+        // m_driver.povUp().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX(), m_drivetrain.getState().Pose.getY() + Inches.of(20).magnitude()), 0.001));
+        // m_driver.povRight().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX() + Inches.of(20).magnitude(), m_drivetrain.getState().Pose.getY()), 0.001));
+        // m_driver.povLeft().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX() - Inches.of(20).magnitude(), m_drivetrain.getState().Pose.getY()), 0.001));
 
         // m_driver.start().whileTrue(m_superstructure.activateOuttakeNOSHOOT());
         // trg_optimalPrefireTime.whileTrue(
