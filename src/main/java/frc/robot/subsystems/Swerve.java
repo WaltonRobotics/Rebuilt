@@ -20,6 +20,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest.SwerveDriveBrake;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -438,7 +439,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     public boolean isNearRotation(Rotation2d curRotation, Rotation2d desRotation, double tolerance) {
-        return Radians.of(curRotation.getRadians()).isNear(Radians.of(desRotation.getRadians()), Radians.of(tolerance));
+        return Math.abs(MathUtil.angleModulus(curRotation.getRadians() - desRotation.getRadians())) <= tolerance;
     }
 
     /**
@@ -457,8 +458,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     public boolean isNearTranslation(Translation2d curTranslation, Translation2d desTranslation, double tolerance) {
         return Math.hypot(
-            desTranslation.getMeasureX().minus(curTranslation.getMeasureX()).baseUnitMagnitude(),
-            desTranslation.getMeasureY().minus(curTranslation.getMeasureY()).baseUnitMagnitude()
+            desTranslation.getX() - curTranslation.getX(),
+            desTranslation.getY() - curTranslation.getY()
         ) <= tolerance;
     }
 

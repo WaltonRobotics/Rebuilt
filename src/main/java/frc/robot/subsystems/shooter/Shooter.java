@@ -74,7 +74,7 @@ public class Shooter extends SubsystemBase {
     public final Turret m_turret;
 
     // thread copde
-    private double m_latestTurretPositionRots = 0.0;
+    private volatile double m_latestTurretPositionRots = 0.0;
     private final ShooterCalc m_shooterCalc;
 
     private double m_calcTurretRots = 0.0;
@@ -197,17 +197,15 @@ public class Shooter extends SubsystemBase {
         return run(() -> setShooterVelocity(RotationsPerSecond.of(sub_RPS.get())));
     }
 
-    public boolean isShooterSpunUp() {
+    private void refreshShooterSpunUp() {
         sig_shooterCLErr.refresh();
         log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
-
-        boolean isNear = sig_shooterCLErr.isNear(0, 3);
-
-        m_isShooterSpunUp = isNear;
-        log_spunUp.accept(isNear);
-        return isNear;
+        m_isShooterSpunUp = sig_shooterCLErr.isNear(0, 3);
     }
 
+    public boolean isShooterSpunUp() {
+        return m_isShooterSpunUp;
+    }
 
     /* GETTERS */
     public double getShooterVelocityRotPerSec() {
@@ -303,7 +301,7 @@ public class Shooter extends SubsystemBase {
             // set outputs
             var turretVelocityFF = calcData.turretCalcDetails().turretVelocityFF();
             if (m_turret.getTurretLocked()) {
-                m_turret.setTurretPos(m_turret.getTurretLockAngle());
+                m_turret.setTurretPos(m_turret.getTurretLockAngleRots(), 0.0);
                 m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
             } else {
                 if (m_turret.getHoldTurretAtIntake()) {
@@ -331,10 +329,12 @@ public class Shooter extends SubsystemBase {
             }
         }
 
+        refreshShooterSpunUp();
+
         log_turretPositionRobotRelativeRots.accept(kDriverRPSIncreaseD);
         log_shooterVelocityRPS.accept(m_latestFlywheelVelocityRotPerSec);
         log_turretPositionRots.accept(m_latestTurretPositionRots);
-        log_spunUp.accept(isShooterSpunUp());
+        log_spunUp.accept(m_isShooterSpunUp);
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocityRotPerSec);
         log_calcTurretPos.accept(m_calcTurretRots);
 

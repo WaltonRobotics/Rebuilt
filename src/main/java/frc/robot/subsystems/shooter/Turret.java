@@ -28,9 +28,10 @@ import frc.util.WaltLogger.IntLogger;
 import frc.util.WaltLogger.Pose3dLogger;
 
 public class Turret extends SubsystemBase {
+    private static final double kTurretMaxRotsFromHomeDeg = kTurretMaxRotsFromHome.in(Degrees);
     private boolean m_holdTurretAtIntakePos = false;
     private boolean m_turretLocked = false;
-    private Angle m_turretLockAngle = Degrees.zero();
+    private double m_turretLockAngleRots = 0.0;
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); // X44Foc
     private final PositionVoltage m_PVRequest = new PositionVoltage(0).withEnableFOC(true);
@@ -78,14 +79,15 @@ public class Turret extends SubsystemBase {
         }
     }
 
-    public boolean atPosition() {
+    private void refreshTurretAtPos() {
         sig_turretCLErr.refresh();
-        boolean isNear = sig_turretCLErr.isNear(0, kTurretMaxErrD);
         log_turretClosedLoopError.accept(sig_turretCLErr.getValueAsDouble());
+        m_turretAtPos = sig_turretCLErr.isNear(0, kTurretMaxErrD);
+        log_atPos.accept(m_turretAtPos);
+    }
 
-        m_turretAtPos = isNear;
-        log_atPos.accept(isNear);
-        return isNear;
+    public boolean atPosition() {
+        return m_turretAtPos;
     }
 
     public void setIntaking(boolean intaking) {
@@ -95,7 +97,7 @@ public class Turret extends SubsystemBase {
     public void setTurretLock(boolean locked) {
         m_turretLocked = locked;
         if (m_turretLocked) {
-            m_turretLockAngle = m_turret.getPosition().getValue();
+            m_turretLockAngleRots = m_turret.getPosition().getValueAsDouble();
         }
     }
 
@@ -117,7 +119,8 @@ public class Turret extends SubsystemBase {
     }
 
     public void setTurretPos(double rots, double velocityFF) {
-        setTurretPos(Rotations.of(rots), RotationsPerSecond.of(velocityFF));
+        m_turret.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFF));
+        log_turretControlPos.accept(rots);
     }
 
     public void setTurretNeutralMode(NeutralModeValue value) {
@@ -126,7 +129,7 @@ public class Turret extends SubsystemBase {
 
     // for TestingDashboard
     public Command setTurretPositionCmd(DoubleSubscriber sub_rots) {
-        return run(() -> setTurretPos(Rotations.of(sub_rots.get())));
+        return run(() -> setTurretPos(sub_rots.get(), 0.0));
     }
 
     public double getCurrTurretPos() {
@@ -137,8 +140,8 @@ public class Turret extends SubsystemBase {
         return m_turretLocked;
     }
 
-    public Angle getTurretLockAngle() {
-        return m_turretLockAngle;
+    public double getTurretLockAngleRots() {
+        return m_turretLockAngleRots;
     }
 
     public boolean getHoldTurretAtIntake() {
@@ -151,13 +154,17 @@ public class Turret extends SubsystemBase {
 
 
     public void periodic() {
-        log_lcmEncAPos.accept(m_lcmEncA.getAbsolutePosition().getValueAsDouble());
-        log_lcmEncBPos.accept(m_lcmEncB.get());
+        double encAVal = m_lcmEncA.getAbsolutePosition().getValueAsDouble();
+        double encBVal = m_lcmEncB.get();
+        log_lcmEncAPos.accept(encAVal);
+        log_lcmEncBPos.accept(encBVal);
         log_lcmEncBFreq.accept(m_lcmEncB.getFrequency());
         log_lcmEncBConn.accept(m_lcmEncB.isConnected());
 
-        Angle startAngle = Degrees.of(calcTurretAngleLCM(m_lcmEncA.getAbsolutePosition().getValueAsDouble() * 360, -(m_lcmEncB.get() - kEncBOffset) * 360));
-        log_turretLCMPos.accept(startAngle.in(Rotations));
+        refreshTurretAtPos();
+
+        double turretAngleDeg = calcTurretAngleLCM(encAVal * 360, -(encBVal - kEncBOffset) * 360);
+        log_turretLCMPos.accept(turretAngleDeg / 360.0);
     }
 
     public static double calcTurretAngleLCM(double e1, double e2) {
@@ -170,7 +177,7 @@ public class Turret extends SubsystemBase {
 
         // Center the search on the expected LCM output at home, spanning ±turret range
         double centerDeg = kLCMAtHomeRots * 360.0;
-        double rangeDeg = kTurretMaxRotsFromHome.in(Degrees);
+        double rangeDeg = kTurretMaxRotsFromHomeDeg;
         int kMin = (int) Math.floor((centerDeg - rangeDeg - e1 / encARatio) / encAPeriod);
         int kMax = (int) Math.ceil((centerDeg + rangeDeg - e1 / encARatio) / encAPeriod);
 

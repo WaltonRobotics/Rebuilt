@@ -26,6 +26,8 @@ import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
 public class Hood extends SubsystemBase {
+    private static final double kAbsoluteToPhysicalAngleRatio =
+        (kPhysicalHoodMaxPosition_double - kPhysicalHoodMinPosition_double) / (360.0 * (kHoodMaxRots_double - kHoodMinRots_double));
     private final TalonFXS m_hood = new TalonFXS(kHoodCANID, kShooterBus);
     private final PositionVoltage m_hoodPVRequest = new PositionVoltage(0).withEnableFOC(false);
     private final VoltageOut m_hoodZeroReq = new VoltageOut(0);
@@ -68,10 +70,8 @@ public class Hood extends SubsystemBase {
         return run(() -> setHoodPos(sub_rots.get()));
     }
 
-    private double getHoodAngleDeg() {
-        double absoluteToPhysicalAngleRatio = (kPhysicalHoodMaxPosition_double - kPhysicalHoodMinPosition_double)/(360 * (kHoodMaxRots_double - kHoodMinRots_double));
-
-        return kPhysicalHoodMinPosition_double + (m_hood.getPosition().getValue().in(Degrees) - (kHoodMinRots_double * 360)) * (absoluteToPhysicalAngleRatio);
+    private static double getHoodAngleDeg(double posRots) {
+        return kPhysicalHoodMinPosition_double + (posRots * 360.0 - kHoodMinRots_double * 360.0) * kAbsoluteToPhysicalAngleRatio;
     }
 
     public boolean isHoodHomed() {
@@ -114,7 +114,8 @@ public class Hood extends SubsystemBase {
 
     @Override
     public void periodic() {
-        log_hoodCurrentPos.accept(getHoodAngleDeg());
-        log_hoodPositionDeg.accept(m_hood.getPosition().getValue().in(Degrees));
+        double posRots = m_hood.getPosition().getValueAsDouble();
+        log_hoodCurrentPos.accept(getHoodAngleDeg(posRots));
+        log_hoodPositionDeg.accept(posRots * 360.0);
     }
 }

@@ -121,23 +121,21 @@ public class Indexer extends SubsystemBase {
         setTunnelVelocity(RotationsPerSecond.zero());
     }
 
-    public boolean isTunnelSpunUp() {
+    private void refreshTunnelState() {
+        m_tunnelVelocityRotPerSec = m_tunnel.getVelocity().getValueAsDouble();
+        log_tunnelRPS.accept(m_tunnelVelocityRotPerSec);
+
         sig_tunnelCLErr.refresh();
         log_tunnelClosedLoopError.accept(sig_tunnelCLErr.getValueAsDouble());
-
-        boolean isNear = sig_tunnelCLErr.isNear(0, 30);
-
-        log_isTunnelSpunUp.accept(isNear);
-        return isNear;
+        m_isTunnelSpunUp = sig_tunnelCLErr.isNear(0, 30);
+        log_isTunnelSpunUp.accept(m_isTunnelSpunUp);
     }
 
-    public boolean getTunnelSpunUp() {
+    public boolean isTunnelSpunUp() {
         return m_isTunnelSpunUp;
     }
 
     public double getTunnelVelocityRotPerSec() {
-        m_tunnelVelocityRotPerSec = m_tunnel.getVelocity().getValueAsDouble();
-        
         return m_tunnelVelocityRotPerSec;
     }
 
@@ -175,7 +173,7 @@ public class Indexer extends SubsystemBase {
     @Override
     public void periodic() {
         log_spindexerRPS.accept(m_spindexer.getVelocity().getValueAsDouble());
-        log_tunnelRPS.accept(m_tunnel.getVelocity().getValueAsDouble());
+        refreshTunnelState();
     }
 
     @Override
