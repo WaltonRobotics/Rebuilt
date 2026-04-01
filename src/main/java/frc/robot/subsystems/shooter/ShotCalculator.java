@@ -84,7 +84,7 @@ public class ShotCalculator {
     }
 
     public static void addLerpPoint(double distanceToTarget, double shooterRPS, double hoodRots, double timeOfFlight) {
-        m_shotMap.put(distanceToTarget, new ShotData(RotationsPerSecond.of(shooterRPS), Rotations.of(hoodRots)));
+        m_shotMap.put(distanceToTarget, new ShotData(RotationsPerSecond.of(shooterRPS /* + kRPSBoost */), Rotations.of(hoodRots)));
         m_timeOfFlightMap.put(distanceToTarget, timeOfFlight);
     }
 
