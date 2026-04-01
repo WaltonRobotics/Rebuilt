@@ -19,6 +19,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -52,6 +53,7 @@ import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.WaltCamera;
 import frc.util.HubShiftUtil;
+import frc.util.SignalManager;
 // import frc.util.WaltVisualSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
@@ -108,9 +110,6 @@ public class Robot extends TimedRobot {
     private Trigger trg_manipOverride = m_manipulator.b();
 
     //---COMMAND SEQUENCE TRIGGERS
-
-    // private Trigger trg_activateIntake = m_manipulator.a().and(trg_manipOverride.negate());
-    // private Trigger trg_safeIntake = m_manipulator.x().and(trg_manipOverride.negate());
     private Trigger trg_intake = m_manipulator.rightTrigger().and(trg_manipOverride.negate());
     private Trigger trg_retractIntake = m_manipulator.rightBumper().and(trg_manipOverride.negate());
 
@@ -120,19 +119,11 @@ public class Robot extends TimedRobot {
     private Trigger trg_intakeShimmy = m_manipulator.leftBumper();
 
     //---OVERRIDE TRIGGERS
-    private Trigger trg_deployIntakeOverride = trg_manipOverride.and(m_manipulator.rightTrigger());
-    private Trigger trg_intakeUpOverride = trg_manipOverride.and(m_manipulator.leftTrigger());
-
     private final Trigger trg_limitFPS = RobotModeTriggers.disabled();
     private final Trigger trg_unlimitFps = RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop());
 
     private Trigger trg_unjam = m_driver.rightBumper();
 
-
-    /* LOGGERS */
-    private final DoubleLogger log_stickDesiredFieldX = WaltLogger.logDouble("Swerve", "stick desired teleop x");
-    private final DoubleLogger log_stickDesiredFieldY = WaltLogger.logDouble("Swerve", "stick desired teleop y");
-    private final DoubleLogger log_stickDesiredFieldZRot = WaltLogger.logDouble("Swerve", "stick desired teleop z rot");
     private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble(kLogTab, "MiniPC current");
     private final Pose2dLogger log_robotPose = WaltLogger.logPose2d("Drive", "Pose");
 
@@ -265,14 +256,14 @@ public class Robot extends TimedRobot {
             m_superstructure.intake(() -> false)
         );
 
-        trg_retractIntake.onTrue(
-            m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
-        );
+        // trg_retractIntake.onTrue(
+        //     m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+        // );
 
         //Shooting
         // NORMAL FIXED SHOT
         // trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
-        trg_shoot.whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
+        trg_shoot.and(() -> m_shooter.m_turret.atPosition()).whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
 
         // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));
         // m_driver.a().onTrue(m_shooter.driverRPSAlter(false));
@@ -281,15 +272,14 @@ public class Robot extends TimedRobot {
 
         // m_driver.leftBumper().whileTrue(m_shooter.driverRPSIncreaseWhileHeldCmd());
 
-        m_manipulator.povUp().onTrue(m_intake.setIntakeFlapServoCmd(IntakeK.kIntakeFlapDeployPos));
-        m_manipulator.povDown().onTrue(m_intake.setIntakeFlapServoCmd(0));
-
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
 
         trg_intake.and(trg_shoot).whileTrue(
             m_superstructure.intake(() -> true)
         );
+
+        trg_retractIntake.onTrue(m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED));
 
         trg_emergencyBarf.whileTrue(
             m_superstructure.emergencyBarf()
@@ -308,22 +298,20 @@ public class Robot extends TimedRobot {
         //---OVERRIDE COMMANDS
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
 
-        // m_manipulator.y().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(35)));
-        // m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.setHoodPositionCmd(Degrees.of(1)));
-
-        trg_deployIntakeOverride.onTrue(
-            m_superstructure.intakeTo(IntakeArmPosition.DEPLOYED)
-        ).onFalse(
-            m_superstructure.intakeTo(IntakeArmPosition.SAFE)
-        );
-        trg_intakeUpOverride.onTrue(
-            m_superstructure.intakeTo(IntakeArmPosition.RETRACTED)
-        );
+        m_manipulator.y().and(trg_manipOverride).onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double));
+        m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMinRots_double));
+        m_manipulator.start().and(trg_manipOverride).onTrue(m_shooter.m_hood.hoodCurrentSenseHomingCmd());
+        m_manipulator.leftTrigger().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double / 2.0));
 
         // m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
 
         m_driver.povDown().onTrue(m_shooter.m_turret.setTurretLockCmd(false));
         m_driver.povRight().onTrue(m_shooter.m_turret.setTurretLockCmd(true));
+        
+        // m_driver.povDown().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX(), m_drivetrain.getState().Pose.getY() - Inches.of(20).magnitude()), 0.001));
+        // m_driver.povUp().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX(), m_drivetrain.getState().Pose.getY() + Inches.of(20).magnitude()), 0.001));
+        // m_driver.povRight().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX() + Inches.of(20).magnitude(), m_drivetrain.getState().Pose.getY()), 0.001));
+        // m_driver.povLeft().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX() - Inches.of(20).magnitude(), m_drivetrain.getState().Pose.getY()), 0.001));
 
         // m_driver.start().whileTrue(m_superstructure.activateOuttakeNOSHOOT());
         // trg_optimalPrefireTime.whileTrue(
@@ -336,7 +324,7 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
-        m_driver.povLeft().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMinPosition_double));
+        m_driver.povLeft().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMinRots_double));
         m_driver.povUp().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double));
     }
 
@@ -367,7 +355,8 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         // m_periodicTracer.addEpoch("Entry (Unused Time)");
-        CommandScheduler.getInstance().run(); 
+        SignalManager.refreshAll();
+        CommandScheduler.getInstance().run();
         // m_periodicTracer.addEpoch("CommandScheduler");
 
         log_robotPose.accept(m_drivetrain.getState().Pose);

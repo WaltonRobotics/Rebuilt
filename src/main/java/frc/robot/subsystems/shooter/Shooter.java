@@ -42,6 +42,7 @@ import java.util.function.Supplier;
 
 import frc.robot.Constants;
 import frc.robot.subsystems.shooter.ShooterCalc.ShotCalcOutputs;
+import frc.util.SignalManager;
 import frc.util.WaltMotorSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
@@ -63,8 +64,8 @@ public class Shooter extends SubsystemBase {
     // private final FuelSim m_fuelSim;
 
     // ---MOTORS + CONTROL REQUESTS
-    private final TalonFX m_shooterA = new TalonFX(kShooterA_CANID, Constants.kShooterBus); // X60Foc
-    private final TalonFX m_shooterB = new TalonFX(kShooterB_CANID, Constants.kShooterBus); // X60Foc
+    private final TalonFX m_shooterA = new TalonFX(kShooterA_CANID, Constants.kShooterBus); // X44
+    private final TalonFX m_shooterB = new TalonFX(kShooterB_CANID, Constants.kShooterBus); // X44
     private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(false);
     private final NeutralOut m_neutralOutReq = new NeutralOut();
 
@@ -74,9 +75,8 @@ public class Shooter extends SubsystemBase {
     public final Turret m_turret;
 
     // thread copde
-    private double m_latestTurretPositionRots = 0.0;
+    private volatile double m_latestTurretPositionRots = 0.0;
     private final ShooterCalc m_shooterCalc;
-    private final BooleanLogger log_turretHomingHall = new BooleanLogger(kLogTab, "turretHomeHall");
 
     private double m_calcTurretRots = 0.0;
     private double m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
@@ -86,16 +86,9 @@ public class Shooter extends SubsystemBase {
     private final DoubleLogger log_calcTurretPos = new DoubleLogger("Shooter/Turret", "calcTurretPos");
     private final DoubleLogger log_driverAddedRPS = WaltLogger.logDouble(kLogTab, "driverAddedRPS");
 
-    private final BooleanLogger log_turretHomed = WaltLogger.logBoolean("Shooter/Turret", "Homed");
-
-    // ---LOGIC BOOLEANS
-    private boolean m_isTurretHomed = false;
-    public BooleanSupplier turretHomedSupp = () -> m_isTurretHomed;
-    // private boolean m_isHoodHomed = false;
-
     /* SIM OBJECTS */
     private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(
-            DCMotor.getKrakenX60Foc(2), kShooterMoI, kShooterGearing), DCMotor.getKrakenX60Foc(2) // returns gearbox
+            DCMotor.getKrakenX44(2), kShooterMoI, kShooterGearing), DCMotor.getKrakenX60Foc(2) // returns gearbox
     );
 
     private final DCMotorSim m_turretSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(
@@ -105,6 +98,7 @@ public class Shooter extends SubsystemBase {
     /* LOGGERS */
     private final DoubleLogger log_shooterVelocityRPS = WaltLogger.logDouble("Shooter/Flywheel", "shooterVelocityRPS");
     private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble("Shooter/Turret", "turretPositionRots");
+    private final DoubleLogger log_turretPositionRobotRelativeRots = WaltLogger.logDouble("Shooter/Turret", "turretPositionRobotRelativeRots");
 
     private final BooleanLogger log_spunUp = WaltLogger.logBoolean(kLogTab, "spunUp");
 
@@ -112,7 +106,8 @@ public class Shooter extends SubsystemBase {
 
     // private final Tracer m_periodicTracer = new Tracer();
 
-    StatusSignal<Double> sig_shooterCLErr = m_shooterA.getClosedLoopError();
+    private final StatusSignal<Double> sig_shooterCLErr = m_shooterA.getClosedLoopError();
+    private final StatusSignal<AngularVelocity> sig_shooterAVelo = m_shooterA.getVelocity();
 
     /* CONSTRUCTOR */
     public Shooter(Supplier<Pose2d> poseSupplier, Supplier<SwerveDriveState> threadsafeSwerveStateSup, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
@@ -121,6 +116,8 @@ public class Shooter extends SubsystemBase {
         m_threadsafeSwerveSup = threadsafeSwerveStateSup;
         m_shooterCalc = new ShooterCalc(m_threadsafeSwerveSup, () -> m_latestTurretPositionRots);
 
+        m_shooterCalc.shouldUseStaticShot(kUseStaticShot);
+
         m_shooterA.getConfigurator().apply(kShooterATalonFXConfiguration);
         m_shooterB.getConfigurator().apply(kShooterBTalonFXConfiguration);
         // m_hood.getConfigurator().apply(kHoodTalonFXSConfiguration);
@@ -128,7 +125,10 @@ public class Shooter extends SubsystemBase {
         m_shooterB.setControl(new Follower(kShooterA_CANID, MotorAlignmentValue.Opposed));
 
         sig_shooterCLErr.setUpdateFrequency(Hertz.of(50));
-        m_latestFlywheelVelocityRotPerSec = m_shooterA.getVelocity().getValueAsDouble();
+
+        SignalManager.register(Constants.kShooterBus, sig_shooterAVelo, sig_shooterCLErr);
+
+        m_latestFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
 
         m_poseSupplier = poseSupplier;
         m_fieldSpeedsSupplier = fieldSpeedsSupplier;
@@ -202,17 +202,14 @@ public class Shooter extends SubsystemBase {
         return run(() -> setShooterVelocity(RotationsPerSecond.of(sub_RPS.get())));
     }
 
-    public boolean isShooterSpunUp() {
-        sig_shooterCLErr.refresh();
+    private void refreshShooterSpunUp() {
         log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
-
-        boolean isNear = sig_shooterCLErr.isNear(0, 3);
-
-        m_isShooterSpunUp = isNear;
-        log_spunUp.accept(isNear);
-        return isNear;
+        m_isShooterSpunUp = sig_shooterCLErr.isNear(0, 3);
     }
 
+    public boolean isShooterSpunUp() {
+        return m_isShooterSpunUp;
+    }
 
     /* GETTERS */
     public double getShooterVelocityRotPerSec() {
@@ -297,7 +294,7 @@ public class Shooter extends SubsystemBase {
         // Cache all signals at the top so every consumer in this loop sees the same values
         // THIS IS USED SNEAKILY BY SHOTCALC DO NOT MOVE THIS
         m_latestTurretPositionRots = m_turret.getCurrTurretPos();
-        m_latestFlywheelVelocityRotPerSec = m_shooterA.getVelocity().getValueAsDouble();
+        m_latestFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
 
         ShotCalcOutputs calcData = m_shooterCalc.getLatestShotCalcOutputs();
 
@@ -308,15 +305,15 @@ public class Shooter extends SubsystemBase {
             // set outputs
             var turretVelocityFF = calcData.turretCalcDetails().turretVelocityFF();
             if (m_turret.getTurretLocked()) {
-                m_turret.setTurretPos(m_turret.getTurretLockAngle());
+                m_turret.setTurretPos(m_turret.getTurretLockAngleRots(), 0.0);
                 m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
             } else {
                 if (m_turret.getHoldTurretAtIntake()) {
-                    m_turret.setTurretPos(kTurretIntakeLockPos);
+                    // m_turret.setTurretPos(Rotations.of(-0.250));
                 } else {
                     m_turret.setTurretPos(turretReference, turretVelocityFF);
                     m_calcFlywheelVelocityRotPerSec = calcData.shooterReferenceRps();
-                    if (true) { // ENABLE THIS TO ALLOW DRIVER RPS TWEAK
+                    if (false) { // ENABLE THIS TO ALLOW DRIVER RPS TWEAK
                         m_calcFlywheelVelocityRotPerSec += m_driverRPSTweak;
                         m_calcFlywheelVelocityRotPerSec = MathUtil.clamp(m_calcFlywheelVelocityRotPerSec, 0, kShooterMaxRPSd);    //clamp here or clamp only when setShooterVel is called?
                     }
@@ -336,9 +333,12 @@ public class Shooter extends SubsystemBase {
             }
         }
 
+        refreshShooterSpunUp();
+
+        log_turretPositionRobotRelativeRots.accept(kDriverRPSIncreaseD);
         log_shooterVelocityRPS.accept(m_latestFlywheelVelocityRotPerSec);
         log_turretPositionRots.accept(m_latestTurretPositionRots);
-        log_spunUp.accept(isShooterSpunUp());
+        log_spunUp.accept(m_isShooterSpunUp);
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocityRotPerSec);
         log_calcTurretPos.accept(m_calcTurretRots);
 
