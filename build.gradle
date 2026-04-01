@@ -83,6 +83,14 @@ test {
 wpi.sim.addGui().defaultEnabled = true
 wpi.sim.addDriverstation()
 
+// async-profiler agent mode for simulation profiling
+// Output: /tmp/profile.html (flamegraph)
+tasks.withType(JavaExec).configureEach {
+    if (name.startsWith('simulate')) {
+        jvmArgs += ['-agentpath:/home/bankst/java-async-profiler/async-profiler-4.3-linux-x64/lib/libasyncProfiler.so=start,event=cpu,interval=1ms,file=/tmp/profile.html']
+    }
+}
+
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')
 // in order to make them all available at runtime. Also adding the manifest so WPILib
 // knows where to look for our Robot Class.
