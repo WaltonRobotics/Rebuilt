@@ -1,16 +1,19 @@
 package frc.robot.autons;
 
+import static frc.robot.Constants.ShooterK.kShooterAuton_EndSweep_RPS;
 import static frc.robot.Constants.SuperstructureK.kLogTab;
 
 import choreo.Choreo;
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
+import edu.wpi.first.units.measure.AngularMomentum;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.AutonK;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.shooter.Shooter;
@@ -88,5 +91,31 @@ public class WaltAdaptableAutonFactory {
         ));
         traj.done().onTrue(tp("traj.END(" + name + ")"));
         return traj;
+    }
+
+    //--- ADAPTABLE AUTON MAKER
+
+    public AutoRoutine adaptableAuton(String routineName, double trajTimeout, double shooterTimeout) {
+        String path = routineName;
+        AutoRoutine routine = m_autoFactory.newRoutine(routineName);
+        AutoTrajectory traj = createTraj(routine, path);
+
+        routine.active().onTrue(traj.cmd().withTimeout(trajTimeout).alongWith(homingCmd()));
+
+        traj.atTime("intake").onTrue(
+            m_superstructure.intake(() -> false)
+        );
+
+        traj.atTime("stopIntake").onTrue(
+            Commands.runOnce(() -> {
+                m_superstructure.intake(() -> false).cancel();
+            })
+        );
+
+        traj.atTime("shoot").onTrue(
+            shootWithTimeout(kShooterAuton_EndSweep_RPS, shooterTimeout)
+        );
+
+        return routine;
     }
 }
