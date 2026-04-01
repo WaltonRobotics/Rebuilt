@@ -39,12 +39,15 @@ public class PerformanceMonitor {
     public void loopEnd() {
         long now = System.nanoTime();
         log_loopTimeMs.accept((now - m_loopStartNanos) * 1e-6);
-        log_cpuUsagePct.accept(m_osBean.getCpuLoad() * 100.0);
-        log_processCpuPct.accept(m_osBean.getProcessCpuLoad() * 100.0);
+        double cpuLoad = m_osBean.getCpuLoad();
+        double procLoad = m_osBean.getProcessCpuLoad();
+        log_cpuUsagePct.accept(cpuLoad < 0 ? Double.NaN : cpuLoad * 100.0);
+        log_processCpuPct.accept(procLoad < 0 ? Double.NaN : procLoad * 100.0);
 
         MemoryUsage heap = m_memBean.getHeapMemoryUsage();
+        long heapMax = heap.getMax();
         log_heapUsedMB.accept(heap.getUsed() * BYTES_TO_MB);
-        log_heapMaxMB.accept(heap.getMax() * BYTES_TO_MB);
+        log_heapMaxMB.accept(heapMax < 0 ? Double.NaN : heapMax * BYTES_TO_MB);
         log_heapCommittedMB.accept(heap.getCommitted() * BYTES_TO_MB);
         log_nonHeapUsedMB.accept(m_memBean.getNonHeapMemoryUsage().getUsed() * BYTES_TO_MB);
     }
