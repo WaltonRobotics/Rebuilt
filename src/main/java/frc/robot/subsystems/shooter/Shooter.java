@@ -26,6 +26,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 // import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import static edu.wpi.first.units.Units.Hertz;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
@@ -77,9 +79,15 @@ public class Shooter extends SubsystemBase {
     private double m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
     private double m_driverRPSTweak = 0.0;
 
+    private int m_ballsShot = 0;
+
+    private final DoubleLogger log_ballsShot = new DoubleLogger("Shooter/Flywheel", "balls shot");
     private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
     private final DoubleLogger log_calcTurretPos = new DoubleLogger("Shooter/Turret", "calcTurretPos");
     private final DoubleLogger log_driverAddedRPS = WaltLogger.logDouble(kLogTab, "driverAddedRPS");
+
+    // ---LOGIC BOOLEANS
+    private Trigger trg_ballDetected;
 
     /* SIM OBJECTS */
     private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(
@@ -125,6 +133,9 @@ public class Shooter extends SubsystemBase {
 
         m_latestFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
 
+        trg_ballDetected = new Trigger(() -> detectShot(RotationsPerSecond.of(5.0)));
+        trg_ballDetected.onTrue(Commands.runOnce(() -> {m_ballsShot++;}));
+
         // m_turretVisualizer = new TurretVisualizer(
         //         () -> new Pose3d(m_poseSupplier.get().rotateAround(
         //                 poseSupplier.get().getTranslation(), new Rotation2d(turretTurnPosition)))
@@ -132,7 +143,6 @@ public class Shooter extends SubsystemBase {
         //         fieldSpeedsSupplier);
 
         // m_fuelSim = FuelSim.getInstance();
-
         initSim();
     }
 
@@ -189,8 +199,6 @@ public class Shooter extends SubsystemBase {
         }
     }
 
-
-
     private void refreshShooterSpunUp() {
         log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
         m_isShooterSpunUp = sig_shooterCLErr.isNear(0, 3);
@@ -223,6 +231,10 @@ public class Shooter extends SubsystemBase {
 
     public void intakeFuel() {
         m_fuelStored++;
+    }
+
+    private boolean detectShot(AngularVelocity drop) {
+        return Math.abs(sig_shooterCLErr.getValueAsDouble()) >= drop.in(RotationsPerSecond);
     }
 
     // /**
@@ -287,6 +299,9 @@ public class Shooter extends SubsystemBase {
 
         ShotCalcOutputs calcData = m_shooterCalc.getLatestShotCalcOutputs();
 
+        sig_shooterCLErr.refresh();
+        log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
+
         // set turret reference
         if (m_turret.isTurretHomed()) {
             var turretReference = calcData.turretReferenceRots();
@@ -329,6 +344,7 @@ public class Shooter extends SubsystemBase {
         refreshShooterSpunUp();
 
         log_turretPositionRobotRelativeRots.accept(kDriverRPSIncreaseD);
+        log_ballsShot.accept(m_ballsShot);
         log_shooterVelocityRPS.accept(m_latestFlywheelVelocityRotPerSec);
         log_turretPositionRots.accept(m_latestTurretPositionRots);
         log_spunUp.accept(m_isShooterSpunUp);
