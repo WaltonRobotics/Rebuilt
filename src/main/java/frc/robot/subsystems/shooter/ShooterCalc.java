@@ -34,7 +34,35 @@ import frc.util.WaltLogger.Translation3dArrayLogger;
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.ShooterK.*;
 
+import edu.wpi.first.networktables.BooleanEntry;
+import edu.wpi.first.networktables.DoubleEntry;
+import edu.wpi.first.networktables.NetworkTableEvent;
+import edu.wpi.first.networktables.NetworkTableInstance;
+
+import java.util.EnumSet;
+
 public class ShooterCalc {
+    // NT-tunable lateral bias compensation (listener-driven, no polling)
+    private static final DoubleEntry nt_lateralBiasGain = NetworkTableInstance.getDefault()
+        .getDoubleTopic("/ShotCalc/lateralBiasGainRots").getEntry(kTurretLateralBiasGainRots);
+    private static final BooleanEntry nt_lateralBiasEnabled = NetworkTableInstance.getDefault()
+        .getBooleanTopic("/ShotCalc/lateralBiasEnabled").getEntry(false);
+
+    private static volatile double s_lateralBiasGainRots = kTurretLateralBiasGainRots;
+    private static volatile boolean s_lateralBiasEnabled = false;
+
+    static {
+        nt_lateralBiasGain.setDefault(kTurretLateralBiasGainRots);
+        nt_lateralBiasEnabled.setDefault(false);
+
+        var inst = NetworkTableInstance.getDefault();
+        var kinds = EnumSet.of(NetworkTableEvent.Kind.kValueRemote);
+        inst.addListener(nt_lateralBiasGain, kinds,
+            e -> s_lateralBiasGainRots = e.valueData.value.getDouble());
+        inst.addListener(nt_lateralBiasEnabled, kinds,
+            e -> s_lateralBiasEnabled = e.valueData.value.getBoolean());
+    }
+
     private final Supplier<SwerveDriveState> m_threadsafeSwerveDriveStateSup;
     private final DoubleSupplier m_turretPosRotsSup;
     private final SwerveDriveKinematics m_swerveKinematics = new SwerveDriveKinematics(TunerConstants.moduleTranslations);
@@ -197,6 +225,14 @@ public class ShooterCalc {
         // then clamp to turret range
         double directionRots = MathUtil.inputModulus(
                 (fieldYawRad - turretZeroFieldDirRad) / (2.0 * Math.PI), -0.5, 0.5);
+
+        // Compensate for lateral ball bias that varies sinusoidally with turret angle relative to robot.
+        // At 0/180° (fwd/back): no bias. At 90°: balls bias left, at 270°: bias right.
+        // Enable via /ShotCalc/lateralBiasEnabled, tune gain via /ShotCalc/lateralBiasGainRots.
+        if (s_lateralBiasEnabled) {
+            double turretRelToRobotRad = kTurretAngleOffsetRad + directionRots * 2.0 * Math.PI;
+            directionRots -= s_lateralBiasGainRots * Math.sin(turretRelToRobotRad);
+        }
 
         // Logging poses
         var desiredAimPose = new Pose3d(turretTranslation, new Rotation3d(0, 0, fieldYawRad));
