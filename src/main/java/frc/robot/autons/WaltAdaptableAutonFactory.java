@@ -54,19 +54,13 @@ public class WaltAdaptableAutonFactory {
         return WaltLogger.timedPrintCmd(message);
     }
 
-    private Command waitTurretHomedCmd() {
-        return Commands.waitUntil(m_shooter.turretHomedSupp);
-    }
-
     private Command waitIntakeHomedCmd() {
         return Commands.waitUntil(m_intake.intakeHomedSupp);
     }
 
     private Command homingCmd() {
-        return Commands.parallel(
-            Commands.sequence(tp("turretHoming.START"), waitTurretHomedCmd(), tp("turretHoming.END")),
-            Commands.sequence(tp("intakeArmHoming.START"), waitIntakeHomedCmd(), tp("intakeArmHoming.END"))
-        ).withTimeout(5);
+        return Commands.sequence(tp("intakeArmHoming.START"), waitIntakeHomedCmd(), tp("intakeArmHoming.END"))
+            .withTimeout(5);
     }
 
     private Command shootWithTimeout(AngularVelocity speed, double seconds) {
