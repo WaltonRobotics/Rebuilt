@@ -12,6 +12,7 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -70,6 +71,10 @@ public class Robot extends TimedRobot {
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     // private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     // private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+
+    private final SwerveRequest.RobotCentric tuneDrive = new SwerveRequest.RobotCentric()
+        .withDeadband(kMaxTranslationSpeed.times(0.1)).withRotationalDeadband(kMaxAngularRate.times(0.1)) // Add a 10% deadband
+        .withDriveRequestType(DriveRequestType.Velocity);
 
     // private final Telemetry logger = new Telemetry(kMaxTranslationSpeed.in(MetersPerSecond));
 
@@ -235,6 +240,10 @@ public class Robot extends TimedRobot {
 
         // Reset the field-centric heading on left bumper press.
         m_driver.leftBumper().and(trg_driverOverride).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
+
+        // m_driver.y().whileTrue(m_drivetrain.applyRequest(() -> tuneDrive.withVelocityX(0.5)));
+        // m_driver.x().whileTrue(m_drivetrain.applyRequest(() -> tuneDrive.withVelocityX(-0.5)));
+        // m_driver.a().whileTrue(m_drivetrain.applyRequest(() -> tuneDrive.withVelocityX(0)));
 
         // m_drivetrain.registerTelemetry(logger::telemeterize);
 
