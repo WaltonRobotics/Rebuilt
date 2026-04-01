@@ -74,7 +74,7 @@ public class Constants {
     }
     public static class ShooterK {
         public static final String kLogTab = "Shooter";
-        public static final Rotation2d kTurretAngleOffset = Rotation2d.fromRotations(0.106); //4.87        //0.132324  // was 0.12, decreased 0.014 (~5deg) to fix consistent rightward aim error
+        public static final Rotation2d kTurretAngleOffset = Rotation2d.fromRotations(0.106 + 0.0067); //4.87        //0.132324  // was 0.12, decreased 0.014 (~5deg) to fix consistent rightward aim error
         public static final Rotation3d kTurretAngleOffset3d = new Rotation3d(kTurretAngleOffset);
         public static final Translation3d kTurretTranslation = new Translation3d(Inches.of(-4.744), Inches.of(-4.239), Inches.of(17.260));
         public static final Transform3d kTurretTransformNoRotation = new Transform3d(kTurretTranslation, Rotation3d.kZero);
