@@ -35,6 +35,10 @@ public class WaltTunable {
     private volatile boolean m_enabled;
     private final List<DoubleConsumer> m_onChange = new CopyOnWriteArrayList<>();
 
+    // Must hold references to prevent GC from killing the listeners
+    private final DoubleEntry m_valueEntry;
+    private final BooleanEntry m_enabledEntry;
+
     public WaltTunable(String key, double defaultValue) {
         this(key, defaultValue, false);
     }
@@ -46,16 +50,16 @@ public class WaltTunable {
         var inst = NetworkTableInstance.getDefault();
         var kinds = EnumSet.of(NetworkTableEvent.Kind.kValueRemote);
 
-        DoubleEntry valueEntry = inst.getDoubleTopic(key + "/value").getEntry(defaultValue);
-        valueEntry.setDefault(defaultValue);
-        inst.addListener(valueEntry, kinds, e -> {
+        m_valueEntry = inst.getDoubleTopic(key + "/value").getEntry(defaultValue);
+        m_valueEntry.setDefault(defaultValue);
+        inst.addListener(m_valueEntry, kinds, e -> {
             m_value = e.valueData.value.getDouble();
             fireOnChange();
         });
 
-        BooleanEntry enabledEntry = inst.getBooleanTopic(key + "/enabled").getEntry(defaultEnabled);
-        enabledEntry.setDefault(defaultEnabled);
-        inst.addListener(enabledEntry, kinds, e -> {
+        m_enabledEntry = inst.getBooleanTopic(key + "/enabled").getEntry(defaultEnabled);
+        m_enabledEntry.setDefault(defaultEnabled);
+        inst.addListener(m_enabledEntry, kinds, e -> {
             m_enabled = e.valueData.value.getBoolean();
             fireOnChange();
         });

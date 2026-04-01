@@ -6,7 +6,6 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.ChassisReference;
@@ -17,38 +16,37 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.networktables.DoubleSubscriber;
+
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 // import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-
 import static edu.wpi.first.units.Units.Hertz;
-import static edu.wpi.first.units.Units.Rotation;
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import frc.robot.Constants;
 import frc.robot.subsystems.shooter.ShooterCalc.ShotCalcOutputs;
 import frc.util.SignalManager;
 import frc.util.WaltMotorSim;
+import frc.util.WaltTunable;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
 public class Shooter extends SubsystemBase {
+    // NT-tunable overrides for LERP table building (default off)
+    private static final WaltTunable kShooterRPSOverride =
+        new WaltTunable("/Shooter/shooterRPSOverride", kShooterRPSd);
+    private static final WaltTunable kHoodRotsOverride =
+        new WaltTunable("/Shooter/hoodRotsOverride", 0.0);
     /* VARIABLES */
     // boolean m_useShotCalculator = true;
 
@@ -56,9 +54,6 @@ public class Shooter extends SubsystemBase {
     private boolean m_isShooterSpunUp = false;
 
     private int m_fuelStored = 8;
-
-    private final Supplier<Pose2d> m_poseSupplier;
-    private final Supplier<ChassisSpeeds> m_fieldSpeedsSupplier;
 
     // private final TurretVisualizer m_turretVisualizer;
     // private final FuelSim m_fuelSim;
@@ -130,9 +125,6 @@ public class Shooter extends SubsystemBase {
 
         m_latestFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
 
-        m_poseSupplier = poseSupplier;
-        m_fieldSpeedsSupplier = fieldSpeedsSupplier;
-
         // m_turretVisualizer = new TurretVisualizer(
         //         () -> new Pose3d(m_poseSupplier.get().rotateAround(
         //                 poseSupplier.get().getTranslation(), new Rotation2d(turretTurnPosition)))
@@ -197,10 +189,7 @@ public class Shooter extends SubsystemBase {
         }
     }
 
-    // for TestingDashboard
-    public Command setShooterVelocityCmd(DoubleSubscriber sub_RPS) {
-        return run(() -> setShooterVelocity(RotationsPerSecond.of(sub_RPS.get())));
-    }
+
 
     private void refreshShooterSpunUp() {
         log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
@@ -312,7 +301,9 @@ public class Shooter extends SubsystemBase {
                     // m_turret.setTurretPos(Rotations.of(-0.250));
                 } else {
                     m_turret.setTurretPos(turretReference, turretVelocityFF);
-                    m_calcFlywheelVelocityRotPerSec = calcData.shooterReferenceRps();
+                    m_calcFlywheelVelocityRotPerSec = kShooterRPSOverride.enabled()
+                        ? kShooterRPSOverride.get()
+                        : calcData.shooterReferenceRps();
                     if (false) { // ENABLE THIS TO ALLOW DRIVER RPS TWEAK
                         m_calcFlywheelVelocityRotPerSec += m_driverRPSTweak;
                         m_calcFlywheelVelocityRotPerSec = MathUtil.clamp(m_calcFlywheelVelocityRotPerSec, 0, kShooterMaxRPSd);    //clamp here or clamp only when setShooterVel is called?
@@ -328,7 +319,9 @@ public class Shooter extends SubsystemBase {
                 m_hood.setHoodPos(kHoodLockRots_double);
             } else {
                 if (!m_turret.getHoldTurretAtIntake()) {
-                    m_hood.setHoodPos(hoodReference);
+                    m_hood.setHoodPos(kHoodRotsOverride.enabled()
+                        ? kHoodRotsOverride.get()
+                        : hoodReference);
                 }
             }
         }
