@@ -37,8 +37,10 @@ public class AutonChooser {
             () -> simpleAutonFactory.fastTwoSweep_Reshoot(true));
         m_chooser.addRoutine("Preload Auton",
             () -> simpleAutonFactory.preloadAuton());
+        m_chooser.addRoutine("TEST AUTON MULTI",
+            () -> m_adaptableAutonFactory.multiAdaptableAuton("Test Auton Multi", new AdaptableAutonInfo[] {m_traj1, m_traj2}));
         m_chooser.addRoutine("TEST AUTON",
-            () -> m_adaptableAutonFactory.multiAdaptableAuton("Test Auton", new AdaptableAutonInfo[] {m_traj1, m_traj2}));
+            () -> m_adaptableAutonFactory.adaptableAuton("Test Auton", m_traj1));
 
         SmartDashboard.putData("AutoChooser", m_chooser);
     }

@@ -100,8 +100,8 @@ public class WaltAdaptableAutonFactory {
         AutoTrajectory traj = createTraj(routine, path);
 
         routine.active().onTrue(
-            traj.cmd().withTimeout(autonInfo.trajTimeout()).alongWith(homingCmd())
-        );
+            traj.cmd().withTimeout(autonInfo.trajTimeout()).alongWith(homingCmd().andThen(m_superstructure.intake(() -> false)
+        )));
 
         setUpTrajTriggers(traj, autonInfo.shooterTimeout(), autonInfo.SOTM());
 
@@ -122,8 +122,8 @@ public class WaltAdaptableAutonFactory {
         }
 
         routine.active().onTrue(
-            autonTrajs[0].cmd().withTimeout(autonInfos[0].trajTimeout()).alongWith(homingCmd())
-        );
+            autonTrajs[0].cmd().withTimeout(autonInfos[0].trajTimeout()).alongWith(homingCmd()).andThen(m_superstructure.intake(() -> false)
+        ));
 
         for (int i = 0; i < autonTrajs.length - 1; i++) {
             autonTrajs[i].done().onTrue(
