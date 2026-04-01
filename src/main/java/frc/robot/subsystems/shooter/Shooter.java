@@ -7,6 +7,8 @@ import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
+
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -32,7 +34,10 @@ import static edu.wpi.first.units.Units.Hertz;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+
+import javax.print.event.PrintEvent;
 
 import frc.robot.Constants;
 import frc.robot.subsystems.shooter.ShooterCalc.ShotCalcOutputs;
@@ -106,6 +111,9 @@ public class Shooter extends SubsystemBase {
     private final BooleanLogger log_spunUp = WaltLogger.logBoolean(kLogTab, "spunUp");
 
     private final DoubleLogger log_shooterClosedLoopError = WaltLogger.logDouble("Shooter", "shooterClosedLoopError");
+
+    private final BooleanLogger log_ballDetected = WaltLogger.logBoolean(kLogTab, "ballDetected");
+    private final DoubleLogger log_shooterCLErr = WaltLogger.logDouble(kLogTab, "shooterCLEerr");
 
     // private final Tracer m_periodicTracer = new Tracer();
 
@@ -237,6 +245,10 @@ public class Shooter extends SubsystemBase {
         return Math.abs(sig_shooterCLErr.getValueAsDouble()) >= drop.in(RotationsPerSecond);
     }
 
+    public Trigger getBallDetectedTrg() {
+        return trg_ballDetected;
+    }
+
     // /**
     //  * Launches SIMULATION FUEL™ at the current Flywheel Velocity, current Hood
     //  * Angle, and the
@@ -350,6 +362,8 @@ public class Shooter extends SubsystemBase {
         log_spunUp.accept(m_isShooterSpunUp);
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocityRotPerSec);
         log_calcTurretPos.accept(m_calcTurretRots);
+        log_ballDetected.accept(trg_ballDetected.getAsBoolean());
+        log_shooterCLErr.accept(sig_shooterCLErr.getValueAsDouble());
 
         // m_periodicTracer.addEpoch("Logging");
 

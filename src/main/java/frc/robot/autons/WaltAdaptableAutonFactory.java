@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.AutonK;
+import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Swerve;
@@ -64,7 +65,7 @@ public class WaltAdaptableAutonFactory {
             .withTimeout(5);
     }
 
-    private Command shootWithTimeout(AngularVelocity speed, double seconds) {
+    private Command shoot(AngularVelocity speed, double seconds) {
         return Commands.sequence(
             tp("shootWithTimeout.START(" + speed + "," + seconds + ")"),
             m_superstructure.activateOuttakeShotCalc(), //(() -> speed).withTimeout(seconds),
@@ -122,7 +123,8 @@ public class WaltAdaptableAutonFactory {
 
         for (int i = 0; i < autonTrajs.length - 1; i++) {
             autonTrajs[i].done().onTrue(
-                autonTrajs[i + 1].cmd().withTimeout(autonInfos[i + 1].trajTimeout())
+                Commands.waitUntil(m_shooter.getBallDetectedTrg().debounce(ShooterK.kBallDetectedDebounceTime))
+                .andThen(autonTrajs[i + 1].cmd().withTimeout(autonInfos[i + 1].trajTimeout()))
             );
         }
 
@@ -139,10 +141,12 @@ public class WaltAdaptableAutonFactory {
         );
 
         traj.atTime("shoot").onTrue(
-            shootWithTimeout(kShooterAuton_EndSweep_RPS, shooterTimeout)
+            m_superstructure.activateOuttakeShotCalc()
+                .until(m_shooter.getBallDetectedTrg().debounce(ShooterK.kBallDetectedDebounceTime))
                 .alongWith(SOTM ? Commands.none() : m_drivetrain.xBrakeCmd())
         );
 
+        //later rework into the shoot trigger because this wont ever be an event marker in the path
         traj.atTime("retractIntake").onTrue(
             Commands.sequence(
                 m_superstructure.intake(() -> false),
