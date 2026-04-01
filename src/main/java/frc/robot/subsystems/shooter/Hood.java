@@ -106,6 +106,7 @@ public class Hood extends SubsystemBase {
             log_hoodHomed.accept(m_isHoodHomed);
         };
 
+        //BUG: IF HOOD IS FULLY UP, IT STALLS AND HOMING FINISHES WAY TOO FAST CUZ IT NOW THINKS THE TOP IS 0
         BooleanSupplier isFinished = () -> 
             m_currentDebouncer.calculate(m_currentSpike.getAsBoolean());
 
