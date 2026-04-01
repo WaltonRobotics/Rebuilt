@@ -36,12 +36,11 @@ public class Superstructure extends SubsystemBase {
         return Commands.sequence(
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(() -> m_intake.isIntakeArmAtDest()).withTimeout(0.25),
+            m_intake.setIntakeRollersVelocityCmd(12),
             Commands.run(
             () -> {
                 boolean shooting = isShooting.getAsBoolean();
-
                 m_shooter.m_turret.setIntaking(!shooting);
-                m_intake.setIntakeRollersVelocity(12);
                 m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPS : IndexerK.kSpindexerIntakeRPS);
             })
         ).finallyDo(
