@@ -31,7 +31,7 @@ public class WaltSimpleAutonFactory {
 
     private final DoubleLogger log_autonState = WaltLogger.logDouble(kLogTab, "State");
 
-    //trajectory logger
+    // trajectory logger
     private final StringLogger log_trajectoryName = new StringLogger(AutonK.kLogTab, "trajectoryName");
     private final Pose2dArrayLogger log_trajectoryPoses = new Pose2dArrayLogger(AutonK.kLogTab, "trajectoryPoses");
 
@@ -44,7 +44,7 @@ public class WaltSimpleAutonFactory {
         log_autonState.accept(-1.0);
     }
 
-    // --- Utility methods ---
+    //---UTILITY METHODS
 
     private Command logState(double state) {
         return Commands.runOnce(() -> log_autonState.accept(state));
@@ -96,7 +96,7 @@ public class WaltSimpleAutonFactory {
         return routine;
     }
 
-    // --- AutoRoutine trajectory helper ---
+    //--- AUTOROUTINE TRAJECTORY HELPER
 
     private AutoTrajectory createTraj(AutoRoutine routine, String name) {
         AutoTrajectory traj = routine.trajectory(name);
