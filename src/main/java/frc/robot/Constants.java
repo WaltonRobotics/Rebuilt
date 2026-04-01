@@ -129,7 +129,7 @@ public class Constants {
         public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.60 ); //0.75 rots in each direction from home
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.in(Rotations));
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.in(Rotations));
-        public static final Angle kTurretIntakeLockPos = Rotations.of(-0.250);
+        public static final double kTurretIntakeLockPos = -0.25;
         public static final double kTurretMaxErrD = Rotations.of(0.05).in(Rotations);
 
         public static final AngularVelocity kShooterMaxRPS = MotorK.kX44MaxVelocity.div(kShooterGearing);
