@@ -16,8 +16,9 @@ public class AutonChooser {
     public static AdaptableAutonInfo m_traj1;
     public static AdaptableAutonInfo m_traj2;
 
-    public static void initialize(WaltSimpleAutonFactory simpleAutonFactory) {
+    public static void initialize(WaltSimpleAutonFactory simpleAutonFactory, WaltAdaptableAutonFactory adaptableAutonFactory) {
         m_simpleAutonFactory = simpleAutonFactory;
+        m_adaptableAutonFactory = adaptableAutonFactory;
         m_chooser = new AutoChooser();
 
         m_traj1 = new AdaptableAutonInfo("LeftSweepFast", 10, AutonK.kShootingTimeout, false);
