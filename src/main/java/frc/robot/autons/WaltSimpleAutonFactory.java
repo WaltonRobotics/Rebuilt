@@ -27,7 +27,7 @@ public class WaltSimpleAutonFactory {
     public final AutoFactory m_autoFactory;
     private final Intake m_intake;
     private final Shooter m_shooter;
-    private final Swerve m_swerve;
+    private final Swerve m_drivetrain;
 
     private final DoubleLogger log_autonState = WaltLogger.logDouble(kLogTab, "State");
 
@@ -40,11 +40,11 @@ public class WaltSimpleAutonFactory {
         m_autoFactory = autoFactory;
         m_intake = intake;
         m_shooter = shooter;
-        m_swerve = swerve;
+        m_drivetrain = swerve;
         log_autonState.accept(-1.0);
     }
 
-    //---UTILITY METHODS
+    // --- Utility methods ---
 
     private Command logState(double state) {
         return Commands.runOnce(() -> log_autonState.accept(state));
@@ -89,14 +89,14 @@ public class WaltSimpleAutonFactory {
             .andThen(
                 traj.cmd(),
                 tp("preheat.END"),
-                m_swerve.xBrakeCmd()
+                m_drivetrain.xBrakeCmd()
             )
         );
 
         return routine;
     }
 
-    //--- AUTOROUTINE TRAJECTORY HELPER
+    // --- Autoroutine trajectory helper ---
 
     private AutoTrajectory createTraj(AutoRoutine routine, String name) {
         AutoTrajectory traj = routine.trajectory(name);
@@ -132,7 +132,7 @@ public class WaltSimpleAutonFactory {
 
         // After trajectory: xBrake + shoot
         traj.done().onTrue(Commands.sequence(
-            m_swerve.xBrakeCmd(),
+            m_drivetrain.xBrakeCmd(),
             shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout)
         ));
 
@@ -175,7 +175,7 @@ public class WaltSimpleAutonFactory {
         );
 
         traj.done().onTrue(Commands.sequence(
-            m_swerve.xBrakeCmd(),
+            m_drivetrain.xBrakeCmd(),
             shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout)
         ));
 
@@ -202,7 +202,7 @@ public class WaltSimpleAutonFactory {
 
         // Transition: xBrake -> shoot -> traj2
         traj1.done().onTrue(Commands.sequence(
-            m_swerve.xBrakeCmd(),
+            m_drivetrain.xBrakeCmd(),
             shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout),
             traj2.cmd().withTimeout(12)
         ));
@@ -216,7 +216,7 @@ public class WaltSimpleAutonFactory {
             m_superstructure.intake(() -> false).withTimeout(10)
         );
 
-        traj2.done().onTrue(m_swerve.xBrakeCmd());
+        traj2.done().onTrue(m_drivetrain.xBrakeCmd());
 
         return routine;
     }
@@ -248,7 +248,7 @@ public class WaltSimpleAutonFactory {
 
         // Transition: xBrake -> shoot -> traj2
         traj1.done().onTrue(
-            m_swerve.xBrakeCmd()
+            m_drivetrain.xBrakeCmd()
         );
 
         // cope to "stop" superstructure intaking
