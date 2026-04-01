@@ -49,7 +49,7 @@ public class WaltSimpleAutonFactory {
     }
 
     private Command waitTurretHomedCmd() {
-        return Commands.waitUntil(m_shooter.turretHomedSupp);
+        return Commands.waitUntil(() -> true);
     }
 
     private Command waitIntakeHomedCmd() {

@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static frc.robot.Constants.ShooterK.*;
@@ -51,65 +52,40 @@ public class ShotCalculator {
         minDistance = 0.94;
         maxDistance = 5.8;
 
-        //right mid grid
-        m_shotMap.put(3.903, new ShotData(RotationsPerSecond.of(73.18 + kRPSBoost), Degrees.of(327.75)));
-        m_timeOfFlightMap.put(3.903, 1.35);
+        //Ordered via DistanceToTarget
+        addLerpPoint(5.700, 59.47, 0.88, 1.33);
+        addLerpPoint(5.628, 59.47, 0.91, 1.39);
+        addLerpPoint(5.515, 59.50, 0.87, 1.30);
+        addLerpPoint(5.412, 58.50, 0.86, 1.27);
+        addLerpPoint(5.303, 58.47, 0.90, 1.65);
+//add 5.15
+        addLerpPoint(5.060, 57.00, 0.85, 1.26);
+        addLerpPoint(4.910, 56.00, 0.81, 1.17);
+        addLerpPoint(4.874, 55.50, 0.80, 1.29);
+        addLerpPoint(4.684, 54.00, 0.77, 1.21);
+        addLerpPoint(4.562, 54.50, 0.55, 1.13);
+        addLerpPoint(4.496, 55.86, 0.45, 1.40);
+        addLerpPoint(4.407, 55.86, 0.45, 1.38);
+        addLerpPoint(4.108, 55.86, 0.42, 1.40);
+        addLerpPoint(4.000, 55.46, 0.42, 1.37);
+        addLerpPoint(3.944, 54.90, 0.37, 1.33);
+        addLerpPoint(3.823, 55.20, 0.20, 1.47);
+//add 3.6
+//add 3.4
+        addLerpPoint(3.201, 52.58, 0.10, 1.27);
+        addLerpPoint(3.055, 51.58, 0.10, 1.41);
+        addLerpPoint(2.734, 50.68, 0.10, 1.16);
+//add 2.5 ish
+        addLerpPoint(2.318, 48.12, 0.10, 1.12);
+//add 2.something here
+        addLerpPoint(2.014, 48.12, 0.00, 1.22);
+        addLerpPoint(1.562, 46.12, 0.00, 1.36);
+        addLerpPoint(1.072, 40.04, 0.00, 1.04);
+    }
 
-        //backright grid - THIS ONE IS INCONSISTENT UNTIL SHOOTER V3
-        m_shotMap.put(5.657, new ShotData(RotationsPerSecond.of(96.42), Degrees.of(374.20)));   //real: 95.00
-        m_timeOfFlightMap.put(5.657, 1.56);
-
-        //frontright grid
-        m_shotMap.put(3.763, new ShotData(RotationsPerSecond.of(77 + kRPSBoost), Degrees.of(300)));
-        m_timeOfFlightMap.put(3.763, 1.43);
-
-        //frontleft grid
-        m_shotMap.put(1.476, new ShotData(RotationsPerSecond.of(57.72 + kRPSBoost), Degrees.of(150.77)));
-        m_timeOfFlightMap.put(1.476, 1.125);
-
-        //backleft grid
-        m_shotMap.put(3.854, new ShotData(RotationsPerSecond.of(79 + kRPSBoost), Degrees.of(345)));
-        m_timeOfFlightMap.put(3.854, 1.38);
-
-        //against the hub
-        m_shotMap.put(0.835, new ShotData(RotationsPerSecond.of(66.21 + kRPSBoost), Degrees.of(85.51)));
-        m_timeOfFlightMap.put(0.835, 1.17);
-
-        //against the tower
-        m_shotMap.put(2.977, new ShotData(RotationsPerSecond.of(71.14 + kRPSBoost), Degrees.of(338.81)));
-        m_timeOfFlightMap.put(2.977, 1.03);
-
-        //backleft grid
-        m_shotMap.put(4.348, new ShotData(RotationsPerSecond.of(77.94 + kRPSBoost), Degrees.of(396.32)));
-        m_timeOfFlightMap.put(4.348, 1.38);
-
-        //left mid grid
-        m_shotMap.put(2.799, new ShotData(RotationsPerSecond.of(67.91 + kRPSBoost), Degrees.of(308.94)));
-        m_timeOfFlightMap.put(2.799, 1.08);
-
-        m_shotMap.put(3.561, new ShotData(RotationsPerSecond.of(79.30 + kRPSBoost), Degrees.of(287.93)));
-        m_timeOfFlightMap.put(3.561, 1.42);
-
-        m_shotMap.put(1.870, new ShotData(RotationsPerSecond.of(62.31 + kRPSBoost), Degrees.of(231.52)));
-        m_timeOfFlightMap.put(1.870, 1.1);
-
-        m_shotMap.put(3.259, new ShotData(RotationsPerSecond.of(75.64 + kRPSBoost), Degrees.of(268.02)));
-        m_timeOfFlightMap.put(3.259, 1.37);
-
-        //AT COMPETITION
-
-        m_shotMap.put(2.755, new ShotData(RotationsPerSecond.of(75.41), Degrees.of(221.02)));
-        m_timeOfFlightMap.put(2.755, 1.28);
-
-        m_shotMap.put(2.352, new ShotData(RotationsPerSecond.of(75.41), Degrees.of(169.77)));
-        m_timeOfFlightMap.put(2.352, 0.9);
-
-        //3/21/26 8:40 AM
-        m_shotMap.put(3.425, new ShotData(RotationsPerSecond.of(87), Degrees.of(280)));
-        m_timeOfFlightMap.put(3.425, 1.41);
-
-        m_shotMap.put(3.933, new ShotData(RotationsPerSecond.of(80.5), Degrees.of(310)));
-        m_timeOfFlightMap.put(3.933, 1.38);
+    public static void addLerpPoint(double distanceToTarget, double shooterRPS, double hoodRots, double timeOfFlight) {
+        m_shotMap.put(distanceToTarget, new ShotData(RotationsPerSecond.of(shooterRPS /* + kRPSBoost */), Rotations.of(hoodRots)));
+        m_timeOfFlightMap.put(distanceToTarget, timeOfFlight);
     }
 
     
@@ -125,7 +101,9 @@ public class ShotCalculator {
         double turretY = robotY + kTurretOffsetX_m * sinR + kTurretOffsetY_m * cosR;
         double dx = turretX - targetX;
         double dy = turretY - targetY;
-        return Math.sqrt(dx * dx + dy * dy);
+        double dist = Math.sqrt(dx * dx + dy * dy);
+        log_distToTargetMeters.accept(dist);
+        return dist;
     }
 
     /**

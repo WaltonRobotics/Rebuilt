@@ -20,10 +20,12 @@ import com.ctre.phoenix6.swerve.SwerveRequest.SwerveDriveBrake;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.numbers.N1;
@@ -400,22 +402,65 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     /**
-     * robot goes to specified pose
-     * @param destination
-     * @return
+     * @param desPose Posd2d to move to
+     * @return a Command that makes the robot move to the desired Pose2d
      */
-    public Command toPose(Pose2d destination) {
-        return Commands.run(
-            () -> {
-                Pose2d curPose = getState().Pose;
+    public Command roboToPose(Pose2d desPose, double tolerance) {
+        return Commands.runOnce(() -> {
+            Pose2d curPose = getState().Pose;
+            double xSpeed = m_pathXController.calculate(curPose.getX(), desPose.getX());
+            double ySpeed = m_pathYController.calculate(curPose.getY(), desPose.getY());
+            double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), desPose.getRotation().getRadians());
+            setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
+        }).andThen(Commands.waitUntil(() -> isNearPose(getState().Pose, desPose, tolerance)))
+          .andThen(() -> setControl(swreq_drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0)));
+    }
 
-                double xSpeed = m_pathXController.calculate(curPose.getX(), destination.getX());
-                double ySpeed = m_pathYController.calculate(curPose.getY(), destination.getY());
-                double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), destination.getRotation().getRadians());
+    public boolean isNearPose(Pose2d curPose, Pose2d desPose, double translationTolerance, double rotationTolerance) {
+        return isNearTranslation(curPose.getTranslation(), desPose.getTranslation(), translationTolerance)
+            && isNearRotation(curPose.getRotation(), desPose.getRotation(), rotationTolerance);
+    }
 
-                setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
-            }
-        );
+    public boolean isNearPose(Pose2d curPose, Pose2d desPose, double translationTolerance) {
+        return isNearTranslation(curPose.getTranslation(), desPose.getTranslation(), translationTolerance);
+    }
+
+    /**
+     * @param desRotation Rotation2d to turn to
+     * @return a Command that makes the robot turn to the desired Rotation2d
+     */
+    public Command roboToRotation(Rotation2d desRotation, double tolerance) {
+        return Commands.runOnce(() -> {
+            Rotation2d curRotation = getState().Pose.getRotation();
+            double thetaSpeed = m_pathThetaController.calculate(curRotation.getRadians(), desRotation.getRadians());
+            setControl(swreq_drive.withRotationalRate(thetaSpeed));
+        }).andThen(Commands.waitUntil(() -> isNearRotation(getState().Pose.getRotation(), desRotation, tolerance)))
+          .andThen(() -> setControl(swreq_drive.withRotationalRate(0)));
+    }
+
+    public boolean isNearRotation(Rotation2d curRotation, Rotation2d desRotation, double tolerance) {
+        return Math.abs(MathUtil.angleModulus(curRotation.getRadians() - desRotation.getRadians())) <= tolerance;
+    }
+
+    /**
+     * @param desTranslation Translation2d to go to
+     * @return a Command that makes the robot go to the desired Translation2d
+     */
+    public Command roboToTranslation(Translation2d desTranslation, double tolerance) {
+        return Commands.runOnce(() -> {
+            Translation2d curTranslation = getState().Pose.getTranslation();
+            double xSpeed = m_pathXController.calculate(curTranslation.getX(), desTranslation.getX());
+            double ySpeed = m_pathYController.calculate(curTranslation.getY(), desTranslation.getY());
+            setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed));
+        }).andThen(Commands.waitUntil(() -> isNearTranslation(getState().Pose.getTranslation(), desTranslation, tolerance)))
+          .andThen(() -> setControl(swreq_drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0)));
+    }
+
+    public boolean isNearTranslation(Translation2d curTranslation, Translation2d desTranslation, double tolerance) {
+        return Math.hypot(
+            desTranslation.getX() - curTranslation.getX(),
+            desTranslation.getY() - curTranslation.getY()
+        ) <= tolerance;
     }
 
     /**
@@ -426,7 +471,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         Pose2d destination = detection.targetToPose(getState().Pose, target);
         detection.addFuel(destination);
         
-        return toPose(destination);
+        return roboToPose(destination, 0.1);
     }
 
     public static Pose2d faceFuelPose(Pose2d robotPose, Pose2d fuelLocation) {
