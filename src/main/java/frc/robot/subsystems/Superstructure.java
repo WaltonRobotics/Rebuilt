@@ -196,58 +196,46 @@ public class Superstructure extends SubsystemBase {
      */
     public Command longOpsCheck() {
         return Commands.sequence(
-            Commands.print("======================STARTING LONG OPS CHECK======================"),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
 
             //deploy intake
-            Commands.print("================================= DEPLOY INTAKE ================================="),
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
 
             //run intake rollers
-            Commands.print("================================= RUN INTAKE ROLLERS ================================="),
             m_intake.startIntakeRollers(),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
 
             //run spindexer
-            Commands.print("================================= RUN SPINDEXER ================================="),
             m_intake.stopIntakeRollers(),
             m_indexer.setSpindexerVelocityCmd(IndexerK.kSpindexerShootRPS),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
 
             //Stop Spindexer; run tunnel
-            Commands.print("================================= RUN TUNNEL ================================="),
             m_indexer.stopSpindexerCmd(),
             m_indexer.setTunnelVelocityCmd(IndexerK.kTunnelShootRPS),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
 
             //Stop tunnel; run shooter
-            Commands.print("================================= RUN SHOOTER ================================="),
             m_indexer.stopTunnelCmd(),
             m_shooter.setShooterVelocityCmd(ShooterK.kShooterRPS),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
 
             //shooter stopped
-            Commands.print("================================= STOP SHOOTER ================================="),
             m_shooter.setShooterVelocityCmd(RotationsPerSecond.zero()),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
 
             //turret move
-            Commands.print("================================= TURRET MOVE ================================="),
             m_shooter.m_turret.setTurretPosCmd(ShooterK.kTurretIntakeLockPos),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
             m_shooter.m_turret.setTurretPosCmd(ShooterK.kHomePosition),
 
             //hood move
-            Commands.print("================================= HOOD MOVE ================================="),
             m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodLockRots_double),
-            Commands.print("================================= LOCK HOOD POS ================================="),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
-            Commands.print("================================= SET HOOD POS TO MIN ================================="),
             m_shooter.m_hood.setHoodPosCmd(0.1),
 
             //Run short Ops check (intake, shoot, swerve)
-            Commands.print("================================= START SHORT OPS CHECK ================================="),
             shortOpsCheck()
         );
     }

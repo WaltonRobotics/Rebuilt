@@ -480,60 +480,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void testInit() {
-        CommandScheduler.getInstance().cancelAll();
-
-        // TestingDashboard.initialize();
-        Command opsCheckCommand = m_superstructure.m_isLongOpsCheck ? m_superstructure.longOpsCheck() : m_superstructure.shortOpsCheck();
-
-        CommandScheduler.getInstance().schedule(
-            Commands.sequence(
-                Commands.print("==========START LONG OPS CHECK=========="),
-                opsCheckCommand
-        ));
-
-            // .whileFalse(m_superstructure.shortOpsCheck());
-
-        // CommandScheduler.getInstance().schedule(
-        //     Commands.sequence(
-        //         m_drivetrain.runOnce(m_drivetrain::seedFieldCentric),
-        //         Commands.waitSeconds(1),
-        //         m_drivetrain.applyRequest(() ->
-        //             drive.withVelocityX(kMaxTranslationSpeed)
-        //                 .withVelocityY(0)
-        //                 .withRotationalRate(0)
-        //         ),
-        //         Commands.waitSeconds(2.5),
-        //         m_drivetrain.xBrake(),
-        //         Commands.waitSeconds(2.5),
-        //         m_drivetrain.applyRequest(() ->
-        //             drive.withVelocityX(kMaxTranslationSpeed.times(-1))
-        //                 .withVelocityY(0)
-        //                 .withRotationalRate(0)
-        //         ),
-        //         Commands.waitSeconds(2.5),
-        //         m_drivetrain.xBrake(),
-        //         Commands.waitSeconds(2.5),
-        //         m_drivetrain.applyRequest(() ->
-        //             drive.withVelocityX(0)
-        //                 .withVelocityY(0)
-        //                 .withRotationalRate(kMaxAngularRate)
-        //         ),
-        //         Commands.waitSeconds(2.5),
-        //         m_drivetrain.xBrake(),
-        //         Commands.waitSeconds(2.5),
-        //         m_drivetrain.applyRequest(() ->
-        //             drive.withVelocityX(0)
-        //                 .withVelocityY(0)
-        //                 .withRotationalRate(0)
-        //         ),
-        //         Commands.waitSeconds(2.5),
-        //         m_drivetrain.xBrake(),
-        //         Commands.waitSeconds(2.5),
-        //         m_superstructure.intake(() -> false).withTimeout(5),
-        //         Commands.waitSeconds(2.5),
-        //         m_superstructure.activateOuttake(kShooterRPS).withTimeout(4)
-        //     )
-        // );
+        CommandScheduler.getInstance().schedule(m_superstructure.longOpsCheck());
     }
 
     @Override
