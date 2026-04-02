@@ -285,7 +285,7 @@ public class Robot extends TimedRobot {
             m_superstructure.intake(() -> true)
         );
 
-        trg_retractIntake.onTrue(m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED));
+        trg_retractIntake.onTrue(m_superstructure.retractIntake());
 
         trg_emergencyBarf.whileTrue(
             m_superstructure.emergencyBarf()

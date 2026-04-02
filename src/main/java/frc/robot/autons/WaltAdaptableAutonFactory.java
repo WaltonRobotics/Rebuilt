@@ -116,7 +116,7 @@ public class WaltAdaptableAutonFactory {
             String path = autonInfos[i].autonName();
             autonTrajs[i] = createTraj(routine, path);
         }
-        System.out.println("traj's built");
+        System.out.println("trajs built");
 
 
         for (int i = 0; i < autonTrajs.length; i++) {
@@ -167,15 +167,10 @@ public class WaltAdaptableAutonFactory {
         );
 
         traj.atTime("shoot").onTrue(
-            m_superstructure.activateOuttakeShotCalc()
-                .until(m_shooter.getBallShotTrg())
-        );
-
-        //later rework into the shoot trigger because this wont ever be an event marker in the path
-        traj.atTime("retractIntake").onTrue(
             Commands.sequence(
-                m_superstructure.intake(() -> false),
-                m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+                m_superstructure.activateOuttakeShotCalc(),
+                Commands.waitUntil(m_shooter.getBallShotTrg()),
+                m_superstructure.retractIntake()
             )
         );
     }
