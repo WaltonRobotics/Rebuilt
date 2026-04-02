@@ -9,6 +9,8 @@ import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.RobotK.*;
 import static frc.robot.Constants.ShooterK;
 import java.util.Optional;
+import java.util.function.Supplier;
+
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 
@@ -20,6 +22,9 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -159,6 +164,8 @@ public class Robot extends TimedRobot {
     // private final Tracer m_periodicTracer = new Tracer();
     private final Command m_preheaterCommand;
 
+    private Supplier<Pose2d> supp_robotPose = () -> m_drivetrain.getState().Pose;
+
     /* CONSTRUCTOR */
     public Robot() {
         configureBindings();
@@ -295,6 +302,11 @@ public class Robot extends TimedRobot {
         m_manipulator.povUp().onTrue(m_intake.setIntakeFlapServoCmd(IntakeK.kIntakeFlapDeployPos));
         m_manipulator.povDown().onTrue(m_intake.setIntakeFlapServoCmd(0));
 
+        m_driver.povUp().whileTrue(m_drivetrain.translateRobot(1, 0, 0.1));
+        m_driver.povLeft().whileTrue(m_drivetrain.translateRobot(0, 1, 0.1));
+        m_driver.povDown().whileTrue(m_drivetrain.translateRobot(-1, 0, 0.1));
+        m_driver.povRight().whileTrue(m_drivetrain.translateRobot(0, -1, 0.1));
+
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
 
@@ -381,7 +393,7 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().run(); 
         // m_periodicTracer.addEpoch("CommandScheduler");
 
-        log_robotPose.accept(m_drivetrain.getState().Pose);
+        log_robotPose.accept(supp_robotPose.get());
 
         for (var camera : WaltCamera.AllCameras) {
             Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
