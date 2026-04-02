@@ -24,25 +24,39 @@ public class AutonChooser {
         m_traj1 = new AdaptableAutonInfo("LeftSweepFast", AutonK.kShootingTimeout, false);
         m_traj2 = new AdaptableAutonInfo("LeftSweepFast_copy1", AutonK.kShootingTimeout, false);
 
-        m_chooser.addRoutine("One Right Neutral Pickup",
-            () -> simpleAutonFactory.firstSweep_NoPreload(false));
-        m_chooser.addRoutine("One Left Neutral Pickup",
-            () -> simpleAutonFactory.firstSweep_NoPreload(true));
-        m_chooser.addRoutine("Fast One Right Neutral Pickup",
-            () -> simpleAutonFactory.fastOneSweep(false));
-        m_chooser.addRoutine("Zigzag Two Right Neutral Pickup",
-            () -> simpleAutonFactory.fastRightTwoSweep_ZigZag());
-        m_chooser.addRoutine("Reshoot Two Right Neutral Pickup",
-            () -> simpleAutonFactory.fastTwoSweep_Reshoot(false));
-        m_chooser.addRoutine("Reshoot Two Left Neutral Pickup",
-            () -> simpleAutonFactory.fastTwoSweep_Reshoot(true));
-        m_chooser.addRoutine("Preload Auton",
-            () -> simpleAutonFactory.preloadAuton());
+        // m_chooser.addRoutine("One Right Neutral Pickup",
+        //     () -> simpleAutonFactory.firstSweep_NoPreload(false));
+        // m_chooser.addRoutine("One Left Neutral Pickup",
+        //     () -> simpleAutonFactory.firstSweep_NoPreload(true));
+        // m_chooser.addRoutine("Fast One Right Neutral Pickup",
+        //     () -> simpleAutonFactory.fastOneSweep(false));
+        // m_chooser.addRoutine("Zigzag Two Right Neutral Pickup",
+        //     () -> simpleAutonFactory.fastRightTwoSweep_ZigZag());
+        // m_chooser.addRoutine("Reshoot Two Right Neutral Pickup",
+        //     () -> simpleAutonFactory.fastTwoSweep_Reshoot(false));
+        // m_chooser.addRoutine("Reshoot Two Left Neutral Pickup",
+        //     () -> simpleAutonFactory.fastTwoSweep_Reshoot(true));
+        
         m_chooser.addRoutine("TEST AUTON MULTI",
             () -> m_adaptableAutonFactory.multiAdaptableAuton("Test Auton Multi", new AdaptableAutonInfo[] {m_traj1, m_traj2}));
         m_chooser.addRoutine("TEST AUTON",
             () -> m_adaptableAutonFactory.adaptableAuton("Test Auton", m_traj1));
-
+        
+        m_chooser.addRoutine("One Right Neutral Pickup",
+            () -> m_adaptableAutonFactory.adaptableAuton("One Right Neutral Pickup", new AdaptableAutonInfo(AutonK.kLeftOptimizedSweepPathName, AutonK.kShootingTimeout, false)));
+        m_chooser.addRoutine("One Left Neutral Pickup",
+            () -> m_adaptableAutonFactory.adaptableAuton("One Left Neutral Pickup", new AdaptableAutonInfo(AutonK.kRightOptimizedSweepPathName, AutonK.kShootingTimeout, false)));
+        m_chooser.addRoutine("Fast One Right Neutral Pickup",
+            () -> m_adaptableAutonFactory.adaptableAuton("Fast One Right Neutral Pickup", new AdaptableAutonInfo(AutonK.kFastRightTwoSweepName, AutonK.kShootingTimeout, false)));
+        m_chooser.addRoutine("Zigzag Two Right Neutral Pickup",
+            () -> m_adaptableAutonFactory.multiAdaptableAuton("Zigzag Two Right Neutral Pickup", new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kFastRightTwoSweepName, AutonK.kShootingTimeout, false), new AdaptableAutonInfo(AutonK.kZigzagRightTwo, AutonK.kShootingTimeout, false)}));
+        m_chooser.addRoutine("Reshoot Two Right Neutral Pickup",
+            () -> m_adaptableAutonFactory.multiAdaptableAuton("Reshoot Two Right Neutral Pickup", new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kFastRightTwoSweepName, AutonK.kShootingTimeout, false), new AdaptableAutonInfo(AutonK.kReshootRightTwo, AutonK.kShootingTimeout, false)}));
+        m_chooser.addRoutine("Reshoot Two Left Neutral Pickup",
+            () -> m_adaptableAutonFactory.multiAdaptableAuton("Reshoot Two Left Neutral Pickup", new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kFastLeftTwoSweepName, AutonK.kShootingTimeout, false), new AdaptableAutonInfo(AutonK.kReshootLeftTwo, AutonK.kShootingTimeout, false)}));
+        m_chooser.addRoutine("Preload Auton",
+            () -> simpleAutonFactory.preloadAuton());
+        
         SmartDashboard.putData("AutoChooser", m_chooser);
     }
 
