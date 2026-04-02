@@ -21,8 +21,8 @@ public class AutonChooser {
         m_adaptableAutonFactory = adaptableAutonFactory;
         m_chooser = new AutoChooser();
 
-        m_traj1 = new AdaptableAutonInfo("LeftSweepFast", 10, AutonK.kShootingTimeout, false);
-        m_traj2 = new AdaptableAutonInfo("LeftSweepFast_copy1", 10, AutonK.kShootingTimeout, false);
+        m_traj1 = new AdaptableAutonInfo("LeftSweepFast", AutonK.kShootingTimeout, false);
+        m_traj2 = new AdaptableAutonInfo("LeftSweepFast_copy1", AutonK.kShootingTimeout, false);
 
         m_chooser.addRoutine("One Right Neutral Pickup",
             () -> simpleAutonFactory.firstSweep_NoPreload(false));

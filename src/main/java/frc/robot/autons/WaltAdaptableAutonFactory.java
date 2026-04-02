@@ -24,6 +24,7 @@ import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.Pose2dArrayLogger;
 import frc.util.WaltLogger.StringLogger;
+import frc.util.WaltLogger.BooleanLogger;
 
 public class WaltAdaptableAutonFactory {
     private final Superstructure m_superstructure;
@@ -38,6 +39,7 @@ public class WaltAdaptableAutonFactory {
     // trajectory logger
     private final StringLogger log_trajectoryName = new StringLogger(AutonK.kLogTab, "trajectoryName");
     private final Pose2dArrayLogger log_trajectoryPoses = new Pose2dArrayLogger(AutonK.kLogTab, "trajectoryPoses");
+    private final BooleanLogger log_ballDebounce = WaltLogger.logBoolean(AutonK.kLogTab, "ballDebounce");
 
     public WaltAdaptableAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter, Swerve swerve) {
         m_superstructure = superstructure;
@@ -96,8 +98,8 @@ public class WaltAdaptableAutonFactory {
         AutoTrajectory traj = createTraj(routine, path);
 
         routine.active().onTrue(
-            traj.cmd().withTimeout(autonInfo.trajTimeout()).alongWith(homingCmd()
-        ));
+            traj.cmd().alongWith(homingCmd())
+        );
 
         setUpTrajTriggers(traj, autonInfo.shooterTimeout(), autonInfo.SOTM());
 
@@ -105,6 +107,8 @@ public class WaltAdaptableAutonFactory {
     }
 
     public AutoRoutine multiAdaptableAuton(String routineName, AdaptableAutonInfo[] autonInfos) {
+        System.out.println("================== adaptableBuilder Start ==================");
+
         AutoTrajectory[] autonTrajs = new AutoTrajectory[autonInfos.length];
         AutoRoutine routine = m_autoFactory.newRoutine(routineName);
 
@@ -112,25 +116,47 @@ public class WaltAdaptableAutonFactory {
             String path = autonInfos[i].autonName();
             autonTrajs[i] = createTraj(routine, path);
         }
+        System.out.println("traj's built");
+
 
         for (int i = 0; i < autonTrajs.length; i++) {
-            setUpTrajTriggers(autonTrajs[i], autonInfos[i].shooterTimeout(), autonInfos[i].SOTM());
+            AutoTrajectory thisTraj = autonTrajs[i];
+            var thisInfo = autonInfos[i];
+            System.out.println("traj idx " + i + " (" + thisInfo.autonName + ") .done().onTrue() built");
+
+            setUpTrajTriggers(thisTraj, thisInfo.shooterTimeout(), autonInfos[i].SOTM());
         }
+        System.out.println("trajTriggers built");
+
 
         routine.active().onTrue(
-            autonTrajs[0].cmd().withTimeout(autonInfos[0].trajTimeout()).alongWith(homingCmd())
+            autonTrajs[0].cmd().alongWith(homingCmd())
         );
 
+        System.out.println("routine active built");
+
+
+        System.out.println("traj idx onTrue pre-built");
         for (int i = 0; i < autonTrajs.length - 1; i++) {
-            autonTrajs[i].done().onTrue(
-                Commands.waitUntil(m_shooter.getBallDetectedTrg().debounce(ShooterK.kBallDetectedDebounceTime))
-                .andThen(autonTrajs[i + 1].cmd().withTimeout(autonInfos[i + 1].trajTimeout()))
+            AutoTrajectory thisTraj = autonTrajs[i];
+            var thisInfo = autonInfos[i];
+            System.out.println("traj idx " + i + " (" + thisInfo.autonName + ") .done().onTrue() built");
+            thisTraj.done().onTrue(
+                Commands.sequence(
+                    tp("WAITING FOR SHOOTING DONE"),
+                    Commands.waitUntil(m_shooter.getBallShotTrg()),
+                    tp("TRAJ 2 STARTED"),
+                    autonTrajs[i + 1].cmd()
+                )
             );
         }
 
         autonTrajs[autonTrajs.length - 1].done().onTrue(
             m_drivetrain.xBrakeCmd()
         );
+
+        System.out.println("================== full routine built ==================");
+
 
         return routine;
     }
@@ -142,8 +168,7 @@ public class WaltAdaptableAutonFactory {
 
         traj.atTime("shoot").onTrue(
             m_superstructure.activateOuttakeShotCalc()
-                .until(m_shooter.getBallDetectedTrg().debounce(ShooterK.kBallDetectedDebounceTime))
-                .alongWith(SOTM ? Commands.none() : m_drivetrain.xBrakeCmd())
+                .until(m_shooter.getBallShotTrg())
         );
 
         //later rework into the shoot trigger because this wont ever be an event marker in the path
@@ -157,8 +182,7 @@ public class WaltAdaptableAutonFactory {
 
     public final record AdaptableAutonInfo(
         String autonName,
-        double trajTimeout,
         double shooterTimeout,
         boolean SOTM
     ) {}
-}
+};
