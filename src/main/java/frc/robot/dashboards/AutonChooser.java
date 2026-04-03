@@ -33,7 +33,7 @@ public class AutonChooser {
         m_chooser.addRoutine("SOTM Two Cycle Reshoot",
             () -> m_adaptableAutonFactory.multiAdaptableAuton("SOTM Two Cycle",
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kFastLeftSweep, AutonK.kShootingTimeout, true),
-                                          new AdaptableAutonInfo(AutonK.kDepotLeftTwo, AutonK.kShootingTimeout, true),
+                                          /*new AdaptableAutonInfo(AutonK.kDepotLeftTwo, AutonK.kShootingTimeout, true),*/
                                           new AdaptableAutonInfo(AutonK.kReshootLeftTwo, AutonK.kShootingTimeout, true)}));
 
         m_chooser.addRoutine("SOTM Two Cycle Sweep",
