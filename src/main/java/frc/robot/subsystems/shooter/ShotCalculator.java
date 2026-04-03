@@ -25,12 +25,14 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.FieldConstants;
+import frc.util.AllianceZoneUtil;
 import frc.util.WaltLogger.*;
 import edu.wpi.first.units.measure.Time;
 
 public class ShotCalculator {
     private static final DoubleLogger log_timeOfFlight = new DoubleLogger("Shooter/Calculator", "timeOfFlight");
     private static final DoubleLogger log_distToTargetMeters = new DoubleLogger("Shooter/Calculator", "distTargetToMeters");
+    private static final BooleanLogger log_isPassingLerp = new BooleanLogger("Shooter/Calculator", "isPassingLERP");
 
     private static final double kMetersToInches = 1.0 / 0.0254;
     // private static final Tracer m_iterativeTracer = new Tracer();
@@ -43,6 +45,10 @@ public class ShotCalculator {
             InverseInterpolator.forDouble(), ShotData::interpolate);
 
     public static final InterpolatingDoubleTreeMap m_timeOfFlightMap = new InterpolatingDoubleTreeMap();
+    public static final InterpolatingDoubleTreeMap m_timeOfFlightMapPassing = new InterpolatingDoubleTreeMap();
+
+    private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
+    private static final double kBlueHubCenterX = AllianceZoneUtil.blueHubCenter.getX();
 
     private static final double minDistance;
     private static final double maxDistance;
@@ -86,6 +92,37 @@ public class ShotCalculator {
         addLerpPoint(1.528, 46.00, 0.08, 1.20, m_shotMap, m_timeOfFlightMap);
         addLerpPoint(1.307, 44.50, 0.08, 1.13, m_shotMap, m_timeOfFlightMap);
         addLerpPoint(1.168, 44.50, 0.08, 1.16, m_shotMap, m_timeOfFlightMap);
+
+        addPassingPoint(4.0080, 48.000, 0.70, 1.35);
+        addPassingPoint(4.8160, 50.000, 0.90, 1.29);
+        addPassingPoint(5.0440, 51.000, 1.00, 1.20);
+        addPassingPoint(5.3520, 52.000, 1.10, 1.15);
+        addPassingPoint(5.6750, 54.000, 1.15, 1.19);
+        addPassingPoint(5.9900, 56.000, 1.15, 1.27);
+        addPassingPoint(6.3200, 58.000, 1.15, 1.27);
+        addPassingPoint(6.5830, 60.000, 1.15, 1.30);
+        addPassingPoint(6.8850, 62.000, 1.15, 1.36);
+        addPassingPoint(7.1690, 64.000, 1.15, 1.41);
+        addPassingPoint(7.5120, 66.000, 1.15, 1.43);
+        addPassingPoint(7.7780, 66.990, 1.15, 1.46);
+        addPassingPoint(8.1140, 67.750, 1.15, 1.45);
+        addPassingPoint(8.4420, 68.750, 1.15, 1.58);
+        addPassingPoint(8.7350, 70.250, 1.15, 1.63);
+        addPassingPoint(8.9970, 71.350, 1.15, 1.71);
+        addPassingPoint(10.419, 78.800, 1.16, 1.78);
+        addPassingPoint(10.722, 80.300, 1.16, 1.80);
+        addPassingPoint(11.076, 82.100, 1.16, 1.79);
+        addPassingPoint(11.367, 82.500, 1.16, 1.87);
+        addPassingPoint(11.722, 84.400, 1.16, 1.85);
+        addPassingPoint(12.060, 86.100, 1.16, 1.87);
+        addPassingPoint(12.358, 88.200, 1.16, 1.92);
+        addPassingPoint(12.670, 89.350, 1.16, 1.95);
+        addPassingPoint(13.048, 91.300, 1.16, 1.92);
+        addPassingPoint(13.053, 92.700, 1.16, 2.04);
+        addPassingPoint(13.657, 94.760, 1.16, 2.02);
+        addPassingPoint(14.020, 101.70, 1.16, 2.00);
+        addPassingPoint(14.355, 104.39, 1.16, 2.08);
+
     }
 
     public static void addLerpPoint(double distanceToTarget, double shooterRPS, double hoodRots, double timeOfFlight, InterpolatingTreeMap<Double, ShotData> shotMap, InterpolatingDoubleTreeMap tofMap) {
@@ -93,8 +130,8 @@ public class ShotCalculator {
         tofMap.put(distanceToTarget, timeOfFlight);
     }
 
-    public static void addPassingPoint() {
-        addLerpPoint(maxDistance, kShooterRPSd, kFlywheelRadiusIn, kDriverRPSIncreaseD, m_passingMap, m_timeOfFlightMap);
+    public static void addPassingPoint(double distanceToTarget, double shooterRPS, double hoodRots, double timeOfFlight) {
+        addLerpPoint(distanceToTarget, shooterRPS, hoodRots, timeOfFlight, m_passingMap, m_timeOfFlightMapPassing);
     }
     /**
      * Gets the 2D distance from turret pivot to target in meters, using raw doubles.
@@ -143,6 +180,7 @@ public class ShotCalculator {
     }
 
     //calculate how long it will take for a projectile to travel a certain amount of distance given its initial velocity and angle
+    // ONLY USED FOR UNIT TEST!!!!!!!!!!!!!!!!!!!!!!!
     public static Time calculateTimeOfFlight(LinearVelocity exitVelocity, Angle hoodAngle,
             Distance distance) {
         double tofSec = calculateTimeOfFlightSec(
@@ -154,7 +192,6 @@ public class ShotCalculator {
     public static double calculateTimeOfFlightSec(double velMps, double hoodAngleRad, double distM) {
         double launchAngle = Math.PI / 2 - hoodAngleRad;
         double tofSec = distM / (velMps * Math.cos(launchAngle));
-        log_timeOfFlight.accept(tofSec);
         return tofSec;
     }
 
@@ -315,10 +352,12 @@ public class ShotCalculator {
         double vy = fieldSpeeds.vyMetersPerSecond;
 
         double distance = getDistanceToTargetM(robotX, robotY, headingRad, targetX, targetY);
-        ShotData shot = m_shotMap.get(distance);
+        boolean passing = ShooterCalc.isPassing().getAsBoolean();
+        log_isPassingLerp.accept(passing);
+        ShotData shot = passing ? m_passingMap.get(distance) : m_shotMap.get(distance);
         double exitVel = shot.exitVelocity();
         double hoodAngle = shot.hoodAngle();
-        double tofSec = m_timeOfFlightMap.get(distance);
+        double tofSec = passing ? m_timeOfFlightMapPassing.get(distance) : m_timeOfFlightMap.get(distance);
 
         double predX = targetX;
         double predY = targetY;
@@ -337,10 +376,12 @@ public class ShotCalculator {
             predY = targetY - vy * tofSec;
 
             distance = getDistanceToTargetM(robotX, robotY, headingRad, predX, predY);
+            passing = ShooterCalc.isPassing().getAsBoolean();
+            shot = passing ? m_passingMap.get(distance) : m_shotMap.get(distance);
             shot = m_shotMap.get(distance);
             exitVel = shot.exitVelocity();
             hoodAngle = shot.hoodAngle();
-            tofSec = m_timeOfFlightMap.get(distance);
+            tofSec = passing ? m_timeOfFlightMapPassing.get(distance) : m_timeOfFlightMap.get(distance);
 
             double dExitVel = prevExitVel - exitVel;
             double dHood = prevHoodAngle - hoodAngle;

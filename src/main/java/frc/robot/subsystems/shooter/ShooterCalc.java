@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -26,6 +27,7 @@ import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
 import frc.util.AllianceFlipUtil;
 import frc.util.AllianceZoneUtil;
 import frc.util.WaltLogger;
+import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.Pose2dLogger;
 import frc.util.WaltLogger.Pose3dLogger;
@@ -54,7 +56,7 @@ public class ShooterCalc {
     private final DoubleLogger log_loopTime = WaltLogger.logDouble("ShotCalc", "LoopTimeMsec");
     private static final Pose3dLogger log_turretRobotPose = WaltLogger.logPose3d("ShotCalc", "turretRobotPose");
     private static final Pose3dLogger log_turretFieldPose = WaltLogger.logPose3d("ShotCalc", "turretFieldPose");
-    // private static final Pose3dLogger log_turret
+    private static final BooleanLogger log_robotPastOurZoneX = WaltLogger.logBoolean("ShotCalc", "robotInOurZone");
 
 
     // Precomputed doubles for calculateTarget zone checks
@@ -73,9 +75,10 @@ public class ShooterCalc {
     private final ShotCalcOutputs kEmptyShotCalcOutputs = new ShotCalcOutputs(kEmptyAzimuthCalcDetails, kEmptyShotData, 0, 0, 0);
 
     private volatile boolean m_useStaticShot = true;
-    private volatile Translation3d m_aimTarget = Translation3d.kZero;
+    private static volatile Translation3d m_aimTarget = Translation3d.kZero;
     private volatile ShotCalcOutputs m_shotCalcOutputs = kEmptyShotCalcOutputs;
-    
+    private static volatile BooleanSupplier m_isPassing = () -> false;
+
     private final Notifier m_notifier = new Notifier(this::calcCallback);
     private final Timer m_calcTimer = new Timer();
 
@@ -91,13 +94,18 @@ public class ShooterCalc {
         m_useStaticShot = should;
     }
 
-    public Translation3d getLatestAimTarget() {
+    public static Translation3d getLatestAimTarget() {
         return m_aimTarget;
     }
 
     public ShotCalcOutputs getLatestShotCalcOutputs() {
         return m_shotCalcOutputs;
     }
+
+    public static BooleanSupplier isPassing() {
+        return m_isPassing;
+    }
+
 
     private void calcCallback() {
         m_calcTimer.restart();
@@ -138,12 +146,16 @@ public class ShooterCalc {
         double robotY = robotPose.getY();
 
         boolean robotPastOurZoneX = isRed ? robotX < kRedHubCenterX : robotX > kBlueHubCenterX;
+        log_robotPastOurZoneX.accept(robotPastOurZoneX);
 
         if (robotPastOurZoneX) {
+            m_isPassing =  () -> true;
             Translation3d leftPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, MathUtil.clamp(FieldConstants.fieldWidth / 2 + robotY, FieldConstants.fieldWidth / 2 + 1, FieldConstants.fieldWidth - 1), 0);
             Translation3d rightPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, MathUtil.clamp(robotY - FieldConstants.fieldWidth / 2, 1, FieldConstants.fieldWidth / 2 - 1), 0);
             boolean robotLeftOfCenter = isRed ? robotY < kCenterFieldYM : robotY > kCenterFieldYM;
             theTarget = robotLeftOfCenter ? leftPassPoseShifted : rightPassPoseShifted;
+        } else {
+            m_isPassing =  () -> false;
         }
         log_ballTrajectory.accept(new Translation3d[]{new Translation3d(FieldConstants.fieldLength - robotPose.getX(), FieldConstants.fieldWidth - robotPose.getY(), 0), theTarget});
         return AllianceFlipUtil.apply(theTarget);
