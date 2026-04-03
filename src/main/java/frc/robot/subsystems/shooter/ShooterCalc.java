@@ -150,7 +150,7 @@ public class ShooterCalc {
 
         if (robotPastOurZoneX) {
             m_isPassing =  () -> true;
-            Translation3d leftPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, 2.5 /* MathUtil.clamp(FieldConstants.fieldWidth / 2 + robotY, FieldConstants.fieldWidth / 2 + 1, FieldConstants.fieldWidth - 1) */, 0);
+            Translation3d leftPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, FieldConstants.fieldWidth - 2.5 /* MathUtil.clamp(FieldConstants.fieldWidth / 2 + robotY, FieldConstants.fieldWidth / 2 + 1, FieldConstants.fieldWidth - 1) */, 0);
             Translation3d rightPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, 2.5 /* MathUtil.clamp(robotY - FieldConstants.fieldWidth / 2, 1, FieldConstants.fieldWidth / 2 - 1) */, 0);
             boolean robotLeftOfCenter = isRed ? robotY < kCenterFieldYM : robotY > kCenterFieldYM;
             theTarget = robotLeftOfCenter ? leftPassPoseShifted : rightPassPoseShifted;
