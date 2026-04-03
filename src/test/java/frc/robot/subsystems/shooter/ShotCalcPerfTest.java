@@ -15,6 +15,7 @@ import edu.wpi.first.units.measure.*;
 import frc.robot.Constants.ShooterK;
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
+import frc.robot.subsystems.shooter.ShotCalculator.ShotDataLerp;
 
 import org.junit.jupiter.api.*;
 
@@ -81,7 +82,7 @@ class ShotCalcPerfTest {
     //  Approach 1: Immutable Units (current implementation)
     // ================================================================
 
-    private static ShotData immutableCalcShot(Pose2d robot, ChassisSpeeds fieldSpeeds, Translation3d target) {
+    private static ShotDataLerp immutableCalcShot(Pose2d robot, ChassisSpeeds fieldSpeeds, Translation3d target) {
         return ShotCalculator.iterativeMovingShotFromInterpolationMap(robot, fieldSpeeds, target, 3);
     }
 
@@ -340,7 +341,7 @@ class ShotCalcPerfTest {
 
         // --- Benchmark 1: Immutable Units ---
         long t0 = System.nanoTime();
-        ShotData immutableResult = null;
+        ShotDataLerp immutableResult = null;
         for (int i = 0; i < BENCH_ITERS; i++) {
             immutableResult = immutableCalcShot(MID_POSE, MOVING_SPEEDS, HUB_TARGET);
         }

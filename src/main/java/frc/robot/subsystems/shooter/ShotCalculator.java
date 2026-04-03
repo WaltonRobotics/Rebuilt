@@ -25,12 +25,13 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.FieldConstants;
+import frc.util.AllianceZoneUtil;
 import frc.util.WaltLogger.*;
 import edu.wpi.first.units.measure.Time;
 
 public class ShotCalculator {
-    private static final DoubleLogger log_timeOfFlight = new DoubleLogger("Shooter/Calculator", "timeOfFlight");
     private static final DoubleLogger log_distToTargetMeters = new DoubleLogger("Shooter/Calculator", "distTargetToMeters");
+    private static final BooleanLogger log_isPassingLerp = new BooleanLogger("Shooter/Calculator", "isPassingLERP");
 
     private static final double kMetersToInches = 1.0 / 0.0254;
     // private static final Tracer m_iterativeTracer = new Tracer();
@@ -38,8 +39,15 @@ public class ShotCalculator {
     //see 5000's code (circa 2/16/2026 9:11 PM EST)
     public static final InterpolatingTreeMap<Double, ShotData> m_shotMap = new InterpolatingTreeMap<>(
             InverseInterpolator.forDouble(), ShotData::interpolate);
+    
+    public static final InterpolatingTreeMap<Double, ShotData> m_passingMap = new InterpolatingTreeMap<>(
+            InverseInterpolator.forDouble(), ShotData::interpolate);
 
     public static final InterpolatingDoubleTreeMap m_timeOfFlightMap = new InterpolatingDoubleTreeMap();
+    public static final InterpolatingDoubleTreeMap m_timeOfFlightMapPassing = new InterpolatingDoubleTreeMap();
+
+    private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
+    private static final double kBlueHubCenterX = AllianceZoneUtil.blueHubCenter.getX();
 
     private static final double minDistance;
     private static final double maxDistance;
@@ -49,46 +57,82 @@ public class ShotCalculator {
     //LERP MADE ON 3/15/2025
     static {
         //TODO: find the actual minDistance and maxDistance for shooting
-        minDistance = 0.94;
-        maxDistance = 5.8;
+        minDistance = 1.168;
+        maxDistance = 5.672;
 
         //Ordered via DistanceToTarget
-        addLerpPoint(5.700, 59.47, 0.88, 1.33);
-        addLerpPoint(5.628, 59.47, 0.91, 1.39);
-        addLerpPoint(5.515, 59.50, 0.87, 1.30);
-        addLerpPoint(5.412, 58.50, 0.86, 1.27);
-        addLerpPoint(5.303, 58.47, 0.90, 1.65);
-//add 5.15
-        addLerpPoint(5.060, 57.00, 0.85, 1.26);
-        addLerpPoint(4.910, 56.00, 0.81, 1.17);
-        addLerpPoint(4.874, 55.50, 0.80, 1.29);
-        addLerpPoint(4.684, 54.00, 0.77, 1.21);
-        addLerpPoint(4.562, 54.50, 0.55, 1.13);
-        addLerpPoint(4.496, 55.86, 0.45, 1.40);
-        addLerpPoint(4.407, 55.86, 0.45, 1.38);
-        addLerpPoint(4.108, 55.86, 0.42, 1.40);
-        addLerpPoint(4.000, 55.46, 0.42, 1.37);
-        addLerpPoint(3.944, 54.90, 0.37, 1.33);
-        addLerpPoint(3.823, 55.20, 0.20, 1.47);
-//add 3.6
-//add 3.4
-        addLerpPoint(3.201, 52.58, 0.10, 1.27);
-        addLerpPoint(3.055, 51.58, 0.10, 1.41);
-        addLerpPoint(2.734, 50.68, 0.10, 1.16);
-//add 2.5 ish
-        addLerpPoint(2.318, 48.12, 0.10, 1.12);
-//add 2.something here
-        addLerpPoint(2.014, 48.12, 0.00, 1.22);
-        addLerpPoint(1.562, 46.12, 0.00, 1.36);
-        addLerpPoint(1.072, 40.04, 0.00, 1.04);
+        addLerpPoint(5.672, 82.50, 0.08, 2.11, m_shotMap, m_timeOfFlightMap); //SHOOTER IN BR CORNER
+        addLerpPoint(5.321, 81.00, 0.08, 1.94, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(5.223, 75.75, 0.08, 1.79, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(5.167, 79.50, 0.08, 2.03, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(4.996, 78.00, 0.08, 1.97, m_shotMap, m_timeOfFlightMap); 
+        addLerpPoint(4.869, 76.50, 0.08, 1.80, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(4.696, 75.00, 0.08, 1.33, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(4.546, 73.50, 0.08, 1.83, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(4.402, 72.50, 0.08, 1.85, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(4.258, 71.00, 0.08, 1.64, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(4.098, 69.00, 0.08, 1.58, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(3.932, 68.00, 0.08, 1.71, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(3.785, 66.90, 0.08, 1.56, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(3.611, 65.40, 0.08, 1.56, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(3.464, 63.90, 0.08, 1.50, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(3.293, 62.40, 0.08, 1.50, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(3.134, 60.90, 0.08, 1.51, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(2.995, 59.40, 0.08, 1.37, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(2.855, 57.90, 0.08, 1.35, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(2.704, 56.40, 0.08, 1.38, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(2.586, 54.90, 0.08, 1.28, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(2.395, 53.50, 0.08, 1.29, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(2.221, 52.00, 0.08, 1.25, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(2.083, 50.50, 0.08, 1.14, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(1.912, 49.00, 0.08, 1.19, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(1.691, 47.50, 0.08, 0.98, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(1.575, 47.50, 0.08, 1.18, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(1.528, 46.00, 0.08, 1.20, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(1.307, 44.50, 0.08, 1.13, m_shotMap, m_timeOfFlightMap);
+        addLerpPoint(1.168, 44.50, 0.08, 1.16, m_shotMap, m_timeOfFlightMap);
+
+        //---PASSING POINTS
+        addPassingPoint(4.0080, 48.000, 0.70, 1.35);
+        addPassingPoint(4.8160, 50.000, 0.90, 1.29);
+        addPassingPoint(5.0440, 51.000, 1.00, 1.20);
+        addPassingPoint(5.3520, 52.000, 1.10, 1.15);
+        addPassingPoint(5.6750, 54.000, 1.15, 1.19);
+        addPassingPoint(5.9900, 56.000, 1.15, 1.27);
+        addPassingPoint(6.3200, 58.000, 1.15, 1.27);
+        addPassingPoint(6.5830, 60.000, 1.15, 1.30);
+        addPassingPoint(6.8850, 62.000, 1.15, 1.36);
+        addPassingPoint(7.1690, 64.000, 1.15, 1.41);
+        addPassingPoint(7.5120, 66.000, 1.15, 1.43);
+        addPassingPoint(7.7780, 66.990, 1.15, 1.46);
+        addPassingPoint(8.1140, 67.750, 1.15, 1.45);
+        addPassingPoint(8.4420, 68.750, 1.15, 1.58);
+        addPassingPoint(8.7350, 70.250, 1.15, 1.63);
+        addPassingPoint(8.9970, 71.350, 1.15, 1.71);
+        addPassingPoint(10.419, 78.800, 1.16, 1.78);
+        addPassingPoint(10.722, 80.300, 1.16, 1.80);
+        addPassingPoint(11.076, 82.100, 1.16, 1.79);
+        addPassingPoint(11.367, 82.500, 1.16, 1.87);
+        addPassingPoint(11.722, 84.400, 1.16, 1.85);
+        addPassingPoint(12.060, 86.100, 1.16, 1.87);
+        addPassingPoint(12.358, 88.200, 1.16, 1.92);
+        addPassingPoint(12.670, 89.350, 1.16, 1.95);
+        addPassingPoint(13.048, 91.300, 1.16, 1.92);
+        addPassingPoint(13.053, 92.700, 1.16, 2.04);
+        addPassingPoint(13.657, 94.760, 1.16, 2.02);
+        addPassingPoint(14.020, 101.70, 1.16, 2.00);
+        addPassingPoint(14.355, 104.39, 1.16, 2.08);
+
     }
 
-    public static void addLerpPoint(double distanceToTarget, double shooterRPS, double hoodRots, double timeOfFlight) {
-        m_shotMap.put(distanceToTarget, new ShotData(RotationsPerSecond.of(shooterRPS /* + kRPSBoost */), Rotations.of(hoodRots)));
-        m_timeOfFlightMap.put(distanceToTarget, timeOfFlight);
+    public static void addLerpPoint(double distanceToTarget, double shooterRPS, double hoodRots, double timeOfFlight, InterpolatingTreeMap<Double, ShotData> shotMap, InterpolatingDoubleTreeMap tofMap) {
+        shotMap.put(distanceToTarget, new ShotData(RotationsPerSecond.of(shooterRPS /* + kRPSBoost */), Rotations.of(hoodRots)));
+        tofMap.put(distanceToTarget, timeOfFlight);
     }
 
-    
+    public static void addPassingPoint(double distanceToTarget, double shooterRPS, double hoodRots, double timeOfFlight) {
+        addLerpPoint(distanceToTarget, shooterRPS, hoodRots, timeOfFlight, m_passingMap, m_timeOfFlightMapPassing);
+    }
     /**
      * Gets the 2D distance from turret pivot to target in meters, using raw doubles.
      * Zero-allocation hot-path version.
@@ -136,6 +180,7 @@ public class ShotCalculator {
     }
 
     //calculate how long it will take for a projectile to travel a certain amount of distance given its initial velocity and angle
+    // ONLY USED FOR UNIT TEST!!!!!!!!!!!!!!!!!!!!!!!
     public static Time calculateTimeOfFlight(LinearVelocity exitVelocity, Angle hoodAngle,
             Distance distance) {
         double tofSec = calculateTimeOfFlightSec(
@@ -147,7 +192,6 @@ public class ShotCalculator {
     public static double calculateTimeOfFlightSec(double velMps, double hoodAngleRad, double distM) {
         double launchAngle = Math.PI / 2 - hoodAngleRad;
         double tofSec = distM / (velMps * Math.cos(launchAngle));
-        log_timeOfFlight.accept(tofSec);
         return tofSec;
     }
 
@@ -294,7 +338,7 @@ public class ShotCalculator {
      * @param iterations amount of iterations to converge on one specific value
      * @return parameters to shoot a FUEL to the target accurately.
      */
-    public static ShotData iterativeMovingShotFromInterpolationMap(Pose2d robot,
+    public static ShotDataLerp iterativeMovingShotFromInterpolationMap(Pose2d robot,
             ChassisSpeeds fieldSpeeds, Translation3d target, int iterations) {
 
         // Extract raw doubles once at entry
@@ -308,10 +352,12 @@ public class ShotCalculator {
         double vy = fieldSpeeds.vyMetersPerSecond;
 
         double distance = getDistanceToTargetM(robotX, robotY, headingRad, targetX, targetY);
-        ShotData shot = m_shotMap.get(distance);
+        boolean passing = ShooterCalc.isPassing().getAsBoolean();
+        log_isPassingLerp.accept(passing);
+        ShotData shot = passing ? m_passingMap.get(distance) : m_shotMap.get(distance);
         double exitVel = shot.exitVelocity();
         double hoodAngle = shot.hoodAngle();
-        double tofSec = m_timeOfFlightMap.get(distance);
+        double tofSec = passing ? m_timeOfFlightMapPassing.get(distance) : m_timeOfFlightMap.get(distance);
 
         double predX = targetX;
         double predY = targetY;
@@ -330,10 +376,11 @@ public class ShotCalculator {
             predY = targetY - vy * tofSec;
 
             distance = getDistanceToTargetM(robotX, robotY, headingRad, predX, predY);
-            shot = m_shotMap.get(distance);
+            passing = ShooterCalc.isPassing().getAsBoolean();
+            shot = passing ? m_passingMap.get(distance) : m_shotMap.get(distance);
             exitVel = shot.exitVelocity();
             hoodAngle = shot.hoodAngle();
-            tofSec = m_timeOfFlightMap.get(distance);
+            tofSec = passing ? m_timeOfFlightMapPassing.get(distance) : m_timeOfFlightMap.get(distance);
 
             double dExitVel = prevExitVel - exitVel;
             double dHood = prevHoodAngle - hoodAngle;
@@ -348,10 +395,10 @@ public class ShotCalculator {
             }
         }
 
-        return new ShotData(exitVel, hoodAngle, new Translation3d(predX, predY, targetZ));
+        return new ShotDataLerp(exitVel, hoodAngle, new Translation3d(predX, predY, targetZ), tofSec);
     }
 
-    public record ShotData(double exitVelocity, double hoodAngle, Translation3d target) {
+    public record ShotData (double exitVelocity, double hoodAngle, Translation3d target) {
         public ShotData(AngularVelocity exitVelocity, Angle hoodAngle, Translation3d target) {
             this(exitVelocity.in(RadiansPerSecond), hoodAngle.in(Radians), target);
         }
@@ -395,5 +442,16 @@ public class ShotCalculator {
                     MathUtil.interpolate(start.hoodAngle, end.hoodAngle, t),
                     end.target);
         }
+    }
+
+    public record ShotDataLerp(double exitVelocity, double hoodAngle, Translation3d target, double tofSec) {
+        public ShotDataLerp(ShotData data, double tofSec) {
+            this(data.exitVelocity, data.hoodAngle, data.target, tofSec);
+        }
+
+        public double getExitVelocity() { return exitVelocity; }
+        public double getHoodAngle() { return hoodAngle; }
+        public Translation3d getTarget() { return target; }
+        public double getTofSec() { return tofSec; }
     }
 }
