@@ -2,11 +2,14 @@
 package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+
+import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
+import com.ctre.phoenix6.signals.ControlModeValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -20,12 +23,15 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 // import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import static edu.wpi.first.units.Units.Hertz;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
@@ -51,7 +57,10 @@ public class Shooter extends SubsystemBase {
     // boolean m_useShotCalculator = true;
 
     private double m_latestFlywheelVelocityRotPerSec;
+    private double m_latestFlywheelAccelerationRotPerSec;
     private boolean m_isShooterSpunUp = false;
+    private boolean m_shotDropSeen = false;
+    private final Timer m_shotRecoveryTimer = new Timer();
 
     private int m_fuelStored = 8;
 
@@ -62,7 +71,7 @@ public class Shooter extends SubsystemBase {
     private final TalonFX m_shooterA = new TalonFX(kShooterA_CANID, Constants.kShooterBus); // X44
     private final TalonFX m_shooterB = new TalonFX(kShooterB_CANID, Constants.kShooterBus); // X44
     private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(false);
-    private final NeutralOut m_neutralOutReq = new NeutralOut();
+    private final CoastOut m_motorIdleReq = new CoastOut();
 
     private final Supplier<SwerveDriveState> m_threadsafeSwerveSup;
 
@@ -77,9 +86,20 @@ public class Shooter extends SubsystemBase {
     private double m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
     private double m_driverRPSTweak = 0.0;
 
-    private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
-    private final DoubleLogger log_calcTurretPos = new DoubleLogger("Shooter/Turret", "calcTurretPos");
-    private final DoubleLogger log_driverAddedRPS = WaltLogger.logDouble(kLogTab, "driverAddedRPS");
+    private int m_ballsShot = 0;
+
+    private final StatusSignal<Double> sig_shooterCLErr = m_shooterA.getClosedLoopError();
+    private final StatusSignal<AngularVelocity> sig_shooterAVelo = m_shooterA.getVelocity();
+    private final StatusSignal<AngularAcceleration> sig_shooterAAccel = m_shooterA.getAcceleration();
+    private final StatusSignal<ControlModeValue> sig_shooterACtrlMode = m_shooterA.getControlMode();
+
+    // ---LOGIC BOOLEANS
+    private final Trigger trg_inShootCtrlMode = new Trigger(() -> {return sig_shooterACtrlMode.getValue() == ControlModeValue.VelocityVoltage; });
+    private final Trigger trg_ballDetected = new Trigger(() -> detectShot()).and(trg_inShootCtrlMode);
+    private final Trigger trg_ballShotDebounced = trg_inShootCtrlMode
+        .and(new Trigger(() -> m_shotDropSeen))
+        .and(trg_ballDetected.negate())
+        .and(new Trigger(() -> m_shotRecoveryTimer.hasElapsed(kBallDetectedDebounceTime)));
 
     /* SIM OBJECTS */
     private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(
@@ -92,6 +112,7 @@ public class Shooter extends SubsystemBase {
 
     /* LOGGERS */
     private final DoubleLogger log_shooterVelocityRPS = WaltLogger.logDouble("Shooter/Flywheel", "shooterVelocityRPS");
+    private final DoubleLogger log_shooterAccelRPS = WaltLogger.logDouble("Shooter/Flywheel", "shooterAccelRPS");
     private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble("Shooter/Turret", "turretPositionRots");
     private final DoubleLogger log_turretPositionRobotRelativeRots = WaltLogger.logDouble("Shooter/Turret", "turretPositionRobotRelativeRots");
 
@@ -99,10 +120,13 @@ public class Shooter extends SubsystemBase {
 
     private final DoubleLogger log_shooterClosedLoopError = WaltLogger.logDouble("Shooter", "shooterClosedLoopError");
 
-    // private final Tracer m_periodicTracer = new Tracer();
+    private final BooleanLogger log_ballDetected = WaltLogger.logBoolean(kLogTab, "ballDetected");
+    private final BooleanLogger log_ballShot = WaltLogger.logBoolean(kLogTab, "ballShot");
 
-    private final StatusSignal<Double> sig_shooterCLErr = m_shooterA.getClosedLoopError();
-    private final StatusSignal<AngularVelocity> sig_shooterAVelo = m_shooterA.getVelocity();
+    private final DoubleLogger log_ballsShot = new DoubleLogger("Shooter/Flywheel", "balls shot");
+    private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
+    private final DoubleLogger log_calcTurretPos = new DoubleLogger("Shooter/Turret", "calcTurretPos");
+    private final DoubleLogger log_driverAddedRPS = WaltLogger.logDouble(kLogTab, "driverAddedRPS");
 
     /* CONSTRUCTOR */
     public Shooter(Supplier<Pose2d> poseSupplier, Supplier<SwerveDriveState> threadsafeSwerveStateSup, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
@@ -121,9 +145,14 @@ public class Shooter extends SubsystemBase {
 
         sig_shooterCLErr.setUpdateFrequency(Hertz.of(50));
 
-        SignalManager.register(Constants.kShooterBus, sig_shooterAVelo, sig_shooterCLErr);
+        SignalManager.register(Constants.kShooterBus, sig_shooterAVelo, sig_shooterCLErr, sig_shooterACtrlMode, sig_shooterAAccel);
 
         m_latestFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
+        m_latestFlywheelAccelerationRotPerSec = sig_shooterAAccel.getValueAsDouble();
+
+        trg_ballDetected.onTrue(Commands.runOnce(() -> { m_shotDropSeen = true; m_shotRecoveryTimer.restart(); m_ballsShot++;}));
+        trg_ballDetected.onFalse(Commands.runOnce(() -> { m_shotRecoveryTimer.restart(); }));
+        trg_inShootCtrlMode.onFalse(Commands.runOnce(() -> { m_shotDropSeen = false; m_shotRecoveryTimer.stop(); m_shotRecoveryTimer.reset(); }));
 
         // m_turretVisualizer = new TurretVisualizer(
         //         () -> new Pose3d(m_poseSupplier.get().rotateAround(
@@ -132,7 +161,6 @@ public class Shooter extends SubsystemBase {
         //         fieldSpeedsSupplier);
 
         // m_fuelSim = FuelSim.getInstance();
-
         initSim();
     }
 
@@ -183,13 +211,13 @@ public class Shooter extends SubsystemBase {
 
     public void setShooterVelocity(double rotPerSec) {
         if (rotPerSec == 0) {
-            m_shooterA.setControl(m_neutralOutReq);
+            // cope to get clErr to 0
+            m_shooterA.setControl(m_velocityRequest.withVelocity(0));
+            m_shooterA.setControl(m_motorIdleReq);
         } else {
             m_shooterA.setControl(m_velocityRequest.withVelocity(rotPerSec));
         }
     }
-
-
 
     private void refreshShooterSpunUp() {
         log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
@@ -225,54 +253,20 @@ public class Shooter extends SubsystemBase {
         m_fuelStored++;
     }
 
-    // /**
-    //  * Launches SIMULATION FUEL™ at the current Flywheel Velocity, current Hood
-    //  * Angle, and the
-    //  * current Turret Position.
-    //  */
-    // public void launchFuel() {
-    //     if (m_fuelStored == 0)
-    //         return;
-    //     // m_fuelStored--;
+    private boolean detectShot() {
+        boolean accelDrop = m_latestFlywheelAccelerationRotPerSec <= -20.0;
+        return accelDrop;
+    }
 
-    //     AngularVelocity flywheelVelocity = getShooterVelocity(); // current flywheel velocity
-    //     Angle hoodAngle = Degrees.of(90).minus(getHoodAngle()); // current hood angle (need to subtract from 90 to get
-    //                                                             // an accurate launching angle)
-    //     Angle turretPosition = getTurretPosition(); // current turret position
-    //     LinearVelocity flywheelLinearVelocity = ShotCalculator
-    //             .angularToLinearVelocity(flywheelVelocity, kFlywheelRadius);
-
-    //     m_fuelSim.launchFuel(flywheelLinearVelocity, hoodAngle, turretPosition,
-    //             kTurretTransform.getMeasureZ()); // launch from where the turret *should* be
-    // }
+    public Trigger getBallShotTrg() {
+        return trg_ballShotDebounced;
+    }
 
     // TODO: update orientation values (if needed)
     private void initSim() {
         WaltMotorSim.initSimFX(m_shooterA, ChassisReference.CounterClockwise_Positive,
                 TalonFXSimState.MotorType.KrakenX60);
     }
-
-    /* ShootOnTheMove™ */
-
-    /**
-     * Tells us whether or not our Turret, Hood, and Flywheel are at their desired
-     * position with a certain amount of tolerance relative to the object
-     * 
-     * Hood Tolerance: .5 degrees. Turret Tolerance: __ rotations. Flywheel
-     * Tolerance: __ RPS.
-     * 
-     * @return
-     */
-    // public boolean atPosition() {
-    // var turretAtPos = getTurretPosition().isNear(m_calcTurret, Degrees.of(1));
-    // //TODO: get the turret tolerance
-    // var flywheelAtPos = getShooterVelocity().isNear(m_calcFlywheelVelocity,
-    // RotationsPerSecond.of(1)); //TODO: get the flywheel tolerance
-    // var hoodAtPos =
-    // m_hoodEncoder.getVelocity().getValue().isNear(RotationsPerSecond.of(0),
-    // 0.01); //is this right buh
-    // return turretAtPos && flywheelAtPos && hoodAtPos;
-    // }
 
     /* PERIODICS */
     @Override
@@ -284,8 +278,12 @@ public class Shooter extends SubsystemBase {
         // THIS IS USED SNEAKILY BY SHOTCALC DO NOT MOVE THIS
         m_latestTurretPositionRots = m_turret.getCurrTurretPos();
         m_latestFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
+        m_latestFlywheelAccelerationRotPerSec = sig_shooterAAccel.getValueAsDouble();
 
         ShotCalcOutputs calcData = m_shooterCalc.getLatestShotCalcOutputs();
+
+        sig_shooterCLErr.refresh();
+        log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
 
         // set turret reference
         if (m_turret.isTurretHomed()) {
@@ -329,11 +327,16 @@ public class Shooter extends SubsystemBase {
         refreshShooterSpunUp();
 
         log_turretPositionRobotRelativeRots.accept(kDriverRPSIncreaseD);
+        log_ballsShot.accept(m_ballsShot);
         log_shooterVelocityRPS.accept(m_latestFlywheelVelocityRotPerSec);
+        log_shooterAccelRPS.accept(m_latestFlywheelAccelerationRotPerSec);
         log_turretPositionRots.accept(m_latestTurretPositionRots);
         log_spunUp.accept(m_isShooterSpunUp);
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocityRotPerSec);
         log_calcTurretPos.accept(m_calcTurretRots);
+        log_ballDetected.accept(trg_ballDetected.getAsBoolean());
+        log_ballShot.accept(trg_ballShotDebounced.getAsBoolean());
+
 
         // m_periodicTracer.addEpoch("Logging");
 

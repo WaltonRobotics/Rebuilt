@@ -55,6 +55,13 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
+    public Command retractIntake() {
+        return Commands.sequence(
+            m_intake.stopIntakeRollers(),
+            m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+        );
+    }
+
     /**
      * Turns on spinner and exhaust and sets shooter speed to RPS.
      * <p>
