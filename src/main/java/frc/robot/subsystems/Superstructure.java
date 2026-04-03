@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IndexerK;
+import frc.robot.Constants.IntakeK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -130,17 +131,15 @@ public class Superstructure extends SubsystemBase {
         return Commands.startEnd(
             () -> {
                 m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
-                // m_shooter.setHoodPosition(ShooterK.kHoodMaxDegs);
                 m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS);
                 m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS);
                 m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
-                m_intake.setIntakeRollersVelocity(-12);
+                m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersBarfVolts);
             },
             () -> {
                 m_intake.setIntakeRollersVelocity(0);
                 m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
                 m_shooter.setShooterVelocity(RotationsPerSecond.zero());
-                // m_shooter.setHoodPosition(ShooterK.kHoodSafeDegs);
                 m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
                 m_indexer.setTunnelVelocity(RotationsPerSecond.zero());
             }

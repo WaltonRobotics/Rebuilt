@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.Constants.IntakeK;
 import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.dashboards.AutonChooser;
@@ -271,7 +272,15 @@ public class Robot extends TimedRobot {
         // NORMAL FIXED SHOT
         // trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
         trg_turretInShootRange.whileFalse(Commands.run(() -> m_driver.setRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> m_driver.setRumble(RumbleType.kBothRumble, 0)));
-        trg_shoot.and(() -> m_shooter.m_turret.atPosition()).and(() -> m_shooter.canTurretShoot()).whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
+
+        // DRIVER SHOOTING 
+        trg_shoot
+            .and(() -> m_shooter.m_turret.atPosition())
+            .and(() -> m_shooter.canTurretShoot())
+            .whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
+
+        m_manipulator.rightTrigger().and(trg_manipOverride)
+            .whileTrue(m_intake.setIntakeRollersVelocityCmd(IntakeK.kIntakeRollersBarfVolts).finallyDo(() -> m_intake.setIntakeRollersVelocity(0)));
 
         // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));
         // m_driver.a().onTrue(m_shooter.driverRPSAlter(false));
