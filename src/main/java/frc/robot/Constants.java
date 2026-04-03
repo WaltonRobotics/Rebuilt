@@ -115,7 +115,7 @@ public class Constants {
         // public static final Translation3d kPassingSpotLeft = new Translation3d(
         //     Meters.of(2), Meters.of(6.5), Meters.zero());
         public static final Distance kPassingX = Meters.of(2);
-        public static final double kPassingXAsDouble = kPassingX.baseUnitMagnitude();
+        public static final double kPassingXAsDouble = kPassingX.in(Meters);
         
         public static final double kShooterTimeout = 1.0;
         public static final double kBallDetectedDebounceTime = 2;
@@ -135,6 +135,8 @@ public class Constants {
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.in(Rotations));
         public static final double kTurretMaxErrD = Rotations.of(0.05).in(Rotations);
 
+        public static final double kTurretMaxNotAbleToPassRange = 0.23; //sorry for this horrible name i dont know a better one lol
+        public static final double kTurretMinNotAbleToPassRange = -0.23; //sorry for this horrible name i dont know a better one lol
 
         public static final AngularVelocity kShooterMaxRPS = MotorK.kX44MaxVelocity.div(kShooterGearing);
         public static final double kShooterMaxRPSd = kShooterMaxRPS.in(RotationsPerSecond);

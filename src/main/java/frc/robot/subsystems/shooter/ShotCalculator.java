@@ -92,6 +92,7 @@ public class ShotCalculator {
         addLerpPoint(1.307, 44.50, 0.08, 1.13, m_shotMap, m_timeOfFlightMap);
         addLerpPoint(1.168, 44.50, 0.08, 1.16, m_shotMap, m_timeOfFlightMap);
 
+        //---PASSING POINTS
         addPassingPoint(4.0080, 48.000, 0.70, 1.35);
         addPassingPoint(4.8160, 50.000, 0.90, 1.29);
         addPassingPoint(5.0440, 51.000, 1.00, 1.20);
@@ -377,7 +378,6 @@ public class ShotCalculator {
             distance = getDistanceToTargetM(robotX, robotY, headingRad, predX, predY);
             passing = ShooterCalc.isPassing().getAsBoolean();
             shot = passing ? m_passingMap.get(distance) : m_shotMap.get(distance);
-            shot = m_shotMap.get(distance);
             exitVel = shot.exitVelocity();
             hoodAngle = shot.hoodAngle();
             tofSec = passing ? m_timeOfFlightMapPassing.get(distance) : m_timeOfFlightMap.get(distance);
