@@ -638,9 +638,11 @@ public class Constants {
         public static final String kFastLeftSweep = "LeftSweep_Fast";
         public static final String kTrenchLeftSweep = "LeftSweep_Trench";
 
-        public static final String kDepotLeftTwo = "LeftSweepTwo_Depot";
+        public static final String kDepotLeftTwo = "LeftSweepTwo_Depot_copy1";
         public static final String kSweepLeftTwo = "LeftSweepTwo_Sweep";
         public static final String kReshootLeftTwo = "LeftSweepTwo_Reshoot";
         public static final String kZigZagLeftTwo = "LeftSweepTwo_ZigZag";
+
+        public static final String kHubCircle = "HubCircle";
     }
 }

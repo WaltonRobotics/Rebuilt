@@ -30,6 +30,23 @@ public class AutonChooser {
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kFastLeftSweep, AutonK.kShootingTimeout, false),
                 new AdaptableAutonInfo(AutonK.kSweepLeftTwo, AutonK.kShootingTimeout, false)}));
 
+        m_chooser.addRoutine("SOTM Two Cycle Reshoot",
+            () -> m_adaptableAutonFactory.multiAdaptableAuton("SOTM Two Cycle",
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kFastLeftSweep, AutonK.kShootingTimeout, true),
+                                          new AdaptableAutonInfo(AutonK.kDepotLeftTwo, AutonK.kShootingTimeout, true),
+                                          new AdaptableAutonInfo(AutonK.kReshootLeftTwo, AutonK.kShootingTimeout, true)}));
+
+        m_chooser.addRoutine("SOTM Two Cycle Sweep",
+            () -> m_adaptableAutonFactory.multiAdaptableAuton("SOTM Two Cycle Sweep",
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kFastLeftSweep, AutonK.kShootingTimeout, true),
+                                          new AdaptableAutonInfo(AutonK.kDepotLeftTwo, AutonK.kShootingTimeout, true),
+                                          new AdaptableAutonInfo(AutonK.kSweepLeftTwo, AutonK.kShootingTimeout, true)}));
+
+        m_chooser.addRoutine("SOTM Full Hub Circle",
+            () -> m_adaptableAutonFactory.multiAdaptableAuton("SOTM Full Hub Circle",
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kHubCircle, AutonK.kShootingTimeout, true),
+                                          new AdaptableAutonInfo(AutonK.kSweepRightTwo, 0, true)}));
+
         SmartDashboard.putData("AutoChooser", m_chooser);
     }
 

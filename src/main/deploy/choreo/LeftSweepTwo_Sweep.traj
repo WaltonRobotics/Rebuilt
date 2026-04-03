@@ -216,7 +216,5 @@
   "splits":[0]
  },
  "events":[
-   {"name":"intake", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0.25 s", "val":0.25}}, "event":{"type":"named", "data":{"name":"intake"}}},
-   {"name":"shoot", "from":{"target":4, "targetTimestamp":5.04308, "offset":{"exp":"-0.1 s", "val":-0.1}}, "event":{"type":"named", "data":{"name":"shoot"}}},
-   {"name":"stopIntake", "from":{"target":4, "targetTimestamp":5.04308, "offset":{"exp":"-0.2 s", "val":-0.2}}, "event":{"type":"named", "data":{"name":"stopIntake"}}}]
+   {"name":"intake", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0.25 s", "val":0.25}}, "event":{"type":"named", "data":{"name":"intake"}}}]
 }

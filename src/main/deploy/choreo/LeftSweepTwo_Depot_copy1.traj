@@ -202,8 +202,7 @@
   "splits":[0]
  },
  "events":[
-   {"name":"startIntake", "from":{"target":null, "targetTimestamp":null, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"startIntake"}}},
-   {"name":"retractIntake", "from":{"target":null, "targetTimestamp":null, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"retractIntake"}}},
-   {"name":"startIntake", "from":{"target":1, "targetTimestamp":0.9133, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"startIntake"}}},
-   {"name":"retractIntake", "from":{"target":3, "targetTimestamp":2.42597, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"retractIntake"}}}]
+   {"name":"intake", "from":{"target":1, "targetTimestamp":0.9133, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"intake"}}},
+   {"name":"stopIntake", "from":{"target":3, "targetTimestamp":2.42597, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"stopIntake"}}},
+   {"name":"stopShoot", "from":{"target":4, "targetTimestamp":3.17263, "offset":{"exp":"-0.1 s", "val":-0.1}}, "event":{"type":"named", "data":{"name":"stopShoot"}}}]
 }

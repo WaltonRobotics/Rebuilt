@@ -142,12 +142,14 @@ public class WaltAdaptableAutonFactory {
             var thisInfo = autonInfos[i];
             System.out.println("traj idx " + i + " (" + thisInfo.autonName + ") .done().onTrue() built");
             thisTraj.done().onTrue(
-                Commands.sequence(
-                    tp("WAITING FOR SHOOTING DONE"),
-                    Commands.waitUntil(m_shooter.getBallShotTrg()),
-                    tp("TRAJ 2 STARTED"),
-                    autonTrajs[i + 1].cmd()
-                )
+                thisInfo.SOTM ? 
+                    autonTrajs[i+1].cmd() : 
+                    Commands.sequence(
+                        tp("WAITING FOR SHOOTING DONE"),
+                        Commands.waitUntil(m_shooter.getBallShotTrg()),
+                        tp("TRAJ 2 STARTED"),
+                        autonTrajs[i + 1].cmd()
+                    )
             );
         }
 
@@ -171,7 +173,7 @@ public class WaltAdaptableAutonFactory {
                 m_superstructure.activateOuttakeShotCalc(),
                 Commands.waitUntil(m_shooter.getBallShotTrg()),
                 m_superstructure.retractIntake()
-            )
+            ).until(traj.atTime("stopShoot"))
         );
     }
 
