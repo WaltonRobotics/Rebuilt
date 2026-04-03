@@ -146,7 +146,7 @@ public class WaltAdaptableAutonFactory {
                     autonTrajs[i+1].cmd() : 
                     Commands.sequence(
                         tp("WAITING FOR SHOOTING DONE"),
-                        Commands.waitUntil(m_shooter.getBallShotTrg()),
+                        Commands.waitUntil(m_shooter.getBallShotDebounceTrg()),
                         tp("TRAJ 2 STARTED"),
                         autonTrajs[i + 1].cmd()
                     )
@@ -170,13 +170,14 @@ public class WaltAdaptableAutonFactory {
 
         traj.atTime("shoot").onTrue(
             Commands.sequence(
-                m_superstructure.activateOuttakeShotCalc(),
-                Commands.waitUntil(m_shooter.getBallShotTrg()),
-                m_superstructure.retractIntake()
-            ).until(traj.atTime("stopShoot"))
+                m_superstructure.activateOuttakeShotCalc().until(traj.atTime("stopShoot").or(m_shooter.getBallShotDebounceTrg()))
+                //---NEED TO FIGURE OUT ARM SHIMMY
+                // Commands.waitUntil(m_shooter.getBallShotDebounceTrg()),
+                // m_superstructure.retractIntake()
+            )
         );
     }
-
+    
     public final record AdaptableAutonInfo(
         String autonName,
         double shooterTimeout,

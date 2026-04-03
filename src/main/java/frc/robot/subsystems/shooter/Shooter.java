@@ -281,7 +281,7 @@ public class Shooter extends SubsystemBase {
         return accelDrop;
     }
 
-    public Trigger getBallShotTrg() {
+    public Trigger getBallShotDebounceTrg() {
         return trg_ballShotDebounced;
     }
 
