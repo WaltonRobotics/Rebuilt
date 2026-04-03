@@ -11,6 +11,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.*;
 
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
+import frc.robot.subsystems.shooter.ShotCalculator.ShotDataLerp;
 import frc.robot.subsystems.shooter.ShooterCalc.AzimuthCalcDetails;
 import frc.robot.subsystems.shooter.ShooterCalc.ShotCalcOutputs;
 
@@ -243,42 +244,42 @@ class ShotCalcTest {
     class IterativeMovingShotFromInterpolationMap {
         @Test
         void stationaryClose_returnsValidShot() {
-            ShotData shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 CLOSE_POSE, ZERO_SPEEDS, HUB_TARGET, 3);
             assertShotDataValid(shot);
         }
 
         @Test
         void stationaryMid_returnsValidShot() {
-            ShotData shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, ZERO_SPEEDS, HUB_TARGET, 3);
             assertShotDataValid(shot);
         }
 
         @Test
         void stationaryFar_returnsValidShot() {
-            ShotData shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 FAR_POSE, ZERO_SPEEDS, HUB_TARGET, 3);
             assertShotDataValid(shot);
         }
 
         @Test
         void movingRobot_returnsValidShot() {
-            ShotData shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, TRANSLATING_SPEEDS, HUB_TARGET, 3);
             assertShotDataValid(shot);
         }
 
         @Test
         void rotatingRobot_returnsValidShot() {
-            ShotData shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, ROTATING_SPEEDS, HUB_TARGET, 3);
             assertShotDataValid(shot);
         }
 
         @Test
         void stationaryShot_targetMatchesInput() {
-            ShotData shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, ZERO_SPEEDS, HUB_TARGET, 3);
             // With zero speeds, predicted target should equal actual target
             assertEquals(HUB_TARGET.getX(), shot.getTarget().getX(), 1e-6);
@@ -288,9 +289,9 @@ class ShotCalcTest {
 
         @Test
         void movingShot_targetDiffersFromStatic() {
-            ShotData staticShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp staticShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, ZERO_SPEEDS, HUB_TARGET, 3);
-            ShotData movingShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp movingShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, TRANSLATING_SPEEDS, HUB_TARGET, 3);
             // Moving shot should shift the predicted target
             assertNotEquals(staticShot.getTarget().getX(), movingShot.getTarget().getX(), 1e-6,
@@ -299,11 +300,11 @@ class ShotCalcTest {
 
         @Test
         void moreIterations_convergesToSameResult() {
-            ShotData shot1 = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp shot1 = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, TRANSLATING_SPEEDS, HUB_TARGET, 1);
-            ShotData shot3 = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp shot3 = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, TRANSLATING_SPEEDS, HUB_TARGET, 3);
-            ShotData shot10 = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp shot10 = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, TRANSLATING_SPEEDS, HUB_TARGET, 10);
             // 3 and 10 iterations should converge closely
             assertEquals(shot3.exitVelocity(), shot10.exitVelocity(), 0.5,
@@ -590,6 +591,20 @@ class ShotCalcTest {
         assertFalse(Double.isInfinite(shot.hoodAngle()),
             "Hood angle should not be infinite");
         assertNotNull(shot.getTarget(), "Shot target should not be null");
+    }
+
+    private static void assertShotDataValid(ShotDataLerp shot) {
+        assertNotNull(shot, "ShotData should not be null");
+        assertFalse(Double.isNaN(shot.exitVelocity()),
+            "Exit velocity should not be NaN");
+        assertFalse(Double.isNaN(shot.hoodAngle()),
+            "Hood angle should not be NaN");
+        assertFalse(Double.isInfinite(shot.exitVelocity()),
+            "Exit velocity should not be infinite");
+        assertFalse(Double.isInfinite(shot.hoodAngle()),
+            "Hood angle should not be infinite");
+        assertNotNull(shot.getTarget(), "Shot target should not be null");
+        // TODO: add tofSec
     }
 
     private static void assertAzimuthValid(AzimuthCalcDetails details) {

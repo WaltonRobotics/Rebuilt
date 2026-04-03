@@ -30,7 +30,6 @@ import frc.util.WaltLogger.*;
 import edu.wpi.first.units.measure.Time;
 
 public class ShotCalculator {
-    private static final DoubleLogger log_timeOfFlight = new DoubleLogger("Shooter/Calculator", "timeOfFlight");
     private static final DoubleLogger log_distToTargetMeters = new DoubleLogger("Shooter/Calculator", "distTargetToMeters");
     private static final BooleanLogger log_isPassingLerp = new BooleanLogger("Shooter/Calculator", "isPassingLERP");
 
@@ -338,7 +337,7 @@ public class ShotCalculator {
      * @param iterations amount of iterations to converge on one specific value
      * @return parameters to shoot a FUEL to the target accurately.
      */
-    public static ShotData iterativeMovingShotFromInterpolationMap(Pose2d robot,
+    public static ShotDataLerp iterativeMovingShotFromInterpolationMap(Pose2d robot,
             ChassisSpeeds fieldSpeeds, Translation3d target, int iterations) {
 
         // Extract raw doubles once at entry
@@ -396,10 +395,10 @@ public class ShotCalculator {
             }
         }
 
-        return new ShotData(exitVel, hoodAngle, new Translation3d(predX, predY, targetZ));
+        return new ShotDataLerp(exitVel, hoodAngle, new Translation3d(predX, predY, targetZ), tofSec);
     }
 
-    public record ShotData(double exitVelocity, double hoodAngle, Translation3d target) {
+    public record ShotData (double exitVelocity, double hoodAngle, Translation3d target) {
         public ShotData(AngularVelocity exitVelocity, Angle hoodAngle, Translation3d target) {
             this(exitVelocity.in(RadiansPerSecond), hoodAngle.in(Radians), target);
         }
@@ -443,5 +442,16 @@ public class ShotCalculator {
                     MathUtil.interpolate(start.hoodAngle, end.hoodAngle, t),
                     end.target);
         }
+    }
+
+    public record ShotDataLerp(double exitVelocity, double hoodAngle, Translation3d target, double tofSec) {
+        public ShotDataLerp(ShotData data, double tofSec) {
+            this(data.exitVelocity, data.hoodAngle, data.target, tofSec);
+        }
+
+        public double getExitVelocity() { return exitVelocity; }
+        public double getHoodAngle() { return hoodAngle; }
+        public Translation3d getTarget() { return target; }
+        public double getTofSec() { return tofSec; }
     }
 }

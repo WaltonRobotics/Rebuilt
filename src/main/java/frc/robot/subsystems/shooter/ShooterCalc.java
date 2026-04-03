@@ -14,7 +14,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
@@ -23,13 +22,12 @@ import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.WpiK;
 import frc.robot.generated.TunerConstants;
 import frc.robot.FieldConstants;
-import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
+import frc.robot.subsystems.shooter.ShotCalculator.ShotDataLerp;
 import frc.util.AllianceFlipUtil;
 import frc.util.AllianceZoneUtil;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
-import frc.util.WaltLogger.Pose2dLogger;
 import frc.util.WaltLogger.Pose3dLogger;
 import frc.util.WaltLogger.Translation3dArrayLogger;
 
@@ -50,13 +48,14 @@ public class ShooterCalc {
     private final Pose3dLogger log_calculatedShotTarget = WaltLogger.logPose3d("ShotCalc", "shotCalcTarget");
     private final DoubleLogger log_rawDesiredTurretRot = WaltLogger.logDouble("ShotCalc", "rawDesiredTurretRots");
     private final DoubleLogger log_desiredTurretRot = new DoubleLogger("ShotCalc", "desiredTurretRotations");
+    private final DoubleLogger log_timeOfFlight = new DoubleLogger("ShotCalc", "timeOfFlight");
     private final Pose3dLogger log_desiredAimPose = WaltLogger.logPose3d("ShotCalc", "DesiredAimPose");
     private final Pose3dLogger log_currentAimPose = WaltLogger.logPose3d("ShotCalc", "CurrentAimPose");
     private final Translation3dArrayLogger log_ballTrajectory = WaltLogger.logTranslation3dArray("ShotCalc", "ballTrajectory");
     private final DoubleLogger log_loopTime = WaltLogger.logDouble("ShotCalc", "LoopTimeMsec");
     private static final Pose3dLogger log_turretRobotPose = WaltLogger.logPose3d("ShotCalc", "turretRobotPose");
     private static final Pose3dLogger log_turretFieldPose = WaltLogger.logPose3d("ShotCalc", "turretFieldPose");
-    private static final BooleanLogger log_robotPastOurZoneX = WaltLogger.logBoolean("ShotCalc", "robotInOurZone");
+    private final BooleanLogger log_robotPastOurZoneX = WaltLogger.logBoolean("ShotCalc", "robotInOurZone");
 
 
     // Precomputed doubles for calculateTarget zone checks
@@ -70,7 +69,7 @@ public class ShooterCalc {
     private static final double kTurretMaxRotsD = kTurretMaxRots.in(Rotations);
     private static final double kTurretMaxRotsMagnitudeD = kTurretMaxRots.magnitude();
 
-    private final ShotData kEmptyShotData = new ShotData(0, 0);
+    private final ShotDataLerp kEmptyShotData = new ShotDataLerp(0.0, 0.0, new Translation3d(), 0.0);
     private final AzimuthCalcDetails kEmptyAzimuthCalcDetails = new AzimuthCalcDetails(0, new Pose3d(), new Pose3d(), 0, 0);
     private final ShotCalcOutputs kEmptyShotCalcOutputs = new ShotCalcOutputs(kEmptyAzimuthCalcDetails, kEmptyShotData, 0, 0, 0);
 
@@ -125,6 +124,7 @@ public class ShooterCalc {
         log_currentAimPose.accept(m_shotCalcOutputs.turretCalcDetails().currentAimPose());
         log_rawDesiredTurretRot.accept(m_shotCalcOutputs.turretCalcDetails().rawDesiredRotations());
         log_desiredTurretRot.accept(m_shotCalcOutputs.turretCalcDetails().turretReferenceRots());
+        log_timeOfFlight.accept(m_shotCalcOutputs.shotData().tofSec());
 
         log_loopTime.accept(m_calcTimer.get() * 1000.0);
     }
@@ -258,7 +258,7 @@ public class ShooterCalc {
 
     public final record ShotCalcOutputs(
         AzimuthCalcDetails turretCalcDetails,
-        ShotData shotData,
+        ShotDataLerp shotData,
         double turretReferenceRots,
         double hoodReferenceRots,
         double shooterReferenceRps
@@ -282,7 +282,7 @@ public class ShooterCalc {
         ChassisSpeeds fieldSpeeds = (staticShot /*|| speedMps < 0.1*/) ? WpiK.kZeroChassisSpeeds : chassisSpeeds;
         // The Calculated shot itself, according to the current robotPose, robotSpeeds,
         // and the currentTarget
-        ShotData calculatedShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+        ShotDataLerp calculatedShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
             robotPose, fieldSpeeds, target, 3);
 
         // The turret angle according to the Calculated shot
