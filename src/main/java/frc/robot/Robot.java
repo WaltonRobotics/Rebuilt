@@ -109,6 +109,7 @@ public class Robot extends TimedRobot {
     /* TRIGGERS */
     private Trigger trg_optimalPrefireTime = new Trigger(HubShiftUtil.optimalPrefireTime());
     private Trigger trg_comebackTime = new Trigger(HubShiftUtil.comebackTime());
+    private Trigger trg_turretInShootRange = new Trigger(() -> m_shooter.canTurretShoot());
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
 
@@ -269,6 +270,7 @@ public class Robot extends TimedRobot {
         //Shooting
         // NORMAL FIXED SHOT
         // trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
+        trg_turretInShootRange.whileFalse(Commands.run(() -> m_driver.setRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> m_driver.setRumble(RumbleType.kBothRumble, 0)));
         trg_shoot.and(() -> m_shooter.m_turret.atPosition()).and(() -> m_shooter.canTurretShoot()).whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
 
         // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));
