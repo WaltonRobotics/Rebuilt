@@ -149,13 +149,14 @@ public class Intake extends SubsystemBase {
         Commands.waitUntil(intakeArmAtDest);
 
         return Commands.repeatingSequence(
-            setIntakeRollersVelocityCmd(kIntakeRollersShimmyRPS.baseUnitMagnitude()),
-            setIntakeArmPosCmd(IntakeArmPosition.SHIMMY),
+            stopIntakeRollers(),
+            setIntakeArmPosCmd(IntakeArmPosition.RETRACTED),
             Commands.waitUntil(intakeArmAtDest),
             setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
+            startIntakeRollers(),
             Commands.waitUntil(intakeArmAtDest)
         ).finallyDo(() -> {
-            setIntakeArmPosCmd(IntakeArmPosition.SAFE);
+            setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED);
             setIntakeRollersVelocityCmd(0);
         });
     }
