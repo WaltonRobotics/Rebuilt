@@ -124,7 +124,7 @@ public class Shooter extends SubsystemBase {
     private final DoubleLogger log_shooterClosedLoopError = WaltLogger.logDouble("Shooter", "shooterClosedLoopError");
 
     private final BooleanLogger log_ballDetected = WaltLogger.logBoolean(kLogTab, "ballDetected");
-    private final BooleanLogger log_ballShot = WaltLogger.logBoolean(kLogTab, "ballShot");
+    private final BooleanLogger log_ballShotDebounce = WaltLogger.logBoolean(kLogTab, "ballShot");
 
     private final DoubleLogger log_ballsShot = new DoubleLogger("Shooter/Flywheel", "balls shot");
     private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
@@ -281,7 +281,7 @@ public class Shooter extends SubsystemBase {
         return accelDrop;
     }
 
-    public Trigger getBallShotTrg() {
+    public Trigger getBallShotDebounceTrg() {
         return trg_ballShotDebounced;
     }
 
@@ -359,7 +359,7 @@ public class Shooter extends SubsystemBase {
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocityRotPerSec);
         log_calcTurretPos.accept(m_calcTurretRots);
         log_ballDetected.accept(trg_ballDetected.getAsBoolean());
-        log_ballShot.accept(trg_ballShotDebounced.getAsBoolean());
+        log_ballShotDebounce.accept(trg_ballShotDebounced.getAsBoolean());
 
 
         // m_periodicTracer.addEpoch("Logging");
