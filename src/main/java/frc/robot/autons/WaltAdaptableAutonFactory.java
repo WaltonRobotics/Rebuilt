@@ -40,6 +40,10 @@ public class WaltAdaptableAutonFactory {
     private final StringLogger log_trajectoryName = new StringLogger(AutonK.kLogTab, "trajectoryName");
     private final Pose2dArrayLogger log_trajectoryPoses = new Pose2dArrayLogger(AutonK.kLogTab, "trajectoryPoses");
     private final BooleanLogger log_atStopShoot = WaltLogger.logBoolean(AutonK.kLogTab, "atStopShoot");
+    private final BooleanLogger log_stopShootTrgChange = WaltLogger.logBoolean(AutonK.kLogTab, "stopShootTrgChange");
+    private final BooleanLogger log_intakeTrgChange = WaltLogger.logBoolean(AutonK.kLogTab, "intakeTrgChange");
+    private final BooleanLogger log_shootTrgChange = WaltLogger.logBoolean(AutonK.kLogTab, "shootTrgChange");
+
 
     // logic booleans
     private boolean m_isAtStopShoot = false;

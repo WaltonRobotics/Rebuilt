@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static edu.wpi.first.units.Units.Hertz;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
 
@@ -72,7 +73,7 @@ public class Shooter extends SubsystemBase {
     // ---MOTORS + CONTROL REQUESTS
     private final TalonFX m_shooterA = new TalonFX(kShooterA_CANID, Constants.kShooterBus); // X44
     private final TalonFX m_shooterB = new TalonFX(kShooterB_CANID, Constants.kShooterBus); // X44
-    private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(true);
+    private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(false);
     private final CoastOut m_motorIdleReq = new CoastOut();
 
     private final Supplier<SwerveDriveState> m_threadsafeSwerveSup;
@@ -337,7 +338,7 @@ public class Shooter extends SubsystemBase {
             double hoodReference = calcData.hoodReferenceRots();
 
             if (m_turret.getTurretLocked()) {
-                m_hood.setHoodPos(kHoodLockRots_double);
+                m_hood.setHoodPos(Rotations.of(0.08).magnitude());
             } else {
                 if (!m_turret.getHoldTurretAtIntake()) {
                     m_hood.setHoodPos(kHoodRotsOverride.enabled()

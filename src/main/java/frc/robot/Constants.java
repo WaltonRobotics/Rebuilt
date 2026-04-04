@@ -118,7 +118,7 @@ public class Constants {
         public static final double kPassingXAsDouble = kPassingX.in(Meters);
         
         public static final double kShooterTimeout = 1.0;
-        public static final double kBallDetectedDebounceTime = 1.1;
+        public static final double kBallDetectedDebounceTime = 0.5;
 
         /* MOTOR CONSTANTS */
         public static final double kShooterMoI = 0.000349 * 2.5;  //J for 5 3" 0.53lb flywheels
@@ -141,7 +141,7 @@ public class Constants {
         public static final AngularVelocity kShooterMaxRPS = MotorK.kX44MaxVelocity.div(kShooterGearing);
         public static final double kShooterMaxRPSd = kShooterMaxRPS.in(RotationsPerSecond);
         public static final AngularVelocity kShooterRPS = kShooterMaxRPS.times(0.65);   //Kraken X44 Max RPM: 7758
-        public static final double kShooterRPSd = kShooterMaxRPSd * 0.65;
+        public static final double kShooterRPSd = 59.40;
         public static final AngularVelocity kShooterAutonCloseRPS = kShooterMaxRPS.times(0.60);  //auton pose is closer to the hub than teleop scoring
         public static final AngularVelocity kShooterAuton_EndSweep_RPS = kShooterMaxRPS.times(0.70); // end of sweep paths
         public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.31);
