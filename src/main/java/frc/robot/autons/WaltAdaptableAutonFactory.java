@@ -39,7 +39,10 @@ public class WaltAdaptableAutonFactory {
     // trajectory logger
     private final StringLogger log_trajectoryName = new StringLogger(AutonK.kLogTab, "trajectoryName");
     private final Pose2dArrayLogger log_trajectoryPoses = new Pose2dArrayLogger(AutonK.kLogTab, "trajectoryPoses");
-    private final BooleanLogger log_ballDebounce = WaltLogger.logBoolean(AutonK.kLogTab, "ballDebounce");
+    private final BooleanLogger log_atStopShoot = WaltLogger.logBoolean(AutonK.kLogTab, "atStopShoot");
+
+    // logic booleans
+    private boolean m_isAtStopShoot = false;
 
     public WaltAdaptableAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter, Swerve swerve) {
         m_superstructure = superstructure;
@@ -146,7 +149,7 @@ public class WaltAdaptableAutonFactory {
                     autonTrajs[i+1].cmd() : 
                     Commands.sequence(
                         tp("WAITING FOR SHOOTING DONE"),
-                        Commands.waitUntil(m_shooter.getBallShotDebounceTrg()),
+                        Commands.waitUntil(m_shooter.getBallShotDebounceTrg().or(thisTraj.atTime("stopShoot"))),
                         tp("TRAJ 2 STARTED"),
                         autonTrajs[i + 1].cmd()
                     )
@@ -159,22 +162,57 @@ public class WaltAdaptableAutonFactory {
 
         System.out.println("================== full routine built ==================");
 
-
         return routine;
     }
 
+    private StringLogger log_autonEventMarker = WaltLogger.logString("Auton", "autonTriggerCall");
+
+    public Command updateAutonEventMarkerLogger(String update) {
+        return Commands.runOnce(() -> log_autonEventMarker.accept(update));
+    }
+
     public void setUpTrajTriggers(AutoTrajectory traj, double shooterTimeout, boolean SOTM) {
+        //---TRIGGER ACTIONS
         traj.atTime("intake").onTrue(
             m_superstructure.intake(() -> false).until(traj.atTime("stopIntake"))
         );
 
         traj.atTime("shoot").onTrue(
-            Commands.sequence(
-                m_superstructure.activateOuttakeShotCalc().until(traj.atTime("stopShoot").or(m_shooter.getBallShotDebounceTrg()))
-                //---NEED TO FIGURE OUT ARM SHIMMY
-                // Commands.waitUntil(m_shooter.getBallShotDebounceTrg()),
-                // m_superstructure.retractIntake()
-            )
+            // stopShoot acts as an override STOP SHOOTING to continue the pathing whereas the debounceTrg can help us move on faster if we're already outta balls
+            m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg().or(traj.atTime("stopShoot")))
+        );
+
+        traj.atTime("pass").onTrue(
+            m_superstructure.intake(() -> true).until(traj.atTime("stopPass"))
+        );
+
+        traj.atTime("pass").onTrue(
+            m_superstructure.activateOuttakeShotCalc().until(traj.atTime("stopPass"))
+        );
+
+        //---TRIGGER LOGGERS
+        traj.atTime("intake").onTrue(
+            updateAutonEventMarkerLogger("intake")
+        );
+
+        traj.atTime("pass").onTrue(
+            updateAutonEventMarkerLogger("pass")
+        );
+
+        traj.atTime("stopPass").onTrue(
+            updateAutonEventMarkerLogger("stopPass")
+        );
+
+        traj.atTime("stopIntake").onTrue(
+            updateAutonEventMarkerLogger("stopIntake")
+        );
+
+        traj.atTime("shoot").onTrue(
+            updateAutonEventMarkerLogger("shoot")
+        );
+
+        traj.atTime("stopShoot").onTrue(
+            updateAutonEventMarkerLogger("stopShoot")
         );
     }
     

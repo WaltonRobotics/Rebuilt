@@ -28,18 +28,18 @@ public class AutonChooser {
         m_chooser.addRoutine("Two Left Sweep",
             () -> m_adaptableAutonFactory.multiAdaptableAuton("Two Left Sweep",
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kFastLeftSweep, AutonK.kShootingTimeout, false),
-                new AdaptableAutonInfo(AutonK.kSweepLeftTwo, AutonK.kShootingTimeout, false)}));
+                new AdaptableAutonInfo(AutonK.kSweepLeftTwo, AutonK.kShootingTimeout, true)}));
 
         m_chooser.addRoutine("SOTM Two Cycle Reshoot",
-            () -> m_adaptableAutonFactory.multiAdaptableAuton("SOTM Two Cycle",
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kFastLeftSweep, AutonK.kShootingTimeout, true),
-                                          /*new AdaptableAutonInfo(AutonK.kDepotLeftTwo, AutonK.kShootingTimeout, true),*/
-                                          new AdaptableAutonInfo(AutonK.kReshootLeftTwo, AutonK.kShootingTimeout, true)}));
+            () -> m_adaptableAutonFactory.multiAdaptableAuton("SOTM Two Cycle Reshoot",
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kFastLeftSweep, AutonK.kShootingTimeout, false),
+                                        //   new AdaptableAutonInfo(AutonK.kDepotLeftTwo, AutonK.kShootingTimeout, true),
+                                          new AdaptableAutonInfo(AutonK.kReshootLeftTwo, AutonK.kShootingTimeout, false)}));
 
         m_chooser.addRoutine("SOTM Two Cycle Sweep",
             () -> m_adaptableAutonFactory.multiAdaptableAuton("SOTM Two Cycle Sweep",
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kFastLeftSweep, AutonK.kShootingTimeout, true),
-                                          new AdaptableAutonInfo(AutonK.kDepotLeftTwo, AutonK.kShootingTimeout, true),
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kFastLeftSweep, AutonK.kShootingTimeout, false),
+                                        //   new AdaptableAutonInfo(AutonK.kDepotLeftTwo, AutonK.kShootingTimeout, true),
                                           new AdaptableAutonInfo(AutonK.kSweepLeftTwo, AutonK.kShootingTimeout, true)}));
 
         m_chooser.addRoutine("SOTM Full Hub Circle",
