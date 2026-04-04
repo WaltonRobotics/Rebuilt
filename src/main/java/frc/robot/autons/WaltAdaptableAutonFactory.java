@@ -182,6 +182,10 @@ public class WaltAdaptableAutonFactory {
             m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg().or(traj.atTime("stopShoot")))
         );
 
+        traj.atTime("shoot").onTrue(
+            m_superstructure.intakeShimmy()
+        );
+
         traj.atTime("pass").onTrue(
             m_superstructure.intake(() -> true).until(traj.atTime("stopPass"))
         );
