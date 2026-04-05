@@ -11,6 +11,7 @@ import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -19,6 +20,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -128,6 +130,7 @@ public class Robot extends TimedRobot {
 
     private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble(kLogTab, "MiniPC current");
     private final Pose2dLogger log_robotPose = WaltLogger.logPose2d("Drive", "Pose");
+    private final BooleanLogger log_isBeached = WaltLogger.logBoolean("Drive", "isBeached");
 
     //DRIVERSTATION LOGS TELL US
     // private final BooleanLogger log_isDisabled = WaltLogger.logBoolean(kLogTab, "is robot disabled");
@@ -210,7 +213,6 @@ public class Robot extends TimedRobot {
         m_driver.setRumble(type, intensity);
         m_manipulator.setRumble(type, intensity);
     }
-
 
     //---BINDINGS
     private void configureBindings() {
@@ -371,6 +373,7 @@ public class Robot extends TimedRobot {
         // m_periodicTracer.addEpoch("Logging");
 
         log_miniPCCurrent.accept(m_PDH.getCurrent(kMiniPCChannel));
+        log_isBeached.accept(m_drivetrain.isBeached());
 
         // log_currentShift.accept(HubShiftUtil.getOfficialShiftInfo().currentShift().toString());
         // log_currentFudgedShift.accept(HubShiftUtil.getShiftedShiftInfo().currentShift().toString());

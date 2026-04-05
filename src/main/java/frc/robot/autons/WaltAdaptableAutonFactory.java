@@ -2,6 +2,9 @@ package frc.robot.autons;
 
 import static frc.robot.Constants.SuperstructureK.kLogTab;
 
+import java.util.ArrayList;
+import java.util.function.BooleanSupplier;
+
 import choreo.Choreo;
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
@@ -39,6 +42,8 @@ public class WaltAdaptableAutonFactory {
     private boolean m_isAtStopShoot = false;
     private Trigger trg_isAtStopShoot = new Trigger(() -> m_isAtStopShoot);
 
+    private boolean m_isOnBall = false;
+
     public WaltAdaptableAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter, Swerve swerve) {
         m_superstructure = superstructure;
         m_autoFactory = autoFactory;
@@ -68,6 +73,14 @@ public class WaltAdaptableAutonFactory {
     public AutoRoutine preheater() {
         System.out.println("PREHEAT MADE");
         return adaptableAuton("PreHeat", new AdaptableAutonInfo("PreHeat", AutonK.kReshootShootingTimeout, false));
+    }
+
+    private void updateIsOnBall() {
+        if (m_drivetrain.isBeached()) {
+            m_isOnBall = true;
+        } else {
+            m_isOnBall = false;
+        }
     }
 
     //---AUTOROUTINE TRAJECTORY HELPER

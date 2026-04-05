@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -30,6 +31,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -485,5 +487,16 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             fuelLocation.getY(),
             desiredRotation
         );
+    }
+
+    public boolean isBeached() {
+        StatusSignal<Angle> gyroX = getPigeon2().getRoll();
+        StatusSignal<Angle> gyroY = getPigeon2().getYaw();
+
+        if (gyroX.isNear(0, 3) && gyroY.isNear(0, 3) ) {
+            return true;
+        }
+
+        return false;
     }
 }
