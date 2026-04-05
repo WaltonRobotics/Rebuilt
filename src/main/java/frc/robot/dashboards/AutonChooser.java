@@ -15,8 +15,8 @@ public class AutonChooser {
     //---AUTON NAMES
     private final static String kRightShootAndSweep = "RIGHT 1.5 Cycle";
     private final static String kLeftShootAndSweep = "LEFT 1.5 Cycle";
-    private final static String kLeftTwoCycle = "LEFT Two Cycle";
-    private final static String kRightTwoCycle = "RIGHT Two Cycle";
+    private final static String kLeftTwoCycle = "LEFT 2 Cycle";
+    private final static String kRightTwoCycle = "RIGHT 2 Cycle";
     private final static String kRightHubCircle = "RIGHT Hub Circle";
 
     public static void initialize(WaltAdaptableAutonFactory adaptableAutonFactory) {
