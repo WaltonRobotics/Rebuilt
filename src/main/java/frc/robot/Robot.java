@@ -41,7 +41,6 @@ import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.dashboards.AutonChooser;
 import frc.robot.autons.WaltAdaptableAutonFactory;
-import frc.robot.autons.WaltSimpleAutonFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
@@ -99,8 +98,6 @@ public class Robot extends TimedRobot {
 
     //---AUTONS
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
-
-    private final WaltSimpleAutonFactory m_simpleAutonFactory = new WaltSimpleAutonFactory(m_superstructure, m_autoFactory, m_intake, m_drivetrain);
     private final WaltAdaptableAutonFactory m_adpatableAutonFactory = new WaltAdaptableAutonFactory(m_superstructure, m_autoFactory, m_intake, m_shooter, m_drivetrain);
     //---VISION
 
@@ -155,7 +152,7 @@ public class Robot extends TimedRobot {
 
         lastGotTagMsmtTimer.start();
 
-        AutonChooser.initialize(m_simpleAutonFactory, m_adpatableAutonFactory);
+        AutonChooser.initialize(m_adpatableAutonFactory);
 
         RobotModeTriggers.autonomous().whileTrue(
             AutonChooser.m_chooser.selectedCommandScheduler().withTimeout(20.3)

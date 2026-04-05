@@ -1,30 +1,24 @@
 package frc.robot.autons;
 
-import static frc.robot.Constants.ShooterK.kShooterAuton_EndSweep_RPS;
 import static frc.robot.Constants.SuperstructureK.kLogTab;
-
-import java.util.ArrayList;
 
 import choreo.Choreo;
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
-import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.AutonK;
-import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Swerve;
-import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.util.WaltLogger;
+import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.Pose2dArrayLogger;
 import frc.util.WaltLogger.StringLogger;
-import frc.util.WaltLogger.BooleanLogger;
 
 public class WaltAdaptableAutonFactory {
     private final Superstructure m_superstructure;
@@ -39,14 +33,11 @@ public class WaltAdaptableAutonFactory {
     // trajectory logger
     private final StringLogger log_trajectoryName = new StringLogger(AutonK.kLogTab, "trajectoryName");
     private final Pose2dArrayLogger log_trajectoryPoses = new Pose2dArrayLogger(AutonK.kLogTab, "trajectoryPoses");
-    private final BooleanLogger log_atStopShoot = WaltLogger.logBoolean(AutonK.kLogTab, "atStopShoot");
-    private final BooleanLogger log_stopShootTrgChange = WaltLogger.logBoolean(AutonK.kLogTab, "stopShootTrgChange");
-    private final BooleanLogger log_intakeTrgChange = WaltLogger.logBoolean(AutonK.kLogTab, "intakeTrgChange");
-    private final BooleanLogger log_shootTrgChange = WaltLogger.logBoolean(AutonK.kLogTab, "shootTrgChange");
-
+    private final BooleanLogger log_isAtStopShoot = new BooleanLogger(AutonK.kLogTab, "isAtStopShoot");
 
     // logic booleans
     private boolean m_isAtStopShoot = false;
+    private Trigger trg_isAtStopShoot = new Trigger(() -> m_isAtStopShoot);
 
     public WaltAdaptableAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter, Swerve swerve) {
         m_superstructure = superstructure;
@@ -74,12 +65,9 @@ public class WaltAdaptableAutonFactory {
             .withTimeout(5);
     }
 
-    private Command shoot(AngularVelocity speed, double seconds) {
-        return Commands.sequence(
-            tp("shootWithTimeout.START(" + speed + "," + seconds + ")"),
-            m_superstructure.activateOuttakeShotCalc(), //(() -> speed).withTimeout(seconds),
-            tp("shootWithTimeout.END")
-        );
+    public AutoRoutine preheater() {
+        System.out.println("PREHEAT MADE");
+        return adaptableAuton("PreHeat", new AdaptableAutonInfo("PreHeat", AutonK.kReshootShootingTimeout, false));
     }
 
     //---AUTOROUTINE TRAJECTORY HELPER
@@ -153,7 +141,10 @@ public class WaltAdaptableAutonFactory {
                     autonTrajs[i+1].cmd() : 
                     Commands.sequence(
                         tp("WAITING FOR SHOOTING DONE"),
-                        Commands.waitUntil(m_shooter.getBallShotDebounceTrg().or(thisTraj.atTime("stopShoot"))),
+                        Commands.race(
+                            Commands.waitUntil(m_shooter.getBallShotDebounceTrg().or(trg_isAtStopShoot)),
+                            Commands.waitSeconds(thisInfo.shooterTimeout())
+                        ),
                         tp("TRAJ 2 STARTED"),
                         autonTrajs[i + 1].cmd()
                     )
@@ -181,9 +172,18 @@ public class WaltAdaptableAutonFactory {
             m_superstructure.intake(() -> false).until(traj.atTime("stopIntake"))
         );
 
-        traj.atTime("shoot").onTrue(
+        traj.atTime("shoot").and(() -> !SOTM).onTrue(
             // stopShoot acts as an override STOP SHOOTING to continue the pathing whereas the debounceTrg can help us move on faster if we're already outta balls
-            m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg().or(traj.atTime("stopShoot")))
+            Commands.race(
+                m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg()),
+                Commands.waitSeconds(shooterTimeout)
+            )
+            // (m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg())).withTimeout(shooterTimeout)
+        );
+
+        traj.atTime("shoot").and(() -> SOTM).onTrue(
+            // stopShoot acts as an override STOP SHOOTING to continue the pathing whereas the debounceTrg can help us move on faster if we're already outta balls
+            m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg().or(trg_isAtStopShoot))
         );
 
         traj.atTime("shoot").onTrue(
@@ -209,6 +209,13 @@ public class WaltAdaptableAutonFactory {
 
         traj.atTime("stopPass").onTrue(
             updateAutonEventMarkerLogger("stopPass")
+        );
+
+        traj.atTime("stopShoot").onChange(
+            Commands.runOnce(() -> {
+                m_isAtStopShoot = !m_isAtStopShoot;
+                log_isAtStopShoot.accept(m_isAtStopShoot);
+            })
         );
 
         traj.atTime("stopIntake").onTrue(

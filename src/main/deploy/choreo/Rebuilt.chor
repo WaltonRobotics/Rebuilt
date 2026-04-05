@@ -3,182 +3,90 @@
  "version":2,
  "type":"Swerve",
  "variables":{
-  "expressions":{
-   "bumpSpeed":{
-    "dimension":"LinVel",
-    "var":{
-     "exp":"2 m / s",
-     "val":2.0
-    }
-   }
-  },
+  "expressions":{},
   "poses":{
-   "leftBumpAlliance":{
+   "leftShoot":{
     "x":{
-     "exp":"rightBumpAlliance.x",
-     "val":3.3882551193237305
+     "exp":"3.3139100074768066 m",
+     "val":3.313910007476806
     },
     "y":{
-     "exp":"5.837104797363281 m",
-     "val":5.837104797363281
-    },
-    "heading":{
-     "exp":"rightBumpAlliance.heading",
-     "val":-0.8223814729706524
-    }
-   },
-   "leftBumpNeutral":{
-    "x":{
-     "exp":"rightBumpNeutral.x",
-     "val":5.795487403869629
-    },
-    "y":{
-     "exp":"leftBumpAlliance.y",
-     "val":5.837104797363281
-    },
-    "heading":{
-     "exp":"rightBumpAlliance.heading",
-     "val":-0.8223814729706524
-    }
-   },
-   "leftFuelPickup":{
-    "x":{
-     "exp":"rightFuelPickup.x",
-     "val":6.924767017364502
-    },
-    "y":{
-     "exp":"leftBumpAlliance.y",
-     "val":5.837104797363281
-    },
-    "heading":{
-     "exp":"rightFuelPickup.heading",
-     "val":0.0
-    }
-   },
-   "leftNeutralShootPose":{
-    "x":{
-     "exp":"rightNeutralShootPose.x",
-     "val":2.125295639038086
-    },
-    "y":{
-     "exp":"4.291376113891602 m",
-     "val":4.291376113891602
-    },
-    "heading":{
-     "exp":"-1.513715544388632 rad",
-     "val":-1.513715544388632
-    }
-   },
-   "rightBumpAlliance":{
-    "x":{
-     "exp":"3.3882551193237305 m",
-     "val":3.3882551193237305
-    },
-    "y":{
-     "exp":"2.3457818031311035 m",
-     "val":2.3457818031311035
-    },
-    "heading":{
-     "exp":"-0.8223814729706524 rad",
-     "val":-0.8223814729706524
-    }
-   },
-   "rightBumpNeutral":{
-    "x":{
-     "exp":"5.795487403869629 m",
-     "val":5.795487403869629
-    },
-    "y":{
-     "exp":"rightBumpAlliance.y",
-     "val":2.3457818031311035
-    },
-    "heading":{
-     "exp":"rightBumpAlliance.heading",
-     "val":-0.8223814729706524
-    }
-   },
-   "rightDepotPickup":{
-    "x":{
-     "exp":"0.47482019662857056 m",
-     "val":0.47482019662857056
-    },
-    "y":{
-     "exp":"5.958622932434082 m",
-     "val":5.958622932434082
-    },
-    "heading":{
-     "exp":"pi rad",
-     "val":3.141592653589793
-    }
-   },
-   "rightDepotShootPose":{
-    "x":{
-     "exp":"2.660599708557129 m",
-     "val":2.660599708557129
-    },
-    "y":{
-     "exp":"4.208367347717285 m",
-     "val":4.208367347717285
-    },
-    "heading":{
-     "exp":"pi rad",
-     "val":3.141592653589793
-    }
-   },
-   "rightFuelPickup":{
-    "x":{
-     "exp":"6.924767017364502 m",
-     "val":6.924767017364502
-    },
-    "y":{
-     "exp":"rightBumpNeutral.y",
-     "val":2.3457818031311035
+     "exp":"5.370472431182861 m",
+     "val":5.370472431182861
     },
     "heading":{
      "exp":"0 rad",
      "val":0.0
     }
    },
-   "rightNeutralShootPose":{
+   "leftStart":{
     "x":{
-     "exp":"2.125295639038086 m",
-     "val":2.125295639038086
+     "exp":"3.592900037765503 m",
+     "val":3.592900037765503
     },
     "y":{
-     "exp":"3.6933207511901855 m",
-     "val":3.6933207511901855
+     "exp":"7.97 m - 2.4559099674224854 m",
+     "val":5.514090032577514
     },
     "heading":{
-     "exp":"-1.2145398092226503 rad",
-     "val":-1.2145398092226505
-    }
-   },
-   "rightOutpostPickup":{
-    "x":{
-     "exp":"0.45375561714172363 m",
-     "val":0.4537556171417236
-    },
-    "y":{
-     "exp":"0.669806957244873 m",
-     "val":0.669806957244873
-    },
-    "heading":{
-     "exp":"0 deg",
+     "exp":"0 rad",
      "val":0.0
     }
    },
-   "rightOutpostShootPose":{
+   "rightBump":{
     "x":{
-     "exp":"2.6225507259368896 m",
-     "val":2.6225507259368896
+     "exp":"rightShoot.x + 2.3 m",
+     "val":5.596527862548828
     },
     "y":{
-     "exp":"2.8005530834198 m",
-     "val":2.8005530834198
+     "exp":"rightShoot.y",
+     "val":2.6224505615234373
     },
     "heading":{
-     "exp":"1.471127829404881 rad",
-     "val":1.471127829404881
+     "exp":"0 rad",
+     "val":0.0
+    }
+   },
+   "rightPreBump":{
+    "x":{
+     "exp":"rightShoot.x + 0.3 m",
+     "val":3.596527862548828
+    },
+    "y":{
+     "exp":"rightShoot.y",
+     "val":2.6224505615234373
+    },
+    "heading":{
+     "exp":"0 rad",
+     "val":0.0
+    }
+   },
+   "rightShoot":{
+    "x":{
+     "exp":"3.296527862548828 m",
+     "val":3.296527862548828
+    },
+    "y":{
+     "exp":"7.97 m - 5.3475494384765625 m",
+     "val":2.6224505615234373
+    },
+    "heading":{
+     "exp":"0 rad",
+     "val":0.0
+    }
+   },
+   "rightStart":{
+    "x":{
+     "exp":"3.592900037765503 m",
+     "val":3.592900037765503
+    },
+    "y":{
+     "exp":"2.4559099674224854 m",
+     "val":2.455909967422486
+    },
+    "heading":{
+     "exp":"0 rad",
+     "val":0.0
     }
    }
   }

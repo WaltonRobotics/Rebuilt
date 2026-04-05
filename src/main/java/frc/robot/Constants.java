@@ -118,7 +118,7 @@ public class Constants {
         public static final double kPassingXAsDouble = kPassingX.in(Meters);
         
         public static final double kShooterTimeout = 1.0;
-        public static final double kBallDetectedDebounceTime = 0.5;
+        public static final double kBallDetectedDebounceTime = 0.9;
 
         /* MOTOR CONSTANTS */
         public static final double kShooterMoI = 0.000349 * 2.5;  //J for 5 3" 0.53lb flywheels
@@ -231,13 +231,10 @@ public class Constants {
             .withVoltage(kShooterAVoltageConfigs);
 
         private static final MotorOutputConfigs kShooterBOutputConfigs = new MotorOutputConfigs()
-                .withInverted(InvertedValue.CounterClockwise_Positive)
-                .withNeutralMode(NeutralModeValue.Coast);
-        public static final TalonFXConfiguration kShooterBTalonFXConfiguration = new TalonFXConfiguration()
-                .withCurrentLimits(kShooterACurrentLimitConfigs)
-                .withMotorOutput(kShooterBOutputConfigs)
-                .withFeedback(kShooterAFeedbackConfigs)
-                .withVoltage(kShooterAVoltageConfigs);
+            .withInverted(InvertedValue.CounterClockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Coast);
+        public static final TalonFXConfiguration kShooterBTalonFXConfiguration = kShooterATalonFXConfiguration.clone()
+            .withMotorOutput(kShooterBOutputConfigs);
 
         //---HOOD
         private static final Slot0Configs kHoodSlot0Configs = new Slot0Configs()
@@ -480,8 +477,8 @@ public class Constants {
 
         // IntakeRollers Motors
         private static final CurrentLimitsConfigs kIntakeRollersACurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(85)
-            .withSupplyCurrentLimit(50)
+            .withStatorCurrentLimit(55)
+            .withSupplyCurrentLimit(35)
             .withSupplyCurrentLowerTime(0)
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
@@ -510,12 +507,8 @@ public class Constants {
         public static final MotorOutputConfigs kIntakeRollersBMotorOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive)
             .withNeutralMode(NeutralModeValue.Coast);
-        public static final TalonFXConfiguration kIntakeRollersBConfiguration = new TalonFXConfiguration()
-            .withCurrentLimits(kIntakeRollersACurrentLimitConfigs)
-            .withSlot0(kIntakeRollersASlot0Configs)
-            .withMotorOutput(kIntakeRollersBMotorOutputConfigs)
-            .withFeedback(kIntakeRollersAFeedbackConfigs)
-            .withVoltage(kIntakeRollersAVoltageConfigs);
+        public static final TalonFXConfiguration kIntakeRollersBConfiguration = kIntakeRollersAConfiguration.clone()
+            .withMotorOutput(kIntakeRollersBMotorOutputConfigs);
     }
 
     public static class IndexerK {
@@ -534,7 +527,7 @@ public class Constants {
       
         public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60MaxVelocity.div(kSpindexerGearing);
         public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
-        public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(1.0);
+        public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.85);
 
         public static final AngularVelocity kTunnelMaxRPS = MotorK.kX60MaxVelocity.div(kTunnelGearing);
         public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(0.77);    //9V
@@ -625,27 +618,29 @@ public class Constants {
         public static final Pose2d kLeftNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
             Meters.of(5.437880039215088), new Rotation2d(0));
 
-        public static final double kOneSweepMaxTime = 12.5;
-        public static final double kTwoSweepMaxTime = 20;
-
         public static final double kIntakeTimeout = 7.5;
-        public static final double kShootingTimeout = 6; //12
+        public static final double kReshootShootingTimeout = 6; //12
+        public static final double kSweepShootingTimeout = 20;
 
+        //---FIRST CYCLES
         public static final String kFastRightSweep = "RightSweep_Fast";
         public static final String kTrenchRightSweep = "RightSweep_Trench";
 
+        //---SECOND CYCLES
         public static final String kSweepRightTwo = "RightSweepTwo_Sweep";
         public static final String kReshootRightTwo = "RightSweepTwo_Reshoot";
-        public static final String kZigzagRightTwo = "RightSweepTwo_ZigZag";
+        public static final String kFastRightTwo = "RightSweepTwo_Fast";
 
+        //---FIRST CYCLES
         public static final String kFastLeftSweep = "LeftSweep_Fast";
         public static final String kTrenchLeftSweep = "LeftSweep_Trench";
 
-        public static final String kDepotLeftTwo = "LeftSweepTwo_Depot_copy1";
+        //---SECOND CYCLES
+        public static final String kDepotLeftTwo = "LeftSweepTwo_Depot";
         public static final String kSweepLeftTwo = "LeftSweepTwo_Sweep";
         public static final String kReshootLeftTwo = "LeftSweepTwo_Reshoot";
-        public static final String kZigZagLeftTwo = "LeftSweepTwo_ZigZag";
 
+        //---MISC
         public static final String kHubCircle = "HubCircle";
     }
 }
