@@ -5,6 +5,34 @@
  "variables":{
   "expressions":{},
   "poses":{
+   "leftAllianceBump":{
+    "x":{
+     "exp":"leftStart.x + 0.1 m",
+     "val":3.692900037765503
+    },
+    "y":{
+     "exp":"leftShoot.y",
+     "val":5.370472431182861
+    },
+    "heading":{
+     "exp":"0 rad",
+     "val":0.0
+    }
+   },
+   "leftNeutralBump":{
+    "x":{
+     "exp":"leftStart.x + 2 m",
+     "val":5.592900037765503
+    },
+    "y":{
+     "exp":"leftStart.y",
+     "val":5.514090032577514
+    },
+    "heading":{
+     "exp":"0 rad",
+     "val":0.0
+    }
+   },
    "leftShoot":{
     "x":{
      "exp":"3.3139100074768066 m",
@@ -33,10 +61,10 @@
      "val":0.0
     }
    },
-   "rightBump":{
+   "rightAllianceBump":{
     "x":{
-     "exp":"rightShoot.x + 2.3 m",
-     "val":5.596527862548828
+     "exp":"rightShoot.x + 0.3 m",
+     "val":3.596527862548828
     },
     "y":{
      "exp":"rightShoot.y",
@@ -47,10 +75,10 @@
      "val":0.0
     }
    },
-   "rightPreBump":{
+   "rightNeutralBump":{
     "x":{
-     "exp":"rightShoot.x + 0.3 m",
-     "val":3.596527862548828
+     "exp":"rightShoot.x + 2.3 m",
+     "val":5.596527862548828
     },
     "y":{
      "exp":"rightShoot.y",
