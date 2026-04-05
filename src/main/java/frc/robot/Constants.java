@@ -627,6 +627,7 @@ public class Constants {
         public static final String kTrenchRightOne = "RIGHT_one_trench";
 
         //---SECOND CYCLES
+        public static final String kDepotRightTwo = "RIGHT_two_depot";
         public static final String kSweepRightTwo = "RIGHT_two_sweep";
         public static final String kJabRightTwo = "RIGHT_two_jab";
 
