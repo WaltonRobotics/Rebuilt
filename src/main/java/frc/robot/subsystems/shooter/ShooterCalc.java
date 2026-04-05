@@ -88,7 +88,7 @@ public class ShooterCalc {
     public ShooterCalc(Supplier<SwerveDriveState> threadsafeSwerveDriveStateSup, DoubleSupplier turretPosSup) {
         m_threadsafeSwerveDriveStateSup = threadsafeSwerveDriveStateSup;
         m_turretPosRotsSup = turretPosSup;
-        log.accept(new Pose2d(kHubShotZoneTopX, 0, Rotation2d.kZero));
+        log.accept(new Pose2d(kHubShootOverTarget.getX(), kHubShootOverTarget.getY(), Rotation2d.kZero));
 
         m_notifier.setName("ShooterCalc");
         m_notifier.startPeriodic(Hertz.of(25)); // 2x slower than robot loop
@@ -157,11 +157,16 @@ public class ShooterCalc {
         log_robotInHubPassingZone.accept(robotInHubPassingZone);
 
         if (robotPastOurZoneX) {
-            m_isPassing =  () -> true;
-            Translation3d leftPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, FieldConstants.fieldWidth - 2.5 /* MathUtil.clamp(FieldConstants.fieldWidth / 2 + robotY, FieldConstants.fieldWidth / 2 + 1, FieldConstants.fieldWidth - 1) */, 0);
-            Translation3d rightPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, 2.5 /* MathUtil.clamp(robotY - FieldConstants.fieldWidth / 2, 1, FieldConstants.fieldWidth / 2 - 1) */, 0);
-            boolean robotLeftOfCenter = isRed ? robotY < kCenterFieldYM : robotY > kCenterFieldYM;
-            theTarget = robotLeftOfCenter ? leftPassPoseShifted : rightPassPoseShifted;
+            if (robotInHubPassingZone) {
+                m_isPassing =  () -> false;
+                theTarget = kHubShootOverTarget;
+            } else {
+                m_isPassing =  () -> true;
+                Translation3d leftPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, FieldConstants.fieldWidth - 2.5 /* MathUtil.clamp(FieldConstants.fieldWidth / 2 + robotY, FieldConstants.fieldWidth / 2 + 1, FieldConstants.fieldWidth - 1) */, 0);
+                Translation3d rightPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, 2.5 /* MathUtil.clamp(robotY - FieldConstants.fieldWidth / 2, 1, FieldConstants.fieldWidth / 2 - 1) */, 0);
+                boolean robotLeftOfCenter = isRed ? robotY < kCenterFieldYM : robotY > kCenterFieldYM;
+                theTarget = robotLeftOfCenter ? leftPassPoseShifted : rightPassPoseShifted;
+            }
         } else {
             m_isPassing =  () -> false;
         }
