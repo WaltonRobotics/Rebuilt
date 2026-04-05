@@ -28,6 +28,7 @@ import frc.util.AllianceZoneUtil;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.Pose2dLogger;
 import frc.util.WaltLogger.Pose3dLogger;
 import frc.util.WaltLogger.Translation3dArrayLogger;
 
@@ -56,6 +57,9 @@ public class ShooterCalc {
     private static final Pose3dLogger log_turretRobotPose = WaltLogger.logPose3d("ShotCalc", "turretRobotPose");
     private static final Pose3dLogger log_turretFieldPose = WaltLogger.logPose3d("ShotCalc", "turretFieldPose");
     private final BooleanLogger log_robotPastOurZoneX = WaltLogger.logBoolean("ShotCalc", "robotInOurZone");
+    private final BooleanLogger log_robotInHubPassingZone = WaltLogger.logBoolean("ShotCalc", "robotInHubPassingZone");
+
+    private final Pose2dLogger log = WaltLogger.logPose2d("ShotCalc", "pose");
 
 
     // Precomputed doubles for calculateTarget zone checks
@@ -84,6 +88,7 @@ public class ShooterCalc {
     public ShooterCalc(Supplier<SwerveDriveState> threadsafeSwerveDriveStateSup, DoubleSupplier turretPosSup) {
         m_threadsafeSwerveDriveStateSup = threadsafeSwerveDriveStateSup;
         m_turretPosRotsSup = turretPosSup;
+        log.accept(new Pose2d(kHubShootOverTarget.getX(), kHubShootOverTarget.getY(), Rotation2d.kZero));
 
         m_notifier.setName("ShooterCalc");
         m_notifier.startPeriodic(Hertz.of(25)); // 2x slower than robot loop
@@ -148,12 +153,20 @@ public class ShooterCalc {
         boolean robotPastOurZoneX = isRed ? robotX < kRedHubCenterX : robotX > kBlueHubCenterX;
         log_robotPastOurZoneX.accept(robotPastOurZoneX);
 
+        boolean robotInHubPassingZone = (isRed ? robotY < kHubShotZoneLeftY && robotY > kHubShotZoneRightY && robotX > FieldConstants.fieldLength - kHubShotZoneTopX : robotY > kHubShotZoneLeftY && robotY < kHubShotZoneRightY && robotX < kHubShotZoneTopX) && robotPastOurZoneX;
+        log_robotInHubPassingZone.accept(robotInHubPassingZone);
+
         if (robotPastOurZoneX) {
-            m_isPassing =  () -> true;
-            Translation3d leftPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, FieldConstants.fieldWidth - 2.5 /* MathUtil.clamp(FieldConstants.fieldWidth / 2 + robotY, FieldConstants.fieldWidth / 2 + 1, FieldConstants.fieldWidth - 1) */, 0);
-            Translation3d rightPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, 2.5 /* MathUtil.clamp(robotY - FieldConstants.fieldWidth / 2, 1, FieldConstants.fieldWidth / 2 - 1) */, 0);
-            boolean robotLeftOfCenter = isRed ? robotY < kCenterFieldYM : robotY > kCenterFieldYM;
-            theTarget = robotLeftOfCenter ? leftPassPoseShifted : rightPassPoseShifted;
+            if (robotInHubPassingZone) {
+                m_isPassing =  () -> false;
+                theTarget = kHubShootOverTarget;
+            } else {
+                m_isPassing =  () -> true;
+                Translation3d leftPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, FieldConstants.fieldWidth - 2.5 /* MathUtil.clamp(FieldConstants.fieldWidth / 2 + robotY, FieldConstants.fieldWidth / 2 + 1, FieldConstants.fieldWidth - 1) */, 0);
+                Translation3d rightPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, 2.5 /* MathUtil.clamp(robotY - FieldConstants.fieldWidth / 2, 1, FieldConstants.fieldWidth / 2 - 1) */, 0);
+                boolean robotLeftOfCenter = isRed ? robotY < kCenterFieldYM : robotY > kCenterFieldYM;
+                theTarget = robotLeftOfCenter ? leftPassPoseShifted : rightPassPoseShifted;
+            }
         } else {
             m_isPassing =  () -> false;
         }
