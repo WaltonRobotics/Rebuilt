@@ -18,6 +18,8 @@ public class AutonChooser {
     private final static String kLeftTwoCycle = "LEFT 2 Cycle";
     private final static String kRightTwoCycle = "RIGHT 2 Cycle";
     private final static String kRightHubCircle = "RIGHT Hub Circle";
+    private final static String kRightTrenchTwoCycle = "RIGHT Trench 2 Cycle";
+    private final static String kLeftTrenchTwoCycle = "LEFT Trench 2 Cycle";
 
     public static void initialize(WaltAdaptableAutonFactory adaptableAutonFactory) {
         m_adaptableAutonFactory = adaptableAutonFactory;
@@ -46,6 +48,16 @@ public class AutonChooser {
         m_chooser.addRoutine(kRightTwoCycle,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightTwoCycle,
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kJabRightOne, AutonK.kReshootShootingTimeout, false),
+                                          new AdaptableAutonInfo(AutonK.kJabRightTwo, AutonK.kReshootShootingTimeout, false)}));
+
+        m_chooser.addRoutine(kLeftTrenchTwoCycle,
+            () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftTrenchTwoCycle, 
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kTrenchLeftOne, AutonK.kReshootShootingTimeout, false),
+                                          new AdaptableAutonInfo(AutonK.kJabLeftTwo, AutonK.kReshootShootingTimeout, false)}));
+        
+        m_chooser.addRoutine(kRightTrenchTwoCycle,
+            () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightTrenchTwoCycle, 
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kTrenchRightOne, AutonK.kReshootShootingTimeout, false),
                                           new AdaptableAutonInfo(AutonK.kJabRightTwo, AutonK.kReshootShootingTimeout, false)}));
 
         //Load AutonChooser

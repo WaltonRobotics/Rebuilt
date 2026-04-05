@@ -278,5 +278,6 @@
   "splits":[0]
  },
  "events":[
-   {"name":"stopIntake", "from":{"target":6, "targetTimestamp":5.80096, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"stopIntake"}}}]
+   {"name":"stopIntake", "from":{"target":6, "targetTimestamp":5.80096, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"stopIntake"}}},
+   {"name":"shoot", "from":{"target":7, "targetTimestamp":null, "offset":{"exp":"-0.1 s", "val":-0.1}}, "event":{"type":"named", "data":{"name":"shoot"}}}]
 }
