@@ -270,7 +270,7 @@ public class Robot extends TimedRobot {
         //Shooting
         // NORMAL FIXED SHOT
         // trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
-        trg_turretInShootRange.whileFalse(Commands.run(() -> m_driver.setRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> m_driver.setRumble(RumbleType.kBothRumble, 0)));
+        trg_turretInShootRange.whileFalse(Commands.run(() -> m_driver.setRumble(RumbleType.kBothRumble, 0.3)).finallyDo(() -> m_driver.setRumble(RumbleType.kBothRumble, 0)));
 
         // DRIVER SHOOTING 
         trg_shoot

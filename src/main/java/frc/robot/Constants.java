@@ -120,7 +120,7 @@ public class Constants {
         public static final double kHubShotZoneTopX = FieldConstants.Hub.blueInnerCenterPoint.getX() + 3;
         public static final double kHubShotZoneRightY = Meters.of(3.2).baseUnitMagnitude();
         public static final double kHubShotZoneLeftY = FieldConstants.fieldWidth - 3.2;
-        public static final Translation3d kHubShootOverTarget = FieldConstants.Hub.blueInnerCenterPoint.plus(new Translation3d(-3, 0, 0));
+        public static final Translation3d kHubPassOverTarget = FieldConstants.Hub.blueInnerCenterPoint.plus(new Translation3d(-2.5, 0, 0));
         
         public static final double kShooterTimeout = 1.0;
         public static final double kBallDetectedDebounceTime = 0.9;

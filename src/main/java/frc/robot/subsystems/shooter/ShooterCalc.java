@@ -88,7 +88,7 @@ public class ShooterCalc {
     public ShooterCalc(Supplier<SwerveDriveState> threadsafeSwerveDriveStateSup, DoubleSupplier turretPosSup) {
         m_threadsafeSwerveDriveStateSup = threadsafeSwerveDriveStateSup;
         m_turretPosRotsSup = turretPosSup;
-        log.accept(new Pose2d(kHubShootOverTarget.getX(), kHubShootOverTarget.getY(), Rotation2d.kZero));
+        log.accept(new Pose2d(kHubPassOverTarget.getX(), kHubPassOverTarget.getY(), Rotation2d.kZero));
 
         m_notifier.setName("ShooterCalc");
         m_notifier.startPeriodic(Hertz.of(25)); // 2x slower than robot loop
@@ -153,13 +153,13 @@ public class ShooterCalc {
         boolean robotPastOurZoneX = isRed ? robotX < kRedHubCenterX : robotX > kBlueHubCenterX;
         log_robotPastOurZoneX.accept(robotPastOurZoneX);
 
-        boolean robotInHubPassingZone = (isRed ? robotY < kHubShotZoneLeftY && robotY > kHubShotZoneRightY && robotX > FieldConstants.fieldLength - kHubShotZoneTopX : robotY > kHubShotZoneLeftY && robotY < kHubShotZoneRightY && robotX < kHubShotZoneTopX) && robotPastOurZoneX;
+        boolean robotInHubPassingZone = (isRed ? robotY < kHubShotZoneLeftY && robotY > kHubShotZoneRightY && robotX > FieldConstants.fieldLength - kHubShotZoneTopX : robotY < kHubShotZoneLeftY && robotY > kHubShotZoneRightY && robotX < kHubShotZoneTopX) && robotPastOurZoneX;
         log_robotInHubPassingZone.accept(robotInHubPassingZone);
 
         if (robotPastOurZoneX) {
             if (robotInHubPassingZone) {
                 m_isPassing =  () -> false;
-                theTarget = kHubShootOverTarget;
+                theTarget = kHubPassOverTarget;
             } else {
                 m_isPassing =  () -> true;
                 Translation3d leftPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, FieldConstants.fieldWidth - 2.5 /* MathUtil.clamp(FieldConstants.fieldWidth / 2 + robotY, FieldConstants.fieldWidth / 2 + 1, FieldConstants.fieldWidth - 1) */, 0);
