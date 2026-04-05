@@ -28,6 +28,7 @@ import frc.util.AllianceZoneUtil;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.Pose2dLogger;
 import frc.util.WaltLogger.Pose3dLogger;
 import frc.util.WaltLogger.Translation3dArrayLogger;
 
@@ -56,6 +57,9 @@ public class ShooterCalc {
     private static final Pose3dLogger log_turretRobotPose = WaltLogger.logPose3d("ShotCalc", "turretRobotPose");
     private static final Pose3dLogger log_turretFieldPose = WaltLogger.logPose3d("ShotCalc", "turretFieldPose");
     private final BooleanLogger log_robotPastOurZoneX = WaltLogger.logBoolean("ShotCalc", "robotInOurZone");
+    private final BooleanLogger log_robotInHubPassingZone = WaltLogger.logBoolean("ShotCalc", "robotInHubPassingZone");
+
+    private final Pose2dLogger log = WaltLogger.logPose2d("ShotCalc", "pose");
 
 
     // Precomputed doubles for calculateTarget zone checks
@@ -84,6 +88,7 @@ public class ShooterCalc {
     public ShooterCalc(Supplier<SwerveDriveState> threadsafeSwerveDriveStateSup, DoubleSupplier turretPosSup) {
         m_threadsafeSwerveDriveStateSup = threadsafeSwerveDriveStateSup;
         m_turretPosRotsSup = turretPosSup;
+        log.accept(new Pose2d(kHubShotZoneTopX, 0, Rotation2d.kZero));
 
         m_notifier.setName("ShooterCalc");
         m_notifier.startPeriodic(Hertz.of(25)); // 2x slower than robot loop
@@ -147,6 +152,9 @@ public class ShooterCalc {
 
         boolean robotPastOurZoneX = isRed ? robotX < kRedHubCenterX : robotX > kBlueHubCenterX;
         log_robotPastOurZoneX.accept(robotPastOurZoneX);
+
+        boolean robotInHubPassingZone = (isRed ? robotY < kHubShotZoneLeftY && robotY > kHubShotZoneRightY && robotX > FieldConstants.fieldLength - kHubShotZoneTopX : robotY > kHubShotZoneLeftY && robotY < kHubShotZoneRightY && robotX < kHubShotZoneTopX) && robotPastOurZoneX;
+        log_robotInHubPassingZone.accept(robotInHubPassingZone);
 
         if (robotPastOurZoneX) {
             m_isPassing =  () -> true;

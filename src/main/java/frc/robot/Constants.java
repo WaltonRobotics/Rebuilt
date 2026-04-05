@@ -116,6 +116,10 @@ public class Constants {
         //     Meters.of(2), Meters.of(6.5), Meters.zero());
         public static final Distance kPassingX = Meters.of(2);
         public static final double kPassingXAsDouble = kPassingX.in(Meters);
+
+        public static final double kHubShotZoneTopX = FieldConstants.Hub.blueInnerCenterPoint.getX() + 3;
+        public static final double kHubShotZoneRightY = Meters.of(3.2).baseUnitMagnitude();
+        public static final double kHubShotZoneLeftY = FieldConstants.fieldWidth - 3.2;
         
         public static final double kShooterTimeout = 1.0;
         public static final double kBallDetectedDebounceTime = 0.5;
