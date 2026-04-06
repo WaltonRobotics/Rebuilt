@@ -38,6 +38,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterCalc;
 import frc.robot.Constants.IntakeK;
 import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
@@ -109,7 +110,7 @@ public class Robot extends TimedRobot {
     /* TRIGGERS */
     private Trigger trg_optimalPrefireTime = new Trigger(HubShiftUtil.optimalPrefireTime());
     private Trigger trg_comebackTime = new Trigger(HubShiftUtil.comebackTime());
-    private Trigger trg_turretInShootRange = new Trigger(() -> m_shooter.canTurretShoot());
+    private Trigger trg_turretInShootRange = new Trigger(() -> ShooterCalc.canTurretShoot());
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
 
@@ -275,7 +276,7 @@ public class Robot extends TimedRobot {
         // DRIVER SHOOTING 
         trg_shoot
             .and(() -> m_shooter.m_turret.atPosition())
-            .and(() -> m_shooter.canTurretShoot())
+            .and(() -> ShooterCalc.canTurretShoot())
             .whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
 
         m_manipulator.rightTrigger().and(trg_manipOverride)

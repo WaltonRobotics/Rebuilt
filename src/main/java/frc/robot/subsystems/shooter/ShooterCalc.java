@@ -58,6 +58,7 @@ public class ShooterCalc {
     private static final Pose3dLogger log_turretFieldPose = WaltLogger.logPose3d("ShotCalc", "turretFieldPose");
     private final BooleanLogger log_robotPastOurZoneX = WaltLogger.logBoolean("ShotCalc", "robotInOurZone");
     private final BooleanLogger log_robotInHubPassingZone = WaltLogger.logBoolean("ShotCalc", "robotInHubPassingZone");
+    private final BooleanLogger log_canTurretShoot = WaltLogger.logBoolean("ShotCalc", "canTurretShoot");
 
     private final Pose2dLogger log = WaltLogger.logPose2d("ShotCalc", "pose");
 
@@ -81,6 +82,7 @@ public class ShooterCalc {
     private static volatile Translation3d m_aimTarget = Translation3d.kZero;
     private volatile ShotCalcOutputs m_shotCalcOutputs = kEmptyShotCalcOutputs;
     private static volatile BooleanSupplier m_isPassing = () -> false;
+    private static volatile boolean m_canTurretShoot = false;
 
     private final Notifier m_notifier = new Notifier(this::calcCallback);
     private final Timer m_calcTimer = new Timer();
@@ -110,6 +112,26 @@ public class ShooterCalc {
         return m_isPassing;
     }
 
+    public static boolean canTurretShoot() {
+        return m_canTurretShoot;
+    }
+
+    /**
+     * first checks if we're passing. If we're not passing, then we can shoot whenever
+     * If we are passing, it checks if we're NOT in the unable-to-pass range. If we're not in it, then the turret can shoot!
+     * 
+     * lowk should be checking if we are IN THE RANGE rather than greater than the outsides, but this is cope for now cuz sadness
+     */
+    private void refreshCanTurretShoot() {
+        if (isPassing().getAsBoolean()) {
+            if (m_turretPosRotsSup.getAsDouble() > kTurretMinNotAbleToPassRange && m_turretPosRotsSup.getAsDouble() < kTurretMaxNotAbleToPassRange) {m_canTurretShoot = true;} else {m_canTurretShoot = false;}
+            log_canTurretShoot.accept(m_canTurretShoot);
+        } else {
+            m_canTurretShoot = true;    //the turret can shoot anytime we are not passing
+            log_canTurretShoot.accept(m_canTurretShoot);
+        }
+    }
+
 
     private void calcCallback() {
         m_calcTimer.restart();
@@ -122,6 +144,7 @@ public class ShooterCalc {
 
         m_aimTarget = calculateTarget(robotPose);
         m_shotCalcOutputs = calcShot(robotPose, m_useStaticShot, m_aimTarget, turretPositionRots, robotChassisSpeeds);
+        refreshCanTurretShoot();
 
         // Logging
         log_globalShotTarget.accept(m_aimTarget);
@@ -162,8 +185,8 @@ public class ShooterCalc {
                 theTarget = kHubPassOverTarget;
             } else {
                 m_isPassing =  () -> true;
-                Translation3d leftPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, FieldConstants.fieldWidth - 2.5 /* MathUtil.clamp(FieldConstants.fieldWidth / 2 + robotY, FieldConstants.fieldWidth / 2 + 1, FieldConstants.fieldWidth - 1) */, 0);
-                Translation3d rightPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, 2.5 /* MathUtil.clamp(robotY - FieldConstants.fieldWidth / 2, 1, FieldConstants.fieldWidth / 2 - 1) */, 0);
+                Translation3d leftPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, FieldConstants.fieldWidth - 2 /* MathUtil.clamp(FieldConstants.fieldWidth / 2 + robotY, FieldConstants.fieldWidth / 2 + 1, FieldConstants.fieldWidth - 1) */, 0);
+                Translation3d rightPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, 2 /* MathUtil.clamp(robotY - FieldConstants.fieldWidth / 2, 1, FieldConstants.fieldWidth / 2 - 1) */, 0);
                 boolean robotLeftOfCenter = isRed ? robotY < kCenterFieldYM : robotY > kCenterFieldYM;
                 theTarget = robotLeftOfCenter ? leftPassPoseShifted : rightPassPoseShifted;
             }
@@ -296,7 +319,7 @@ public class ShooterCalc {
         // The Calculated shot itself, according to the current robotPose, robotSpeeds,
         // and the currentTarget
         ShotDataLerp calculatedShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
-            robotPose, fieldSpeeds, target, 3);
+            robotPose, fieldSpeeds, target, 5);
 
         // The turret angle according to the Calculated shot
         AzimuthCalcDetails azCalcDetails = calcAzimuth(calculatedShot.getTarget(), robotPose, turretPositionRots, fieldSpeeds);

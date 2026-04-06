@@ -61,7 +61,6 @@ public class Shooter extends SubsystemBase {
     private double m_latestFlywheelAccelerationRotPerSec;
     private boolean m_isShooterSpunUp = false;
     private boolean m_shotDropSeen = false;
-    private boolean m_canTurretShoot = false;
 
     private final Timer m_shotRecoveryTimer = new Timer();
 
@@ -228,26 +227,6 @@ public class Shooter extends SubsystemBase {
         m_isShooterSpunUp = sig_shooterCLErr.isNear(0, 3);
     }
 
-    /**
-     * first checks if we're passing. If we're not passing, then we can shoot whenever
-     * If we are passing, it checks if we're NOT in the unable-to-pass range. If we're not in it, then the turret can shoot!
-     * 
-     * lowk should be checking if we are IN THE RANGE rather than greater than the outsides, but this is cope for now cuz sadness
-     */
-    private void refreshCanTurretShoot() {
-        if (ShooterCalc.isPassing().getAsBoolean()) {
-            if (m_latestTurretPositionRots > kTurretMinNotAbleToPassRange && m_latestTurretPositionRots < kTurretMaxNotAbleToPassRange) {m_canTurretShoot = true;} else {m_canTurretShoot = false;}
-            log_canTurretShoot.accept(m_canTurretShoot);
-        } else {
-            m_canTurretShoot = true;    //the turret can shoot anytime we are not passing
-            log_canTurretShoot.accept(m_canTurretShoot);
-        }
-    }
-
-    public boolean canTurretShoot() {
-        return m_canTurretShoot;
-    }
-
     public boolean isShooterSpunUp() {
         return m_isShooterSpunUp;
     }
@@ -349,7 +328,6 @@ public class Shooter extends SubsystemBase {
         }
 
         refreshShooterSpunUp();
-        refreshCanTurretShoot();
 
         log_turretPositionRobotRelativeRots.accept(kDriverRPSIncreaseD);
         log_ballsShot.accept(m_ballsShot);

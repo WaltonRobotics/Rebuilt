@@ -114,7 +114,7 @@ public class Constants {
         //     Meters.of(2), Meters.of(1.5), Meters.zero());
         // public static final Translation3d kPassingSpotLeft = new Translation3d(
         //     Meters.of(2), Meters.of(6.5), Meters.zero());
-        public static final Distance kPassingX = Meters.of(2);
+        public static final Distance kPassingX = Meters.of(3.5);
         public static final double kPassingXAsDouble = kPassingX.in(Meters);
 
         public static final double kHubShotZoneTopX = FieldConstants.Hub.blueInnerCenterPoint.getX() + 3;

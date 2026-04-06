@@ -27,6 +27,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.FieldConstants;
 import frc.util.AllianceZoneUtil;
 import frc.util.WaltLogger.*;
+import frc.util.WaltTunable;
 import edu.wpi.first.units.measure.Time;
 
 public class ShotCalculator {
@@ -34,6 +35,9 @@ public class ShotCalculator {
     private static final BooleanLogger log_isPassingLerp = new BooleanLogger("Shooter/Calculator", "isPassingLERP");
 
     private static final double kMetersToInches = 1.0 / 0.0254;
+    // Horizontal drag damping: actual drift = v * (1 - e^(-c*t)) / c < v*t
+    // c = 0 disables drag compensation. Enable via /ShotCalc/sotmDragCoeff/enabled.
+    private static final WaltTunable kDragCoeffTuner = new WaltTunable("/ShotCalc/sotmDragCoeff", 0.36, true);
     // private static final Tracer m_iterativeTracer = new Tracer();
 
     //see 5000's code (circa 2/16/2026 9:11 PM EST)
@@ -42,10 +46,14 @@ public class ShotCalculator {
     
     public static final InterpolatingTreeMap<Double, ShotData> m_passingMap = new InterpolatingTreeMap<>(
             InverseInterpolator.forDouble(), ShotData::interpolate);
+    
+    public static final InterpolatingTreeMap<Double, ShotData> m_angryTurretPassingMap = new InterpolatingTreeMap<>(
+            InverseInterpolator.forDouble(), ShotData::interpolate);
 
     public static final InterpolatingDoubleTreeMap m_timeOfFlightMap = new InterpolatingDoubleTreeMap();
     public static final InterpolatingDoubleTreeMap m_timeOfFlightMapPassing = new InterpolatingDoubleTreeMap();
-
+    public static final InterpolatingDoubleTreeMap m_timeOfFlightMapPassingAngryTurret = new InterpolatingDoubleTreeMap();
+    
     private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
     private static final double kBlueHubCenterX = AllianceZoneUtil.blueHubCenter.getX();
 
@@ -53,6 +61,7 @@ public class ShotCalculator {
     private static final double maxDistance;
 
     private static final double kRPSBoost = 5.0;
+    private static final double kRPSReduction = 10.0;
 
     //LERP MADE ON 3/15/2025
     static {
@@ -61,7 +70,7 @@ public class ShotCalculator {
         maxDistance = 5.672;
 
         //Ordered via DistanceToTarget
-        addLerpPoint(5.672, 82.50, 0.08, 2.11, m_shotMap, m_timeOfFlightMap); //SHOOTER IN BR CORNER
+        addLerpPoint(5.672, 82.50, 0.08, 2.11, m_shotMap, m_timeOfFlightMap);
         addLerpPoint(5.321, 81.00, 0.08, 1.94, m_shotMap, m_timeOfFlightMap);
         addLerpPoint(5.223, 75.75, 0.08, 1.79, m_shotMap, m_timeOfFlightMap);
         addLerpPoint(5.167, 79.50, 0.08, 2.03, m_shotMap, m_timeOfFlightMap);
@@ -123,6 +132,39 @@ public class ShotCalculator {
         addPassingPoint(14.020, 101.70, 1.16, 2.00);
         addPassingPoint(14.355, 104.39, 1.16, 2.08);
 
+
+        //THIS IS ONLY USED IF THE TURRET IS IN A POSITION THAT IS UNABLE TO SHOOT WITH HOOD UP DURING PASSING
+        addAngryTurretPassingPoint(5.672, 82.50 - kRPSReduction, 0.08, 2.11);
+        addAngryTurretPassingPoint(5.321, 81.00 - kRPSReduction, 0.08, 1.94);
+        addAngryTurretPassingPoint(5.223, 75.75 - kRPSReduction, 0.08, 1.79);
+        addAngryTurretPassingPoint(5.167, 79.50 - kRPSReduction, 0.08, 2.03);
+        addAngryTurretPassingPoint(4.996, 78.00 - kRPSReduction, 0.08, 1.97); 
+        addAngryTurretPassingPoint(4.869, 76.50 - kRPSReduction, 0.08, 1.80);
+        addAngryTurretPassingPoint(4.696, 75.00 - kRPSReduction, 0.08, 1.33);
+        addAngryTurretPassingPoint(4.546, 73.50 - kRPSReduction, 0.08, 1.83);
+        addAngryTurretPassingPoint(4.402, 72.50 - kRPSReduction, 0.08, 1.85);
+        addAngryTurretPassingPoint(4.258, 71.00 - kRPSReduction, 0.08, 1.64);
+        addAngryTurretPassingPoint(4.098, 69.00 - kRPSReduction, 0.08, 1.58);
+        addAngryTurretPassingPoint(3.932, 68.00 - kRPSReduction, 0.08, 1.71);
+        addAngryTurretPassingPoint(3.785, 66.90 - kRPSReduction, 0.08, 1.56);
+        addAngryTurretPassingPoint(3.611, 65.40 - kRPSReduction, 0.08, 1.56);
+        addAngryTurretPassingPoint(3.464, 63.90 - kRPSReduction, 0.08, 1.50);
+        addAngryTurretPassingPoint(3.293, 62.40 - kRPSReduction, 0.08, 1.50);
+        addAngryTurretPassingPoint(3.134, 60.90 - kRPSReduction, 0.08, 1.51);
+        addAngryTurretPassingPoint(2.995, 59.40 - kRPSReduction, 0.08, 1.37);
+        addAngryTurretPassingPoint(2.855, 57.90 - kRPSReduction, 0.08, 1.35);
+        addAngryTurretPassingPoint(2.704, 56.40 - kRPSReduction, 0.08, 1.38);
+        addAngryTurretPassingPoint(2.586, 54.90 - kRPSReduction, 0.08, 1.28);
+        addAngryTurretPassingPoint(2.395, 53.50 - kRPSReduction, 0.08, 1.29);
+        addAngryTurretPassingPoint(2.221, 52.00 - kRPSReduction, 0.08, 1.25);
+        addAngryTurretPassingPoint(2.083, 50.50 - kRPSReduction, 0.08, 1.14);
+        addAngryTurretPassingPoint(1.912, 49.00 - kRPSReduction, 0.08, 1.19);
+        addAngryTurretPassingPoint(1.691, 47.50 - kRPSReduction, 0.08, 0.98);
+        addAngryTurretPassingPoint(1.575, 47.50 - kRPSReduction, 0.08, 1.18);
+        addAngryTurretPassingPoint(1.528, 46.00 - kRPSReduction, 0.08, 1.20);
+        addAngryTurretPassingPoint(1.307, 44.50 - kRPSReduction, 0.08, 1.13);
+        addAngryTurretPassingPoint(1.168, 44.50 - kRPSReduction, 0.08, 1.16);
+
     }
 
     public static void addLerpPoint(double distanceToTarget, double shooterRPS, double hoodRots, double timeOfFlight, InterpolatingTreeMap<Double, ShotData> shotMap, InterpolatingDoubleTreeMap tofMap) {
@@ -132,6 +174,10 @@ public class ShotCalculator {
 
     public static void addPassingPoint(double distanceToTarget, double shooterRPS, double hoodRots, double timeOfFlight) {
         addLerpPoint(distanceToTarget, shooterRPS, hoodRots, timeOfFlight, m_passingMap, m_timeOfFlightMapPassing);
+    }
+
+    public static void addAngryTurretPassingPoint(double distToTarget, double shooterRps, double hoodRots, double timeOfFlight) {
+        addLerpPoint(distToTarget, shooterRps, hoodRots, timeOfFlight, m_angryTurretPassingMap, m_timeOfFlightMapPassingAngryTurret);
     }
     /**
      * Gets the 2D distance from turret pivot to target in meters, using raw doubles.
@@ -211,6 +257,14 @@ public class ShotCalculator {
     /** Raw double: m/s from rad/s and radius in meters. */
     public static double angularToLinearVelocityMps(double radPerSec, double radiusM) {
         return radPerSec * radiusM;
+    }
+
+    /** Returns drag-compensated drift time: (1 - e^(-c*t)) / c, or t if drag is disabled. */
+    private static double dragCompensatedTOF(double tof) {
+        if (!kDragCoeffTuner.enabled()) return tof;
+        double c = kDragCoeffTuner.get();
+        if (c < 1e-6) return tof;
+        return (1.0 - Math.exp(-c * tof)) / c;
     }
 
     public static double getMinTimeOfFlight() {
@@ -353,8 +407,19 @@ public class ShotCalculator {
 
         double distance = getDistanceToTargetM(robotX, robotY, headingRad, targetX, targetY);
         boolean passing = ShooterCalc.isPassing().getAsBoolean();
+        boolean canTurretShoot = ShooterCalc.canTurretShoot();
         log_isPassingLerp.accept(passing);
-        ShotData shot = passing ? m_passingMap.get(distance) : m_shotMap.get(distance);
+        // ShotData shot = passing ? m_passingMap.get(distance) : m_shotMap.get(distance);
+        ShotData shot = m_shotMap.get(distance);
+        if (passing) {
+            if (canTurretShoot) {
+                shot = m_passingMap.get(distance);
+            } else {
+                shot = m_angryTurretPassingMap.get(distance);
+            }
+        } else {
+            shot = m_shotMap.get(distance);
+        }
         double exitVel = shot.exitVelocity();
         double hoodAngle = shot.hoodAngle();
         double tofSec = passing ? m_timeOfFlightMapPassing.get(distance) : m_timeOfFlightMap.get(distance);
@@ -372,12 +437,22 @@ public class ShotCalculator {
             double prevPredY = predY;
 
             // Inline predictTargetPos — no Translation3d/Time allocation
-            predX = targetX - vx * tofSec;
-            predY = targetY - vy * tofSec;
+            double driftT = dragCompensatedTOF(tofSec);
+            predX = targetX - vx * driftT;
+            predY = targetY - vy * driftT;
 
             distance = getDistanceToTargetM(robotX, robotY, headingRad, predX, predY);
             passing = ShooterCalc.isPassing().getAsBoolean();
-            shot = passing ? m_passingMap.get(distance) : m_shotMap.get(distance);
+            shot = m_shotMap.get(distance);
+            if (passing) {
+                if (canTurretShoot) {
+                    shot = m_passingMap.get(distance);
+                } else {
+                    shot = m_angryTurretPassingMap.get(distance);
+                }
+            } else {
+                shot = m_shotMap.get(distance);
+            }
             exitVel = shot.exitVelocity();
             hoodAngle = shot.hoodAngle();
             tofSec = passing ? m_timeOfFlightMapPassing.get(distance) : m_timeOfFlightMap.get(distance);
