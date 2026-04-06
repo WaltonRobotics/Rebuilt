@@ -28,12 +28,13 @@ import java.util.TreeMap;
 public class ShotCalculator {
     private static final DoubleLogger log_distToTargetMeters = new DoubleLogger("Shooter/Calculator", "distTargetToMeters");
     private static final BooleanLogger log_isPassingLerp = new BooleanLogger("Shooter/Calculator", "isPassingLERP");
+    private static final DoubleLogger log_dragCoefficient = new DoubleLogger("Shooter/Calculator", "dragCoefficient");
 
     private static final double kMetersToInches = 1.0 / 0.0254;
     // Horizontal drag damping: actual drift = v * (1 - e^(-c*t)) / c < v*t
     // c = 0 disables drag compensation. Enable via /ShotCalc/sotmDragCoeff/enabled.
     //YAYAYAYYAYAYAY 2974 IS OUR LUCKY NUMBER HUZZAH YAY YIPPEE
-    private static final WaltTunable kDragCoeffTuner = new WaltTunable("/ShotCalc/sotmDragCoeff", 0.2974, true);
+    // private static final WaltTunable kDragCoeffTuner = new WaltTunable("/ShotCalc/sotmDragCoeff", 0.2974, true);
     // private static final Tracer m_iterativeTracer = new Tracer();
 
     private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
@@ -42,7 +43,6 @@ public class ShotCalculator {
     private static final double minDistance;
     private static final double maxDistance;
 
-    private static final double kRPSReduction = 10.0;
 
     /**
      * Zero-allocation sorted-array interpolation tables replacing InterpolatingTreeMap.
@@ -249,9 +249,11 @@ public class ShotCalculator {
     }
 
     /** Returns drag-compensated drift time: (1 - e^(-c*t)) / c, or t if drag is disabled. */
-    private static double dragCompensatedTOF(double tof) {
-        if (!kDragCoeffTuner.enabled()) return tof;
-        double c = kDragCoeffTuner.get();
+    private static double dragCompensatedTOF(double tof, double dragCoeff) {
+        // if (!kDragCoeffTuner.enabled()) return tof;
+        double c = dragCoeff;
+        // double c = kDragCoeffTuner.get();
+        log_dragCoefficient.accept(c);
         if (c < 1e-6) return tof;
         return (1.0 - Math.exp(-c * tof)) / c;
     }
@@ -396,7 +398,7 @@ public class ShotCalculator {
 
         double distance = getDistanceToTargetM(robotX, robotY, headingRad, targetX, targetY);
         boolean passing = ShooterCalc.isPassing().getAsBoolean();
-        boolean canTurretShoot = ShooterCalc.canTurretShoot();
+        // boolean canTurretShoot = ShooterCalc.canTurretShoot();
         log_isPassingLerp.accept(passing);
 
         // ShotLerpTable shotTable = passing ? (canTurretShoot ? kPassingTable : kAngryTurretTable) : kShotTable;
@@ -418,7 +420,11 @@ public class ShotCalculator {
             double prevPredY = predY;
 
             // Inline predictTargetPos — no Translation3d/Time allocation
-            double driftT = dragCompensatedTOF(tofSec);
+            double coeffDrag = 0.2974;
+            if (distance >= 3.6) {
+                coeffDrag = 0.5;
+            }
+            double driftT = dragCompensatedTOF(tofSec, coeffDrag);
             predX = targetX - vx * driftT;
             predY = targetY - vy * driftT;
 
