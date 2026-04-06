@@ -277,7 +277,12 @@ public class Robot extends TimedRobot {
         trg_shoot
             .and(() -> m_shooter.m_turret.atPosition())
             .and(() -> ShooterCalc.canTurretShoot())
-            .whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
+            .whileTrue(m_superstructure.activateOuttakeShotCalc());
+        
+        trg_shoot
+            .and(() -> m_shooter.m_turret.atPosition())
+            .and(trg_turretInShootRange.negate())
+            .whileTrue(m_superstructure.spinUpFlywheel()); 
 
         m_manipulator.rightTrigger().and(trg_manipOverride)
             .whileTrue(m_intake.setIntakeRollersVelocityCmd(IntakeK.kIntakeRollersBarfVolts).finallyDo(() -> m_intake.setIntakeRollersVelocity(0)));

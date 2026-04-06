@@ -10,6 +10,8 @@ import frc.robot.Constants.IndexerK;
 import frc.robot.Constants.IntakeK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterCalc;
+
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK;
 import java.util.function.BooleanSupplier;
@@ -108,11 +110,16 @@ public class Superstructure extends SubsystemBase {
                 m_indexer.startSpindexerCmd()
             )
         )
-        .finallyDo(
-            () -> {
-                deactivateOuttake();
-            }
-        );
+        .finallyDo(() -> {
+            deactivateOuttake();
+        });
+    }
+
+    public Command spinUpFlywheel() {
+        return m_shooter.shootFromCalc()
+        .finallyDo(() -> {
+            turnOffFlywheel();
+        });
     }
 
     /**
@@ -121,6 +128,10 @@ public class Superstructure extends SubsystemBase {
     public void deactivateOuttake() {
         m_indexer.stopSpindexer();
         m_indexer.stopTunnel();
+        m_shooter.setShooterVelocity(ShooterK.kShooterZeroRPS);
+    }
+
+    public void turnOffFlywheel() {
         m_shooter.setShooterVelocity(ShooterK.kShooterZeroRPS);
     }
 
