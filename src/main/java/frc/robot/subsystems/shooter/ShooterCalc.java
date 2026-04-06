@@ -43,6 +43,8 @@ public class ShooterCalc {
 
     private final Supplier<SwerveDriveState> m_threadsafeSwerveDriveStateSup;
     private final DoubleSupplier m_turretPosRotsSup;
+    private final DoubleSupplier m_pitchRadSup;
+    private final DoubleSupplier m_rollRadSup;
     private final SwerveDriveKinematics m_swerveKinematics = new SwerveDriveKinematics(TunerConstants.moduleTranslations);
 
     private final Pose3dLogger log_globalShotTarget = WaltLogger.logPose3d("ShotCalc", "globalTarget");
@@ -96,9 +98,11 @@ public class ShooterCalc {
     private final Notifier m_notifier = new Notifier(this::calcCallback);
     private final Timer m_calcTimer = new Timer();
 
-    public ShooterCalc(Supplier<SwerveDriveState> threadsafeSwerveDriveStateSup, DoubleSupplier turretPosSup) {
+    public ShooterCalc(Supplier<SwerveDriveState> threadsafeSwerveDriveStateSup, DoubleSupplier turretPosSup, DoubleSupplier pitchRadSup, DoubleSupplier rollRadSup) {
         m_threadsafeSwerveDriveStateSup = threadsafeSwerveDriveStateSup;
         m_turretPosRotsSup = turretPosSup;
+        m_pitchRadSup = pitchRadSup;
+        m_rollRadSup = rollRadSup;
         log.accept(new Pose2d(kHubPassOverTarget.getX(), kHubPassOverTarget.getY(), Rotation2d.kZero));
 
         m_notifier.setName("ShooterCalc");
@@ -151,8 +155,11 @@ public class ShooterCalc {
             m_swerveKinematics.toChassisSpeeds(swerveState.ModuleStates), robotPose.getRotation());
         double turretPositionRots = m_turretPosRotsSup.getAsDouble();
 
+        double pitchRad = m_pitchRadSup.getAsDouble();
+        double rollRad = m_rollRadSup.getAsDouble();
+
         m_aimTarget = calculateTarget(robotPose);
-        m_shotCalcOutputs = calcShot(robotPose, m_useStaticShot, m_aimTarget, turretPositionRots, robotChassisSpeeds);
+        m_shotCalcOutputs = calcShot(robotPose, m_useStaticShot, m_aimTarget, turretPositionRots, robotChassisSpeeds, pitchRad, rollRad);
         refreshCanTurretShoot();
 
         // Logging
@@ -320,7 +327,9 @@ public class ShooterCalc {
         boolean staticShot,
         Translation3d target,
         double turretPositionRots,
-        ChassisSpeeds chassisSpeeds
+        ChassisSpeeds chassisSpeeds,
+        double pitchRad,
+        double rollRad
     ) {
         // How fast the robot is currently going, (CURRENT ROBOT VELOCITY)
         // double speedMps = Math.hypot(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond);
@@ -336,6 +345,26 @@ public class ShooterCalc {
         double turretReferenceRots = azCalcDetails.turretReferenceRots();
         double hoodReferenceRots = calculatedShot.hoodAngle() / (2.0 * Math.PI);
         double shooterReferenceRPS = calculatedShot.exitVelocity() / (2.0 * Math.PI);
+
+        // Pitch/roll tilt compensation: adjust hood and turret to maintain
+        // correct world-frame launch direction when the robot is on uneven ground.
+        if (ShooterK.kRollPitchAdjEnabled) {
+            double turretRelRad = kTurretAngleOffsetRad + turretReferenceRots * 2.0 * Math.PI;
+
+            // Tilt component along the shot direction changes effective launch elevation
+            double elevationShiftRad = pitchRad * Math.cos(turretRelRad) + rollRad * Math.sin(turretRelRad);
+            // Tilt component perpendicular to the shot causes lateral deflection
+            double lateralShiftRad = -pitchRad * Math.sin(turretRelRad) + rollRad * Math.cos(turretRelRad);
+
+            hoodReferenceRots -= elevationShiftRad / (2.0 * Math.PI);
+
+            double launchAngleRad = calculatedShot.hoodAngle();
+            double cosLaunch = Math.cos(Math.PI / 2.0 - launchAngleRad);
+            if (Math.abs(cosLaunch) > 1e-3) {
+                turretReferenceRots -= (lateralShiftRad / cosLaunch) / (2.0 * Math.PI);
+            }
+        }
+
         return new ShotCalcOutputs(
             azCalcDetails, calculatedShot, turretReferenceRots, hoodReferenceRots, shooterReferenceRPS);
     }

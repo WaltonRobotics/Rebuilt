@@ -42,6 +42,8 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.vision.Detection;
+import frc.robot.Constants;
+import frc.util.SignalManager;
 import frc.util.WaltDriverStation;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -80,6 +82,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         .withSteerRequestType(SteerRequestType.Position);
 
     private final Detection detection = new Detection();
+
+    private final StatusSignal<Angle> sig_pigeonPitch = getPigeon2().getPitch();
+    private final StatusSignal<Angle> sig_pigeonRoll = getPigeon2().getRoll();
 
     private final DoubleLogger log_absoluteRobotSpeed = new WaltLogger.DoubleLogger("Swerve", "absoluteRobotSpeed");
 
@@ -163,6 +168,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         SwerveModuleConstants<?, ?, ?>... modules
     ) {
         super(drivetrainConstants, modules);
+        registerPigeonSignals();
         if (Utils.isSimulation()) {
             startSimThread();
         }
@@ -187,6 +193,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         SwerveModuleConstants<?, ?, ?>... modules
     ) {
         super(drivetrainConstants, odometryUpdateFrequency, modules);
+        registerPigeonSignals();
         if (Utils.isSimulation()) {
             startSimThread();
         }
@@ -219,9 +226,14 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         SwerveModuleConstants<?, ?, ?>... modules
     ) {
         super(drivetrainConstants, odometryUpdateFrequency, odometryStandardDeviation, visionStandardDeviation, modules);
+        registerPigeonSignals();
         if (Utils.isSimulation()) {
             startSimThread();
         }
+    }
+
+    private void registerPigeonSignals() {
+        SignalManager.register(Constants.kCanivoreBus, sig_pigeonPitch, sig_pigeonRoll);
     }
 
     /**
@@ -488,6 +500,14 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             fuelLocation.getY(),
             desiredRotation
         );
+    }
+
+    public double getPitchRad() {
+        return sig_pigeonPitch.getValue().in(Radians);
+    }
+
+    public double getRollRad() {
+        return sig_pigeonRoll.getValue().in(Radians);
     }
 
     public boolean isBeached() {

@@ -89,9 +89,11 @@ public class Robot extends TimedRobot {
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
 
     private final Shooter m_shooter = new Shooter(
-        () -> m_drivetrain.getState().Pose, 
+        () -> m_drivetrain.getState().Pose,
         () -> m_drivetrain.getStateCopy(),
-        () -> m_drivetrain.getChassisSpeeds());
+        () -> m_drivetrain.getChassisSpeeds(),
+        m_drivetrain::getPitchRad,
+        m_drivetrain::getRollRad);
 
     private final Intake m_intake = new Intake();
     private final Indexer m_indexer = new Indexer();

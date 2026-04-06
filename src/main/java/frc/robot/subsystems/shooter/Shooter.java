@@ -37,6 +37,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import frc.robot.Constants;
@@ -132,11 +133,11 @@ public class Shooter extends SubsystemBase {
     private final DoubleLogger log_driverAddedRPS = WaltLogger.logDouble(kLogTab, "driverAddedRPS");
 
     /* CONSTRUCTOR */
-    public Shooter(Supplier<Pose2d> poseSupplier, Supplier<SwerveDriveState> threadsafeSwerveStateSup, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
+    public Shooter(Supplier<Pose2d> poseSupplier, Supplier<SwerveDriveState> threadsafeSwerveStateSup, Supplier<ChassisSpeeds> fieldSpeedsSupplier, DoubleSupplier pitchRadSup, DoubleSupplier rollRadSup) {
         m_hood = new Hood();
         m_turret = new Turret();
         m_threadsafeSwerveSup = threadsafeSwerveStateSup;
-        m_shooterCalc = new ShooterCalc(m_threadsafeSwerveSup, () -> m_latestTurretPositionRots);
+        m_shooterCalc = new ShooterCalc(m_threadsafeSwerveSup, () -> m_latestTurretPositionRots, pitchRadSup, rollRadSup);
 
         m_shooterCalc.shouldUseStaticShot(kUseStaticShot);
 

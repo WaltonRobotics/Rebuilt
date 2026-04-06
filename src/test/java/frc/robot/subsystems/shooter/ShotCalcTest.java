@@ -443,51 +443,51 @@ class ShotCalcTest {
         @Test
         void staticShot_close_returnsValidOutputs() {
             ShotCalcOutputs out = ShooterCalc.calcShot(
-                CLOSE_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
+                CLOSE_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS, 0.0, 0.0);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void staticShot_mid_returnsValidOutputs() {
             ShotCalcOutputs out = ShooterCalc.calcShot(
-                MID_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
+                MID_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS, 0.0, 0.0);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void staticShot_far_returnsValidOutputs() {
             ShotCalcOutputs out = ShooterCalc.calcShot(
-                FAR_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
+                FAR_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS, 0.0, 0.0);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void dynamicShot_translating_returnsValidOutputs() {
             ShotCalcOutputs out = ShooterCalc.calcShot(
-                MID_POSE, false, HUB_TARGET, 0.0, TRANSLATING_SPEEDS);
+                MID_POSE, false, HUB_TARGET, 0.0, TRANSLATING_SPEEDS, 0.0, 0.0);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void dynamicShot_rotating_returnsValidOutputs() {
             ShotCalcOutputs out = ShooterCalc.calcShot(
-                MID_POSE, false, HUB_TARGET, 0.0, ROTATING_SPEEDS);
+                MID_POSE, false, HUB_TARGET, 0.0, ROTATING_SPEEDS, 0.0, 0.0);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void dynamicShot_combined_returnsValidOutputs() {
             ShotCalcOutputs out = ShooterCalc.calcShot(
-                MID_POSE, false, HUB_TARGET, 0.1, COMBINED_SPEEDS);
+                MID_POSE, false, HUB_TARGET, 0.1, COMBINED_SPEEDS, 0.0, 0.0);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void staticVsDynamic_sameWhenStationary() {
             ShotCalcOutputs staticOut = ShooterCalc.calcShot(
-                MID_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
+                MID_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS, 0.0, 0.0);
             ShotCalcOutputs dynamicOut = ShooterCalc.calcShot(
-                MID_POSE, false, HUB_TARGET, 0.0, ZERO_SPEEDS);
+                MID_POSE, false, HUB_TARGET, 0.0, ZERO_SPEEDS, 0.0, 0.0);
             // With zero chassis speeds, static and dynamic should produce identical results
             assertEquals(
                 staticOut.shooterReferenceRps(),
@@ -506,9 +506,9 @@ class ShotCalcTest {
         @Test
         void farShot_higherVelocityThanClose() {
             ShotCalcOutputs closeOut = ShooterCalc.calcShot(
-                CLOSE_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
+                CLOSE_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS, 0.0, 0.0);
             ShotCalcOutputs farOut = ShooterCalc.calcShot(
-                FAR_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
+                FAR_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS, 0.0, 0.0);
             assertTrue(
                 farOut.shooterReferenceRps() >
                 closeOut.shooterReferenceRps(),

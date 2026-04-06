@@ -83,6 +83,7 @@ public class Constants {
         public static final Angle kTurretBarfPos = Rotations.of(-0.113);
 
         public static final boolean kUseStaticShot = false;
+        public static final boolean kRollPitchAdjEnabled = true;
 
         // private static final Pose3dLogger log_turretTransform = WaltLogger.logPose3d(kLogTab, "TurretTransformRaw");
         // static {
