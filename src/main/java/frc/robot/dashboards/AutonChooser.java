@@ -13,17 +13,17 @@ public class AutonChooser {
     public static WaltAdaptableAutonFactory m_adaptableAutonFactory;
 
     //---AUTON NAMES
-    private final static String kRightShootAndSweep = "RIGHT Sweep 1.5 Cycle";
     private final static String kLeftShootAndSweep = "LEFT Sweep 1.5 Cycle";
+    private final static String kRightShootAndSweep = "RIGHT Sweep 1.5 Cycle";
     private final static String kLeftShootAndPass = "LEFT Pass 1.5 Cycle";
     private final static String kRightShootAndPass = "RIGHT Pass 1.5 Cycle";
     private final static String kLeftTwoCycle = "LEFT Bump 2 Cycle";
     private final static String kRightTwoCycle = "RIGHT Bump 2 Cycle";
-    private final static String kRightHubCircle = "RIGHT Hub Circle";
-    private final static String kRightTrenchTwoCycle = "RIGHT Trench 2 Cycle";
     private final static String kLeftTrenchTwoCycle = "LEFT Trench 2 Cycle";
+    private final static String kRightTrenchTwoCycle = "RIGHT Trench 2 Cycle";
     private final static String kLeftDefenseOneCycle = "LEFT Defense";
     private final static String kRightDefenseOneCycle = "RIGHT Defense";
+    private final static String kRightHubCircle = "RIGHT Hub Circle";
 
 
     public static void initialize(WaltAdaptableAutonFactory adaptableAutonFactory) {
