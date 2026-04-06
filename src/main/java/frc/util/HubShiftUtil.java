@@ -52,6 +52,16 @@ public class HubShiftUtil {
   private static final boolean[] activeSchedule = {true, true, false, true, false, true};
   private static final boolean[] inactiveSchedule = {true, false, true, false, true, true};
 
+  // Pre-computed shifted time arrays (all values are constants, no need to reallocate each call)
+  private static final double[] kShiftedStartActive = {0.0, 10.0, 35.0 + endingActiveFudge, 60.0 + approachingActiveFudge, 85.0 + endingActiveFudge, 110.0 + approachingActiveFudge};
+  private static final double[] kShiftedEndActive = {10.0, 35.0 + endingActiveFudge, 60.0 + approachingActiveFudge, 85.0 + endingActiveFudge, 110.0 + approachingActiveFudge, 140.0};
+  private static final double[] kShiftedStartInactive = {0.0, 10.0 + endingActiveFudge, 35.0 + approachingActiveFudge, 60.0 + endingActiveFudge, 85.0 + approachingActiveFudge, 110.0};
+  private static final double[] kShiftedEndInactive = {10.0 + endingActiveFudge, 35.0 + approachingActiveFudge, 60.0 + endingActiveFudge, 85.0 + approachingActiveFudge, 110.0, 140.0};
+  private static final double[] kComebackStartActive = {0.0, 10.0, 35.0 + endingActiveComeback, 60.0 + approachingActiveComeback, 85.0 + endingActiveComeback, 110.0 + approachingActiveComeback};
+  private static final double[] kComebackEndActive = {10.0, 35.0 + endingActiveComeback, 60.0 + approachingActiveComeback, 85.0 + endingActiveComeback, 110.0 + approachingActiveComeback, 140.0};
+  private static final double[] kComebackStartInactive = {0.0, 10.0 + endingActiveComeback, 35.0 + approachingActiveComeback, 60.0 + endingActiveComeback, 85.0 + approachingActiveComeback, 110.0};
+  private static final double[] kComebackEndInactive = {10.0 + endingActiveComeback, 35.0 + approachingActiveComeback, 60.0 + endingActiveComeback, 85.0 + approachingActiveComeback, 110.0, 140.0};
+
   private static Supplier<Optional<Boolean>> allianceWinOverride = () -> Optional.empty();
 
   public static Optional<Boolean> setAllianceWinOverride() {
@@ -63,7 +73,7 @@ public class HubShiftUtil {
   }
 
   public static Alliance getFirstActiveAlliance() {
-    var alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+    var alliance = WaltDriverStation.getAlliance().orElse(Alliance.Blue);
 
     // Return override value
     var winOverride = getAllianceWinOverride();
@@ -97,7 +107,7 @@ public class HubShiftUtil {
     boolean[] currentSchedule;
     Alliance startAlliance = getFirstActiveAlliance();
     currentSchedule =
-        startAlliance == DriverStation.getAlliance().orElse(Alliance.Blue)
+        startAlliance == WaltDriverStation.getAlliance().orElse(Alliance.Blue)
             ? activeSchedule
             : inactiveSchedule;
     return currentSchedule;
@@ -160,86 +170,16 @@ public class HubShiftUtil {
 
   public static ShiftInfo getComebackShiftInfo() {
     boolean[] shiftSchedule = getSchedule();
-    // Starting active
-    if (shiftSchedule[1] == true) {
-      double[] shiftedShiftStartTimes = {
-        0.0,
-        10.0,
-        35.0 + endingActiveComeback,
-        60.0 + approachingActiveComeback,
-        85.0 + endingActiveComeback,
-        110.0 + approachingActiveComeback
-      };
-      double[] shiftedShiftEndTimes = {
-        10.0,
-        35.0 + endingActiveComeback,
-        60.0 + approachingActiveComeback,
-        85.0 + endingActiveComeback,
-        110.0 + approachingActiveComeback,
-        140.0
-      };
-      return getShiftInfo(shiftSchedule, shiftedShiftStartTimes, shiftedShiftEndTimes);
-    }
-    double[] shiftedShiftStartTimes = {
-      0.0,
-      10.0 + endingActiveComeback,
-      35.0 + approachingActiveComeback,
-      60.0 + endingActiveComeback,
-      85.0 + approachingActiveComeback,
-      110.0
-    };
-    double[] shiftedShiftEndTimes = {
-      10.0 + endingActiveComeback,
-      35.0 + approachingActiveComeback,
-      60.0 + endingActiveComeback,
-      85.0 + approachingActiveComeback,
-      110.0,
-      140.0
-    };
-    return getShiftInfo(shiftSchedule, shiftedShiftStartTimes, shiftedShiftEndTimes);
-    // }
+    return shiftSchedule[1]
+        ? getShiftInfo(shiftSchedule, kComebackStartActive, kComebackEndActive)
+        : getShiftInfo(shiftSchedule, kComebackStartInactive, kComebackEndInactive);
   }
 
-    public static ShiftInfo getShiftedShiftInfo() {
+  public static ShiftInfo getShiftedShiftInfo() {
     boolean[] shiftSchedule = getSchedule();
-    // Starting active
-    if (shiftSchedule[1] == true) {
-      double[] shiftedShiftStartTimes = {
-        0.0,
-        10.0,
-        35.0 + endingActiveFudge,
-        60.0 + approachingActiveFudge,
-        85.0 + endingActiveFudge,
-        110.0 + approachingActiveFudge
-      };
-      double[] shiftedShiftEndTimes = {
-        10.0,
-        35.0 + endingActiveFudge,
-        60.0 + approachingActiveFudge,
-        85.0 + endingActiveFudge,
-        110.0 + approachingActiveFudge,
-        140.0
-      };
-      return getShiftInfo(shiftSchedule, shiftedShiftStartTimes, shiftedShiftEndTimes);
-    }
-    double[] shiftedShiftStartTimes = {
-      0.0,
-      10.0 + endingActiveFudge,
-      35.0 + approachingActiveFudge,
-      60.0 + endingActiveFudge,
-      85.0 + approachingActiveFudge,
-      110.0
-    };
-    double[] shiftedShiftEndTimes = {
-      10.0 + endingActiveFudge,
-      35.0 + approachingActiveFudge,
-      60.0 + endingActiveFudge,
-      85.0 + approachingActiveFudge,
-      110.0,
-      140.0
-    };
-    return getShiftInfo(shiftSchedule, shiftedShiftStartTimes, shiftedShiftEndTimes);
-    // }
+    return shiftSchedule[1]
+        ? getShiftInfo(shiftSchedule, kShiftedStartActive, kShiftedEndActive)
+        : getShiftInfo(shiftSchedule, kShiftedStartInactive, kShiftedEndInactive);
   }
   /**
    * Determines whether the robot can prefire optimally in such a manner that you shoot before the hub turns active,

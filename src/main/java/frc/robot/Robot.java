@@ -276,7 +276,7 @@ public class Robot extends TimedRobot {
         // DRIVER SHOOTING 
         trg_shoot
             .and(() -> m_shooter.m_turret.atPosition())
-            .and(() -> ShooterCalc.canTurretShoot())
+            // .and(() -> ShooterCalc.canTurretShoot())
             .whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
 
         m_manipulator.rightTrigger().and(trg_manipOverride)
