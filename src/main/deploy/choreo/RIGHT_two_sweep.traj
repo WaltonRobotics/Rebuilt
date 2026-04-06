@@ -258,5 +258,6 @@
   "splits":[0]
  },
  "events":[
-   {"name":"shoot", "from":{"target":3, "targetTimestamp":4.51471, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"shoot"}}}]
+   {"name":"stopShoot", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0.1 s", "val":0.1}}, "event":{"type":"named", "data":{"name":"stopShoot"}}},
+   {"name":"intake", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0.25 s", "val":0.25}}, "event":{"type":"named", "data":{"name":"intake"}}}]
 }

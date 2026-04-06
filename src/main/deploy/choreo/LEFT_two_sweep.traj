@@ -217,6 +217,5 @@
  },
  "events":[
    {"name":"intake", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0.25 s", "val":0.25}}, "event":{"type":"named", "data":{"name":"intake"}}},
-   {"name":"pass", "from":{"target":2, "targetTimestamp":1.69244, "offset":{"exp":"-0.1 s", "val":-0.1}}, "event":{"type":"named", "data":{"name":"pass"}}},
    {"name":"stopShoot", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0.1 s", "val":0.1}}, "event":{"type":"named", "data":{"name":"stopShoot"}}}]
 }

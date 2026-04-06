@@ -631,19 +631,23 @@ public class Constants {
         //---FIRST CYCLES
         public static final String kRightOneJab = "RIGHT_one_jab";
         public static final String kRightOneTrench = "RIGHT_one_trench";
+        public static final String kRightOneDefense = "RIGHT_one_defense";
 
         //---SECOND CYCLES
         public static final String kRightTwoDepot = "RIGHT_two_depot";
         public static final String kRightTwoSweep = "RIGHT_two_sweep";
+        public static final String kRightTwoPassing = "RIGHT_two_passing";
         public static final String kRightTwoJab = "RIGHT_two_jab";
 
         //---FIRST CYCLES
         public static final String kLeftOneJab = "LEFT_one_jab";
         public static final String kLeftOneTrench = "LEFT_one_trench";
+        public static final String kLeftOneDefense = "LEFT_one_defense";
 
         //---SECOND CYCLES
         public static final String kLeftTwoDepot = "LEFT_two_depot";
         public static final String kLeftTwoSweep = "LEFT_two_sweep";
+        public static final String kLeftTwoPassing = "LEFT_two_passing";
         public static final String kLeftTwoJab = "LEFT_two_jab";
 
         //---MISC
