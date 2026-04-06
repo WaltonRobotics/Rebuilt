@@ -260,7 +260,7 @@ public class Robot extends TimedRobot {
 
         //---NORMAL SEQUENCES
         //Intake
-        trg_intake.and(trg_shoot.negate()).whileTrue(
+        trg_intake.and(trg_shoot.negate()).and(trg_emergencyBarf.negate()).whileTrue(
             m_superstructure.intake(() -> false)
         );
 
@@ -276,7 +276,7 @@ public class Robot extends TimedRobot {
         // DRIVER SHOOTING 
         trg_shoot
             .and(() -> m_shooter.m_turret.atPosition())
-            // .and(() -> ShooterCalc.canTurretShoot())
+            .and(() -> ShooterCalc.canTurretShoot())
             .whileTrue(m_superstructure.activateOuttakeShotCalc());    //comment out for LERP with above
 
         m_manipulator.rightTrigger().and(trg_manipOverride)
@@ -292,7 +292,7 @@ public class Robot extends TimedRobot {
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
 
-        trg_intake.and(trg_shoot).whileTrue(
+        trg_intake.and(trg_shoot).and(trg_emergencyBarf.negate()).whileTrue(
             m_superstructure.intake(() -> true)
         );
 

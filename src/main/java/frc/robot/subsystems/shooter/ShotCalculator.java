@@ -32,7 +32,8 @@ public class ShotCalculator {
     private static final double kMetersToInches = 1.0 / 0.0254;
     // Horizontal drag damping: actual drift = v * (1 - e^(-c*t)) / c < v*t
     // c = 0 disables drag compensation. Enable via /ShotCalc/sotmDragCoeff/enabled.
-    private static final WaltTunable kDragCoeffTuner = new WaltTunable("/ShotCalc/sotmDragCoeff", 0.36, true);
+    //YAYAYAYYAYAYAY 2974 IS OUR LUCKY NUMBER HUZZAH YAY YIPPEE
+    private static final WaltTunable kDragCoeffTuner = new WaltTunable("/ShotCalc/sotmDragCoeff", 0.2974, true);
     // private static final Tracer m_iterativeTracer = new Tracer();
 
     private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
@@ -126,41 +127,41 @@ public class ShotCalculator {
 
         //THIS IS ONLY USED IF THE TURRET IS IN A POSITION THAT IS UNABLE TO SHOOT WITH HOOD UP DURING PASSING
         //NO ANGRY PASSING IN OPPOSING ALLIANCE ZONE
-        angry.add(7.574, 92.5, 0.08, 2.08);
-        angry.add(7.135, 86, 0.08, 2.06);
-        angry.add(6.653, 81, 0.08, 2.04);
-        angry.add(6.254, 78, 0.08, 2.02);
-        //note that the points above have spoofed tofs
-        angry.add(5.672, 82.50 - kRPSReduction, 0.08, 2.11);
-        angry.add(5.321, 81.00 - kRPSReduction, 0.08, 1.94);
-        angry.add(5.223, 75.75 - kRPSReduction, 0.08, 1.79);
-        angry.add(5.167, 79.50 - kRPSReduction, 0.08, 2.03);
-        angry.add(4.996, 78.00 - kRPSReduction, 0.08, 1.97);
-        angry.add(4.869, 76.50 - kRPSReduction, 0.08, 1.80);
-        angry.add(4.696, 75.00 - kRPSReduction, 0.08, 1.33);
-        angry.add(4.546, 73.50 - kRPSReduction, 0.08, 1.83);
-        angry.add(4.402, 72.50 - kRPSReduction, 0.08, 1.85);
-        angry.add(4.258, 71.00 - kRPSReduction, 0.08, 1.64);
-        angry.add(4.098, 69.00 - kRPSReduction, 0.08, 1.58);
-        angry.add(3.932, 68.00 - kRPSReduction, 0.08, 1.71);
-        angry.add(3.785, 66.90 - kRPSReduction, 0.08, 1.56);
-        angry.add(3.611, 65.40 - kRPSReduction, 0.08, 1.56);
-        angry.add(3.464, 63.90 - kRPSReduction, 0.08, 1.50);
-        angry.add(3.293, 62.40 - kRPSReduction, 0.08, 1.50);
-        angry.add(3.134, 60.90 - kRPSReduction, 0.08, 1.51);
-        angry.add(2.995, 59.40 - kRPSReduction, 0.08, 1.37);
-        angry.add(2.855, 57.90 - kRPSReduction, 0.08, 1.35);
-        angry.add(2.704, 56.40 - kRPSReduction, 0.08, 1.38);
-        angry.add(2.586, 54.90 - kRPSReduction, 0.08, 1.28);
-        angry.add(2.395, 53.50 - kRPSReduction, 0.08, 1.29);
-        angry.add(2.221, 52.00 - kRPSReduction, 0.08, 1.25);
-        angry.add(2.083, 50.50 - kRPSReduction, 0.08, 1.14);
-        angry.add(1.912, 49.00 - kRPSReduction, 0.08, 1.19);
-        angry.add(1.691, 47.50 - kRPSReduction, 0.08, 0.98);
-        angry.add(1.575, 47.50 - kRPSReduction, 0.08, 1.18);
-        angry.add(1.528, 46.00 - kRPSReduction, 0.08, 1.20);
-        angry.add(1.307, 44.50 - kRPSReduction, 0.08, 1.13);
-        angry.add(1.168, 44.50 - kRPSReduction, 0.08, 1.16);
+        // angry.add(7.574, 92.5, 0.08, 2.08);
+        // angry.add(7.135, 86, 0.08, 2.06);
+        // angry.add(6.653, 81, 0.08, 2.04);
+        // angry.add(6.254, 78, 0.08, 2.02);
+        // //note that the points above have spoofed tofs
+        // angry.add(5.672, 82.50 - kRPSReduction, 0.08, 2.11);
+        // angry.add(5.321, 81.00 - kRPSReduction, 0.08, 1.94);
+        // angry.add(5.223, 75.75 - kRPSReduction, 0.08, 1.79);
+        // angry.add(5.167, 79.50 - kRPSReduction, 0.08, 2.03);
+        // angry.add(4.996, 78.00 - kRPSReduction, 0.08, 1.97);
+        // angry.add(4.869, 76.50 - kRPSReduction, 0.08, 1.80);
+        // angry.add(4.696, 75.00 - kRPSReduction, 0.08, 1.33);
+        // angry.add(4.546, 73.50 - kRPSReduction, 0.08, 1.83);
+        // angry.add(4.402, 72.50 - kRPSReduction, 0.08, 1.85);
+        // angry.add(4.258, 71.00 - kRPSReduction, 0.08, 1.64);
+        // angry.add(4.098, 69.00 - kRPSReduction, 0.08, 1.58);
+        // angry.add(3.932, 68.00 - kRPSReduction, 0.08, 1.71);
+        // angry.add(3.785, 66.90 - kRPSReduction, 0.08, 1.56);
+        // angry.add(3.611, 65.40 - kRPSReduction, 0.08, 1.56);
+        // angry.add(3.464, 63.90 - kRPSReduction, 0.08, 1.50);
+        // angry.add(3.293, 62.40 - kRPSReduction, 0.08, 1.50);
+        // angry.add(3.134, 60.90 - kRPSReduction, 0.08, 1.51);
+        // angry.add(2.995, 59.40 - kRPSReduction, 0.08, 1.37);
+        // angry.add(2.855, 57.90 - kRPSReduction, 0.08, 1.35);
+        // angry.add(2.704, 56.40 - kRPSReduction, 0.08, 1.38);
+        // angry.add(2.586, 54.90 - kRPSReduction, 0.08, 1.28);
+        // angry.add(2.395, 53.50 - kRPSReduction, 0.08, 1.29);
+        // angry.add(2.221, 52.00 - kRPSReduction, 0.08, 1.25);
+        // angry.add(2.083, 50.50 - kRPSReduction, 0.08, 1.14);
+        // angry.add(1.912, 49.00 - kRPSReduction, 0.08, 1.19);
+        // angry.add(1.691, 47.50 - kRPSReduction, 0.08, 0.98);
+        // angry.add(1.575, 47.50 - kRPSReduction, 0.08, 1.18);
+        // angry.add(1.528, 46.00 - kRPSReduction, 0.08, 1.20);
+        // angry.add(1.307, 44.50 - kRPSReduction, 0.08, 1.13);
+        // angry.add(1.168, 44.50 - kRPSReduction, 0.08, 1.16);
 
         kShotTable = shot.build();
         kPassingTable = passing.build();
@@ -398,7 +399,8 @@ public class ShotCalculator {
         boolean canTurretShoot = ShooterCalc.canTurretShoot();
         log_isPassingLerp.accept(passing);
 
-        ShotLerpTable shotTable = passing ? (canTurretShoot ? kPassingTable : kAngryTurretTable) : kShotTable;
+        // ShotLerpTable shotTable = passing ? (canTurretShoot ? kPassingTable : kAngryTurretTable) : kShotTable;
+        ShotLerpTable shotTable = passing ? kPassingTable : kShotTable;
         double exitVel = shotTable.exitVelocity(distance);
         double hoodAngle = shotTable.hoodAngle(distance);
         double tofSec = passing ? kPassingTable.tof(distance) : kShotTable.tof(distance);
@@ -422,7 +424,8 @@ public class ShotCalculator {
 
             distance = getDistanceToTargetM(robotX, robotY, headingRad, predX, predY);
             passing = ShooterCalc.isPassing().getAsBoolean();
-            shotTable = passing ? (canTurretShoot ? kPassingTable : kAngryTurretTable) : kShotTable;
+            // shotTable = passing ? (canTurretShoot ? kPassingTable : kAngryTurretTable) : kShotTable;
+            shotTable = passing ? kPassingTable : kShotTable;
             exitVel = shotTable.exitVelocity(distance);
             hoodAngle = shotTable.hoodAngle(distance);
             tofSec = passing ? kPassingTable.tof(distance) : kShotTable.tof(distance);

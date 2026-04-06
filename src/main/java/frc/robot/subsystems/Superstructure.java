@@ -131,6 +131,7 @@ public class Superstructure extends SubsystemBase {
         return Commands.startEnd(
             () -> {
                 m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
+                m_shooter.m_turret.lockAndSetTurretLockPos(ShooterK.kTurretBarfPos.magnitude());
                 m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS);
                 m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS);
                 m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
@@ -138,7 +139,7 @@ public class Superstructure extends SubsystemBase {
             },
             () -> {
                 m_intake.setIntakeRollersVelocity(0);
-                m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
+                m_shooter.m_turret.setTurretLock(false);
                 m_shooter.setShooterVelocity(RotationsPerSecond.zero());
                 m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
                 m_indexer.setTunnelVelocity(RotationsPerSecond.zero());

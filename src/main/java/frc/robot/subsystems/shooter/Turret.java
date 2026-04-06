@@ -105,6 +105,11 @@ public class Turret extends SubsystemBase {
         }
     }
 
+    public void lockAndSetTurretLockPos(double lockPos) {
+        m_turretLocked = true;
+        m_turretLockAngleRots = lockPos;
+    }
+
     public Command setTurretLockCmd(boolean locked) {
         return runOnce(() -> setTurretLock(locked));
     }

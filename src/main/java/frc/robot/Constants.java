@@ -80,6 +80,7 @@ public class Constants {
         public static final Transform3d kTurretTransformNoRotation = new Transform3d(kTurretTranslation, Rotation3d.kZero);
         public static final Transform3d kTurretTransform = new Transform3d(kTurretTranslation, kTurretAngleOffset3d);
         public static final Distance kInchesAboveFunnel = Inches.of(20);// distance the ball must travel above the funnel opening to arc correctly into the hub
+        public static final Angle kTurretBarfPos = Rotations.of(-0.113);
 
         public static final boolean kUseStaticShot = false;
 
@@ -120,7 +121,7 @@ public class Constants {
         public static final double kHubShotZoneTopX = FieldConstants.Hub.blueInnerCenterPoint.getX() + 3;
         public static final double kHubShotZoneRightY = Meters.of(3.2).baseUnitMagnitude();
         public static final double kHubShotZoneLeftY = FieldConstants.fieldWidth - 3.2;
-        public static final Translation3d kHubPassOverTarget = FieldConstants.Hub.blueInnerCenterPoint.plus(new Translation3d(-2.5, 0, 0));
+        public static final Translation3d kHubPassOverTarget = FieldConstants.Hub.blueInnerCenterPoint.plus(new Translation3d(-5, 0, 0));
         
         public static final double kShooterTimeout = 1.0;
         public static final double kBallDetectedDebounceTime = 0.9;
@@ -146,7 +147,7 @@ public class Constants {
         public static final AngularVelocity kShooterMaxRPS = MotorK.kX44MaxVelocity.div(kShooterGearing);
         public static final double kShooterMaxRPSd = kShooterMaxRPS.in(RotationsPerSecond);
         public static final AngularVelocity kShooterRPS = kShooterMaxRPS.times(0.65);   //Kraken X44 Max RPM: 7758
-        public static final double kShooterRPSd = 59.40;
+        public static final double kShooterRPSd = 53.50;
         public static final AngularVelocity kShooterAutonCloseRPS = kShooterMaxRPS.times(0.60);  //auton pose is closer to the hub than teleop scoring
         public static final AngularVelocity kShooterAuton_EndSweep_RPS = kShooterMaxRPS.times(0.70); // end of sweep paths
         public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.31);
@@ -418,7 +419,7 @@ public class Constants {
         public static final Distance kRobotFullWidth = Inches.of(33.6875);
         public static final Distance kRobotFullLength = Inches.of(32.6875);
         public static final Distance kBumperHeight = Inches.of(4.5);
-        public static final double kRobotSpeedIntakingLimit = 0.4;
+        public static final double kRobotSpeedIntakingLimit = 0.31;
     }
 
     public static class SuperstructureK {
@@ -628,24 +629,24 @@ public class Constants {
         public static final double kSweepShootingTimeout = 20;
 
         //---FIRST CYCLES
-        public static final String kJabRightOne = "RIGHT_one_jab";
-        public static final String kTrenchRightOne = "RIGHT_one_trench";
+        public static final String kRightOneJab = "RIGHT_one_jab";
+        public static final String kRightOneTrench = "RIGHT_one_trench";
 
         //---SECOND CYCLES
-        public static final String kDepotRightTwo = "RIGHT_two_depot";
-        public static final String kSweepRightTwo = "RIGHT_two_sweep";
-        public static final String kJabRightTwo = "RIGHT_two_jab";
+        public static final String kRightTwoDepot = "RIGHT_two_depot";
+        public static final String kRightTwoSweep = "RIGHT_two_sweep";
+        public static final String kRightTwoJab = "RIGHT_two_jab";
 
         //---FIRST CYCLES
-        public static final String kJabLeftOne = "LEFT_one_jab";
-        public static final String kTrenchLeftOne = "LEFT_one_trench";
+        public static final String kLeftOneJab = "LEFT_one_jab";
+        public static final String kLeftOneTrench = "LEFT_one_trench";
 
         //---SECOND CYCLES
-        public static final String kDepotLeftTwo = "LEFT_two_depot";
-        public static final String kSweepLeftTwo = "LEFT_two_sweep";
-        public static final String kJabLeftTwo = "LEFT_two_jab";
+        public static final String kLeftTwoDepot = "LEFT_two_depot";
+        public static final String kLeftTwoSweep = "LEFT_two_sweep";
+        public static final String kLeftTwoJab = "LEFT_two_jab";
 
         //---MISC
-        public static final String kRightHubCircle = "RIGHT_one_circle";
+        public static final String kRightOneCircle = "RIGHT_one_circle";
     }
 }
