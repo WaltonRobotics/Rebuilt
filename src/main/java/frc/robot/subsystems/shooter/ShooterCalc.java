@@ -14,10 +14,10 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import frc.util.WaltDriverStation;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.WpiK;
 import frc.robot.generated.TunerConstants;
@@ -67,6 +67,15 @@ public class ShooterCalc {
     private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
     private static final double kBlueHubCenterX = AllianceZoneUtil.blueHubCenter.getX();
     private static final double kCenterFieldYM = AllianceZoneUtil.centerField_y_pos.baseUnitMagnitude();
+
+    // Precomputed passing targets — values are constants so no need to allocate each callback
+    private static final Translation3d kLeftPassTarget =
+        new Translation3d(ShooterK.kPassingXAsDouble, FieldConstants.fieldWidth - 2, 0);
+    private static final Translation3d kRightPassTarget =
+        new Translation3d(ShooterK.kPassingXAsDouble, 2, 0);
+
+    // Pre-allocated ballTrajectory log buffer — reused each callback to avoid array allocation
+    private static final Translation3d[] m_ballTrajBuffer = new Translation3d[2];
 
     // Precomputed doubles for hot-path unit conversions
     private static final double kTurretMinRotsD = kTurretMinRots.in(Rotations);
@@ -167,7 +176,7 @@ public class ShooterCalc {
      */
     private Translation3d calculateTarget(Pose2d robotPose) {
         // m_currentTarget = AllianceFlipUtil.apply(target);
-        boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+        boolean isRed = WaltDriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
         Translation3d theTarget = FieldConstants.Hub.blueInnerCenterPoint;
 
         double robotX = robotPose.getX();
@@ -185,15 +194,15 @@ public class ShooterCalc {
                 theTarget = kHubPassOverTarget;
             } else {
                 m_isPassing =  () -> true;
-                Translation3d leftPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, FieldConstants.fieldWidth - 2 /* MathUtil.clamp(FieldConstants.fieldWidth / 2 + robotY, FieldConstants.fieldWidth / 2 + 1, FieldConstants.fieldWidth - 1) */, 0);
-                Translation3d rightPassPoseShifted = new Translation3d(ShooterK.kPassingXAsDouble, 2 /* MathUtil.clamp(robotY - FieldConstants.fieldWidth / 2, 1, FieldConstants.fieldWidth / 2 - 1) */, 0);
                 boolean robotLeftOfCenter = isRed ? robotY < kCenterFieldYM : robotY > kCenterFieldYM;
-                theTarget = robotLeftOfCenter ? leftPassPoseShifted : rightPassPoseShifted;
+                theTarget = robotLeftOfCenter ? kLeftPassTarget : kRightPassTarget;
             }
         } else {
             m_isPassing =  () -> false;
         }
-        log_ballTrajectory.accept(new Translation3d[]{new Translation3d(FieldConstants.fieldLength - robotPose.getX(), FieldConstants.fieldWidth - robotPose.getY(), 0), theTarget});
+        m_ballTrajBuffer[0] = new Translation3d(FieldConstants.fieldLength - robotPose.getX(), FieldConstants.fieldWidth - robotPose.getY(), 0);
+        m_ballTrajBuffer[1] = theTarget;
+        log_ballTrajectory.accept(m_ballTrajBuffer);
         return AllianceFlipUtil.apply(theTarget);
     }
 

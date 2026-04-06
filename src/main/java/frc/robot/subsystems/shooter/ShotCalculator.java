@@ -1,14 +1,11 @@
 
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.InchesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static frc.robot.Constants.ShooterK.*;
 
@@ -16,9 +13,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
-import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
-import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -29,6 +23,7 @@ import frc.util.AllianceZoneUtil;
 import frc.util.WaltLogger.*;
 import frc.util.WaltTunable;
 import edu.wpi.first.units.measure.Time;
+import java.util.TreeMap;
 
 public class ShotCalculator {
     private static final DoubleLogger log_distToTargetMeters = new DoubleLogger("Shooter/Calculator", "distTargetToMeters");
@@ -40,28 +35,21 @@ public class ShotCalculator {
     private static final WaltTunable kDragCoeffTuner = new WaltTunable("/ShotCalc/sotmDragCoeff", 0.36, true);
     // private static final Tracer m_iterativeTracer = new Tracer();
 
-    //see 5000's code (circa 2/16/2026 9:11 PM EST)
-    public static final InterpolatingTreeMap<Double, ShotData> m_shotMap = new InterpolatingTreeMap<>(
-            InverseInterpolator.forDouble(), ShotData::interpolate);
-    
-    public static final InterpolatingTreeMap<Double, ShotData> m_passingMap = new InterpolatingTreeMap<>(
-            InverseInterpolator.forDouble(), ShotData::interpolate);
-    
-    public static final InterpolatingTreeMap<Double, ShotData> m_angryTurretPassingMap = new InterpolatingTreeMap<>(
-            InverseInterpolator.forDouble(), ShotData::interpolate);
-
-    public static final InterpolatingDoubleTreeMap m_timeOfFlightMap = new InterpolatingDoubleTreeMap();
-    public static final InterpolatingDoubleTreeMap m_timeOfFlightMapPassing = new InterpolatingDoubleTreeMap();
-    public static final InterpolatingDoubleTreeMap m_timeOfFlightMapPassingAngryTurret = new InterpolatingDoubleTreeMap();
-    
     private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
     private static final double kBlueHubCenterX = AllianceZoneUtil.blueHubCenter.getX();
 
     private static final double minDistance;
     private static final double maxDistance;
 
-    private static final double kRPSBoost = 5.0;
     private static final double kRPSReduction = 10.0;
+
+    /**
+     * Zero-allocation sorted-array interpolation tables replacing InterpolatingTreeMap.
+     * All values stored in SI units (rad/s, radians, seconds).
+     */
+    public static final ShotLerpTable kShotTable;
+    public static final ShotLerpTable kPassingTable;
+    public static final ShotLerpTable kAngryTurretTable;
 
     //LERP MADE ON 3/15/2025
     static {
@@ -69,116 +57,116 @@ public class ShotCalculator {
         minDistance = 1.168;
         maxDistance = 5.672;
 
+        ShotLerpTable.Builder shot = new ShotLerpTable.Builder();
+        ShotLerpTable.Builder passing = new ShotLerpTable.Builder();
+        ShotLerpTable.Builder angry = new ShotLerpTable.Builder();
+
         //Ordered via DistanceToTarget
-        addLerpPoint(5.672, 82.50, 0.08, 2.11, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(5.321, 81.00, 0.08, 1.94, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(5.223, 75.75, 0.08, 1.79, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(5.167, 79.50, 0.08, 2.03, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(4.996, 78.00, 0.08, 1.97, m_shotMap, m_timeOfFlightMap); 
-        addLerpPoint(4.869, 76.50, 0.08, 1.80, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(4.696, 75.00, 0.08, 1.33, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(4.546, 73.50, 0.08, 1.83, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(4.402, 72.50, 0.08, 1.85, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(4.258, 71.00, 0.08, 1.64, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(4.098, 69.00, 0.08, 1.58, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(3.932, 68.00, 0.08, 1.71, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(3.785, 66.90, 0.08, 1.56, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(3.611, 65.40, 0.08, 1.56, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(3.464, 63.90, 0.08, 1.50, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(3.293, 62.40, 0.08, 1.50, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(3.134, 60.90, 0.08, 1.51, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(2.995, 59.40, 0.08, 1.37, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(2.855, 57.90, 0.08, 1.35, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(2.704, 56.40, 0.08, 1.38, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(2.586, 54.90, 0.08, 1.28, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(2.395, 53.50, 0.08, 1.29, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(2.221, 52.00, 0.08, 1.25, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(2.083, 50.50, 0.08, 1.14, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(1.912, 49.00, 0.08, 1.19, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(1.691, 47.50, 0.08, 0.98, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(1.575, 47.50, 0.08, 1.18, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(1.528, 46.00, 0.08, 1.20, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(1.307, 44.50, 0.08, 1.13, m_shotMap, m_timeOfFlightMap);
-        addLerpPoint(1.168, 44.50, 0.08, 1.16, m_shotMap, m_timeOfFlightMap);
+        shot.add(5.672, 82.50, 0.08, 2.11);
+        shot.add(5.321, 81.00, 0.08, 1.94);
+        shot.add(5.223, 75.75, 0.08, 1.79);
+        shot.add(5.167, 79.50, 0.08, 2.03);
+        shot.add(4.996, 78.00, 0.08, 1.97);
+        shot.add(4.869, 76.50, 0.08, 1.80);
+        shot.add(4.696, 75.00, 0.08, 1.33);
+        shot.add(4.546, 73.50, 0.08, 1.83);
+        shot.add(4.402, 72.50, 0.08, 1.85);
+        shot.add(4.258, 71.00, 0.08, 1.64);
+        shot.add(4.098, 69.00, 0.08, 1.58);
+        shot.add(3.932, 68.00, 0.08, 1.71);
+        shot.add(3.785, 66.90, 0.08, 1.56);
+        shot.add(3.611, 65.40, 0.08, 1.56);
+        shot.add(3.464, 63.90, 0.08, 1.50);
+        shot.add(3.293, 62.40, 0.08, 1.50);
+        shot.add(3.134, 60.90, 0.08, 1.51);
+        shot.add(2.995, 59.40, 0.08, 1.37);
+        shot.add(2.855, 57.90, 0.08, 1.35);
+        shot.add(2.704, 56.40, 0.08, 1.38);
+        shot.add(2.586, 54.90, 0.08, 1.28);
+        shot.add(2.395, 53.50, 0.08, 1.29);
+        shot.add(2.221, 52.00, 0.08, 1.25);
+        shot.add(2.083, 50.50, 0.08, 1.14);
+        shot.add(1.912, 49.00, 0.08, 1.19);
+        shot.add(1.691, 47.50, 0.08, 0.98);
+        shot.add(1.575, 47.50, 0.08, 1.18);
+        shot.add(1.528, 46.00, 0.08, 1.20);
+        shot.add(1.307, 44.50, 0.08, 1.13);
+        shot.add(1.168, 44.50, 0.08, 1.16);
 
         //---PASSING POINTS
-        addPassingPoint(4.0080, 48.000, 0.70, 1.35);
-        addPassingPoint(4.8160, 50.000, 0.90, 1.29);
-        addPassingPoint(5.0440, 51.000, 1.00, 1.20);
-        addPassingPoint(5.3520, 52.000, 1.10, 1.15);
-        addPassingPoint(5.6750, 54.000, 1.15, 1.19);
-        addPassingPoint(5.9900, 56.000, 1.15, 1.27);
-        addPassingPoint(6.3200, 58.000, 1.15, 1.27);
-        addPassingPoint(6.5830, 60.000, 1.15, 1.30);
-        addPassingPoint(6.8850, 62.000, 1.15, 1.36);
-        addPassingPoint(7.1690, 64.000, 1.15, 1.41);
-        addPassingPoint(7.5120, 66.000, 1.15, 1.43);
-        addPassingPoint(7.7780, 66.990, 1.15, 1.46);
-        addPassingPoint(8.1140, 67.750, 1.15, 1.45);
-        addPassingPoint(8.4420, 68.750, 1.15, 1.58);
-        addPassingPoint(8.7350, 70.250, 1.15, 1.63);
-        addPassingPoint(8.9970, 71.350, 1.15, 1.71);
-        addPassingPoint(10.419, 78.800, 1.16, 1.78);
-        addPassingPoint(10.722, 80.300, 1.16, 1.80);
-        addPassingPoint(11.076, 82.100, 1.16, 1.79);
-        addPassingPoint(11.367, 82.500, 1.16, 1.87);
-        addPassingPoint(11.722, 84.400, 1.16, 1.85);
-        addPassingPoint(12.060, 86.100, 1.16, 1.87);
-        addPassingPoint(12.358, 88.200, 1.16, 1.92);
-        addPassingPoint(12.670, 89.350, 1.16, 1.95);
-        addPassingPoint(13.048, 91.300, 1.16, 1.92);
-        addPassingPoint(13.053, 92.700, 1.16, 2.04);
-        addPassingPoint(13.657, 94.760, 1.16, 2.02);
-        addPassingPoint(14.020, 101.70, 1.16, 2.00);
-        addPassingPoint(14.355, 104.39, 1.16, 2.08);
-
+        passing.add(4.0080, 48.000, 0.70, 1.35);
+        passing.add(4.8160, 50.000, 0.90, 1.29);
+        passing.add(5.0440, 51.000, 1.00, 1.20);
+        passing.add(5.3520, 52.000, 1.10, 1.15);
+        passing.add(5.6750, 54.000, 1.15, 1.19);
+        passing.add(5.9900, 56.000, 1.15, 1.27);
+        passing.add(6.3200, 58.000, 1.15, 1.27);
+        passing.add(6.5830, 60.000, 1.15, 1.30);
+        passing.add(6.8850, 62.000, 1.15, 1.36);
+        passing.add(7.1690, 64.000, 1.15, 1.41);
+        passing.add(7.5120, 66.000, 1.15, 1.43);
+        passing.add(7.7780, 66.990, 1.15, 1.46);
+        passing.add(8.1140, 67.750, 1.15, 1.45);
+        passing.add(8.4420, 68.750, 1.15, 1.58);
+        passing.add(8.7350, 70.250, 1.15, 1.63);
+        passing.add(8.9970, 71.350, 1.15, 1.71);
+        passing.add(10.419, 78.800, 1.16, 1.78);
+        passing.add(10.722, 80.300, 1.16, 1.80);
+        passing.add(11.076, 82.100, 1.16, 1.79);
+        passing.add(11.367, 82.500, 1.16, 1.87);
+        passing.add(11.722, 84.400, 1.16, 1.85);
+        passing.add(12.060, 86.100, 1.16, 1.87);
+        passing.add(12.358, 88.200, 1.16, 1.92);
+        passing.add(12.670, 89.350, 1.16, 1.95);
+        passing.add(13.048, 91.300, 1.16, 1.92);
+        passing.add(13.053, 92.700, 1.16, 2.04);
+        passing.add(13.657, 94.760, 1.16, 2.02);
+        passing.add(14.020, 101.70, 1.16, 2.00);
+        passing.add(14.355, 104.39, 1.16, 2.08);
 
         //THIS IS ONLY USED IF THE TURRET IS IN A POSITION THAT IS UNABLE TO SHOOT WITH HOOD UP DURING PASSING
-        addAngryTurretPassingPoint(5.672, 82.50 - kRPSReduction, 0.08, 2.11);
-        addAngryTurretPassingPoint(5.321, 81.00 - kRPSReduction, 0.08, 1.94);
-        addAngryTurretPassingPoint(5.223, 75.75 - kRPSReduction, 0.08, 1.79);
-        addAngryTurretPassingPoint(5.167, 79.50 - kRPSReduction, 0.08, 2.03);
-        addAngryTurretPassingPoint(4.996, 78.00 - kRPSReduction, 0.08, 1.97); 
-        addAngryTurretPassingPoint(4.869, 76.50 - kRPSReduction, 0.08, 1.80);
-        addAngryTurretPassingPoint(4.696, 75.00 - kRPSReduction, 0.08, 1.33);
-        addAngryTurretPassingPoint(4.546, 73.50 - kRPSReduction, 0.08, 1.83);
-        addAngryTurretPassingPoint(4.402, 72.50 - kRPSReduction, 0.08, 1.85);
-        addAngryTurretPassingPoint(4.258, 71.00 - kRPSReduction, 0.08, 1.64);
-        addAngryTurretPassingPoint(4.098, 69.00 - kRPSReduction, 0.08, 1.58);
-        addAngryTurretPassingPoint(3.932, 68.00 - kRPSReduction, 0.08, 1.71);
-        addAngryTurretPassingPoint(3.785, 66.90 - kRPSReduction, 0.08, 1.56);
-        addAngryTurretPassingPoint(3.611, 65.40 - kRPSReduction, 0.08, 1.56);
-        addAngryTurretPassingPoint(3.464, 63.90 - kRPSReduction, 0.08, 1.50);
-        addAngryTurretPassingPoint(3.293, 62.40 - kRPSReduction, 0.08, 1.50);
-        addAngryTurretPassingPoint(3.134, 60.90 - kRPSReduction, 0.08, 1.51);
-        addAngryTurretPassingPoint(2.995, 59.40 - kRPSReduction, 0.08, 1.37);
-        addAngryTurretPassingPoint(2.855, 57.90 - kRPSReduction, 0.08, 1.35);
-        addAngryTurretPassingPoint(2.704, 56.40 - kRPSReduction, 0.08, 1.38);
-        addAngryTurretPassingPoint(2.586, 54.90 - kRPSReduction, 0.08, 1.28);
-        addAngryTurretPassingPoint(2.395, 53.50 - kRPSReduction, 0.08, 1.29);
-        addAngryTurretPassingPoint(2.221, 52.00 - kRPSReduction, 0.08, 1.25);
-        addAngryTurretPassingPoint(2.083, 50.50 - kRPSReduction, 0.08, 1.14);
-        addAngryTurretPassingPoint(1.912, 49.00 - kRPSReduction, 0.08, 1.19);
-        addAngryTurretPassingPoint(1.691, 47.50 - kRPSReduction, 0.08, 0.98);
-        addAngryTurretPassingPoint(1.575, 47.50 - kRPSReduction, 0.08, 1.18);
-        addAngryTurretPassingPoint(1.528, 46.00 - kRPSReduction, 0.08, 1.20);
-        addAngryTurretPassingPoint(1.307, 44.50 - kRPSReduction, 0.08, 1.13);
-        addAngryTurretPassingPoint(1.168, 44.50 - kRPSReduction, 0.08, 1.16);
+        //NO ANGRY PASSING IN OPPOSING ALLIANCE ZONE
+        angry.add(7.574, 92.5, 0.08, 2.08);
+        angry.add(7.135, 86, 0.08, 2.06);
+        angry.add(6.653, 81, 0.08, 2.04);
+        angry.add(6.254, 78, 0.08, 2.02);
+        //note that the points above have spoofed tofs
+        angry.add(5.672, 82.50 - kRPSReduction, 0.08, 2.11);
+        angry.add(5.321, 81.00 - kRPSReduction, 0.08, 1.94);
+        angry.add(5.223, 75.75 - kRPSReduction, 0.08, 1.79);
+        angry.add(5.167, 79.50 - kRPSReduction, 0.08, 2.03);
+        angry.add(4.996, 78.00 - kRPSReduction, 0.08, 1.97);
+        angry.add(4.869, 76.50 - kRPSReduction, 0.08, 1.80);
+        angry.add(4.696, 75.00 - kRPSReduction, 0.08, 1.33);
+        angry.add(4.546, 73.50 - kRPSReduction, 0.08, 1.83);
+        angry.add(4.402, 72.50 - kRPSReduction, 0.08, 1.85);
+        angry.add(4.258, 71.00 - kRPSReduction, 0.08, 1.64);
+        angry.add(4.098, 69.00 - kRPSReduction, 0.08, 1.58);
+        angry.add(3.932, 68.00 - kRPSReduction, 0.08, 1.71);
+        angry.add(3.785, 66.90 - kRPSReduction, 0.08, 1.56);
+        angry.add(3.611, 65.40 - kRPSReduction, 0.08, 1.56);
+        angry.add(3.464, 63.90 - kRPSReduction, 0.08, 1.50);
+        angry.add(3.293, 62.40 - kRPSReduction, 0.08, 1.50);
+        angry.add(3.134, 60.90 - kRPSReduction, 0.08, 1.51);
+        angry.add(2.995, 59.40 - kRPSReduction, 0.08, 1.37);
+        angry.add(2.855, 57.90 - kRPSReduction, 0.08, 1.35);
+        angry.add(2.704, 56.40 - kRPSReduction, 0.08, 1.38);
+        angry.add(2.586, 54.90 - kRPSReduction, 0.08, 1.28);
+        angry.add(2.395, 53.50 - kRPSReduction, 0.08, 1.29);
+        angry.add(2.221, 52.00 - kRPSReduction, 0.08, 1.25);
+        angry.add(2.083, 50.50 - kRPSReduction, 0.08, 1.14);
+        angry.add(1.912, 49.00 - kRPSReduction, 0.08, 1.19);
+        angry.add(1.691, 47.50 - kRPSReduction, 0.08, 0.98);
+        angry.add(1.575, 47.50 - kRPSReduction, 0.08, 1.18);
+        angry.add(1.528, 46.00 - kRPSReduction, 0.08, 1.20);
+        angry.add(1.307, 44.50 - kRPSReduction, 0.08, 1.13);
+        angry.add(1.168, 44.50 - kRPSReduction, 0.08, 1.16);
 
+        kShotTable = shot.build();
+        kPassingTable = passing.build();
+        kAngryTurretTable = angry.build();
     }
 
-    public static void addLerpPoint(double distanceToTarget, double shooterRPS, double hoodRots, double timeOfFlight, InterpolatingTreeMap<Double, ShotData> shotMap, InterpolatingDoubleTreeMap tofMap) {
-        shotMap.put(distanceToTarget, new ShotData(RotationsPerSecond.of(shooterRPS /* + kRPSBoost */), Rotations.of(hoodRots)));
-        tofMap.put(distanceToTarget, timeOfFlight);
-    }
-
-    public static void addPassingPoint(double distanceToTarget, double shooterRPS, double hoodRots, double timeOfFlight) {
-        addLerpPoint(distanceToTarget, shooterRPS, hoodRots, timeOfFlight, m_passingMap, m_timeOfFlightMapPassing);
-    }
-
-    public static void addAngryTurretPassingPoint(double distToTarget, double shooterRps, double hoodRots, double timeOfFlight) {
-        addLerpPoint(distToTarget, shooterRps, hoodRots, timeOfFlight, m_angryTurretPassingMap, m_timeOfFlightMapPassingAngryTurret);
-    }
     /**
      * Gets the 2D distance from turret pivot to target in meters, using raw doubles.
      * Zero-allocation hot-path version.
@@ -268,11 +256,11 @@ public class ShotCalculator {
     }
 
     public static double getMinTimeOfFlight() {
-        return m_timeOfFlightMap.get(minDistance);
+        return kShotTable.tof(minDistance);
     }
 
     public static double getMaxTimeOfFlight() {
-        return m_timeOfFlightMap.get(maxDistance);
+        return kShotTable.tof(maxDistance);
     }
 
     /**
@@ -280,7 +268,7 @@ public class ShotCalculator {
      * fieldSpeeds
      * Integral for SOTM, as this is what accounts for the speed the Robot is
      * going.
-     * 
+     *
      * @param target desired target
      * @param fieldSpeeds curret robotVelocity
      * @param timeOfFlight timeOfFlight from calculations or LERP table
@@ -409,20 +397,11 @@ public class ShotCalculator {
         boolean passing = ShooterCalc.isPassing().getAsBoolean();
         boolean canTurretShoot = ShooterCalc.canTurretShoot();
         log_isPassingLerp.accept(passing);
-        // ShotData shot = passing ? m_passingMap.get(distance) : m_shotMap.get(distance);
-        ShotData shot = m_shotMap.get(distance);
-        if (passing) {
-            if (canTurretShoot) {
-                shot = m_passingMap.get(distance);
-            } else {
-                shot = m_angryTurretPassingMap.get(distance);
-            }
-        } else {
-            shot = m_shotMap.get(distance);
-        }
-        double exitVel = shot.exitVelocity();
-        double hoodAngle = shot.hoodAngle();
-        double tofSec = passing ? m_timeOfFlightMapPassing.get(distance) : m_timeOfFlightMap.get(distance);
+
+        ShotLerpTable shotTable = passing ? (canTurretShoot ? kPassingTable : kAngryTurretTable) : kShotTable;
+        double exitVel = shotTable.exitVelocity(distance);
+        double hoodAngle = shotTable.hoodAngle(distance);
+        double tofSec = passing ? kPassingTable.tof(distance) : kShotTable.tof(distance);
 
         double predX = targetX;
         double predY = targetY;
@@ -443,19 +422,10 @@ public class ShotCalculator {
 
             distance = getDistanceToTargetM(robotX, robotY, headingRad, predX, predY);
             passing = ShooterCalc.isPassing().getAsBoolean();
-            shot = m_shotMap.get(distance);
-            if (passing) {
-                if (canTurretShoot) {
-                    shot = m_passingMap.get(distance);
-                } else {
-                    shot = m_angryTurretPassingMap.get(distance);
-                }
-            } else {
-                shot = m_shotMap.get(distance);
-            }
-            exitVel = shot.exitVelocity();
-            hoodAngle = shot.hoodAngle();
-            tofSec = passing ? m_timeOfFlightMapPassing.get(distance) : m_timeOfFlightMap.get(distance);
+            shotTable = passing ? (canTurretShoot ? kPassingTable : kAngryTurretTable) : kShotTable;
+            exitVel = shotTable.exitVelocity(distance);
+            hoodAngle = shotTable.hoodAngle(distance);
+            tofSec = passing ? kPassingTable.tof(distance) : kShotTable.tof(distance);
 
             double dExitVel = prevExitVel - exitVel;
             double dHood = prevHoodAngle - hoodAngle;
@@ -528,5 +498,76 @@ public class ShotCalculator {
         public double getHoodAngle() { return hoodAngle; }
         public Translation3d getTarget() { return target; }
         public double getTofSec() { return tofSec; }
+    }
+
+    /**
+     * Zero-allocation sorted-array interpolation table.
+     * Replaces InterpolatingTreeMap / InterpolatingDoubleTreeMap on hot paths.
+     * Values stored in SI units: exitVelocity in rad/s, hoodAngle in radians, tof in seconds.
+     */
+    public static final class ShotLerpTable {
+        private final double[] keys;        // sorted ascending, meters
+        private final double[] exitVels;    // rad/s
+        private final double[] hoodAngles;  // radians
+        private final double[] tofs;        // seconds
+
+        private ShotLerpTable(double[] keys, double[] exitVels, double[] hoodAngles, double[] tofs) {
+            this.keys = keys;
+            this.exitVels = exitVels;
+            this.hoodAngles = hoodAngles;
+            this.tofs = tofs;
+        }
+
+        /** Interpolated exit velocity in rad/s. Zero allocation. */
+        public double exitVelocity(double dist) { return lerp(dist, keys, exitVels); }
+        /** Interpolated hood angle in radians. Zero allocation. */
+        public double hoodAngle(double dist) { return lerp(dist, keys, hoodAngles); }
+        /** Interpolated time of flight in seconds. Zero allocation. */
+        public double tof(double dist) { return lerp(dist, keys, tofs); }
+
+        private static double lerp(double dist, double[] ks, double[] vs) {
+            int n = ks.length;
+            if (dist <= ks[0]) return vs[0];
+            if (dist >= ks[n - 1]) return vs[n - 1];
+            int lo = 0, hi = n - 1;
+            while (hi - lo > 1) {
+                int mid = (lo + hi) >>> 1;
+                if (ks[mid] <= dist) lo = mid;
+                else hi = mid;
+            }
+            double t = (dist - ks[lo]) / (ks[hi] - ks[lo]);
+            return vs[lo] + t * (vs[hi] - vs[lo]);
+        }
+
+        public static final class Builder {
+            private final TreeMap<Double, double[]> entries = new TreeMap<>();
+
+            /** dist: meters, rps: rot/s (shooter), hoodRots: rotations, tof: seconds */
+            public void add(double dist, double rps, double hoodRots, double tof) {
+                entries.put(dist, new double[]{
+                    rps * (2.0 * Math.PI),        // rot/s → rad/s
+                    hoodRots * (2.0 * Math.PI),   // rotations → radians
+                    tof
+                });
+            }
+
+            public ShotLerpTable build() {
+                int n = entries.size();
+                double[] ks = new double[n];
+                double[] evs = new double[n];
+                double[] has = new double[n];
+                double[] ts = new double[n];
+                int i = 0;
+                for (var e : entries.entrySet()) {
+                    ks[i] = e.getKey();
+                    double[] v = e.getValue();
+                    evs[i] = v[0];
+                    has[i] = v[1];
+                    ts[i] = v[2];
+                    i++;
+                }
+                return new ShotLerpTable(ks, evs, has, ts);
+            }
+        }
     }
 }

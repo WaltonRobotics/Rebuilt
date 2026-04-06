@@ -106,11 +106,13 @@ class ShotCalcPerfTest {
 
     private static ShotData mutableIterativeMovingShot(Pose2d robot, ChassisSpeeds fieldSpeeds, Translation3d target) {
         double distance = mutableGetDistanceToTarget(robot, target);
-        ShotData shot = ShotCalculator.m_shotMap.get(distance);
-        shot = new ShotData(shot.exitVelocity(), shot.hoodAngle(), target);
+        ShotData shot = new ShotData(
+            ShotCalculator.kShotTable.exitVelocity(distance),
+            ShotCalculator.kShotTable.hoodAngle(distance),
+            target);
 
         // Use the mutable TOF instead of allocating
-        double tofSec = ShotCalculator.m_timeOfFlightMap.get(distance);
+        double tofSec = ShotCalculator.kShotTable.tof(distance);
         mut_tof.mut_replace(tofSec, Seconds);
 
         Translation3d predictedTarget = target;
@@ -126,9 +128,11 @@ class ShotCalcPerfTest {
             predictedTarget = new Translation3d(predX, predY, target.getZ());
 
             distance = mutableGetDistanceToTarget(robot, predictedTarget);
-            shot = ShotCalculator.m_shotMap.get(distance);
-            shot = new ShotData(shot.exitVelocity(), shot.hoodAngle(), predictedTarget);
-            tofSec = ShotCalculator.m_timeOfFlightMap.get(distance);
+            shot = new ShotData(
+                ShotCalculator.kShotTable.exitVelocity(distance),
+                ShotCalculator.kShotTable.hoodAngle(distance),
+                predictedTarget);
+            tofSec = ShotCalculator.kShotTable.tof(distance);
             mut_tof.mut_replace(tofSec, Seconds);
 
             ShotData shotDiff = shot.minus(prevShot);
