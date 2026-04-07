@@ -200,10 +200,10 @@ public class ShooterCalc {
 
         if (robotPastOurZoneX) {
             m_isPassing =  () -> true;
-            if (!robotInNoPassingZone) {
-                boolean robotLeftOfCenter = isRed ? robotY < kCenterFieldYM : robotY > kCenterFieldYM;
-                theTarget = robotLeftOfCenter ? kLeftPassTarget : kRightPassTarget;
-            }
+            // if (!robotInNoPassingZone) {
+            boolean robotLeftOfCenter = isRed ? robotY < kCenterFieldYM : robotY > kCenterFieldYM;
+            theTarget = robotLeftOfCenter ? kLeftPassTarget : kRightPassTarget;
+            // }
         } else {
             m_isPassing =  () -> false;
         }
