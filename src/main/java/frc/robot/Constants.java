@@ -118,10 +118,9 @@ public class Constants {
         public static final Distance kPassingX = Meters.of(3.5);
         public static final double kPassingXAsDouble = kPassingX.in(Meters);
 
-        public static final double kHubShotZoneTopX = FieldConstants.Hub.blueInnerCenterPoint.getX() + 3;
-        public static final double kHubShotZoneRightY = Meters.of(3.2).baseUnitMagnitude();
-        public static final double kHubShotZoneLeftY = FieldConstants.fieldWidth - 3.2;
-        public static final Translation3d kHubPassOverTarget = FieldConstants.Hub.blueInnerCenterPoint.plus(new Translation3d(-5, 0, 0));
+        public static final double kNoPassZoneTopX = FieldConstants.Hub.blueInnerCenterPoint.getX() + 2;
+        public static final double kNoPassZoneRightY = Meters.of(3.2).baseUnitMagnitude();
+        public static final double kNoPassZoneLeftY = FieldConstants.fieldWidth - 3.2;
         
         public static final double kShooterTimeout = 1.0;
         public static final double kBallDetectedDebounceTime = 0.9;
@@ -625,7 +624,7 @@ public class Constants {
             Meters.of(5.437880039215088), new Rotation2d(0));
 
         public static final double kIntakeTimeout = 7.5;
-        public static final double kReshootShootingTimeout = 6; //12
+        public static final double kReshootShootingTimeout = 5.5; //12
         public static final double kSweepShootingTimeout = 20;
 
         //---FIRST CYCLES
@@ -652,5 +651,6 @@ public class Constants {
 
         //---MISC
         public static final String kRightOneCircle = "RIGHT_one_circle";
+        public static final String kLeftOneSweepAndDepot = "LEFT_one_sweepAndDepot";
     }
 }

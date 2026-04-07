@@ -60,9 +60,6 @@ public class ShooterCalc {
     private final BooleanLogger log_robotInHubPassingZone = WaltLogger.logBoolean("ShotCalc", "robotInHubPassingZone");
     private final BooleanLogger log_canTurretShoot = WaltLogger.logBoolean("ShotCalc", "canTurretShoot");
 
-    private final Pose2dLogger log = WaltLogger.logPose2d("ShotCalc", "pose");
-
-
     // Precomputed doubles for calculateTarget zone checks
     private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
     private static final double kBlueHubCenterX = AllianceZoneUtil.blueHubCenter.getX();
@@ -73,6 +70,11 @@ public class ShooterCalc {
         new Translation3d(ShooterK.kPassingXAsDouble, FieldConstants.fieldWidth - 2, 0);
     private static final Translation3d kRightPassTarget =
         new Translation3d(ShooterK.kPassingXAsDouble, 2, 0);
+    
+    private static final Translation3d kLeftPassPastHubTarget =
+        new Translation3d(ShooterK.kPassingXAsDouble + 0.5, FieldConstants.fieldWidth - 1.5, 0);
+    private static final Translation3d kRightPassPastHubTarget =
+        new Translation3d(ShooterK.kPassingXAsDouble + 0.5, 1.5, 0);
 
     // Pre-allocated ballTrajectory log buffer — reused each callback to avoid array allocation
     private static final Translation3d[] m_ballTrajBuffer = new Translation3d[2];
@@ -96,10 +98,14 @@ public class ShooterCalc {
     private final Notifier m_notifier = new Notifier(this::calcCallback);
     private final Timer m_calcTimer = new Timer();
 
+    private boolean isRed = WaltDriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+    private double robotX;
+    private double robotY;
+    private boolean robotInNoPassingZone;
+
     public ShooterCalc(Supplier<SwerveDriveState> threadsafeSwerveDriveStateSup, DoubleSupplier turretPosSup) {
         m_threadsafeSwerveDriveStateSup = threadsafeSwerveDriveStateSup;
         m_turretPosRotsSup = turretPosSup;
-        log.accept(new Pose2d(kHubPassOverTarget.getX(), kHubPassOverTarget.getY(), Rotation2d.kZero));
 
         m_notifier.setName("ShooterCalc");
         m_notifier.startPeriodic(Hertz.of(25)); // 2x slower than robot loop
@@ -133,7 +139,11 @@ public class ShooterCalc {
      */
     private void refreshCanTurretShoot() {
         if (isPassing().getAsBoolean()) {
-            if (m_turretPosRotsSup.getAsDouble() > kTurretMinNotAbleToPassRange && m_turretPosRotsSup.getAsDouble() < kTurretMaxNotAbleToPassRange) {m_canTurretShoot = true;} else {m_canTurretShoot = false;}
+            if (m_turretPosRotsSup.getAsDouble() > kTurretMinNotAbleToPassRange && m_turretPosRotsSup.getAsDouble() < kTurretMaxNotAbleToPassRange && !robotInNoPassingZone) {
+                m_canTurretShoot = true;
+            } else {
+                m_canTurretShoot = false;
+            }
             log_canTurretShoot.accept(m_canTurretShoot);
         } else {
             m_canTurretShoot = true;    //the turret can shoot anytime we are not passing
@@ -176,7 +186,7 @@ public class ShooterCalc {
      */
     private Translation3d calculateTarget(Pose2d robotPose) {
         // m_currentTarget = AllianceFlipUtil.apply(target);
-        boolean isRed = WaltDriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+        isRed = WaltDriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
         Translation3d theTarget = FieldConstants.Hub.blueInnerCenterPoint;
 
         double robotX = robotPose.getX();
@@ -185,15 +195,12 @@ public class ShooterCalc {
         boolean robotPastOurZoneX = isRed ? robotX < kRedHubCenterX : robotX > kBlueHubCenterX;
         log_robotPastOurZoneX.accept(robotPastOurZoneX);
 
-        boolean robotInHubPassingZone = (isRed ? robotY < kHubShotZoneLeftY && robotY > kHubShotZoneRightY && robotX > FieldConstants.fieldLength - kHubShotZoneTopX : robotY < kHubShotZoneLeftY && robotY > kHubShotZoneRightY && robotX < kHubShotZoneTopX) && robotPastOurZoneX;
-        log_robotInHubPassingZone.accept(robotInHubPassingZone);
+        robotInNoPassingZone = robotPastOurZoneX && robotY < kNoPassZoneLeftY && robotY > kNoPassZoneRightY && isRed ? robotX > FieldConstants.fieldLength - kNoPassZoneTopX : robotX < kNoPassZoneTopX;
+        log_robotInHubPassingZone.accept(robotInNoPassingZone);
 
         if (robotPastOurZoneX) {
-            if (robotInHubPassingZone) {
-                m_isPassing =  () -> false;
-                theTarget = kHubPassOverTarget;
-            } else {
-                m_isPassing =  () -> true;
+            m_isPassing =  () -> true;
+            if (!robotInNoPassingZone) {
                 boolean robotLeftOfCenter = isRed ? robotY < kCenterFieldYM : robotY > kCenterFieldYM;
                 theTarget = robotLeftOfCenter ? kLeftPassTarget : kRightPassTarget;
             }
