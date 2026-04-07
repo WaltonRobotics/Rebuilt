@@ -420,10 +420,10 @@ public class ShotCalculator {
             double prevPredY = predY;
 
             // Inline predictTargetPos — no Translation3d/Time allocation
-            double coeffDrag = 0.2974;
-            if (distance >= 3.6) {
-                coeffDrag = 0.5;
-            }
+            double coeffDrag = 0.2974;  //0.36
+            // if (distance >= 3.6) {
+            //     coeffDrag = 0.53;   //0.7
+            // }
             double driftT = dragCompensatedTOF(tofSec, coeffDrag);
             predX = targetX - vx * driftT;
             predY = targetY - vy * driftT;
