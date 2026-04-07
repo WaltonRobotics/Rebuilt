@@ -13,6 +13,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -21,8 +22,9 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.FieldConstants;
 import frc.util.AllianceZoneUtil;
 import frc.util.WaltLogger.*;
-import frc.util.WaltTunable;
 import edu.wpi.first.units.measure.Time;
+
+import java.util.DoubleSummaryStatistics;
 import java.util.TreeMap;
 
 public class ShotCalculator {
@@ -40,9 +42,16 @@ public class ShotCalculator {
     private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
     private static final double kBlueHubCenterX = AllianceZoneUtil.blueHubCenter.getX();
 
+    private static final double[] kReductionDistances = {1.48, 2.31, 4.12};
+    private static final double[] kReductionAmount = {0, 2, 4};
+
+    private static final DoubleSummaryStatistics reductionSummaryStats = new DoubleSummaryStatistics();
+    private static final DoubleSummaryStatistics distanceSummaryStats = new DoubleSummaryStatistics();
+
     private static final double minDistance;
     private static final double maxDistance;
 
+    private static final boolean kRPSReductionNeeded = false;
 
     /**
      * Zero-allocation sorted-array interpolation tables replacing InterpolatingTreeMap.
@@ -50,7 +59,13 @@ public class ShotCalculator {
      */
     public static final ShotLerpTable kShotTable;
     public static final ShotLerpTable kPassingTable;
-    public static final ShotLerpTable kAngryTurretTable;
+    // public static final ShotLerpTable kAngryTurretTable;
+
+    // this gets filled with distance scalars automatically based on all the distance keys in kShotTable
+    public static final InterpolatingDoubleTreeMap kNewFuelAdjTable = new InterpolatingDoubleTreeMap();
+    private static void addNewFuelAdjPoint(double distance) {
+        kNewFuelAdjTable.put(distance, calcRPSReduction(distance));
+    }
 
     //LERP MADE ON 3/15/2025
     static {
@@ -59,10 +74,22 @@ public class ShotCalculator {
         maxDistance = 5.672;
 
         ShotLerpTable.Builder shot = new ShotLerpTable.Builder();
-        ShotLerpTable.Builder passing = new ShotLerpTable.Builder();
-        ShotLerpTable.Builder angry = new ShotLerpTable.Builder();
 
         //Ordered via DistanceToTarget
+        shot.add(7.565, 89.00, 0.16, 2.05);
+        shot.add(6.350, 82.25, 0.16, 1.50);
+
+        //NEW BACKLINE
+        shot.add(5.493, 78.95, 0.08, 1.99);
+        shot.add(5.183, 76.79, 0.08, 1.86);
+        shot.add(4.881, 73.21, 0.08, 1.81);
+        shot.add(4.617, 71.50, 0.08, 1.62);
+        shot.add(4.516, 70.00, 0.08, 1.62);
+        shot.add(4.388, 68.00, 0.08, 1.6);
+        shot.add(4.300, 68.40, 0.08, 1.59);
+        shot.add(4.185, 66.60, 0.08, 1.55);
+        shot.add(4.092, 66.34, 0.08, 1.7);
+
         shot.add(5.672, 82.50, 0.08, 2.11);
         shot.add(5.321, 81.00, 0.08, 1.94);
         shot.add(5.223, 75.75, 0.08, 1.79);
@@ -93,7 +120,23 @@ public class ShotCalculator {
         shot.add(1.528, 46.00, 0.08, 1.20);
         shot.add(1.307, 44.50, 0.08, 1.13);
         shot.add(1.168, 44.50, 0.08, 1.16);
+        kShotTable = shot.build();
+    }
 
+    static {
+        for (int i = 0; i < kReductionAmount.length; i++) {
+            reductionSummaryStats.accept(kReductionAmount[i]);
+            distanceSummaryStats.accept(kReductionDistances[i]);
+        }
+
+        for (int i = 0; i < kShotTable.keys.length; i++) {
+            double dist = kShotTable.keys[i];
+            addNewFuelAdjPoint(dist);
+        }
+    }
+
+    static {
+        ShotLerpTable.Builder passing = new ShotLerpTable.Builder();
         //---PASSING POINTS
         passing.add(4.0080, 48.000, 0.70, 1.35);
         passing.add(4.8160, 50.000, 0.90, 1.29);
@@ -124,9 +167,12 @@ public class ShotCalculator {
         passing.add(13.657, 94.760, 1.16, 2.02);
         passing.add(14.020, 101.70, 1.16, 2.00);
         passing.add(14.355, 104.39, 1.16, 2.08);
-
+        kPassingTable = passing.build();
+    }
+    static {
         //THIS IS ONLY USED IF THE TURRET IS IN A POSITION THAT IS UNABLE TO SHOOT WITH HOOD UP DURING PASSING
         //NO ANGRY PASSING IN OPPOSING ALLIANCE ZONE
+        // ShotLerpTable.Builder angry = new ShotLerpTable.Builder();
         // angry.add(7.574, 92.5, 0.08, 2.08);
         // angry.add(7.135, 86, 0.08, 2.06);
         // angry.add(6.653, 81, 0.08, 2.04);
@@ -162,10 +208,36 @@ public class ShotCalculator {
         // angry.add(1.528, 46.00 - kRPSReduction, 0.08, 1.20);
         // angry.add(1.307, 44.50 - kRPSReduction, 0.08, 1.13);
         // angry.add(1.168, 44.50 - kRPSReduction, 0.08, 1.16);
+        // kAngryTurretTable = angry.build();
+    }
 
-        kShotTable = shot.build();
-        kPassingTable = passing.build();
-        kAngryTurretTable = angry.build();
+    /**
+     * @param distance
+     * @return reduction magnitude
+     */
+    public static double calcRPSReduction(double distance) {
+        double distanceSTDev = 0;
+        double reductionSTDev = 0;
+        double r = 0;
+
+        for (int i = 0; i< kReductionAmount.length; i++) {
+            distanceSTDev += Math.pow((kReductionAmount[i] - reductionSummaryStats.getAverage()),2);
+            reductionSTDev += Math.pow((kReductionDistances[i] - distanceSummaryStats.getAverage()),2);
+        }
+
+        distanceSTDev = Math.sqrt(distanceSTDev/(kReductionDistances.length - 1));
+        reductionSTDev = Math.sqrt(reductionSTDev/(kReductionAmount.length - 1));
+
+        for (int i = 0; i < kReductionAmount.length; i++) {
+            r += (((kReductionAmount[i] - reductionSummaryStats.getAverage())/reductionSTDev) * ((kReductionDistances[i] - distanceSummaryStats.getAverage())/reductionSTDev));
+        }
+
+        r /= (kReductionAmount.length - 1);
+        
+        double slope = r * (reductionSTDev/distanceSTDev);
+        double intercept = reductionSummaryStats.getAverage() - slope * distanceSummaryStats.getAverage();
+
+        return slope * distance + intercept;
     }
 
     /**
@@ -570,7 +642,7 @@ public class ShotCalculator {
                 for (var e : entries.entrySet()) {
                     ks[i] = e.getKey();
                     double[] v = e.getValue();
-                    evs[i] = v[0];
+                    evs[i] = v[0] - (kRPSReductionNeeded ? kNewFuelAdjTable.get(v[0]) : 0);
                     has[i] = v[1];
                     ts[i] = v[2];
                     i++;
