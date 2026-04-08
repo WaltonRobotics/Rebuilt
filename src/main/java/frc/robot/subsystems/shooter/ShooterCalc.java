@@ -139,7 +139,7 @@ public class ShooterCalc {
      */
     private void refreshCanTurretShoot() {
         if (isPassing().getAsBoolean()) {
-            if (m_turretPosRotsSup.getAsDouble() > kTurretMinNotAbleToPassRange && m_turretPosRotsSup.getAsDouble() < kTurretMaxNotAbleToPassRange && !robotInNoPassingZone) {
+            if (m_turretPosRotsSup.getAsDouble() > kTurretMinNotAbleToPassRange && m_turretPosRotsSup.getAsDouble() < kTurretMaxNotAbleToPassRange/* && !robotInNoPassingZone */) {
                 m_canTurretShoot = true;
             } else {
                 m_canTurretShoot = false;
