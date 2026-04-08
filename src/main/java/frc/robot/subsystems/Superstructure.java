@@ -158,6 +158,26 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
+
+    /**
+     * @return the emergency barf command
+     */
+    public Command emergencyBarfNOSHOOT() {
+        return Commands.startEnd(
+            () -> {
+                m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
+                m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS);
+                m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS);
+                m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersBarfVolts);
+            },
+            () -> {
+                m_intake.setIntakeRollersVelocity(0);
+                m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
+                m_indexer.setTunnelVelocity(RotationsPerSecond.zero());
+            }
+        );
+    }
+
     public Command intakeShimmy() {
        return m_intake.shimmy();
     }
