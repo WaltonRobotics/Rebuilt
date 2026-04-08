@@ -75,7 +75,7 @@ public class Turret extends SubsystemBase {
         homeTurret(true);
     }
 
-    private void homeTurret(boolean useLCM) {
+    public void homeTurret(boolean useLCM) {
         if (useLCM) {
             double lcmRots = calcTurretAngleLCM(sig_lcmEncAAbsPos.getValueAsDouble() * 360, -(m_lcmEncB.get() - kEncBOffset) * 360) / 360.0;
             m_turret.setPosition(lcmRots);

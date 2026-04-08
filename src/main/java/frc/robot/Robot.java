@@ -329,6 +329,8 @@ public class Robot extends TimedRobot {
 
         m_driver.povDown().onTrue(m_shooter.m_turret.setTurretLockCmd(false));
         m_driver.povRight().onTrue(m_shooter.m_turret.setTurretLockCmd(true));
+
+        m_manipulator.y().and(trg_manipOverride).onTrue(Commands.runOnce(() -> m_shooter.m_turret.homeTurret(true)));
         
         // m_driver.povDown().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX(), m_drivetrain.getState().Pose.getY() - Inches.of(20).magnitude()), 0.001));
         // m_driver.povUp().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX(), m_drivetrain.getState().Pose.getY() + Inches.of(20).magnitude()), 0.001));
