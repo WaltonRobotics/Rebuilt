@@ -97,7 +97,8 @@ public class ShooterCalc {
     private volatile boolean m_useStaticShot = true;
     private static volatile Translation3d m_aimTarget = Translation3d.kZero;
     private volatile ShotCalcOutputs m_shotCalcOutputs = kEmptyShotCalcOutputs;
-    private static volatile BooleanSupplier m_isPassing = () -> false;
+    private static volatile boolean m_isPassingFlag = false;
+    private static final BooleanSupplier m_isPassing = () -> m_isPassingFlag;
     private static volatile boolean m_canTurretShoot = false;
 
     private final Notifier m_notifier = new Notifier(this::calcCallback);
@@ -206,15 +207,15 @@ public class ShooterCalc {
         log_robotInHubPassingZone.accept(robotInNoPassingZone);
 
         if (robotPastOurZoneX) {
-            m_isPassing =  () -> true;
+            m_isPassingFlag = true;
             // if (!robotInNoPassingZone) {
             boolean robotLeftOfCenter = isRed ? robotY < kCenterFieldYM : robotY > kCenterFieldYM;
             theTarget = robotLeftOfCenter ? kLeftPassTarget : kRightPassTarget;
             // }
         } else {
-            m_isPassing =  () -> false;
+            m_isPassingFlag = false;
         }
-        m_ballTrajBuffer[0] = new Translation3d(FieldConstants.fieldLength - robotPose.getX(), FieldConstants.fieldWidth - robotPose.getY(), 0);
+        m_ballTrajBuffer[0] = new Translation3d(FieldConstants.fieldLength - robotX, FieldConstants.fieldWidth - robotY, 0);
         m_ballTrajBuffer[1] = theTarget;
         log_ballTrajectory.accept(m_ballTrajBuffer);
         return AllianceFlipUtil.apply(theTarget);

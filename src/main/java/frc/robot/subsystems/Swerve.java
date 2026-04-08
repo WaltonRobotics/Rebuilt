@@ -60,6 +60,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private double m_lastSimTime;
 
     public SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(getModuleLocations());
+    private final StatusSignal<Angle> sig_gyroRoll = getPigeon2().getRoll();
+    private final StatusSignal<Angle> sig_gyroYaw = getPigeon2().getYaw();
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -282,8 +284,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             });
         }
 
-        ChassisSpeeds currentChassisSpeeds = this.getChassisSpeeds();
-        log_absoluteRobotSpeed.accept(Math.hypot(currentChassisSpeeds.vxMetersPerSecond, currentChassisSpeeds.vyMetersPerSecond));
+        var state = getState();
+        var speeds = m_kinematics.toChassisSpeeds(state.ModuleStates);
+        log_absoluteRobotSpeed.accept(Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
     }
 
     private void startSimThread() {
@@ -503,13 +506,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     public boolean isBeached() {
-        StatusSignal<Angle> gyroX = getPigeon2().getRoll();
-        StatusSignal<Angle> gyroY = getPigeon2().getYaw();
-
-        if (gyroX.isNear(0, 3) && gyroY.isNear(0, 3) ) {
-            return true;
-        }
-
-        return false;
+        return sig_gyroRoll.refresh().isNear(0, 3) && sig_gyroYaw.refresh().isNear(0, 3);
     }
 }

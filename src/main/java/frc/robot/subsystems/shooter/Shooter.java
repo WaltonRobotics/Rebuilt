@@ -53,6 +53,7 @@ public class Shooter extends SubsystemBase {
         new WaltTunable("/Shooter/shooterRPSOverride", kShooterRPSd);
     private static final WaltTunable kHoodRotsOverride =
         new WaltTunable("/Shooter/hoodRotsOverride", 0.0);
+    private static final double kHoodLockedPosRots = Rotations.of(0.08).magnitude();
     /* VARIABLES */
     // boolean m_useShotCalculator = true;
 
@@ -284,9 +285,6 @@ public class Shooter extends SubsystemBase {
 
         ShotCalcOutputs calcData = m_shooterCalc.getLatestShotCalcOutputs();
 
-        sig_shooterCLErr.refresh();
-        log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
-
         // set turret reference
         if (m_turret.isTurretHomed()) {
             var turretReference = calcData.turretReferenceRots();
@@ -316,7 +314,7 @@ public class Shooter extends SubsystemBase {
             double hoodReference = calcData.hoodReferenceRots();
 
             if (m_turret.getTurretLocked()) {
-                m_hood.setHoodPos(Rotations.of(0.08).magnitude());
+                m_hood.setHoodPos(kHoodLockedPosRots);
             } else {
                 if (!m_turret.getHoldTurretAtIntake()) {
                     m_hood.setHoodPos(kHoodRotsOverride.enabled()
