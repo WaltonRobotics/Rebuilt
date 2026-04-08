@@ -91,7 +91,7 @@ public class ShooterCalc {
     private static final double kTurretMaxRotsMagnitudeD = kTurretMaxRots.magnitude();
 
     private final ShotDataLerp kEmptyShotData = new ShotDataLerp(0.0, 0.0, new Translation3d(), 0.0);
-    private final AzimuthCalcDetails kEmptyAzimuthCalcDetails = new AzimuthCalcDetails(0, new Pose3d(), new Pose3d(), 0, 0);
+    private final AzimuthCalcDetails kEmptyAzimuthCalcDetails = new AzimuthCalcDetails(0, 0, 0, 0, 0, 0, 0);
     private final ShotCalcOutputs kEmptyShotCalcOutputs = new ShotCalcOutputs(kEmptyAzimuthCalcDetails, kEmptyShotData, 0, 0, 0);
 
     private volatile boolean m_useStaticShot = true;
@@ -175,10 +175,13 @@ public class ShooterCalc {
         // Logging
         pub_canTurretShoot.accept(canTurretShoot());
         log_globalShotTarget.accept(m_aimTarget);
-        log_desiredAimPose.accept(m_shotCalcOutputs.turretCalcDetails().desiredAimPose());
-        log_currentAimPose.accept(m_shotCalcOutputs.turretCalcDetails().currentAimPose());
-        log_rawDesiredTurretRot.accept(m_shotCalcOutputs.turretCalcDetails().rawDesiredRotations());
-        log_desiredTurretRot.accept(m_shotCalcOutputs.turretCalcDetails().turretReferenceRots());
+
+        var details = m_shotCalcOutputs.turretCalcDetails();
+        Translation3d turretTranslation = new Translation3d(details.turretX(), details.turretY(), kTurretOffsetZ_m);
+        log_desiredAimPose.accept(new Pose3d(turretTranslation, new Rotation3d(0, 0, details.fieldYawRad())));
+        log_currentAimPose.accept(new Pose3d(turretTranslation, new Rotation3d(0, 0, details.currentFieldYawRad())));
+        log_rawDesiredTurretRot.accept(details.rawDesiredRotations());
+        log_desiredTurretRot.accept(details.turretReferenceRots());
         log_timeOfFlight.accept(m_shotCalcOutputs.shotData().tofSec());
 
         log_loopTime.accept(m_calcTimer.get() * 1000.0);
@@ -221,7 +224,11 @@ public class ShooterCalc {
         return AllianceFlipUtil.apply(theTarget);
     }
 
-    public record AzimuthCalcDetails(double turretReferenceRots, Pose3d desiredAimPose, Pose3d currentAimPose, double rawDesiredRotations, double turretVelocityFF) {}
+    public record AzimuthCalcDetails(
+        double turretReferenceRots, double turretVelocityFF,
+        double turretX, double turretY,
+        double fieldYawRad, double currentFieldYawRad,
+        double rawDesiredRotations) {}
 
     /**
      * Calculates the turret's *TARGET* angle while ensuring it stays within
@@ -254,16 +261,7 @@ public class ShooterCalc {
         double turretY = robotY + kTurretOffsetX_m * sinH + kTurretOffsetY_m * cosH;
         double turretZeroFieldDirRad = headingRad + kTurretAngleOffsetRad;
 
-        // Build Translation3d once for logging Pose3d objects
-        Translation3d turretTranslation = new Translation3d(turretX, turretY, kTurretOffsetZ_m);
-
         double turretHeadingRots = turretHeading;
-        Pose3d turretRobotPose = new Pose3d(turretTranslation,
-            new Rotation3d(0, 0, turretZeroFieldDirRad + turretHeadingRots * (2 * Math.PI)));
-        log_turretRobotPose.accept(turretRobotPose);
-
-        Pose3d turretRealPose = new Pose3d(turretTranslation, kTurretRealPoseRotation);
-        log_turretFieldPose.accept(turretRealPose);
 
         // Vector from turret to target for yaw calculation
         double toTargetX = target.getX() - turretX;
@@ -283,10 +281,7 @@ public class ShooterCalc {
             directionRots -= kLateralBiasTuner.get() * Math.sin(turretRelToRobotRad);
         }
 
-        // Logging poses
-        var desiredAimPose = new Pose3d(turretTranslation, new Rotation3d(0, 0, fieldYawRad));
-        double currentFieldYaw = turretZeroFieldDirRad + turretHeadingRots * (2 * Math.PI);
-        var currentAimPose = new Pose3d(turretTranslation, new Rotation3d(0, 0, currentFieldYaw));
+        double currentFieldYawRad = turretZeroFieldDirRad + turretHeadingRots * (2 * Math.PI);
 
         double angleRotations = MathUtil.inputModulus(
                 directionRots, kTurretMinRotsMagnitudeD, kTurretMaxRotsMagnitudeD);
@@ -311,7 +306,10 @@ public class ShooterCalc {
             : 0.0;
 
         AzimuthCalcDetails calcDetails = new AzimuthCalcDetails(
-            turretReferenceRots, desiredAimPose, currentAimPose, angleRotations, turretFFRadPerSec);
+            turretReferenceRots, turretFFRadPerSec,
+            turretX, turretY,
+            fieldYawRad, currentFieldYawRad,
+            angleRotations);
         // logger.accept(calcDetails);
         return calcDetails;
     }

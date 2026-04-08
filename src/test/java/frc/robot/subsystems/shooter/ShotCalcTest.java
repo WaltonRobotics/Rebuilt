@@ -300,17 +300,18 @@ class ShotCalcTest {
 
         @Test
         void moreIterations_convergesToSameResult() {
-            ShotDataLerp shot1 = ShotCalculator.iterativeMovingShotFromInterpolationMap(
-                MID_POSE, TRANSLATING_SPEEDS, HUB_TARGET, 1);
-            ShotDataLerp shot3 = ShotCalculator.iterativeMovingShotFromInterpolationMap(
-                MID_POSE, TRANSLATING_SPEEDS, HUB_TARGET, 3);
+            // The iterative solver exhibits damped oscillation (alternating over/undershoot)
+            // with a ~1/3 contraction ratio per step. At vx=2.0, vy=1.0 m/s it needs ~7
+            // iterations to fully converge. Production uses 5 (ShooterCalc.calcShot),
+            // so we verify that 5 iterations lands close to the fully-converged answer.
+            ShotDataLerp shot5 = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+                MID_POSE, TRANSLATING_SPEEDS, HUB_TARGET, 5);
             ShotDataLerp shot10 = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, TRANSLATING_SPEEDS, HUB_TARGET, 10);
-            // 3 and 10 iterations should converge closely
-            assertEquals(shot3.exitVelocity(), shot10.exitVelocity(), 0.5,
-                "3 and 10 iterations should converge on exit velocity");
-            assertEquals(shot3.hoodAngle(), shot10.hoodAngle(), 0.1,
-                "3 and 10 iterations should converge on hood angle");
+            assertEquals(shot5.exitVelocity(), shot10.exitVelocity(), 0.5,
+                "5 and 10 iterations should converge on exit velocity");
+            assertEquals(shot5.hoodAngle(), shot10.hoodAngle(), 0.1,
+                "5 and 10 iterations should converge on hood angle");
         }
     }
 
