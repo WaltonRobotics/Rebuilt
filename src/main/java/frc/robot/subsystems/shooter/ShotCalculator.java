@@ -20,7 +20,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.FieldConstants;
-import frc.util.AllianceZoneUtil;
 import frc.util.WaltLogger.*;
 import edu.wpi.first.units.measure.Time;
 
@@ -39,8 +38,8 @@ public class ShotCalculator {
     // private static final WaltTunable kDragCoeffTuner = new WaltTunable("/ShotCalc/sotmDragCoeff", 0.2974, true);
     // private static final Tracer m_iterativeTracer = new Tracer();
 
-    private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
-    private static final double kBlueHubCenterX = AllianceZoneUtil.blueHubCenter.getX();
+    // private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
+    // private static final double kBlueHubCenterX = AllianceZoneUtil.blueHubCenter.getX();
 
     private static final double[] kReductionDistances = {1.48, 2.31, 4.12};
     private static final double[] kReductionAmount = {0, 2, 4};

@@ -31,7 +31,6 @@ import frc.util.AllianceZoneUtil;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
-import frc.util.WaltLogger.Pose2dLogger;
 import frc.util.WaltLogger.Pose3dLogger;
 import frc.util.WaltLogger.Translation3dArrayLogger;
 
@@ -52,7 +51,7 @@ public class ShooterCalc {
     private final BooleanPublisher pub_canTurretShoot;
 
     private final Pose3dLogger log_globalShotTarget = WaltLogger.logPose3d("ShotCalc", "globalTarget");
-    private final Pose3dLogger log_calculatedShotTarget = WaltLogger.logPose3d("ShotCalc", "shotCalcTarget");
+    // private final Pose3dLogger log_calculatedShotTarget = WaltLogger.logPose3d("ShotCalc", "shotCalcTarget");
     private final DoubleLogger log_rawDesiredTurretRot = WaltLogger.logDouble("ShotCalc", "rawDesiredTurretRots");
     private final DoubleLogger log_desiredTurretRot = new DoubleLogger("ShotCalc", "desiredTurretRotations");
     private final DoubleLogger log_timeOfFlight = new DoubleLogger("ShotCalc", "timeOfFlight");
@@ -77,10 +76,10 @@ public class ShooterCalc {
     private static final Translation3d kRightPassTarget =
         new Translation3d(ShooterK.kPassingXAsDouble, 2, 0);
     
-    private static final Translation3d kLeftPassPastHubTarget =
-        new Translation3d(ShooterK.kPassingXAsDouble + 0.5, FieldConstants.fieldWidth - 1.5, 0);
-    private static final Translation3d kRightPassPastHubTarget =
-        new Translation3d(ShooterK.kPassingXAsDouble + 0.5, 1.5, 0);
+    // private static final Translation3d kLeftPassPastHubTarget =
+    //     new Translation3d(ShooterK.kPassingXAsDouble + 0.5, FieldConstants.fieldWidth - 1.5, 0);
+    // private static final Translation3d kRightPassPastHubTarget =
+    //     new Translation3d(ShooterK.kPassingXAsDouble + 0.5, 1.5, 0);
 
     // Pre-allocated ballTrajectory log buffer — reused each callback to avoid array allocation
     private static final Translation3d[] m_ballTrajBuffer = new Translation3d[2];
@@ -105,8 +104,8 @@ public class ShooterCalc {
     private final Timer m_calcTimer = new Timer();
 
     private boolean isRed = WaltDriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
-    private double robotX;
-    private double robotY;
+    // private double robotX;
+    // private double robotY;
     private boolean robotInNoPassingZone;
 
     public ShooterCalc(Supplier<SwerveDriveState> threadsafeSwerveDriveStateSup, DoubleSupplier turretPosSup) {

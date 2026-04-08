@@ -1,10 +1,6 @@
 package frc.robot.autons;
 
-import static frc.robot.Constants.SuperstructureK.kLogTab;
-
-import java.util.ArrayList;
 import java.util.Set;
-import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import choreo.Choreo;
@@ -20,7 +16,6 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.ShooterCalc;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -37,7 +32,7 @@ public class WaltAdaptableAutonFactory {
     public Timer autonTimer = new Timer();
 
     // state logger
-    private final DoubleLogger log_autonState = WaltLogger.logDouble(kLogTab, "State");
+    // private final DoubleLogger log_autonState = WaltLogger.logDouble(kLogTab, "State");
 
     // trajectory logger
     private final StringLogger log_trajectoryName = new StringLogger(AutonK.kLogTab, "trajectoryName");
@@ -49,8 +44,6 @@ public class WaltAdaptableAutonFactory {
     private boolean m_isAtStopShoot = false;
     private Trigger trg_isAtStopShoot = new Trigger(() -> m_isAtStopShoot);
 
-    private boolean m_isOnBall = false;
-
     public WaltAdaptableAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter, Swerve swerve) {
         m_superstructure = superstructure;
         m_autoFactory = autoFactory;
@@ -60,9 +53,9 @@ public class WaltAdaptableAutonFactory {
     }
 
     //---UTILITY METHODS
-    private Command logState(double state) {
-        return Commands.runOnce(() -> log_autonState.accept(state));
-    }
+    // private Command logState(double state) {
+    //     return Commands.runOnce(() -> log_autonState.accept(state));
+    // }
 
     private Command tp(String message) {
         return WaltLogger.timedPrintCmd(message);
@@ -99,14 +92,6 @@ public class WaltAdaptableAutonFactory {
 
     public void startAutonTimer() {
         autonTimer.start();
-    }
-
-    private void updateIsOnBall() {
-        if (m_drivetrain.isBeached()) {
-            m_isOnBall = true;
-        } else {
-            m_isOnBall = false;
-        }
     }
 
     //---AUTOROUTINE TRAJECTORY HELPER

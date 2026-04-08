@@ -70,9 +70,9 @@ public class Robot extends TimedRobot {
     // private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     // private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
-    private final SwerveRequest.RobotCentric tuneDrive = new SwerveRequest.RobotCentric()
-        .withDeadband(kMaxTranslationSpeed.times(0.1)).withRotationalDeadband(kMaxAngularRate.times(0.1)) // Add a 10% deadband
-        .withDriveRequestType(DriveRequestType.Velocity);
+    // private final SwerveRequest.RobotCentric tuneDrive = new SwerveRequest.RobotCentric()
+    //     .withDeadband(kMaxTranslationSpeed.times(0.1)).withRotationalDeadband(kMaxAngularRate.times(0.1)) // Add a 10% deadband
+    //     .withDriveRequestType(DriveRequestType.Velocity);
 
     // private final Telemetry logger = new Telemetry(kMaxTranslationSpeed.in(MetersPerSecond));
 
@@ -103,8 +103,8 @@ public class Robot extends TimedRobot {
     // private final VisionSim m_visionSim = new VisionSim();
 
     /* TRIGGERS */
-    private Trigger trg_optimalPrefireTime = new Trigger(HubShiftUtil.optimalPrefireTime());
-    private Trigger trg_comebackTime = new Trigger(HubShiftUtil.comebackTime());
+    // private Trigger trg_optimalPrefireTime = new Trigger(HubShiftUtil.optimalPrefireTime());
+    // private Trigger trg_comebackTime = new Trigger(HubShiftUtil.comebackTime());
     private Trigger trg_turretInShootRange = new Trigger(() -> ShooterCalc.canTurretShoot());
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
@@ -207,10 +207,10 @@ public class Robot extends TimedRobot {
         );
     }
 
-    private void setBothRumble(RumbleType type, double intensity) {
-        m_driver.setRumble(type, intensity);
-        m_manipulator.setRumble(type, intensity);
-    }
+    // private void setBothRumble(RumbleType type, double intensity) {
+    //     m_driver.setRumble(type, intensity);
+    //     m_manipulator.setRumble(type, intensity);
+    // }
 
     //---BINDINGS
     private void configureBindings() {
