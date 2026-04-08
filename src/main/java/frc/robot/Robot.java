@@ -316,7 +316,6 @@ public class Robot extends TimedRobot {
         //---OVERRIDE COMMANDS
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
 
-
         m_manipulator.start().and(trg_manipOverride).onTrue(m_shooter.m_hood.hoodCurrentSenseHomingCmd());
         m_manipulator.leftTrigger().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double / 2.0));
 
@@ -446,6 +445,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
+        m_adpatableAutonFactory.startAutonTimer();
     }
 
     @Override

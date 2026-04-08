@@ -45,6 +45,7 @@ import frc.robot.vision.Detection;
 import frc.util.WaltDriverStation;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.Pose2dLogger;
 
 /**
  * CommandSwerveDrivetrain: Class that extends the Phoenix 6 SwerveDrivetrain class 
@@ -82,6 +83,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private final Detection detection = new Detection();
 
     private final DoubleLogger log_absoluteRobotSpeed = new WaltLogger.DoubleLogger("Swerve", "absoluteRobotSpeed");
+    private final Pose2dLogger log_sampleAt_pose = new Pose2dLogger("Swerve/Autons", "sampleAt_Pose");
+    private final DoubleLogger log_currentAutonTotalTime = new DoubleLogger("Swerve/Auton", "currentTotalTime");
+    private final DoubleLogger log_sampleAt_velocityX = new DoubleLogger("Swerve/Auton", "sampleAt_velocityX");
+    private final DoubleLogger log_sampleAt_velocityY = new DoubleLogger("Swerve/Auton", "sampleAt_velocityY");
+    
 
     private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
@@ -382,7 +388,13 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      */
     public AutoFactory createAutoFactory() {
         return createAutoFactory((traj, isStart) -> {
+            SwerveSample sample = traj.sampleAt(4.25, false).get();
             WaltLogger.timedPrint(String.format("TrajLog - isStart: %b", isStart));
+            WaltLogger.timedPrint("Sample at 4.25s (PRE BUMP); X:" + sample.getPose().getX() + " Y:" + traj.sampleAt(4.25, false).get().getPose().getY());
+            log_sampleAt_pose.accept(sample.getPose());
+            log_sampleAt_velocityX.accept(sample.vx);
+            log_sampleAt_velocityY.accept(sample.vy);
+            log_currentAutonTotalTime.accept(traj.getTotalTime());
         });
     }
 

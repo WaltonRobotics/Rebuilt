@@ -3,12 +3,15 @@ package frc.robot.autons;
 import static frc.robot.Constants.SuperstructureK.kLogTab;
 
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 import choreo.Choreo;
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -31,6 +34,8 @@ public class WaltAdaptableAutonFactory {
     private final Shooter m_shooter;
     private final Swerve m_drivetrain;
 
+    public Timer autonTimer = new Timer();
+
     // state logger
     private final DoubleLogger log_autonState = WaltLogger.logDouble(kLogTab, "State");
 
@@ -38,6 +43,7 @@ public class WaltAdaptableAutonFactory {
     private final StringLogger log_trajectoryName = new StringLogger(AutonK.kLogTab, "trajectoryName");
     private final Pose2dArrayLogger log_trajectoryPoses = new Pose2dArrayLogger(AutonK.kLogTab, "trajectoryPoses");
     private final BooleanLogger log_isAtStopShoot = new BooleanLogger(AutonK.kLogTab, "isAtStopShoot");
+    private final DoubleLogger log_autonTimer = new DoubleLogger(AutonK.kLogTab, "autonTimer");
 
     // logic booleans
     private boolean m_isAtStopShoot = false;
@@ -74,6 +80,25 @@ public class WaltAdaptableAutonFactory {
     public AutoRoutine preheater() {
         System.out.println("PREHEAT MADE");
         return adaptableAuton("PreHeat", new AdaptableAutonInfo("PreHeat", AutonK.kReshootShootingTimeout, false));
+    }
+
+    //thank you grac
+    private static Command printLater(Supplier<String> stringSup) {
+		return Commands.defer(() -> {
+			return Commands.print(stringSup.get());
+		}, Set.of());
+	}
+
+    private Command logTimer(String epochName, Supplier<Timer> timerSup) {
+        return printLater(() -> {
+            var timer = timerSup.get();
+            log_autonTimer.accept(autonTimer.get());
+            return epochName + " at " + timer.get() + " s";
+        });
+	}
+
+    public void startAutonTimer() {
+        autonTimer.start();
     }
 
     private void updateIsOnBall() {
@@ -187,6 +212,10 @@ public class WaltAdaptableAutonFactory {
             m_superstructure.intake(() -> false).until(traj.atTime("stopIntake"))
         );
 
+        traj.atTime("intake").onTrue(
+            logTimer("intaking", () -> autonTimer)
+        );
+
         traj.atTime("shoot").and(() -> !SOTM).onTrue(
             // stopShoot acts as an override STOP SHOOTING to continue the pathing whereas the debounceTrg can help us move on faster if we're already outta balls
             Commands.race(
@@ -203,6 +232,10 @@ public class WaltAdaptableAutonFactory {
 
         traj.atTime("shoot").onTrue(
             m_superstructure.intakeShimmy()
+        );
+
+        traj.atTime("shoot").onTrue(
+            logTimer("shoot", () -> autonTimer)
         );
 
         traj.atTime("stopShoot").onChange(
