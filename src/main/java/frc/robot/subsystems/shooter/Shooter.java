@@ -157,6 +157,8 @@ public class Shooter extends SubsystemBase {
         trg_ballDetected.onFalse(Commands.runOnce(() -> { m_shotRecoveryTimer.restart(); }));
         trg_inShootCtrlMode.onFalse(Commands.runOnce(() -> { m_shotDropSeen = false; m_shotRecoveryTimer.stop(); m_shotRecoveryTimer.reset(); }));
 
+        trg_ballDetected.onTrue(Commands.runOnce(() -> {m_ballsShot++;}));
+
         // m_turretVisualizer = new TurretVisualizer(
         //         () -> new Pose3d(m_poseSupplier.get().rotateAround(
         //                 poseSupplier.get().getTranslation(), new Rotation2d(turretTurnPosition)))
@@ -261,6 +263,17 @@ public class Shooter extends SubsystemBase {
         return accelDrop;
     }
 
+    // /**
+    //  * Launches SIMULATION FUEL™ at the current Flywheel Velocity, current Hood
+    //  * Angle, and the
+    //  * current Turret Position.
+    //  */
+    // public void launchFuel() {
+    //     if (m_fuelStored == 0)
+    //         return;
+    //     // m_fuelStored--;
+    // }
+
     public Trigger getBallShotDebounceTrg() {
         return trg_ballShotDebounced;
     }
@@ -284,6 +297,9 @@ public class Shooter extends SubsystemBase {
         m_latestFlywheelAccelerationRotPerSec = sig_shooterAAccel.getValueAsDouble();
 
         ShotCalcOutputs calcData = m_shooterCalc.getLatestShotCalcOutputs();
+
+        sig_shooterCLErr.refresh();
+        log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
 
         // set turret reference
         if (m_turret.isTurretHomed()) {

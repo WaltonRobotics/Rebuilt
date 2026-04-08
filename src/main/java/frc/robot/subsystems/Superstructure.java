@@ -39,13 +39,13 @@ public class Superstructure extends SubsystemBase {
             m_intake.setIntakeRollersVelocityCmd(11),
             Commands.run(
             () -> {
-                boolean shooting = isShooting.getAsBoolean();
+                // boolean shooting = isShooting.getAsBoolean();
                 // m_shooter.m_turret.setIntaking(!shooting);
                 // m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPS : IndexerK.kSpindexerIntakeRPS);
             })
         ).finallyDo(
             () -> {
-                boolean shooting = isShooting.getAsBoolean();
+                // boolean shooting = isShooting.getAsBoolean();
                 // m_shooter.m_turret.setIntaking(false);
                 m_intake.setIntakeRollersVelocity(0);
                 // if (!shooting) {
