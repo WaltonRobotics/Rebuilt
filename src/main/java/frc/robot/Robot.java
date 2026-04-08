@@ -11,16 +11,13 @@ import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 
-import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.Utils;
-import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -39,7 +36,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterCalc;
-import frc.robot.Constants.IntakeK;
 import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.dashboards.AutonChooser;
@@ -48,7 +44,6 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
-import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.WaltCamera;
 import frc.util.HubShiftUtil;
@@ -198,7 +193,7 @@ public class Robot extends TimedRobot {
             var driverYVelo = translationSpeed.times(-m_driver.getLeftX());
             var driverYawRate = (m_driver.leftBumper().getAsBoolean() ? 
                 kMaxAngularRate.times(-m_driver.getRightX()).times(rotationMult) :
-kMaxAngularRate.times(-m_driver.getRightX()));
+                kMaxAngularRate.times(-m_driver.getRightX()));
 
             // log_stickDesiredFieldX.accept(driverXVelo.in(MetersPerSecond));
             // log_stickDesiredFieldY.accept(driverYVelo.in(MetersPerSecond));
@@ -286,8 +281,7 @@ kMaxAngularRate.times(-m_driver.getRightX()));
             .and(trg_turretInShootRange.negate())
             .whileTrue(m_superstructure.spinUpFlywheel()); 
 
-        m_manipulator.rightTrigger().and(trg_manipOverride)
-            .whileTrue(m_intake.setIntakeRollersVelocityCmd(IntakeK.kIntakeRollersBarfVolts).finallyDo(() -> m_intake.setIntakeRollersVelocity(0)));
+        // m_manipulator.rightTrigger().and(trg_manipOverride).whileTrue(Commands.run(() -> m_intake.setIntakeRollersVelocity(kIntakeRollersBarfVolts)).finallyDo(() -> m_intake.setIntakeRollersVelocity(0)));
 
         // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));
         // m_driver.a().onTrue(m_shooter.driverRPSAlter(false));
@@ -322,8 +316,7 @@ kMaxAngularRate.times(-m_driver.getRightX()));
         //---OVERRIDE COMMANDS
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
 
-        m_manipulator.y().and(trg_manipOverride).onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double));
-        m_manipulator.a().and(trg_manipOverride).onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMinRots_double));
+
         m_manipulator.start().and(trg_manipOverride).onTrue(m_shooter.m_hood.hoodCurrentSenseHomingCmd());
         m_manipulator.leftTrigger().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double / 2.0));
 
