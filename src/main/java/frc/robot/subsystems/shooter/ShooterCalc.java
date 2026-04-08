@@ -341,7 +341,7 @@ public class ShooterCalc {
         // The Calculated shot itself, according to the current robotPose, robotSpeeds,
         // and the currentTarget
         ShotDataLerp calculatedShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
-            robotPose, fieldSpeeds, target, 5);
+            robotPose, fieldSpeeds, target, 8);
 
         // The turret angle according to the Calculated shot
         AzimuthCalcDetails azCalcDetails = calcAzimuth(calculatedShot.getTarget(), robotPose, turretPositionRots, fieldSpeeds);

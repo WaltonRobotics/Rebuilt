@@ -30,6 +30,8 @@ public class ShotCalculator {
     private static final DoubleLogger log_distToTargetMeters = new DoubleLogger("Shooter/Calculator", "distTargetToMeters");
     private static final BooleanLogger log_isPassingLerp = new BooleanLogger("Shooter/Calculator", "isPassingLERP");
     private static final DoubleLogger log_dragCoefficient = new DoubleLogger("Shooter/Calculator", "dragCoefficient");
+    private static final IntLogger log_lerpIterationCount = new IntLogger("Shooter/Calculator", "lerpIterationCount");
+    private static final BooleanLogger log_calcConvergedBreakout = new BooleanLogger("Shooter/Calculator", "calcConvergedBreakout");
 
     private static final double kMetersToInches = 1.0 / 0.0254;
     // Horizontal drag damping: actual drift = v * (1 - e^(-c*t)) / c < v*t
@@ -485,7 +487,10 @@ public class ShotCalculator {
 
         //meant to iterate the process, and converge on one specific value.
         //gets a better ToF estimation & updates predictedTarget accordingly!
+        int iterCount = 0;
+        boolean converged = false;
         for (int i = 0; i < iterations; i++) {
+            iterCount = i + 1;
             double prevExitVel = exitVel;
             double prevHoodAngle = hoodAngle;
             double prevTOF = tofSec;
@@ -518,10 +523,12 @@ public class ShotCalculator {
             if (Math.abs(dHood) < .05 && Math.abs(dExitVel) < .05
                     && Math.sqrt(dPredX * dPredX + dPredY * dPredY) < .05
                     && Math.abs(dTOF) < .005) {
+                converged = true;
                 break;
             }
         }
-
+        log_calcConvergedBreakout.accept(converged);
+        log_lerpIterationCount.accept(iterCount);
         return new ShotDataLerp(exitVel, hoodAngle, new Translation3d(predX, predY, targetZ), tofSec);
     }
 
