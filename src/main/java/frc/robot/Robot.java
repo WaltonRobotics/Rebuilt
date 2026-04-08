@@ -60,6 +60,10 @@ public class Robot extends TimedRobot {
     private final LinearVelocity kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts; // kSpeedAt12Volts desired top speed
     private final AngularVelocity kMaxAngularRate = RotationsPerSecond.of(1.05); // 3/4 of a rotation per second max angular velocity
 
+    // Pre-computed doubles for driveCommand hot path (avoids .times() measure allocations every tick)
+    private final double kMaxTranslationMps = kMaxTranslationSpeed.in(MetersPerSecond);
+    private final double kMaxAngularRps = kMaxAngularRate.in(RadiansPerSecond);
+
     private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
     private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger(kLogTab, "VisionSeenLastSec");
 
@@ -184,21 +188,17 @@ public class Robot extends TimedRobot {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         // Drivetrain will execute this command periodically
+        final double slowMps = kMaxTranslationMps * speedMult;
+        final double slowRotRps = kMaxAngularRps * rotationMult;
         return m_drivetrain.applyRequest(() -> {
-            LinearVelocity translationSpeed = (m_driver.leftTrigger().getAsBoolean() ? 
-                kMaxTranslationSpeed.times(speedMult) :
-                kMaxTranslationSpeed);
-        
-            var driverXVelo = translationSpeed.times(-m_driver.getLeftY());
-            var driverYVelo = translationSpeed.times(-m_driver.getLeftX());
-            var driverYawRate = (m_driver.leftBumper().getAsBoolean() ? 
-                kMaxAngularRate.times(-m_driver.getRightX()).times(rotationMult) :
-                kMaxAngularRate.times(-m_driver.getRightX()));
+            double translationMps = m_driver.leftTrigger().getAsBoolean() ? slowMps : kMaxTranslationMps;
 
-            // log_stickDesiredFieldX.accept(driverXVelo.in(MetersPerSecond));
-            // log_stickDesiredFieldY.accept(driverYVelo.in(MetersPerSecond));
-            // log_stickDesiredFieldZRot.accept(driverYawRate.in(RotationsPerSecond));
-            
+            double driverXVelo = translationMps * -m_driver.getLeftY();
+            double driverYVelo = translationMps * -m_driver.getLeftX();
+            double driverYawRate = m_driver.leftBumper().getAsBoolean()
+                ? slowRotRps * -m_driver.getRightX()
+                : kMaxAngularRps * -m_driver.getRightX();
+
             return drive
                 .withVelocityX(driverXVelo) // Drive forward with Y (forward)
                 .withVelocityY(driverYVelo) // Drive left with X (left)
