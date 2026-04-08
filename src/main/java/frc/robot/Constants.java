@@ -143,7 +143,7 @@ public class Constants {
         public static final double kShooterRPSd = 53.50;
         public static final AngularVelocity kShooterAutonCloseRPS = kShooterMaxRPS.times(0.60);  //auton pose is closer to the hub than teleop scoring
         public static final AngularVelocity kShooterAuton_EndSweep_RPS = kShooterMaxRPS.times(0.70); // end of sweep paths
-        public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.31);
+        public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.37);
         public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.zero();
 
         public static final AngularVelocity kShooterSpunUpMinimum = RotationsPerSecond.of(10);
@@ -626,23 +626,27 @@ public class Constants {
         public static final String kRightOneJab = "RIGHT_one_jab";
         public static final String kRightOneTrench = "RIGHT_one_trench";
         public static final String kRightOneDefense = "RIGHT_one_defense";
+        public static final String kRightOneReverse = "RIGHT_one_reverse";
 
         //---SECOND CYCLES
         public static final String kRightTwoDepot = "RIGHT_two_depot";
         public static final String kRightTwoSweep = "RIGHT_two_sweep";
         public static final String kRightTwoPassing = "RIGHT_two_passing";
         public static final String kRightTwoJab = "RIGHT_two_jab";
+        public static final String kRightTwoReverse = "RIGHT_two_reverse";
 
         //---FIRST CYCLES
         public static final String kLeftOneJab = "LEFT_one_jab";
         public static final String kLeftOneTrench = "LEFT_one_trench";
         public static final String kLeftOneDefense = "LEFT_one_defense";
+        public static final String kLeftOneReverse = "LEFT_one_reverse";
 
         //---SECOND CYCLES
         public static final String kLeftTwoDepot = "LEFT_two_depot";
         public static final String kLeftTwoSweep = "LEFT_two_sweep";
         public static final String kLeftTwoPassing = "LEFT_two_passing";
         public static final String kLeftTwoJab = "LEFT_two_jab";
+        public static final String kLeftTwoReverse = "LEFT_two_reverse";
 
         //---MISC
         public static final String kRightOneCircle = "RIGHT_one_circle";
