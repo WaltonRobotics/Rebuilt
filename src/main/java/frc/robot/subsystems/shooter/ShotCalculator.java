@@ -520,7 +520,7 @@ public class ShotCalculator {
             double dPredX = prevPredX - predX;
             double dPredY = prevPredY - predY;
 
-            if (Math.abs(dHood) < .05 && Math.abs(dExitVel) < .05
+            if (Math.abs(dHood) < .05 && Math.abs(dExitVel) < .5
                     && Math.sqrt(dPredX * dPredX + dPredY * dPredY) < .05
                     && Math.abs(dTOF) < .005) {
                 converged = true;
