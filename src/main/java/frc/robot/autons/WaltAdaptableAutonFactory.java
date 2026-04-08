@@ -38,11 +38,14 @@ public class WaltAdaptableAutonFactory {
     private final StringLogger log_trajectoryName = new StringLogger(AutonK.kLogTab, "trajectoryName");
     private final Pose2dArrayLogger log_trajectoryPoses = new Pose2dArrayLogger(AutonK.kLogTab, "trajectoryPoses");
     private final BooleanLogger log_isAtStopShoot = new BooleanLogger(AutonK.kLogTab, "isAtStopShoot");
+    private final BooleanLogger log_isAtStopIntake = new BooleanLogger(AutonK.kLogTab, "isAtStopIntake");
     private final DoubleLogger log_autonTimer = new DoubleLogger(AutonK.kLogTab, "autonTimer");
 
     // logic booleans
     private boolean m_isAtStopShoot = false;
+    private boolean m_isAtStopIntake = false;
     private Trigger trg_isAtStopShoot = new Trigger(() -> m_isAtStopShoot);
+    private Trigger trg_isAtStopIntake = new Trigger(() -> m_isAtStopIntake);
 
     public WaltAdaptableAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter, Swerve swerve) {
         m_superstructure = superstructure;
@@ -194,7 +197,7 @@ public class WaltAdaptableAutonFactory {
     public void setUpTrajTriggers(AutoTrajectory traj, double shooterTimeout, boolean SOTM) {
         //---TRIGGER ACTIONS
         traj.atTime("intake").onTrue(
-            m_superstructure.intake(() -> false).until(traj.atTime("stopIntake"))
+            m_superstructure.intake(() -> false).until(trg_isAtStopIntake)
         );
 
         traj.atTime("intake").onTrue(
@@ -227,6 +230,20 @@ public class WaltAdaptableAutonFactory {
             Commands.runOnce(() -> {
                 m_isAtStopShoot = !m_isAtStopShoot;
                 log_isAtStopShoot.accept(m_isAtStopShoot);
+            })
+        );
+
+        traj.atTime("stopIntake").onTrue(
+            Commands.runOnce(() -> {
+                m_isAtStopIntake = true;
+                log_isAtStopIntake.accept(m_isAtStopIntake);
+            })
+        );
+
+        traj.atTime("stopIntake").onFalse(
+            Commands.runOnce(() -> {
+                m_isAtStopIntake = false;
+                log_isAtStopIntake.accept(m_isAtStopIntake);
             })
         );
 
