@@ -419,6 +419,7 @@ public class Constants {
         public static final Distance kRobotFullLength = Inches.of(32.6875);
         public static final Distance kBumperHeight = Inches.of(4.5);
         public static final double kRobotSpeedIntakingLimit = 0.31;
+        public static final double kRobotEvasionLimit = 1.5;
     }
 
     public static class SuperstructureK {

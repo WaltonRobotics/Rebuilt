@@ -182,21 +182,23 @@ public class Robot extends TimedRobot {
     /* COMMANDS */
     /**
      * 
-     * @param speedMultiplier how much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
+     * @param speedMult how much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
      * @return swerve drive command
      */
-    private Command driveCommand(double speedMultiplier) {
+    private Command driveCommand(double speedMult, double rotationMult) {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         // Drivetrain will execute this command periodically
         return m_drivetrain.applyRequest(() -> {
             LinearVelocity translationSpeed = (m_driver.leftTrigger().getAsBoolean() ? 
-                kMaxTranslationSpeed.times(speedMultiplier) :
+                kMaxTranslationSpeed.times(speedMult) :
                 kMaxTranslationSpeed);
         
             var driverXVelo = translationSpeed.times(-m_driver.getLeftY());
             var driverYVelo = translationSpeed.times(-m_driver.getLeftX());
-            var driverYawRate = kMaxAngularRate.times(-m_driver.getRightX());
+            var driverYawRate = (m_driver.leftBumper().getAsBoolean() ? 
+                kMaxAngularRate.times(-m_driver.getRightX()).times(rotationMult) :
+kMaxAngularRate.times(-m_driver.getRightX()));
 
             // log_stickDesiredFieldX.accept(driverXVelo.in(MetersPerSecond));
             // log_stickDesiredFieldY.accept(driverYVelo.in(MetersPerSecond));
@@ -220,7 +222,7 @@ public class Robot extends TimedRobot {
         /* GENERATED SWERVE BINDS */
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
-        m_drivetrain.setDefaultCommand(driveCommand(RobotK.kRobotSpeedIntakingLimit));
+        m_drivetrain.setDefaultCommand(driveCommand(RobotK.kRobotSpeedIntakingLimit, RobotK.kRobotEvasionLimit));
 
         // Trigger trg_hubActiveOrPassing =
         //     new Trigger(
