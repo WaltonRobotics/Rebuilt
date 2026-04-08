@@ -465,7 +465,7 @@ public class Constants {
             .withNeutralMode(NeutralModeValue.Brake)
             .withInverted(InvertedValue.Clockwise_Positive);
         private static final MotionMagicConfigs kIntakeArmMotionMagicConfigs = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(0.75)
+            .withMotionMagicCruiseVelocity(1.5)
             .withMotionMagicAcceleration(10)
             .withMotionMagicJerk(0);
         public static final FeedbackConfigs kIntakeArmFeedbackConfigs = new FeedbackConfigs()

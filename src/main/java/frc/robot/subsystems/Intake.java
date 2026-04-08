@@ -11,6 +11,7 @@ import com.ctre.phoenix6.sim.ChassisReference;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IntakeK.*;
 
 import java.util.function.BooleanSupplier;
@@ -123,11 +124,11 @@ public class Intake extends SubsystemBase {
 
     /* COMMANDS */
     public void setIntakeArmPos(IntakeArmPosition rots) {
-        setIntakeArmPos(rots.rots, rots == IntakeArmPosition.RETRACTED ? 12 : 6);
+        setIntakeArmPos(rots.rots, rots == IntakeArmPosition.RETRACTED ? 36 : 18);
     }
 
     public Command setIntakeArmPosCmd(IntakeArmPosition rots) {
-        return setIntakeArmPosCmd(rots.rots, rots == IntakeArmPosition.RETRACTED ? 12 : 6);
+        return setIntakeArmPosCmd(rots.rots, rots == IntakeArmPosition.RETRACTED ? 36 : 18);
     }
 
     public Command setIntakeArmPosCmd(Angle rots, double RPSPS) {
@@ -179,7 +180,7 @@ public class Intake extends SubsystemBase {
     }
 
     public void setIntakeRollersVelocity(double volts) {
-        m_intakeRollersA.setControl(m_VelVoltReq.withVelocity(100/12 * volts));
+        m_intakeRollersA.setControl(m_VelVoltReq.withVelocity(volts / 12 * kIntakeRollersMaxRPS.in(RotationsPerSecond)));   ///kV = 0.488599348534
         // m_intakeRollersA.setControl(m_voltsReq.withOutput(volts));
     }
 
