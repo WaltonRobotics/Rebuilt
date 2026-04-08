@@ -117,7 +117,7 @@ public class Constants {
         public static final double kNoPassZoneLeftY = FieldConstants.fieldWidth - 3.2;
         
         public static final double kShooterTimeout = 1.0;
-        public static final double kBallDetectedDebounceTime = 0.9;
+        public static final double kBallDetectedDebounceTime = 1.2; //0.9;
 
         /* MOTOR CONSTANTS */
         public static final double kShooterMoI = 0.000349 * 2.5;  //J for 5 3" 0.53lb flywheels
