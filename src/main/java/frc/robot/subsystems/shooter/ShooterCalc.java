@@ -14,6 +14,9 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.networktables.BooleanPublisher;
+import edu.wpi.first.networktables.BooleanTopic;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -44,6 +47,9 @@ public class ShooterCalc {
     private final Supplier<SwerveDriveState> m_threadsafeSwerveDriveStateSup;
     private final DoubleSupplier m_turretPosRotsSup;
     private final SwerveDriveKinematics m_swerveKinematics = new SwerveDriveKinematics(TunerConstants.moduleTranslations);
+
+    private final BooleanTopic bt_canTurretShoot = new BooleanTopic(NetworkTableInstance.getDefault().getTopic(("ShooterCalc/isTurretAngry")));
+    private final BooleanPublisher pub_canTurretShoot;
 
     private final Pose3dLogger log_globalShotTarget = WaltLogger.logPose3d("ShotCalc", "globalTarget");
     private final Pose3dLogger log_calculatedShotTarget = WaltLogger.logPose3d("ShotCalc", "shotCalcTarget");
@@ -107,6 +113,7 @@ public class ShooterCalc {
         m_threadsafeSwerveDriveStateSup = threadsafeSwerveDriveStateSup;
         m_turretPosRotsSup = turretPosSup;
 
+        pub_canTurretShoot = bt_canTurretShoot.publish();
         m_notifier.setName("ShooterCalc");
         m_notifier.startPeriodic(Hertz.of(25)); // 2x slower than robot loop
     }
@@ -166,6 +173,7 @@ public class ShooterCalc {
         refreshCanTurretShoot();
 
         // Logging
+        pub_canTurretShoot.accept(canTurretShoot());
         log_globalShotTarget.accept(m_aimTarget);
         log_desiredAimPose.accept(m_shotCalcOutputs.turretCalcDetails().desiredAimPose());
         log_currentAimPose.accept(m_shotCalcOutputs.turretCalcDetails().currentAimPose());
