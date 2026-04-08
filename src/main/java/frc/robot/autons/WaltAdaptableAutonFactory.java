@@ -205,6 +205,13 @@ public class WaltAdaptableAutonFactory {
             m_superstructure.intakeShimmy()
         );
 
+        traj.atTime("stopShoot").onChange(
+            Commands.runOnce(() -> {
+                m_isAtStopShoot = !m_isAtStopShoot;
+                log_isAtStopShoot.accept(m_isAtStopShoot);
+            })
+        );
+
         traj.atTime("pass").onTrue(
             m_superstructure.intake(() -> true).until(traj.atTime("stopPass"))
         );
@@ -224,13 +231,6 @@ public class WaltAdaptableAutonFactory {
 
         traj.atTime("stopPass").onTrue(
             updateAutonEventMarkerLogger("stopPass")
-        );
-
-        traj.atTime("stopShoot").onChange(
-            Commands.runOnce(() -> {
-                m_isAtStopShoot = !m_isAtStopShoot;
-                log_isAtStopShoot.accept(m_isAtStopShoot);
-            })
         );
 
         traj.atTime("stopIntake").onTrue(

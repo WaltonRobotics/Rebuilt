@@ -74,6 +74,7 @@ public class AutonChooser {
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneJab, AutonK.kReshootShootingTimeout, false),
                                           new AdaptableAutonInfo(AutonK.kRightTwoPassing, AutonK.kReshootShootingTimeout, true)}));
         
+        //---DEFENSE AUTONS
         m_chooser.addRoutine(kLeftDefenseOneCycle,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftDefenseOneCycle,
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneDefense, AutonK.kReshootShootingTimeout, false)}));
@@ -82,6 +83,7 @@ public class AutonChooser {
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightDefenseOneCycle,
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneDefense, AutonK.kReshootShootingTimeout, false)}));
 
+        //---MISC
         m_chooser.addRoutine(kRightHubCircle,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightHubCircle,
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneCircle, AutonK.kReshootShootingTimeout, true),
@@ -90,7 +92,7 @@ public class AutonChooser {
         m_chooser.addRoutine(kLeftSweepAndDepot,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftSweepAndDepot,
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneSweepAndDepot, AutonK.kReshootShootingTimeout, true),
-                                          new AdaptableAutonInfo(AutonK.kLeftTwoSweep, AutonK.kReshootShootingTimeout, true)}));
+                                          new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kReshootShootingTimeout, true)}));
 
         //Load AutonChooser
         SmartDashboard.putData("AutoChooser", m_chooser);
