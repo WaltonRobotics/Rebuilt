@@ -433,7 +433,7 @@ public class Constants {
         public static final AngularVelocity kIntakeRollersMaxRPS = MotorK.kX60FOCMaxVelocity.div(kIntakeRollersGearing);
         public static final AngularVelocity kIntakeRollersShootRPS = kIntakeRollersMaxRPS.times(0.2);
         public static final AngularVelocity kIntakeRollersShimmyRPS = kIntakeRollersMaxRPS.times(0.2);
-        public static final double kIntakeRollersBarfVolts = -10;
+        public static final double kIntakeRollersBarfVolts = -12;
 
         /* IDS */
         public static final int kIntakeArmCANID = 40;
@@ -484,9 +484,9 @@ public class Constants {
             .withSupplyCurrentLimitEnable(true);
         private static final Slot0Configs kIntakeRollersASlot0Configs = new Slot0Configs()
             .withKS(0)
-            .withKV(0.488599348534) // 0.19543973941
+            .withKV(0.048) // 0.488599348534
             .withKA(0)
-            .withKP(0)
+            .withKP(0.05)
             .withKI(0)
             .withKD(0);
         public static final MotorOutputConfigs kIntakeRollersAMotorOutputConfigs = new MotorOutputConfigs()
