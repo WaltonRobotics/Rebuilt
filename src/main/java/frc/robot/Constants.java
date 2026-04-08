@@ -104,7 +104,7 @@ public class Constants {
         // Lateral bias compensation: balls drift left/right as a function of turret angle relative to robot.
         // sin(turretRelAngle) = 0 at 0/180°, +1 at 90° (left bias), -1 at 270° (right bias).
         // This gain (in rotations) is subtracted * sin to counter the bias. Tune on robot.
-        public static final double kTurretLateralBiasGainRots = 0.005;
+        public static final double kTurretLateralBiasGainRots = -0.005;
 
         public static final int kHopperCapacity = 55; //TODO: find true max
 
