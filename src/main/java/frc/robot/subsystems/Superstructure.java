@@ -1,12 +1,12 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IndexerK;
+import frc.robot.Constants.IntakeK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -36,22 +36,29 @@ public class Superstructure extends SubsystemBase {
         return Commands.sequence(
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(() -> m_intake.isIntakeArmAtDest()).withTimeout(0.25),
-            m_intake.setIntakeRollersVelocityCmd(12),
+            m_intake.setIntakeRollersVelocityCmd(11),
             Commands.run(
             () -> {
-                boolean shooting = isShooting.getAsBoolean();
-                m_shooter.m_turret.setIntaking(!shooting);
-                m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPS : IndexerK.kSpindexerIntakeRPS);
+                // boolean shooting = isShooting.getAsBoolean();
+                // m_shooter.m_turret.setIntaking(!shooting);
+                // m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPS : IndexerK.kSpindexerIntakeRPS);
             })
         ).finallyDo(
             () -> {
-                boolean shooting = isShooting.getAsBoolean();
-                m_shooter.m_turret.setIntaking(false);
+                // boolean shooting = isShooting.getAsBoolean();
+                // m_shooter.m_turret.setIntaking(false);
                 m_intake.setIntakeRollersVelocity(0);
-                if (!shooting) {
-                    m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
-                }
+                // if (!shooting) {
+                //     m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
+                // }
             }
+        );
+    }
+
+    public Command retractIntake() {
+        return Commands.sequence(
+            m_intake.stopIntakeRollers(),
+            m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
         );
     }
 
@@ -100,11 +107,16 @@ public class Superstructure extends SubsystemBase {
                 m_indexer.startSpindexerCmd()
             )
         )
-        .finallyDo(
-            () -> {
-                deactivateOuttake();
-            }
-        );
+        .finallyDo(() -> {
+            deactivateOuttake();
+        });
+    }
+
+    public Command spinUpFlywheel() {
+        return m_shooter.shootFromCalc()
+        .finallyDo(() -> {
+            turnOffFlywheel();
+        });
     }
 
     /**
@@ -116,6 +128,10 @@ public class Superstructure extends SubsystemBase {
         m_shooter.setShooterVelocity(ShooterK.kShooterZeroRPS);
     }
 
+    public void turnOffFlywheel() {
+        m_shooter.setShooterVelocity(ShooterK.kShooterZeroRPS);
+    }
+
     /**
      * @return the emergency barf command
      */
@@ -123,17 +139,36 @@ public class Superstructure extends SubsystemBase {
         return Commands.startEnd(
             () -> {
                 m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
-                // m_shooter.setHoodPosition(ShooterK.kHoodMaxDegs);
+                m_shooter.m_turret.lockAndSetTurretLockPos(ShooterK.kTurretBarfPos.magnitude());
                 m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS);
                 m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS);
                 m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
-                m_intake.setIntakeRollersVelocity(-12);
+                m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersBarfVolts);
             },
             () -> {
                 m_intake.setIntakeRollersVelocity(0);
-                m_intake.setIntakeArmPos(IntakeArmPosition.SAFE);
+                m_shooter.m_turret.setTurretLock(false);
                 m_shooter.setShooterVelocity(RotationsPerSecond.zero());
-                // m_shooter.setHoodPosition(ShooterK.kHoodSafeDegs);
+                m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
+                m_indexer.setTunnelVelocity(RotationsPerSecond.zero());
+            }
+        );
+    }
+
+
+    /**
+     * @return the emergency barf command
+     */
+    public Command emergencyBarfNOSHOOT() {
+        return Commands.startEnd(
+            () -> {
+                m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
+                m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPS);
+                m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPS);
+                m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersBarfVolts);
+            },
+            () -> {
+                m_intake.setIntakeRollersVelocity(0);
                 m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
                 m_indexer.setTunnelVelocity(RotationsPerSecond.zero());
             }

@@ -11,6 +11,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.*;
 
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
+import frc.robot.subsystems.shooter.ShotCalculator.ShotDataLerp;
 import frc.robot.subsystems.shooter.ShooterCalc.AzimuthCalcDetails;
 import frc.robot.subsystems.shooter.ShooterCalc.ShotCalcOutputs;
 
@@ -243,42 +244,42 @@ class ShotCalcTest {
     class IterativeMovingShotFromInterpolationMap {
         @Test
         void stationaryClose_returnsValidShot() {
-            ShotData shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 CLOSE_POSE, ZERO_SPEEDS, HUB_TARGET, 3);
             assertShotDataValid(shot);
         }
 
         @Test
         void stationaryMid_returnsValidShot() {
-            ShotData shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, ZERO_SPEEDS, HUB_TARGET, 3);
             assertShotDataValid(shot);
         }
 
         @Test
         void stationaryFar_returnsValidShot() {
-            ShotData shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 FAR_POSE, ZERO_SPEEDS, HUB_TARGET, 3);
             assertShotDataValid(shot);
         }
 
         @Test
         void movingRobot_returnsValidShot() {
-            ShotData shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, TRANSLATING_SPEEDS, HUB_TARGET, 3);
             assertShotDataValid(shot);
         }
 
         @Test
         void rotatingRobot_returnsValidShot() {
-            ShotData shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, ROTATING_SPEEDS, HUB_TARGET, 3);
             assertShotDataValid(shot);
         }
 
         @Test
         void stationaryShot_targetMatchesInput() {
-            ShotData shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, ZERO_SPEEDS, HUB_TARGET, 3);
             // With zero speeds, predicted target should equal actual target
             assertEquals(HUB_TARGET.getX(), shot.getTarget().getX(), 1e-6);
@@ -288,9 +289,9 @@ class ShotCalcTest {
 
         @Test
         void movingShot_targetDiffersFromStatic() {
-            ShotData staticShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp staticShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, ZERO_SPEEDS, HUB_TARGET, 3);
-            ShotData movingShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            ShotDataLerp movingShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, TRANSLATING_SPEEDS, HUB_TARGET, 3);
             // Moving shot should shift the predicted target
             assertNotEquals(staticShot.getTarget().getX(), movingShot.getTarget().getX(), 1e-6,
@@ -299,17 +300,18 @@ class ShotCalcTest {
 
         @Test
         void moreIterations_convergesToSameResult() {
-            ShotData shot1 = ShotCalculator.iterativeMovingShotFromInterpolationMap(
-                MID_POSE, TRANSLATING_SPEEDS, HUB_TARGET, 1);
-            ShotData shot3 = ShotCalculator.iterativeMovingShotFromInterpolationMap(
-                MID_POSE, TRANSLATING_SPEEDS, HUB_TARGET, 3);
-            ShotData shot10 = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            // The iterative solver exhibits damped oscillation (alternating over/undershoot)
+            // with a ~1/3 contraction ratio per step. At vx=2.0, vy=1.0 m/s it needs ~7
+            // iterations to fully converge. Production uses 5 (ShooterCalc.calcShot),
+            // so we verify that 5 iterations lands close to the fully-converged answer.
+            ShotDataLerp shot5 = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+                MID_POSE, TRANSLATING_SPEEDS, HUB_TARGET, 5);
+            ShotDataLerp shot10 = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, TRANSLATING_SPEEDS, HUB_TARGET, 10);
-            // 3 and 10 iterations should converge closely
-            assertEquals(shot3.exitVelocity(), shot10.exitVelocity(), 0.5,
-                "3 and 10 iterations should converge on exit velocity");
-            assertEquals(shot3.hoodAngle(), shot10.hoodAngle(), 0.1,
-                "3 and 10 iterations should converge on hood angle");
+            assertEquals(shot5.exitVelocity(), shot10.exitVelocity(), 0.5,
+                "5 and 10 iterations should converge on exit velocity");
+            assertEquals(shot5.hoodAngle(), shot10.hoodAngle(), 0.1,
+                "5 and 10 iterations should converge on hood angle");
         }
     }
 
@@ -338,6 +340,160 @@ class ShotCalcTest {
             ShotData shot = ShotCalculator.calculateShotFromFunnelClearance(
                 FAR_POSE, HUB_TARGET, HUB_TARGET);
             assertShotDataValid(shot);
+        }
+    }
+
+    // ================================================================
+    //  LERP edge-distance SOTM sensitivity
+    // ================================================================
+
+    @Nested
+    class LerpEdgePredictedDistanceShift {
+        // Poses placed at exact distances from the hub along the -X axis (facing hub).
+        // The turret offset shifts the effective distance slightly, but the pose X offset
+        // is the dominant contributor.
+
+        /** Build a pose at roughly `dist` meters from the hub, facing it. */
+        private Pose2d poseAtDistance(double dist) {
+            return new Pose2d(HUB_TARGET.getX() - dist, HUB_TARGET.getY(), Rotation2d.kZero);
+        }
+
+        /** Euclidean XY shift between the predicted target and the actual target. */
+        private double predShift(ShotDataLerp shot) {
+            double dx = shot.getTarget().getX() - HUB_TARGET.getX();
+            double dy = shot.getTarget().getY() - HUB_TARGET.getY();
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // ---- Near the minimum LERP key (1.168 m) ----
+
+        @Test
+        void nearMinDistance_lowSpeed_smallShift() {
+            Pose2d pose = poseAtDistance(1.3);
+            ChassisSpeeds slow = new ChassisSpeeds(0.5, 0, 0);
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+                pose, slow, HUB_TARGET, 5);
+            assertShotDataValid(shot);
+            double shift = predShift(shot);
+            assertTrue(shift < 1.0,
+                "At 1.3m with 0.5 m/s the predicted target should shift < 1m, got " + shift);
+        }
+
+        @Test
+        void nearMinDistance_highSpeed_largerShift() {
+            Pose2d pose = poseAtDistance(1.3);
+            ChassisSpeeds fast = new ChassisSpeeds(3.0, 1.5, 0);
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+                pose, fast, HUB_TARGET, 5);
+            assertShotDataValid(shot);
+            double shift = predShift(shot);
+            assertTrue(shift > 0.1,
+                "At 1.3m with 3.0 m/s the predicted target should shift noticeably, got " + shift);
+        }
+
+        @Test
+        void nearMinDistance_speedSweep_shiftMonotonic() {
+            Pose2d pose = poseAtDistance(1.3);
+            double prevShift = 0;
+            for (double vx = 0.5; vx <= 4.0; vx += 0.5) {
+                ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+                    pose, new ChassisSpeeds(vx, 0, 0), HUB_TARGET, 5);
+                assertShotDataValid(shot);
+                double shift = predShift(shot);
+                assertTrue(shift >= prevShift - 0.01,
+                    String.format("At 1.3m, shift should grow with speed: vx=%.1f shift=%.4f prev=%.4f",
+                        vx, shift, prevShift));
+                prevShift = shift;
+            }
+        }
+
+        // ---- Near the maximum LERP key (7.565 m) ----
+
+        @Test
+        void nearMaxDistance_lowSpeed_smallShift() {
+            Pose2d pose = poseAtDistance(7.0);
+            ChassisSpeeds slow = new ChassisSpeeds(0.5, 0, 0);
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+                pose, slow, HUB_TARGET, 5);
+            assertShotDataValid(shot);
+            double shift = predShift(shot);
+            assertTrue(shift < 2.0,
+                "At 7.0m with 0.5 m/s the predicted target should shift < 2m, got " + shift);
+        }
+
+        @Test
+        void nearMaxDistance_highSpeed_largerShift() {
+            Pose2d pose = poseAtDistance(7.0);
+            ChassisSpeeds fast = new ChassisSpeeds(3.0, 1.5, 0);
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+                pose, fast, HUB_TARGET, 5);
+            assertShotDataValid(shot);
+            double shift = predShift(shot);
+            assertTrue(shift > 0.3,
+                "At 7.0m with 3.0 m/s the predicted target should shift noticeably, got " + shift);
+        }
+
+        @Test
+        void nearMaxDistance_speedSweep_shiftMonotonic() {
+            Pose2d pose = poseAtDistance(7.0);
+            double prevShift = 0;
+            for (double vx = 0.5; vx <= 4.0; vx += 0.5) {
+                ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+                    pose, new ChassisSpeeds(vx, 0, 0), HUB_TARGET, 5);
+                assertShotDataValid(shot);
+                double shift = predShift(shot);
+                assertTrue(shift >= prevShift - 0.01,
+                    String.format("At 7.0m, shift should grow with speed: vx=%.1f shift=%.4f prev=%.4f",
+                        vx, shift, prevShift));
+                prevShift = shift;
+            }
+        }
+
+        // ---- Beyond the LERP table (extrapolation) ----
+
+        @Test
+        void beyondMaxDistance_returnsValidShot() {
+            Pose2d pose = poseAtDistance(9.0);
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+                pose, TRANSLATING_SPEEDS, HUB_TARGET, 5);
+            assertShotDataValid(shot);
+        }
+
+        @Test
+        void belowMinDistance_returnsValidShot() {
+            Pose2d pose = poseAtDistance(0.8);
+            ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+                pose, TRANSLATING_SPEEDS, HUB_TARGET, 5);
+            assertShotDataValid(shot);
+        }
+
+        // ---- Shift comparison: close vs far at same speed ----
+
+        @Test
+        void farShot_largerShiftThanClose_atSameSpeed() {
+            ChassisSpeeds speed = new ChassisSpeeds(2.0, 0, 0);
+            ShotDataLerp closeShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+                poseAtDistance(1.5), speed, HUB_TARGET, 5);
+            ShotDataLerp farShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+                poseAtDistance(6.0), speed, HUB_TARGET, 5);
+            double closeShift = predShift(closeShot);
+            double farShift = predShift(farShot);
+            assertTrue(farShift > closeShift,
+                String.format("Far shot shift (%.4f) should exceed close shot shift (%.4f) at same speed",
+                    farShift, closeShift));
+        }
+
+        // ---- Lateral velocity ----
+
+        @Test
+        void lateralVelocity_shiftsYComponent() {
+            Pose2d pose = poseAtDistance(4.0);
+            ShotDataLerp shotY = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+                pose, new ChassisSpeeds(0, 2.0, 0), HUB_TARGET, 5);
+            assertShotDataValid(shotY);
+            double dy = Math.abs(shotY.getTarget().getY() - HUB_TARGET.getY());
+            assertTrue(dy > 0.1,
+                "Lateral velocity should shift predicted target Y, got dy=" + dy);
         }
     }
 
@@ -590,6 +746,20 @@ class ShotCalcTest {
         assertFalse(Double.isInfinite(shot.hoodAngle()),
             "Hood angle should not be infinite");
         assertNotNull(shot.getTarget(), "Shot target should not be null");
+    }
+
+    private static void assertShotDataValid(ShotDataLerp shot) {
+        assertNotNull(shot, "ShotData should not be null");
+        assertFalse(Double.isNaN(shot.exitVelocity()),
+            "Exit velocity should not be NaN");
+        assertFalse(Double.isNaN(shot.hoodAngle()),
+            "Hood angle should not be NaN");
+        assertFalse(Double.isInfinite(shot.exitVelocity()),
+            "Exit velocity should not be infinite");
+        assertFalse(Double.isInfinite(shot.hoodAngle()),
+            "Hood angle should not be infinite");
+        assertNotNull(shot.getTarget(), "Shot target should not be null");
+        // TODO: add tofSec
     }
 
     private static void assertAzimuthValid(AzimuthCalcDetails details) {

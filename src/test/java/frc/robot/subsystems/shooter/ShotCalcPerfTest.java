@@ -15,6 +15,7 @@ import edu.wpi.first.units.measure.*;
 import frc.robot.Constants.ShooterK;
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
+import frc.robot.subsystems.shooter.ShotCalculator.ShotDataLerp;
 
 import org.junit.jupiter.api.*;
 
@@ -81,7 +82,7 @@ class ShotCalcPerfTest {
     //  Approach 1: Immutable Units (current implementation)
     // ================================================================
 
-    private static ShotData immutableCalcShot(Pose2d robot, ChassisSpeeds fieldSpeeds, Translation3d target) {
+    private static ShotDataLerp immutableCalcShot(Pose2d robot, ChassisSpeeds fieldSpeeds, Translation3d target) {
         return ShotCalculator.iterativeMovingShotFromInterpolationMap(robot, fieldSpeeds, target, 3);
     }
 
@@ -105,11 +106,13 @@ class ShotCalcPerfTest {
 
     private static ShotData mutableIterativeMovingShot(Pose2d robot, ChassisSpeeds fieldSpeeds, Translation3d target) {
         double distance = mutableGetDistanceToTarget(robot, target);
-        ShotData shot = ShotCalculator.m_shotMap.get(distance);
-        shot = new ShotData(shot.exitVelocity(), shot.hoodAngle(), target);
+        ShotData shot = new ShotData(
+            ShotCalculator.kShotTable.exitVelocity(distance),
+            ShotCalculator.kShotTable.hoodAngle(distance),
+            target);
 
         // Use the mutable TOF instead of allocating
-        double tofSec = ShotCalculator.m_timeOfFlightMap.get(distance);
+        double tofSec = ShotCalculator.kShotTable.tof(distance);
         mut_tof.mut_replace(tofSec, Seconds);
 
         Translation3d predictedTarget = target;
@@ -125,9 +128,11 @@ class ShotCalcPerfTest {
             predictedTarget = new Translation3d(predX, predY, target.getZ());
 
             distance = mutableGetDistanceToTarget(robot, predictedTarget);
-            shot = ShotCalculator.m_shotMap.get(distance);
-            shot = new ShotData(shot.exitVelocity(), shot.hoodAngle(), predictedTarget);
-            tofSec = ShotCalculator.m_timeOfFlightMap.get(distance);
+            shot = new ShotData(
+                ShotCalculator.kShotTable.exitVelocity(distance),
+                ShotCalculator.kShotTable.hoodAngle(distance),
+                predictedTarget);
+            tofSec = ShotCalculator.kShotTable.tof(distance);
             mut_tof.mut_replace(tofSec, Seconds);
 
             ShotData shotDiff = shot.minus(prevShot);
@@ -340,7 +345,7 @@ class ShotCalcPerfTest {
 
         // --- Benchmark 1: Immutable Units ---
         long t0 = System.nanoTime();
-        ShotData immutableResult = null;
+        ShotDataLerp immutableResult = null;
         for (int i = 0; i < BENCH_ITERS; i++) {
             immutableResult = immutableCalcShot(MID_POSE, MOVING_SPEEDS, HUB_TARGET);
         }

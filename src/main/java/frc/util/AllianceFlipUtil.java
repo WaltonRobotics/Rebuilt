@@ -8,18 +8,19 @@
 package frc.util;
 
 
+import java.util.Optional;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.FieldConstants;
 
 /** Utility functions for flipping from the blue to red alliance. */
 public class AllianceFlipUtil {
+  private static final Rotation3d kFlipRotation3d = new Rotation3d(0.0, 0.0, Math.PI);
   public static double applyX(double x) {
     return shouldFlip() ? FieldConstants.fieldLength - x : x;
   }
@@ -29,7 +30,9 @@ public class AllianceFlipUtil {
   }
 
   public static Translation2d apply(Translation2d translation) {
-    return new Translation2d(applyX(translation.getX()), applyY(translation.getY()));
+    return shouldFlip()
+        ? new Translation2d(applyX(translation.getX()), applyY(translation.getY()))
+        : translation;
   }
 
   public static Rotation2d apply(Rotation2d rotation) {
@@ -43,22 +46,25 @@ public class AllianceFlipUtil {
   }
 
   public static Translation3d apply(Translation3d translation) {
-    return new Translation3d(
-        applyX(translation.getX()), applyY(translation.getY()), translation.getZ());
+    return shouldFlip()
+        ? new Translation3d(applyX(translation.getX()), applyY(translation.getY()), translation.getZ())
+        : translation;
   }
 
   public static Rotation3d apply(Rotation3d rotation) {
-    return shouldFlip() ? rotation.rotateBy(new Rotation3d(0.0, 0.0, Math.PI)) : rotation;
+    return shouldFlip() ? rotation.rotateBy(kFlipRotation3d) : rotation;
   }
 
   public static Pose3d apply(Pose3d pose) {
-    return new Pose3d(apply(pose.getTranslation()), apply(pose.getRotation()));
+    return shouldFlip()
+        ? new Pose3d(apply(pose.getTranslation()), apply(pose.getRotation()))
+        : pose;
   }
 
   //kept this method, since I don't know what disableHAL is... until that point this shall stay :D
   public static boolean shouldFlip() {
-    return DriverStation.getAlliance().isPresent()
-        && DriverStation.getAlliance().get() == Alliance.Red;
+    Optional<Alliance> alliance = WaltDriverStation.getAlliance();
+    return alliance.isPresent() && alliance.get() == Alliance.Red;
     // return true;
   }
 }
