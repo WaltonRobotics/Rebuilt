@@ -498,6 +498,7 @@ public class ShotCalculator {
             double prevPredY = predY;
 
             // Inline predictTargetPos — no Translation3d/Time allocation
+            //2974 RAHHHHHHHHHHHHHHH
             double coeffDrag = 0.2974;  //0.36
             // if (distance >= 3.6) {
             //     coeffDrag = 0.53;   //0.7
@@ -521,7 +522,7 @@ public class ShotCalculator {
             double dPredY = prevPredY - predY;
 
             if (Math.abs(dHood) < .05 && Math.abs(dExitVel) < .5
-                    && Math.sqrt(dPredX * dPredX + dPredY * dPredY) < .05
+                    && Math.sqrt(dPredX * dPredX + dPredY * dPredY) < .005
                     && Math.abs(dTOF) < .005) {
                 converged = true;
                 break;
