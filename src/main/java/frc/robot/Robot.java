@@ -24,6 +24,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -130,6 +131,9 @@ public class Robot extends TimedRobot {
     private Trigger trg_unjam = m_driver.rightBumper();
 
     private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble(kLogTab, "MiniPC current");
+    private final DoubleLogger log_rioBusVoltage = WaltLogger.logDouble(kLogTab, "RioBusVoltage");
+    private final BooleanLogger log_rioBrownout = WaltLogger.logBoolean(kLogTab, "RioBrownout");
+    private final DoubleLogger log_pdhCurrentTotal = WaltLogger.logDouble(kLogTab, "PDHCurrTotal");
     private final Pose2dLogger log_robotPose = WaltLogger.logPose2d("Drive", "Pose");
     private final BooleanLogger log_isBeached = WaltLogger.logBoolean("Drive", "isBeached");
 
@@ -376,6 +380,9 @@ public class Robot extends TimedRobot {
         // m_periodicTracer.addEpoch("Logging");
 
         log_miniPCCurrent.accept(m_PDH.getCurrent(kMiniPCChannel));
+        log_rioBusVoltage.accept(RobotController.getBatteryVoltage());
+        log_rioBrownout.accept(RobotController.isBrownedOut());
+        log_pdhCurrentTotal.accept(m_PDH.getTotalCurrent());
         log_isBeached.accept(m_drivetrain.isBeached());
 
         // log_currentShift.accept(HubShiftUtil.getOfficialShiftInfo().currentShift().toString());

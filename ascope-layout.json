@@ -3,11 +3,11 @@
     {
       "x": -8,
       "y": -8,
-      "width": 1552,
-      "height": 928,
+      "width": 1936,
+      "height": 1168,
       "state": {
         "sidebar": {
-          "width": 340,
+          "width": 352,
           "expanded": [
             "/Robot/Superstructure/Active Commands",
             "/Robot/Superstructure/Active Override Commands",
@@ -29,7 +29,6 @@
             "/Robot/ShotCalc/calculatedShotTarget/translation",
             "/NT/photonvision/metrics/pv-minisforum2026",
             "/NT/photonvision/.timesync/pv-minisforum2026",
-            "/NT/photonvision/coprocessors/38-05-25-32-78-6D",
             "/NT/photonvision/coprocessors/38-05-25-32-78-6D/cameraNames",
             "/NT/photonvision/FL_HAT/targetPose",
             "/NT/photonvision/FL_HAT/rawBytes",
@@ -57,10 +56,8 @@
             "/NT/Robot/Robot",
             "/photonvision/BR_HAT",
             "/NT/Robot/Intake",
-            "/Robot/Intake",
             "/NT/DriveState/ModuleStates",
             "/NT/DriveState/ModuleStates/0",
-            "/Robot/Auton",
             "/NT/Robot/Auton",
             "/Phoenix6",
             "/Log1/Phoenix6",
@@ -71,37 +68,28 @@
             "/NT/DriveState",
             "/NT/DriveState/Speeds",
             "/DriveState/Speeds",
-            "/Robot/Indexer",
             "/NT/Robot/Indexer",
             "/Robot/Shooter/Flywheel",
-            "/Robot/Shooter/Hood",
             "/Robot/Superstructure",
             "/DriveState/Pose",
             "/DriveState/Pose/rotation",
-            "/Robot/Swerve",
             "/DriveState/Pose/translation",
             "/Robot/ShotCalc/globalTarget/translation",
             "/Robot/ShotCalc/shotCalcTarget",
             "/Pose",
-            "/Robot/ShotCalc",
             "/Robot/Shooter/Calculator",
             "/Log1/Phoenix6/TalonFX-7",
             "/Log1/Phoenix6/TalonFX-7/Fault",
             "/NT/Robot/Shooter/Calculator",
             "/NT/Robot/Shooter/Flywheel",
             "/DS/joystick0/axes",
-            "/NT/photonvision/BL_HAT",
             "/NT/Robot",
             "/NT/Robot/Drive",
             "/NT/Robot/ShotCalc",
             "/NT/Robot/Shooter",
-            "/Robot/Drive",
-            "/Robot/Robot",
             "/Log1/Phoenix6/TalonFX-40/PIDPosition",
             "/Log1/Phoenix6/TalonFX-41",
             "/Log1/Phoenix6/TalonFX-41/PIDVelocity",
-            "/Robot/Shooter",
-            "/DS/joystick0",
             "/Robot/Shooter/Turret",
             "/NT/Robot/Shooter/Hood",
             "/Log1/Robot/Shooter/Hood",
@@ -143,12 +131,34 @@
             "/Log10/Robot/Shooter/Hood",
             "/Log1/Robot",
             "/Log1/Robot/Shooter",
-            "/NT",
-            "/Robot"
+            "/Robot/Turret/EncA",
+            "/Robot/Turret/EncB",
+            "/Robot/ShotCalc/turretFieldPose",
+            "/Phoenix6/TalonFX-40",
+            "/Log1",
+            "/Log1/Robot/Vision",
+            "/Log1/Robot/Vision/BL_HAT",
+            "/Log1/Robot/Drive",
+            "/Log1/Robot/Intake",
+            "/Phoenix6/TalonFX-41",
+            "/Phoenix6/TalonFX-41/PIDVelocity",
+            "/Phoenix6/TalonFX-40/PIDPosition",
+            "/Log1/DS",
+            "/Log1/DS/joystick0",
+            "/Log1/DS/joystick0/axes",
+            "/Robot/Shooter/Hood",
+            "/DS/joystick0/povs",
+            "/DS/joystick0/buttons",
+            "/NT/photonvision",
+            "/NT/photonvision/metrics",
+            "/DS/joystick0",
+            "/Robot",
+            "/Robot/Robot",
+            "/DS"
           ]
         },
         "tabs": {
-          "selected": 4,
+          "selected": 2,
           "tabs": [
             {
               "type": 0,
@@ -172,6 +182,72 @@
               "controllerUUID": "3h65lywuwj6k0hqs88ew74rqv817xc4v",
               "renderer": null,
               "controlsHeight": 85
+            },
+            {
+              "type": 1,
+              "title": "Joysticks",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "DS:joystick0/axes/0",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "DS:joystick0/axes/1",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "DS:joystick0/axes/4",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "discreteSources": [
+                  {
+                    "type": "graph",
+                    "logKey": "DS:joystick0/axes/3",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#80588e"
+                    }
+                  }
+                ],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "oij3s1unjw4zhtiz63ikx7e1jzfr00pu",
+              "renderer": null,
+              "controlsHeight": 200
             },
             {
               "type": 2,
@@ -267,6 +343,33 @@
                     "options": {
                       "bumpers": ""
                     }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/Robot/ShotCalc/globalTarget",
+                    "logType": "Pose3d",
+                    "visible": true,
+                    "options": {
+                      "color": "#0000ff"
+                    }
+                  },
+                  {
+                    "type": "robot",
+                    "logKey": "NT:/Robot/ShotCalc/turretFieldPose",
+                    "logType": "Pose3d",
+                    "visible": true,
+                    "options": {
+                      "bumpers": "#0000ff"
+                    }
+                  },
+                  {
+                    "type": "robot",
+                    "logKey": "/Log1/Robot/Drive/Pose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "bumpers": ""
+                    }
                   }
                 ],
                 "field": "FRC:2026 Field",
@@ -276,16 +379,6 @@
               "controllerUUID": "ti0ylp8p0cmh52s41yuspb27g8u4tiwh",
               "renderer": null,
               "controlsHeight": 208
-            },
-            {
-              "type": 5,
-              "title": "Console",
-              "controller": "console",
-              "controllerUUID": "tlizna3x6767e6emrrlim3r45cyvz5yy",
-              "renderer": {
-                "highlight": false
-              },
-              "controlsHeight": 0
             },
             {
               "type": 1,
@@ -321,9 +414,60 @@
                       "color": "#c0b487",
                       "size": "normal"
                     }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Turret/EncA/Pos",
+                    "logType": "Number",
+                    "visible": false,
+                    "options": {
+                      "color": "#858584",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Turret/EncB/Pos",
+                    "logType": "Number",
+                    "visible": false,
+                    "options": {
+                      "color": "#3b875a",
+                      "size": "normal"
+                    }
                   }
                 ],
-                "rightSources": [],
+                "rightSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Turret/turretCRTPos",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#d993aa",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Robot/MiniPC current",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#5f4528",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/Robot/Shooter/Flywheel/shooterVelocityRPS",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  }
+                ],
                 "discreteSources": [
                   {
                     "type": "stripes",
@@ -371,278 +515,14 @@
               "controlsHeight": 200
             },
             {
-              "type": 1,
-              "title": "IntakeDebug",
-              "controller": {
-                "leftSources": [
-                  {
-                    "type": "stepped",
-                    "logKey": "Robot/Intake/intakeArmClosedLoopError",
-                    "logType": "Number",
-                    "visible": false,
-                    "options": {
-                      "color": "#e5b31b",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "Robot/Intake/intakeArmRots",
-                    "logType": "Number",
-                    "visible": false,
-                    "options": {
-                      "color": "#af2437",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "Robot/Intake/targetIntakeArmRots",
-                    "logType": "Number",
-                    "visible": false,
-                    "options": {
-                      "color": "#e48b32",
-                      "size": "normal"
-                    }
-                  }
-                ],
-                "rightSources": [
-                  {
-                    "type": "stepped",
-                    "logKey": "Robot/Intake/intakeRollersRPS",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#2b66a2",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "Robot/Intake/targetIntakeRollersRPS",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#80588e",
-                      "size": "normal"
-                    }
-                  }
-                ],
-                "discreteSources": [],
-                "leftLockedRange": null,
-                "rightLockedRange": null,
-                "leftUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
-                },
-                "rightUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
-                },
-                "leftFilter": 0,
-                "rightFilter": 0
+              "type": 5,
+              "title": "Console",
+              "controller": "console",
+              "controllerUUID": "tlizna3x6767e6emrrlim3r45cyvz5yy",
+              "renderer": {
+                "highlight": false
               },
-              "controllerUUID": "b0u971znf1o2c8xl90t0684rahpiqec6",
-              "renderer": null,
-              "controlsHeight": 200
-            },
-            {
-              "type": 1,
-              "title": "IndexerDebug",
-              "controller": {
-                "leftSources": [
-                  {
-                    "type": "stepped",
-                    "logKey": "NT:/Robot/Indexer/tunnelRPS",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#2b66a2",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "NT:/Robot/Indexer/spindexerRPS",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#e5b31b",
-                      "size": "normal"
-                    }
-                  }
-                ],
-                "rightSources": [],
-                "discreteSources": [],
-                "leftLockedRange": null,
-                "rightLockedRange": null,
-                "leftUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
-                },
-                "rightUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
-                },
-                "leftFilter": 0,
-                "rightFilter": 0
-              },
-              "controllerUUID": "nnraxom5om1ijfmivyeii8651vs178gd",
-              "renderer": null,
-              "controlsHeight": 200
-            },
-            {
-              "type": 2,
-              "title": "ShotCalc",
-              "controller": {
-                "sources": [
-                  {
-                    "type": "robotLegacy",
-                    "logKey": "NT:/Pose/robotPose",
-                    "logType": "NumberArray",
-                    "visible": true,
-                    "options": {
-                      "bumpers": "",
-                      "format": "Pose2d",
-                      "units": "degrees"
-                    }
-                  },
-                  {
-                    "type": "ghost",
-                    "logKey": "NT:/Robot/ShotCalc/globalTarget",
-                    "logType": "Pose3d",
-                    "visible": true,
-                    "options": {
-                      "color": "#00ff00"
-                    }
-                  },
-                  {
-                    "type": "robot",
-                    "logKey": "NT:/Robot/Swerve/shimmyPose",
-                    "logType": "Pose3d",
-                    "visible": true,
-                    "options": {
-                      "bumpers": "#ff0000"
-                    }
-                  }
-                ],
-                "field": "FRC:2026 Field",
-                "orientation": 0,
-                "size": "large"
-              },
-              "controllerUUID": "gpi4kmkzlyqdotfir1auzhcrw6onhfll",
-              "renderer": null,
-              "controlsHeight": 200
-            },
-            {
-              "type": 1,
-              "title": "TurretDebug",
-              "controller": {
-                "leftSources": [
-                  {
-                    "type": "stepped",
-                    "logKey": "NT:/Robot/Shooter/Turret/turretPositionRots",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#af2437",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "NT:/Robot/Shooter/Turret/calcTurretPos",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#80588e",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "NT:/Robot/Shooter/Turret/turretControlPos",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#e48b32",
-                      "size": "normal"
-                    }
-                  }
-                ],
-                "rightSources": [],
-                "discreteSources": [
-                  {
-                    "type": "stripes",
-                    "logKey": "NT:/Robot/ShotCalc/useShotCalc",
-                    "logType": "Boolean",
-                    "visible": true,
-                    "options": {
-                      "color": "#2b66a2"
-                    }
-                  },
-                  {
-                    "type": "stripes",
-                    "logKey": "NT:/Robot/Robot/Manip Right Trigger",
-                    "logType": "Boolean",
-                    "visible": true,
-                    "options": {
-                      "color": "#e5b31b"
-                    }
-                  },
-                  {
-                    "type": "stripes",
-                    "logKey": "NT:/Robot/Shooter/turretHomeHall",
-                    "logType": "Boolean",
-                    "visible": true,
-                    "options": {
-                      "color": "#c0b487"
-                    }
-                  },
-                  {
-                    "type": "stripes",
-                    "logKey": "NT:/Robot/Shooter/Turret/Homed",
-                    "logType": "Boolean",
-                    "visible": true,
-                    "options": {
-                      "color": "#858584"
-                    }
-                  },
-                  {
-                    "type": "stripes",
-                    "logKey": "DS:autonomous",
-                    "logType": "Boolean",
-                    "visible": true,
-                    "options": {
-                      "color": "#3b875a"
-                    }
-                  },
-                  {
-                    "type": "stripes",
-                    "logKey": "DS:enabled",
-                    "logType": "Boolean",
-                    "visible": true,
-                    "options": {
-                      "color": "#d993aa"
-                    }
-                  }
-                ],
-                "leftLockedRange": null,
-                "rightLockedRange": null,
-                "leftUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
-                },
-                "rightUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
-                },
-                "leftFilter": 0,
-                "rightFilter": 0
-              },
-              "controllerUUID": "eveq1thfcdcqfl3risbgx3yra00yv5oj",
-              "renderer": null,
-              "controlsHeight": 382
+              "controlsHeight": 0
             },
             {
               "type": 3,
@@ -768,9 +648,9 @@
                 "cameraIndex": -1,
                 "orbitFov": 70,
                 "cameraPosition": [
-                  -0.18576073750724836,
-                  1.5917733941159344,
-                  1.982699722538385
+                  -3.1822118691805237,
+                  8.708811607089187,
+                  5.514594727214013
                 ],
                 "cameraTarget": [
                   -0.2511452503161183,
@@ -782,32 +662,34 @@
             },
             {
               "type": 1,
-              "title": "AutonDebug",
+              "title": "TurretDebug",
               "controller": {
                 "leftSources": [
                   {
                     "type": "stepped",
-                    "logKey": "NT:/DriveState/Speeds/vx",
+                    "logKey": "NT:/Robot/Shooter/Turret/turretPositionRots",
                     "logType": "Number",
                     "visible": true,
                     "options": {
-                      "color": "#858584",
+                      "color": "#af2437",
                       "size": "normal"
                     }
                   },
                   {
                     "type": "stepped",
-                    "logKey": "NT:/DriveState/Speeds/vy",
+                    "logKey": "NT:/Robot/ShotCalc/desiredTurretRotations",
                     "logType": "Number",
                     "visible": true,
                     "options": {
-                      "color": "#2b66a2",
+                      "color": "#e48b32",
                       "size": "normal"
                     }
-                  },
+                  }
+                ],
+                "rightSources": [
                   {
                     "type": "stepped",
-                    "logKey": "NT:/Robot/Auton/State",
+                    "logKey": "NT:/Robot/Shooter/Flywheel/balls shot",
                     "logType": "Number",
                     "visible": true,
                     "options": {
@@ -816,32 +698,19 @@
                     }
                   }
                 ],
-                "rightSources": [
-                  {
-                    "type": "stepped",
-                    "logKey": "NT:/Robot/Intake/targetIntakeArmRots",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#e48b32",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "NT:/Robot/Intake/intakeArmRots",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#c0b487",
-                      "size": "normal"
-                    }
-                  }
-                ],
                 "discreteSources": [
                   {
                     "type": "stripes",
-                    "logKey": "DS:autonomous",
+                    "logKey": "NT:/Robot/ShotCalc/useShotCalc",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/Robot/Robot/Manip Right Trigger",
                     "logType": "Boolean",
                     "visible": true,
                     "options": {
@@ -850,29 +719,11 @@
                   },
                   {
                     "type": "stripes",
-                    "logKey": "NT:/Robot/Auton/State",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#af2437"
-                    }
-                  },
-                  {
-                    "type": "stripes",
-                    "logKey": "DS:enabled",
+                    "logKey": "NT:/Robot/Shooter/turretHomeHall",
                     "logType": "Boolean",
                     "visible": true,
                     "options": {
-                      "color": "#3b875a"
-                    }
-                  },
-                  {
-                    "type": "stripes",
-                    "logKey": "NT:/Robot/Intake/isIntakeArmHomed",
-                    "logType": "Boolean",
-                    "visible": true,
-                    "options": {
-                      "color": "#d993aa"
+                      "color": "#c0b487"
                     }
                   },
                   {
@@ -881,7 +732,25 @@
                     "logType": "Boolean",
                     "visible": true,
                     "options": {
-                      "color": "#5f4528"
+                      "color": "#858584"
+                    }
+                  },
+                  {
+                    "type": "graph",
+                    "logKey": "DS:autonomous",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#3b875a"
+                    }
+                  },
+                  {
+                    "type": "graph",
+                    "logKey": "DS:enabled",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#d993aa"
                     }
                   }
                 ],
@@ -898,9 +767,9 @@
                 "leftFilter": 0,
                 "rightFilter": 0
               },
-              "controllerUUID": "aknu9aili1wbyfg0lxnhvhgm3mmsrs1g",
+              "controllerUUID": "eveq1thfcdcqfl3risbgx3yra00yv5oj",
               "renderer": null,
-              "controlsHeight": 200
+              "controlsHeight": 382
             },
             {
               "type": 1,
@@ -908,7 +777,7 @@
               "controller": {
                 "leftSources": [
                   {
-                    "type": "stepped",
+                    "type": "smooth",
                     "logKey": "NT:/photonvision//metrics/pv-minisforum2026/cpu_temp",
                     "logType": "Number",
                     "visible": true,
@@ -918,7 +787,7 @@
                     }
                   },
                   {
-                    "type": "stepped",
+                    "type": "smooth",
                     "logKey": "NT:/photonvision//metrics/pv-minisforum2026/cpu_util",
                     "logType": "Number",
                     "visible": true,
@@ -926,11 +795,31 @@
                       "color": "#e5b31b",
                       "size": "normal"
                     }
+                  },
+                  {
+                    "type": "smooth",
+                    "logKey": "Robot/Robot/MiniPC current",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#3b875a",
+                      "size": "normal"
+                    }
                   }
                 ],
                 "rightSources": [
                   {
-                    "type": "stepped",
+                    "type": "points",
+                    "logKey": "NT:/photonvision//metrics/pv-minisforum2026/uptime",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "points",
                     "logKey": "NT:/photonvision/BL_HAT/heartbeat",
                     "logType": "Number",
                     "visible": true,
@@ -940,7 +829,7 @@
                     }
                   },
                   {
-                    "type": "stepped",
+                    "type": "points",
                     "logKey": "NT:/photonvision/BR_HAT/heartbeat",
                     "logType": "Number",
                     "visible": true,
@@ -948,9 +837,39 @@
                       "color": "#80588e",
                       "size": "normal"
                     }
+                  },
+                  {
+                    "type": "points",
+                    "logKey": "NT:/photonvision/FL_HAT/heartbeat",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e48b32",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "points",
+                    "logKey": "NT:/photonvision/FR_HAT/heartbeat",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#c0b487",
+                      "size": "normal"
+                    }
                   }
                 ],
-                "discreteSources": [],
+                "discreteSources": [
+                  {
+                    "type": "stripes",
+                    "logKey": "DS:enabled",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437"
+                    }
+                  }
+                ],
                 "leftLockedRange": null,
                 "rightLockedRange": null,
                 "leftUnitConversion": {
@@ -970,16 +889,82 @@
             },
             {
               "type": 1,
+              "title": "Brownout Debug",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "points",
+                    "logKey": "Robot/Robot/PDHCurrTotal",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#80588e",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "Robot/Robot/MiniPC current",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [
+                  {
+                    "type": "points",
+                    "logKey": "Robot/Robot/RioBusVoltage",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "bold"
+                    }
+                  }
+                ],
+                "discreteSources": [
+                  {
+                    "type": "graph",
+                    "logKey": "Robot/Robot/RioBrownout",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b"
+                    }
+                  }
+                ],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "wzsxbh33zej0gygvtdhxgibkukm2c425",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 1,
               "title": "LERP",
               "controller": {
                 "leftSources": [
                   {
                     "type": "stepped",
-                    "logKey": "Robot/Shooter/Calculator/distTargetToMeters",
+                    "logKey": "NT:/Robot/Shooter/Calculator/distTargetToMeters",
                     "logType": "Number",
                     "visible": true,
                     "options": {
-                      "color": "#2b66a2",
+                      "color": "#80588e",
                       "size": "normal"
                     }
                   }
@@ -1039,13 +1024,107 @@
                     }
                   }
                 ],
-                "timeRange": "enabled",
+                "timeRange": "visible",
                 "rangeMin": 0,
                 "rangeMax": 100,
                 "stepSize": 0.1
               },
               "controllerUUID": "n6el6de3vurf4id1d37rrn610atixvlc",
               "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 3,
+              "title": "3D Field",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "cone",
+                    "logKey": "NT:/Robot/ShotCalc/shotCalcTarget",
+                    "logType": "Pose3d",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ff00",
+                      "position": "center"
+                    }
+                  },
+                  {
+                    "type": "cone",
+                    "logKey": "NT:/Robot/ShotCalc/globalTarget",
+                    "logType": "Pose3d",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ff00",
+                      "position": "center"
+                    }
+                  },
+                  {
+                    "type": "cone",
+                    "logKey": "NT:/Robot/ShotCalc/turretFieldPose",
+                    "logType": "Pose3d",
+                    "visible": false,
+                    "options": {
+                      "color": "#ff0000",
+                      "position": "center"
+                    }
+                  },
+                  {
+                    "type": "robot",
+                    "logKey": "NT:/Robot/Drive/Pose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "model": "2026 KitBot"
+                    }
+                  },
+                  {
+                    "type": "cone",
+                    "logKey": "NT:/Robot/ShotCalc/turretRobotPose",
+                    "logType": "Pose3d",
+                    "visible": true,
+                    "options": {
+                      "color": "#ff8c00",
+                      "position": "center"
+                    }
+                  },
+                  {
+                    "type": "cone",
+                    "logKey": "NT:/Robot/ShotCalc/CurrentAimPose",
+                    "logType": "Pose3d",
+                    "visible": true,
+                    "options": {
+                      "color": "#ff0000",
+                      "position": "center"
+                    }
+                  },
+                  {
+                    "type": "cone",
+                    "logKey": "NT:/Robot/ShotCalc/DesiredAimPose",
+                    "logType": "Pose3d",
+                    "visible": true,
+                    "options": {
+                      "color": "#ff00ff",
+                      "position": "center"
+                    }
+                  }
+                ],
+                "game": "FRC:2026 Field"
+              },
+              "controllerUUID": "4wobn5ibg0gs2kfjc2op6ev4jefakw0u",
+              "renderer": {
+                "cameraIndex": -1,
+                "orbitFov": 50,
+                "cameraPosition": [
+                  -5.544634258712433,
+                  26.790464452656472,
+                  0.9492578083632998
+                ],
+                "cameraTarget": [
+                  -4.809032094896839,
+                  2.127962282181821,
+                  1.3022363055195652
+                ]
+              },
               "controlsHeight": 200
             }
           ]
