@@ -622,26 +622,28 @@ public class Constants {
         public static final double kReshootShootingTimeout = 5.5; //12
         public static final double kSweepShootingTimeout = 20;
 
-        //---FIRST CYCLES
+        //---RIGHT FIRST CYCLES
         public static final String kRightOneJab = "RIGHT_one_jab";
         public static final String kRightOneTrench = "RIGHT_one_trench";
         public static final String kRightOneDefense = "RIGHT_one_defense";
         public static final String kRightOneReverse = "RIGHT_one_reverse";
 
-        //---SECOND CYCLES
+        //---RIGHT SECOND CYCLES
+        public static final String kRightTwoSotmDepot = "RIGHT_two_sotmDepot";
         public static final String kRightTwoDepot = "RIGHT_two_depot";
         public static final String kRightTwoSweep = "RIGHT_two_sweep";
         public static final String kRightTwoPassing = "RIGHT_two_passing";
         public static final String kRightTwoJab = "RIGHT_two_jab";
         public static final String kRightTwoReverse = "RIGHT_two_reverse";
 
-        //---FIRST CYCLES
+        //---LEFT FIRST CYCLES
         public static final String kLeftOneJab = "LEFT_one_jab";
         public static final String kLeftOneTrench = "LEFT_one_trench";
         public static final String kLeftOneDefense = "LEFT_one_defense";
         public static final String kLeftOneReverse = "LEFT_one_reverse";
 
-        //---SECOND CYCLES
+        //---LEFT SECOND CYCLES
+        public static final String kLeftTwoSotmDepot = "LEFT_two_sotmDepot";
         public static final String kLeftTwoDepot = "LEFT_two_depot";
         public static final String kLeftTwoSweep = "LEFT_two_sweep";
         public static final String kLeftTwoPassing = "LEFT_two_passing";
@@ -651,5 +653,7 @@ public class Constants {
         //---MISC
         public static final String kRightOneCircle = "RIGHT_one_circle";
         public static final String kLeftOneSweepAndDepot = "LEFT_one_sweepAndDepot";
+        public static final String kLeftThreeDepotToBump = "LEFT_three_depotToBump";
+        public static final String kRightThreeDepotToBump = "RIGHT_three_depotToBump";
     }
 }
