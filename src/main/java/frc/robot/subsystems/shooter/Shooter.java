@@ -84,7 +84,6 @@ public class Shooter extends SubsystemBase {
     private volatile double m_latestTurretPositionRots = 0.0;
     private final ShooterCalc m_shooterCalc;
 
-    private double m_calcTurretRots = 0.0;
     private double m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
     private double m_driverRPSTweak = 0.0;
 
@@ -128,7 +127,6 @@ public class Shooter extends SubsystemBase {
 
     private final DoubleLogger log_ballsShot = new DoubleLogger("Shooter/Flywheel", "balls shot");
     private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
-    private final DoubleLogger log_calcTurretPos = new DoubleLogger("Shooter/Turret", "calcTurretPos");
     private final DoubleLogger log_driverAddedRPS = WaltLogger.logDouble(kLogTab, "driverAddedRPS");
 
     /* CONSTRUCTOR */
@@ -349,7 +347,6 @@ public class Shooter extends SubsystemBase {
         log_turretPositionRots.accept(m_latestTurretPositionRots);
         log_spunUp.accept(m_isShooterSpunUp);
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocityRotPerSec);
-        log_calcTurretPos.accept(m_calcTurretRots);
         log_ballDetected.accept(trg_ballDetected.getAsBoolean());
         log_ballShotDebounce.accept(trg_ballShotDebounced.getAsBoolean());
 

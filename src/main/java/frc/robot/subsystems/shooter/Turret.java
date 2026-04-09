@@ -54,6 +54,7 @@ public class Turret extends SubsystemBase {
     private final DoubleLogger log_turretLCMPos = WaltLogger.logDouble(kLogTab, "turretCRTPos");
     private final DoubleLogger log_turretClosedLoopError = WaltLogger.logDouble(kLogTab, "turretCLE");
     private final BooleanLogger log_atPos = WaltLogger.logBoolean(kLogTab, "atPos");
+    private final BooleanLogger log_turretLocked = WaltLogger.logBoolean(kLogTab, "turretLocked");
     private final Pose3dLogger log_turretTransform = WaltLogger.logPose3d(kLogTab, "turretTransform");
 
     private final StatusSignal<Double> sig_turretCLErr = m_turret.getClosedLoopError();
@@ -102,11 +103,15 @@ public class Turret extends SubsystemBase {
         if (m_turretLocked) {
             m_turretLockAngleRots = sig_turretPos.getValueAsDouble();
         }
+
+        log_turretLocked.accept(m_turretLocked);
     }
 
     public void lockAndSetTurretLockPos(double lockPos) {
         m_turretLocked = true;
         m_turretLockAngleRots = lockPos;
+
+        log_turretLocked.accept(m_turretLocked);
     }
 
     public Command setTurretLockCmd(boolean locked) {
