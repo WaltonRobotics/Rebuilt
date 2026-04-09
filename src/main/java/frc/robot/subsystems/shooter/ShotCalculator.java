@@ -20,6 +20,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.FieldConstants;
+import frc.util.WaltTunable;
 import frc.util.WaltLogger.*;
 import edu.wpi.first.units.measure.Time;
 
@@ -54,7 +55,8 @@ public class ShotCalculator {
 
     private static final boolean kRPSReductionNeeded = false;
 
-    private static final double kRPSBoost = 1.3;
+    private static double kRPSBoost = 1.25;
+    private static final WaltTunable kRPSBoostTuner = new WaltTunable("Shooter/Calculator/RPSBoost", kRPSBoost); 
 
     /**
      * Zero-allocation sorted-array interpolation tables replacing InterpolatingTreeMap.
@@ -76,7 +78,10 @@ public class ShotCalculator {
         minDistance = 1.168;
         maxDistance = 5.672;
 
+        kRPSBoost = kRPSBoostTuner.enabled() ? kRPSBoostTuner.get() : kRPSBoost;
+
         ShotLerpTable.Builder shot = new ShotLerpTable.Builder();
+
 
         //Ordered via DistanceToTarget
         shot.add(7.565, 89.00 + kRPSBoost, 0.16, 2.05);
