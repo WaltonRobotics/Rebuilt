@@ -12,6 +12,7 @@ import com.ctre.phoenix6.sim.ChassisReference;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static frc.robot.Constants.kRioBus;
 import static frc.robot.Constants.IntakeK.*;
 
 import java.util.function.BooleanSupplier;
@@ -107,7 +108,7 @@ public class Intake extends SubsystemBase {
 
         m_intakeRollersB.setControl(new Follower(kIntakeRollersA_CANID, MotorAlignmentValue.Opposed));
 
-        SignalManager.register("rio", sig_intakeArmStatorCurrent, sig_intakeArmVelo, sig_intakeRollersAVelo, sig_intakeArmPos, sig_intakeArmMMAtTarget);
+        SignalManager.register(kRioBus, sig_intakeArmStatorCurrent, sig_intakeArmVelo, sig_intakeRollersAVelo, sig_intakeArmPos, sig_intakeArmMMAtTarget);
 
         if (Robot.isReal()) {
             setDefaultCommand(intakeArmCurrentSenseHoming());

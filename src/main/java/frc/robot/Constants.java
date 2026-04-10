@@ -49,6 +49,7 @@ public class Constants {
     public static final boolean kDebugLoggingEnabled = false;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
+    public static final CANBus kRioBus = CANBus.roboRIO();
     public static final CANBus kCanivoreBus = new CANBus("fd");
     public static final CANBus kShooterBus = new CANBus("shooter");
 
