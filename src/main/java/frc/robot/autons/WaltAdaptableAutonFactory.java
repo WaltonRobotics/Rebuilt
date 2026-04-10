@@ -85,7 +85,7 @@ public class WaltAdaptableAutonFactory {
 		}, Set.of());
 	}
 
-    private Command logTimer(String epochName, Supplier<Timer> timerSup) {
+    public Command logTimer(String epochName, Supplier<Timer> timerSup) {
         return printLater(() -> {
             var timer = timerSup.get();
             log_autonTimer.accept(autonTimer.get());
