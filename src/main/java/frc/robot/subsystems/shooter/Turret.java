@@ -51,7 +51,7 @@ public class Turret extends SubsystemBase {
     private final BooleanLogger log_lcmEncBConn = WaltLogger.logBoolean(kLogTab, "EncB/Conn");
 
     private final DoubleLogger log_turretControlPos = WaltLogger.logDouble(kLogTab, "turretControlPos");
-    private final DoubleLogger log_turretLCMPos = WaltLogger.logDouble(kLogTab, "turretCRTPos");
+    private final DoubleLogger log_turretLCMPos = WaltLogger.logDouble(kLogTab, "turretLCMPos");
     private final DoubleLogger log_turretClosedLoopError = WaltLogger.logDouble(kLogTab, "turretCLE");
     private final BooleanLogger log_atPos = WaltLogger.logBoolean(kLogTab, "atPos");
     private final BooleanLogger log_turretLocked = WaltLogger.logBoolean(kLogTab, "turretLocked");
