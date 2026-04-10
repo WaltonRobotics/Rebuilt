@@ -56,7 +56,6 @@ import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.Pose2dLogger;
-import frc.util.WaltLogger.StringLogger;
 
 public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
@@ -141,8 +140,6 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_isDSAttatched = WaltLogger.logBoolean(kLogTab, "isDSAttatched");
     private final Pose2dLogger log_robotPose = WaltLogger.logPose2d("Drive", "Pose");
     private final BooleanLogger log_isBeached = WaltLogger.logBoolean("Drive", "isBeached");
-
-    private final StringLogger log_autonSelected = WaltLogger.logString("Auton", "autonSelectedOnElastic");
 
     //DRIVERSTATION LOGS TELL US
     // private final BooleanLogger log_isDisabled = WaltLogger.logBoolean(kLogTab, "is robot disabled");
@@ -452,8 +449,6 @@ public class Robot extends TimedRobot {
             m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
             m_shooter.m_hood.setHoodNeutralMode(NeutralModeValue.Coast);
         }
-
-        log_autonSelected.accept(AutonChooser.m_chooser.selectedCommand().getName());
     }
 
     @Override
