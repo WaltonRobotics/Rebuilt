@@ -134,6 +134,7 @@ public class Robot extends TimedRobot {
     private final DoubleLogger log_rioBusVoltage = WaltLogger.logDouble(kLogTab, "RioBusVoltage");
     private final BooleanLogger log_rioBrownout = WaltLogger.logBoolean(kLogTab, "RioBrownout");
     private final DoubleLogger log_pdhCurrentTotal = WaltLogger.logDouble(kLogTab, "PDHCurrTotal");
+    private final BooleanLogger log_isDSAttatched = WaltLogger.logBoolean(kLogTab, "isDSAttatched");
     private final Pose2dLogger log_robotPose = WaltLogger.logPose2d("Drive", "Pose");
     private final BooleanLogger log_isBeached = WaltLogger.logBoolean("Drive", "isBeached");
 
@@ -383,6 +384,7 @@ public class Robot extends TimedRobot {
         log_rioBusVoltage.accept(RobotController.getBatteryVoltage());
         log_rioBrownout.accept(RobotController.isBrownedOut());
         log_pdhCurrentTotal.accept(m_PDH.getTotalCurrent());
+        log_isDSAttatched.accept(DriverStation.isDSAttached());
         log_isBeached.accept(m_drivetrain.isBeached());
 
         // log_currentShift.accept(HubShiftUtil.getOfficialShiftInfo().currentShift().toString());
