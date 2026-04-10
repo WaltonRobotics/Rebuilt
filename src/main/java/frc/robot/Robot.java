@@ -143,6 +143,8 @@ public class Robot extends TimedRobot {
     private final Pose2dLogger log_robotPose = WaltLogger.logPose2d("Drive", "Pose");
     private final BooleanLogger log_isBeached = WaltLogger.logBoolean("Drive", "isBeached");
 
+    private final DoubleLogger log_autonTime = WaltLogger.logDouble("Auton", "autonTime");
+
     //DRIVERSTATION LOGS TELL US
     // private final BooleanLogger log_isDisabled = WaltLogger.logBoolean(kLogTab, "is robot disabled");
 
@@ -470,7 +472,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousPeriodic() {
-        m_adpatableAutonFactory.logTimer("Auton", () -> m_adpatableAutonFactory.autonTimer);
+        // m_adpatableAutonFactory.logTimer("Auton", () -> m_adpatableAutonFactory.autonTimer);
+        log_autonTime.accept(m_adpatableAutonFactory.autonTimer.get());
     }
 
     @Override
