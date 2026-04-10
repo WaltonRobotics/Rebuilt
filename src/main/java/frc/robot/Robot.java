@@ -49,6 +49,7 @@ import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.WaltCamera;
 import frc.util.HubShiftUtil;
+import frc.util.NetworkPinger;
 import frc.util.SignalManager;
 // import frc.util.WaltVisualSim;
 import frc.util.WaltLogger;
@@ -107,6 +108,8 @@ public class Robot extends TimedRobot {
     //---VISION
 
     private PowerDistribution m_PDH = new PowerDistribution();
+    private final NetworkPinger m_radioPinger = new NetworkPinger("Radio", "10.29.74.1", 0.2, 10);
+    private final NetworkPinger m_coprocessorPinger = new NetworkPinger("Coprocessor", "10.29.74.11", 0.2, 10);
     // private final VisionSim m_visionSim = new VisionSim();
 
     /* TRIGGERS */
@@ -179,6 +182,7 @@ public class Robot extends TimedRobot {
 
         DataLogManager.start();
         DriverStation.startDataLog(DataLogManager.getLog());
+
         // MANUAL HOMING IS BEING USED
         // addPeriodic(m_shooter::fastPeriodic, 0.0025);
 
