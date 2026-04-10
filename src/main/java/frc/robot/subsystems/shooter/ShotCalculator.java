@@ -507,7 +507,7 @@ public class ShotCalculator {
             // Inline predictTargetPos — no Translation3d/Time allocation
             double coeffDrag = 0.254; //used for SOTM movement
             //2974 RAHHHHHHHHHHHHHHH – correction: more like 254 RAHHHHHHHHHHHHHHH
-            if (vx <= 0.005 || vy <= 0.005) { //NOTE: not sure if these numbers are right
+            if ( (Math.abs(vx) <= 0.05) || (Math.abs(vy) <= 0.05) ) { //NOTE: not sure if these numbers are right
                 coeffDrag = 0.2974; //used during static shot (or when the robot is low speed and should be static shooting)
             }
             // if (distance >= 3.6) {
