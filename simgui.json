@@ -10,7 +10,6 @@
     "types": {
       "/FMSInfo": "FMSInfo",
       "/Pose": "Field2d",
-      "/SmartDashboard/AutoChooser": "String Chooser",
       "/SmartDashboard/Choreo Alerts": "Alerts",
       "/SmartDashboard/IndexerMech2d": "Mechanism2d",
       "/SmartDashboard/IntakeMech2d": "Mechanism2d",
@@ -36,10 +35,7 @@
         "left": 245,
         "right": 3942,
         "top": 118,
-        "width": 16.54119300842285,
-        "window": {
-          "visible": true
-        }
+        "width": 16.54119300842285
       },
       "/SmartDashboard/IndexerMech2d": {
         "window": {
@@ -79,9 +75,6 @@
         }
       }
     }
-  },
-  "NetworkTables Info": {
-    "visible": true
   },
   "NetworkTables View": {
     "visible": false
