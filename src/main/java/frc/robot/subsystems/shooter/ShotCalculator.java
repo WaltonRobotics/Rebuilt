@@ -505,8 +505,8 @@ public class ShotCalculator {
             double prevPredY = predY;
 
             // Inline predictTargetPos — no Translation3d/Time allocation
-            //2974 RAHHHHHHHHHHHHHHH
-            double coeffDrag = 0.2974;  //0.36
+            //2974 RAHHHHHHHHHHHHHHH – correction: more like 254 RAHHHHHHHHHHHHHHH
+            double coeffDrag = 0.254; //0.2974
             // if (distance >= 3.6) {
             //     coeffDrag = 0.53;   //0.7
             // }
