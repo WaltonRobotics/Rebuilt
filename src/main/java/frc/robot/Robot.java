@@ -127,6 +127,8 @@ public class Robot extends TimedRobot {
 
     private Trigger trg_intakeShimmy = m_manipulator.leftBumper();
 
+    private Trigger trg_emergencyIntakeBarf = m_manipulator.rightTrigger().and(trg_manipOverride);
+
     //---OVERRIDE TRIGGERS
     private final Trigger trg_limitFPS = RobotModeTriggers.disabled();
     private final Trigger trg_unlimitFps = RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop());
@@ -311,6 +313,10 @@ public class Robot extends TimedRobot {
 
         trg_emergencyBarf.whileTrue(
             m_superstructure.emergencyBarf()
+        );
+
+        trg_emergencyIntakeBarf.whileTrue(
+            m_superstructure.emergencyBarfNOSHOOT()
         );
         
         trg_intakeShimmy.whileTrue(m_superstructure.intakeShimmy());
