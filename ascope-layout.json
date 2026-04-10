@@ -31,7 +31,6 @@
             "/NT/photonvision/.timesync/pv-minisforum2026",
             "/NT/photonvision/coprocessors/38-05-25-32-78-6D/cameraNames",
             "/NT/photonvision/FL_HAT/targetPose",
-            "/NT/photonvision/FL_HAT/rawBytes",
             "/NT/photonvision/FL_HAT/rawBytes/targets",
             "/NT/photonvision/FL_HAT/rawBytes/targets/0",
             "/NT/photonvision/FL_HAT/rawBytes/targets/0/bestCameraToTarget",
@@ -58,7 +57,6 @@
             "/NT/Robot/Intake",
             "/NT/DriveState/ModuleStates",
             "/NT/DriveState/ModuleStates/0",
-            "/NT/Robot/Auton",
             "/Phoenix6",
             "/Log1/Phoenix6",
             "/Log1/Phoenix6/TalonFX-20",
@@ -69,7 +67,6 @@
             "/NT/DriveState/Speeds",
             "/DriveState/Speeds",
             "/NT/Robot/Indexer",
-            "/Robot/Shooter/Flywheel",
             "/Robot/Superstructure",
             "/DriveState/Pose",
             "/DriveState/Pose/rotation",
@@ -146,29 +143,35 @@
             "/Log1/DS",
             "/Log1/DS/joystick0",
             "/Log1/DS/joystick0/axes",
-            "/Robot/Shooter/Hood",
             "/DS/joystick0/povs",
             "/DS/joystick0/buttons",
-            "/NT/photonvision",
             "/NT/photonvision/metrics",
             "/DS/joystick0",
-            "/NT",
             "/NT/SmartDashboard",
             "/NT/SmartDashboard/AutoChooser",
             "/NT/Shuffleboard",
             "/NT/Shuffleboard/.metadata",
-            "/DS",
             "/Robot/Shooter",
             "/NT/Robot/CANBusStatus",
             "/NT/Robot/CANBusStatus/shooter",
             "/Robot/CANBusStatus/shooter",
             "/Robot/CANBusStatus/rio",
             "/Robot/CANBusStatus/fd",
-            "/Robot"
+            "/NT/Robot/Swerve",
+            "/Robot/Swerve",
+            "/Robot/Auton",
+            "/Robot/Drive/Pose",
+            "/NT/photonvision/FL_HAT/rawBytes/multitagResult",
+            "/NT/photonvision/FL_HAT/rawBytes/multitagResult/fiducialIDsUsed",
+            "/NT/photonvision/BL_HAT",
+            "/Robot",
+            "/Robot/CANBusStatus",
+            "/NT/Robot/CANBusStatus/rio",
+            "/NT/Robot/CANBusStatus/fd"
           ]
         },
         "tabs": {
-          "selected": 3,
+          "selected": 11,
           "tabs": [
             {
               "type": 0,
@@ -393,6 +396,163 @@
             },
             {
               "type": 1,
+              "title": "AutonDebug",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "Robot/Auton/autonTimer",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e48b32",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [],
+                "discreteSources": [
+                  {
+                    "type": "stripes",
+                    "logKey": "Robot/Auton/autonTriggerCall",
+                    "logType": "String",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "Robot/Auton/trajectoryName",
+                    "logType": "String",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/SmartDashboard/AutoChooser/active",
+                    "logType": "String",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "DS:autonomous",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#80588e"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "console",
+                    "logType": "String",
+                    "visible": false,
+                    "options": {
+                      "color": "#c0b487"
+                    }
+                  }
+                ],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "ht7b1u03npplau28anbpuhihx3efura1",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 1,
+              "title": "DragDebug",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "Robot/Swerve/absoluteRobotSpeed",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "Robot/Swerve/vxMPS",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "Robot/Swerve/vyMPS",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#80588e",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "Robot/Shooter/Calculator/dragCoefficient",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "discreteSources": [
+                  {
+                    "type": "stripes",
+                    "logKey": "Robot/Auton/autonTriggerCall",
+                    "logType": "String",
+                    "visible": true,
+                    "options": {
+                      "color": "#e48b32"
+                    }
+                  }
+                ],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "uznpyoj6xxrg3vuapvef490euh8i3xjt",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 1,
               "title": "VisionDebug",
               "controller": {
                 "leftSources": [
@@ -514,7 +674,7 @@
               },
               "controllerUUID": "pljmmw3gs7bjo24kvgiikvvrhkaav6me",
               "renderer": null,
-              "controlsHeight": 200
+              "controlsHeight": 341
             },
             {
               "type": 1,
@@ -588,6 +748,54 @@
                 "rightFilter": 0
               },
               "controllerUUID": "wzsxbh33zej0gygvtdhxgibkukm2c425",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 6,
+              "title": "BatteryVoltage",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "independent",
+                    "logKey": "Robot/Robot/RioBusVoltage",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2"
+                    }
+                  }
+                ],
+                "timeRange": "teleop",
+                "rangeMin": 6,
+                "rangeMax": 14,
+                "stepSize": 0.1
+              },
+              "controllerUUID": "wqlkcniohq4mt248948zhjt8tn78zhfw",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 6,
+              "title": "PDHCurrent",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "independent",
+                    "logKey": "Robot/Robot/PDHCurrTotal",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2"
+                    }
+                  }
+                ],
+                "timeRange": "enabled",
+                "rangeMin": 0,
+                "rangeMax": 250,
+                "stepSize": 1
+              },
+              "controllerUUID": "s44y2ozubbpiqj6zdi9cvtbb490m2lkx",
               "renderer": null,
               "controlsHeight": 200
             },
@@ -684,83 +892,44 @@
               "controlsHeight": 200
             },
             {
-              "type": 1,
-              "title": "AutonDebug",
+              "type": 6,
+              "title": "CAN",
               "controller": {
-                "leftSources": [
+                "sources": [
                   {
-                    "type": "stepped",
-                    "logKey": "Robot/Auton/autonTimer",
+                    "type": "independent",
+                    "logKey": "Robot/CANBusStatus/fd/BusUtilization",
                     "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#e48b32",
-                      "size": "normal"
-                    }
-                  }
-                ],
-                "rightSources": [],
-                "discreteSources": [
-                  {
-                    "type": "stripes",
-                    "logKey": "Robot/Auton/autonTriggerCall",
-                    "logType": "String",
-                    "visible": true,
-                    "options": {
-                      "color": "#2b66a2"
-                    }
-                  },
-                  {
-                    "type": "stripes",
-                    "logKey": "Robot/Auton/trajectoryName",
-                    "logType": "String",
-                    "visible": true,
-                    "options": {
-                      "color": "#e5b31b"
-                    }
-                  },
-                  {
-                    "type": "stripes",
-                    "logKey": "NT:/SmartDashboard/AutoChooser/active",
-                    "logType": "String",
-                    "visible": true,
-                    "options": {
-                      "color": "#af2437"
-                    }
-                  },
-                  {
-                    "type": "stripes",
-                    "logKey": "DS:autonomous",
-                    "logType": "Boolean",
                     "visible": true,
                     "options": {
                       "color": "#80588e"
                     }
                   },
                   {
-                    "type": "stripes",
-                    "logKey": "console",
-                    "logType": "String",
+                    "type": "independent",
+                    "logKey": "Robot/CANBusStatus/rio/BusUtilization",
+                    "logType": "Number",
                     "visible": true,
                     "options": {
-                      "color": "#c0b487"
+                      "color": "#2b66a2"
+                    }
+                  },
+                  {
+                    "type": "independent",
+                    "logKey": "Robot/CANBusStatus/shooter/BusUtilization",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b"
                     }
                   }
                 ],
-                "leftLockedRange": null,
-                "rightLockedRange": null,
-                "leftUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
-                },
-                "rightUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
-                },
-                "leftFilter": 0,
-                "rightFilter": 0
+                "timeRange": "enabled",
+                "rangeMin": 0,
+                "rangeMax": 1,
+                "stepSize": 0.01
               },
-              "controllerUUID": "ht7b1u03npplau28anbpuhihx3efura1",
+              "controllerUUID": "yosk6y0kpqmqb8ojk9ibmw5mzbxoed9s",
               "renderer": null,
               "controlsHeight": 200
             },
@@ -1215,14 +1384,14 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  -7.6401238030270235,
-                  14.051543777865602,
-                  -10.183116965323478
+                  -7.462873658389256,
+                  16.389112045493363,
+                  -11.896888080483599
                 ],
                 "cameraTarget": [
-                  -4.809032094896839,
-                  2.127962282181821,
-                  1.3022363055195652
+                  -2.085786677759407,
+                  0.8647149336406967,
+                  -2.2481185416228504
                 ]
               },
               "controlsHeight": 200
