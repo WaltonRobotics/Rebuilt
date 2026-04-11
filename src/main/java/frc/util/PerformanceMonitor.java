@@ -22,8 +22,6 @@ public class PerformanceMonitor {
     private static final String kLogTab = "Perf";
 
     private final DoubleLogger log_loopTimeMs = WaltLogger.logDouble(kLogTab, "loopTimeMs");
-    private final DoubleLogger log_cpuUsagePct = WaltLogger.logDouble(kLogTab, "cpuUsagePct");
-    private final DoubleLogger log_processCpuPct = WaltLogger.logDouble(kLogTab, "processCpuPct");
     private final DoubleLogger log_heapUsedMB = WaltLogger.logDouble(kLogTab, "heapUsedMB");
     private final DoubleLogger log_heapMaxMB = WaltLogger.logDouble(kLogTab, "heapMaxMB");
     private final DoubleLogger log_heapCommittedMB = WaltLogger.logDouble(kLogTab, "heapCommittedMB");
@@ -40,7 +38,6 @@ public class PerformanceMonitor {
     private long m_prevClassesLoaded;
 
     private long m_loopStartNanos;
-    private final OperatingSystemMXBean m_osBean;
     private final MemoryMXBean m_memBean;
     private final List<GarbageCollectorMXBean> m_gcBeans;
     private long m_prevGcCount;
@@ -53,7 +50,6 @@ public class PerformanceMonitor {
 
     public PerformanceMonitor(boolean trackClassLoading) {
         m_trackClassLoading = trackClassLoading;
-        m_osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
         m_memBean = ManagementFactory.getMemoryMXBean();
         m_gcBeans = ManagementFactory.getGarbageCollectorMXBeans();
         m_prevGcCount = totalGcCount();
@@ -103,10 +99,6 @@ public class PerformanceMonitor {
     public void loopEnd() {
         long now = System.nanoTime();
         log_loopTimeMs.accept((now - m_loopStartNanos) * 1e-6);
-        double cpuLoad = m_osBean.getCpuLoad();
-        double procLoad = m_osBean.getProcessCpuLoad();
-        log_cpuUsagePct.accept(cpuLoad < 0 ? Double.NaN : cpuLoad * 100.0);
-        log_processCpuPct.accept(procLoad < 0 ? Double.NaN : procLoad * 100.0);
 
         MemoryUsage heap = m_memBean.getHeapMemoryUsage();
         long heapMax = heap.getMax();
