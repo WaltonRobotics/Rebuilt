@@ -1,5 +1,6 @@
 package frc.util;
 
+import java.lang.management.ClassLoadingMXBean;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -32,6 +33,12 @@ public class PerformanceMonitor {
     private final DoubleLogger log_gcLastPauseMs = WaltLogger.logDouble(kLogTab, "gcLastPauseMs");
     private final WaltLogger.StringLogger log_gcLastCause = WaltLogger.logString(kLogTab, "gcLastCause");
 
+    private final boolean m_trackClassLoading;
+    private DoubleLogger log_classesLoadedDelta;
+    private DoubleLogger log_classesLoadedTotal;
+    private ClassLoadingMXBean m_classBean;
+    private long m_prevClassesLoaded;
+
     private long m_loopStartNanos;
     private final OperatingSystemMXBean m_osBean;
     private final MemoryMXBean m_memBean;
@@ -44,7 +51,8 @@ public class PerformanceMonitor {
 
     private static final double BYTES_TO_MB = 1.0 / (1024.0 * 1024.0);
 
-    public PerformanceMonitor() {
+    public PerformanceMonitor(boolean trackClassLoading) {
+        m_trackClassLoading = trackClassLoading;
         m_osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
         m_memBean = ManagementFactory.getMemoryMXBean();
         m_gcBeans = ManagementFactory.getGarbageCollectorMXBeans();
@@ -64,6 +72,13 @@ public class PerformanceMonitor {
         };
         for (var gc : m_gcBeans) {
             ((NotificationEmitter) gc).addNotificationListener(gcListener, null, null);
+        }
+
+        if (m_trackClassLoading) {
+            m_classBean = ManagementFactory.getClassLoadingMXBean();
+            log_classesLoadedDelta = WaltLogger.logDouble(kLogTab, "classesLoadedDelta");
+            log_classesLoadedTotal = WaltLogger.logDouble(kLogTab, "classesLoadedTotal");
+            m_prevClassesLoaded = m_classBean.getTotalLoadedClassCount();
         }
     }
 
@@ -111,6 +126,13 @@ public class PerformanceMonitor {
         if (evt != null) {
             log_gcLastPauseMs.accept((double) evt.durationMs());
             log_gcLastCause.accept(evt.action() + ": " + evt.cause());
+        }
+
+        if (m_trackClassLoading) {
+            long totalLoaded = m_classBean.getTotalLoadedClassCount();
+            log_classesLoadedDelta.accept((double) (totalLoaded - m_prevClassesLoaded));
+            log_classesLoadedTotal.accept((double) totalLoaded);
+            m_prevClassesLoaded = totalLoaded;
         }
     }
 }

@@ -160,7 +160,7 @@ public class Robot extends TimedRobot {
     // private final BooleanLogger log_isActiveFudged = WaltLogger.logBoolean("Util/Shift", "isActiveFudged");
 
     // private final Tracer m_periodicTracer = new Tracer();
-    private final PerformanceMonitor m_perfMonitor = new PerformanceMonitor();
+    private final PerformanceMonitor m_perfMonitor = new PerformanceMonitor(true);
     private final Command m_preheaterCommand;
 
     /* CONSTRUCTOR */
