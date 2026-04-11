@@ -51,6 +51,7 @@ import frc.robot.subsystems.Indexer;
 import frc.robot.vision.WaltCamera;
 import frc.util.HubShiftUtil;
 import frc.util.NetworkPinger;
+import frc.util.PerformanceMonitor;
 import frc.util.SignalManager;
 // import frc.util.WaltVisualSim;
 import frc.util.WaltLogger;
@@ -160,6 +161,7 @@ public class Robot extends TimedRobot {
     // private final BooleanLogger log_isActiveFudged = WaltLogger.logBoolean("Util/Shift", "isActiveFudged");
 
     // private final Tracer m_periodicTracer = new Tracer();
+    private final PerformanceMonitor m_perfMonitor = new PerformanceMonitor(true);
     private final Command m_preheaterCommand;
 
     /* CONSTRUCTOR */
@@ -369,6 +371,7 @@ public class Robot extends TimedRobot {
     /* PERIODICS */
     @Override
     public void robotPeriodic() {
+        m_perfMonitor.loopStart();
         // m_periodicTracer.addEpoch("Entry (Unused Time)");
         SignalManager.refreshAll();
         CommandScheduler.getInstance().run();
@@ -428,6 +431,7 @@ public class Robot extends TimedRobot {
         /* for the mechanism2D in 3D, drag all 3 mechanisms2ds onto the robot pose
         and also log the shooter position pose */ 
         // m_periodicTracer.printEpochs();
+        m_perfMonitor.loopEnd();
     }
 
     private final Timer m_fpsLimitTimer = new Timer();
