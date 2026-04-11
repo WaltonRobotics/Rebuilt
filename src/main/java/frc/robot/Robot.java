@@ -549,9 +549,9 @@ public class Robot extends TimedRobot {
         // instance.logFuels();
         // instance.updateSim();
 
-        // SwerveDriveState robotState = m_drivetrain.getState();
-        // Pose2d robotPose = robotState.Pose;
-        // WaltCamera.m_visionSim.simulationPeriodic(robotPose);
+        SwerveDriveState robotState = m_drivetrain.getState();
+        Pose2d robotPose = robotState.Pose;
+        WaltCamera.m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();
         m_shooter.simulationPeriodic();
         m_intake.simulationPeriodic();
