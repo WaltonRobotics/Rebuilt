@@ -39,7 +39,7 @@ public class WaltAdaptableAutonFactory {
     private final Pose2dArrayLogger log_trajectoryPoses = new Pose2dArrayLogger(AutonK.kLogTab, "trajectoryPoses");
     private final BooleanLogger log_isAtStopShoot = new BooleanLogger(AutonK.kLogTab, "isAtStopShoot");
     private final BooleanLogger log_isAtStopIntake = new BooleanLogger(AutonK.kLogTab, "isAtStopIntake");
-    private final DoubleLogger log_autonTimer = new DoubleLogger(AutonK.kLogTab, "autonTimer");
+    private final DoubleLogger log_autonActionTimes = new DoubleLogger(AutonK.kLogTab, "autonActionTimes");
 
     // logic booleans
     private boolean m_isAtStopShoot = false;
@@ -88,7 +88,7 @@ public class WaltAdaptableAutonFactory {
     public Command logTimer(String epochName, Supplier<Timer> timerSup) {
         return printLater(() -> {
             var timer = timerSup.get();
-            log_autonTimer.accept(autonTimer.get());
+            log_autonActionTimes.accept(autonTimer.get());
             return epochName + " at " + timer.get() + " s";
         });
 	}
@@ -200,9 +200,9 @@ public class WaltAdaptableAutonFactory {
             m_superstructure.intake(() -> false).until(trg_isAtStopIntake)
         );
 
-        traj.atTime("intake").onTrue(
-            logTimer("intaking", () -> autonTimer)
-        );
+        // traj.atTime("intake").onTrue(
+        //     logTimer("intaking", () -> autonTimer)
+        // );
 
         traj.atTime("shoot").and(() -> !SOTM).onTrue(
             // stopShoot acts as an override STOP SHOOTING to continue the pathing whereas the debounceTrg can help us move on faster if we're already outta balls
@@ -222,9 +222,9 @@ public class WaltAdaptableAutonFactory {
             m_superstructure.intakeShimmy()
         );
 
-        traj.atTime("shoot").onTrue(
-            logTimer("shoot", () -> autonTimer)
-        );
+        // traj.atTime("shoot").onTrue(
+        //     logTimer("shoot", () -> autonTimer)
+        // );
 
         traj.atTime("stopShoot").onChange(
             Commands.runOnce(() -> {
