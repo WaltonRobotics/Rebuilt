@@ -144,9 +144,7 @@ public class WaltCamera extends PhotonCamera {
         log_numResults.accept(unreadCameraResults.size());
 
         for (var change : unreadCameraResults) {
-            if (!change.hasTargets()) { 
-                log_camPoseAndTag.set(null);
-                continue; }
+            if (!change.hasTargets()) { continue; }
             visionEst = m_estimator.estimateCoprocMultiTagPose(change);
             if (visionEst.isEmpty()) {
                 visionEst = m_estimator.estimateLowestAmbiguityPose(change);
