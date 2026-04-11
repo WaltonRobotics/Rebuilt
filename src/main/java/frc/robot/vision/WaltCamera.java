@@ -124,7 +124,7 @@ public class WaltCamera extends PhotonCamera {
             m_visionSim.addCamera(m_sim, robotToCam);
 
             m_sim.enableDrawWireframe(true);
-        } else m_sim = null;
+        } else m_sim = new PhotonCameraSim(this);
     }
 
     /* VISION ESTIMATION METHODS */
