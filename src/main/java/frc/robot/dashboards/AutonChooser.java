@@ -28,8 +28,10 @@ public class AutonChooser {
     private final static String kRightTrenchTwoCycle = "RIGHT Trench 2 Cycle";
     private final static String kLeftDefenseOneCycle = "LEFT Defense";
     private final static String kRightDefenseOneCycle = "RIGHT Defense";
-    private final static String kLeftTwoCycleReverse = "LEFT Reverse 2 Cycle";
-    private final static String kRightTwoCycleReverse = "RIGHT Reverse 2 Cycle";
+    private final static String kLeftTwoCycleReverse = "LEFT Reverse and Trench-side Jab 2 Cycle";
+    private final static String kRightTwoCycleReverse = "RIGHT Reverse and Trench-side Jab 2 Cycle";
+    private final static String kLeftTwoCycleReverseAndJab = "LEFT Reverse and Center Jab 2 Cycle";
+    private final static String kRightTwoCycleReverseAndJab = "RIGHT Reverse and Center Jab 2 Cycle";
 
     //---MISC
     private final static String kRightHubCircle = "RIGHT Hub Circle";
@@ -123,6 +125,16 @@ public class AutonChooser {
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightTwoCycleReverse,
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kReshootShootingTimeout, false),
                                           new AdaptableAutonInfo(AutonK.kRightTwoReverse, AutonK.kReshootShootingTimeout, false)}));
+
+        m_chooser.addRoutine(kLeftTwoCycleReverseAndJab,
+            () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftTwoCycleReverseAndJab,
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneReverse, AutonK.kReshootShootingTimeout, false),
+                                          new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kReshootShootingTimeout, false)}));
+
+        m_chooser.addRoutine(kRightTwoCycleReverseAndJab,
+            () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightTwoCycleReverseAndJab,
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kReshootShootingTimeout, false),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kReshootShootingTimeout, false)}));
 
         //Load AutonChooser
         SmartDashboard.putData("AutoChooser", m_chooser);
