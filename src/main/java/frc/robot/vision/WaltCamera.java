@@ -1,5 +1,6 @@
 package frc.robot.vision;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -9,16 +10,24 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants.FieldK;
+import frc.robot.Constants.VisionK;
+import frc.robot.Robot;
+import frc.util.VisionUtil;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleArrayLogger;
 import frc.util.WaltLogger.IntLogger;
@@ -32,6 +41,8 @@ public class WaltCamera extends PhotonCamera {
     /* CLASS VARIABLES */
     private static final int kGlobalFpsLimit = 5;
     private static final int kGlobalFps = 30;
+    public static final VisionSim m_visionSim = new VisionSim();
+
 
     public static final List<WaltCamera> AllCameras = Collections.unmodifiableList(Arrays.asList(
         new WaltCamera("FL_HAT", VisionK.kFrontLeftCTR),
@@ -75,6 +86,7 @@ public class WaltCamera extends PhotonCamera {
     public final PhotonCameraSim m_sim;
     public final Transform3d m_robotToCam;
     public final PhotonPoseEstimator m_estimator;
+    private final SimCameraProperties m_simCameraProps = VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0);
     
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.0, 1.0, 3); //1.5, 1.5, 6.24
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.25, 0.25, 1.25);  //0.5, 0.5, 5.24
@@ -83,23 +95,36 @@ public class WaltCamera extends PhotonCamera {
     private final Pose3dLogger log_camTransform;
     private final DoubleArrayLogger log_stdDevs;
     private final IntLogger log_numResults;
+    private final StructArrayPublisher<Pose3d> log_camPoseAndTag;
 
     private Matrix<N3, N1> m_curStdDevs;
 
     /* CONSTRUCTOR */
     public WaltCamera(String cameraName, Transform3d robotToCam) {
         super(cameraName);
-        m_sim = new PhotonCameraSim(this);
+        // m_sim = new PhotonCameraSim(this);
         m_robotToCam = robotToCam;
         m_estimator = new PhotonPoseEstimator(FieldK.kTagLayout, m_robotToCam);
 
         final String ntPrefix = "Vision/" + cameraName + "/";
         log_camPose = WaltLogger.logPose2d(ntPrefix, "estRobotPose");
         log_camTransform = WaltLogger.logPose3d(ntPrefix, "transform");
+        //TODO: Add WaltLogger for this
+        log_camPoseAndTag = NetworkTableInstance.getDefault()
+            .getStructArrayTopic(ntPrefix + "estPoseAndTag", Pose3d.struct).publish();
         log_stdDevs = WaltLogger.logDoubleArray(ntPrefix, "stdDevs");
         log_numResults = WaltLogger.logInt(ntPrefix, "numResults");
 
         log_camTransform.accept(robotToCam);
+
+        if (Robot.isSimulation()) {
+            // Create a PhotonCameraSim which will update the linked PhotonCamera's values with visible targets.
+            m_sim = new PhotonCameraSim(this, m_simCameraProps);
+            // Add the simulated camera to view the targets on this simulated field.
+            m_visionSim.addCamera(m_sim, robotToCam);
+
+            m_sim.enableDrawWireframe(true);
+        } else m_sim = null;
     }
 
     /* VISION ESTIMATION METHODS */
@@ -119,7 +144,9 @@ public class WaltCamera extends PhotonCamera {
         log_numResults.accept(unreadCameraResults.size());
 
         for (var change : unreadCameraResults) {
-            if (!change.hasTargets()) { continue; }
+            if (!change.hasTargets()) { 
+                log_camPoseAndTag.set(null);
+                continue; }
             visionEst = m_estimator.estimateCoprocMultiTagPose(change);
             if (visionEst.isEmpty()) {
                 visionEst = m_estimator.estimateLowestAmbiguityPose(change);
@@ -144,10 +171,10 @@ public class WaltCamera extends PhotonCamera {
      */
     private void updateEstimationStdDevs(
             Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets) {
+        List<Pose3d> camToTagLines = new ArrayList<>();
         if (estimatedPose.isEmpty()) {
             // No pose input. Default to single-tag std devs
             m_curStdDevs = kSingleTagStdDevs;
-
         } else {
             // Pose present. Start running Heuristic
             var estStdDevs = kSingleTagStdDevs;
@@ -165,6 +192,8 @@ public class WaltCamera extends PhotonCamera {
                                 .toPose2d()
                                 .getTranslation()
                                 .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
+                camToTagLines.add(estimatedPose.get().estimatedPose.plus(m_robotToCam));
+                camToTagLines.add(tagPose.get());
             }
 
             if (numTags == 0) {
@@ -182,6 +211,7 @@ public class WaltCamera extends PhotonCamera {
                 m_curStdDevs = estStdDevs;
             }
         }
+        log_camPoseAndTag.set(camToTagLines.toArray(new Pose3d[0]));
     }
 
     /**

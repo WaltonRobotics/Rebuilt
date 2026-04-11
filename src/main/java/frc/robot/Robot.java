@@ -14,6 +14,7 @@ import org.photonvision.PhotonCamera;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -548,7 +549,9 @@ public class Robot extends TimedRobot {
         // instance.logFuels();
         // instance.updateSim();
 
-        // m_visionSim.simulationPeriodic(robotPose);
+        // SwerveDriveState robotState = m_drivetrain.getState();
+        // Pose2d robotPose = robotState.Pose;
+        // WaltCamera.m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();
         m_shooter.simulationPeriodic();
         m_intake.simulationPeriodic();
