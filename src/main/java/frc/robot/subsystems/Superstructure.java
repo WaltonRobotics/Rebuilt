@@ -1,6 +1,7 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -225,9 +226,9 @@ public class Superstructure extends SubsystemBase {
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
 
             //turret move
-            m_shooter.m_turret.setTurretPosCmd(ShooterK.kTurretIntakeLockPos),
+            m_shooter.m_turret.setTurretLockCmd(true),
             Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
-            m_shooter.m_turret.setTurretPosCmd(ShooterK.kHomePosition),
+            m_shooter.m_turret.setTurretLockCmd(true),
 
             //hood move
             m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodLockRots_double),
