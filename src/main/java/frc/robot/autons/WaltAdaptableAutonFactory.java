@@ -3,7 +3,6 @@ package frc.robot.autons;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import choreo.Choreo;
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
@@ -78,6 +77,18 @@ public class WaltAdaptableAutonFactory {
         return adaptableAuton("PreHeat", new AdaptableAutonInfo("PreHeat", AutonK.kReshootShootingTimeout, false));
     }
 
+    /**
+     * Eagerly loads every given trajectory into the AutoFactory's TrajectoryCache.
+     * After this runs, {@code routine.trajectory(name)} during autonomousInit is a
+     * HashMap hit instead of a disk read + GSON parse. Call once during robotInit.
+     */
+    public void preloadAllTrajectories(String[] names) {
+        var cache = m_autoFactory.cache();
+        for (String name : names) {
+            cache.loadTrajectory(name);
+        }
+    }
+
     //thank you grac
     private static Command printLater(Supplier<String> stringSup) {
 		return Commands.defer(() -> {
@@ -100,7 +111,9 @@ public class WaltAdaptableAutonFactory {
     //---AUTOROUTINE TRAJECTORY HELPER
     private AutoTrajectory createTraj(AutoRoutine routine, String name) {
         AutoTrajectory traj = routine.trajectory(name);
-        var poses = Choreo.loadTrajectory(name).get().getPoses();
+        // Go through the factory's TrajectoryCache so this is a HashMap hit after preload,
+        // instead of a second disk read + GSON parse on top of routine.trajectory(name)'s load.
+        var poses = m_autoFactory.cache().loadTrajectory(name).get().getPoses();
         traj.active().onTrue(Commands.sequence(
             Commands.runOnce(() -> {
                 log_trajectoryName.accept(name);
