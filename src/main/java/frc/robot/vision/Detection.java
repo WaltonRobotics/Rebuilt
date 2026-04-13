@@ -15,7 +15,7 @@ import frc.robot.Robot;
 
 public class Detection {
     /* CLASS VARIABLES */
-    private final List<WaltCamera> m_cameras = WaltCamera.AllCameras;
+    private final WaltCamera[] m_cameras = WaltCamera.AllCameras;
     private final VisionSim m_visionSim = new VisionSim();
 
     private List<PhotonTrackedTarget> m_targetList = new LinkedList<>();

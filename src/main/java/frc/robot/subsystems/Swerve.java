@@ -287,8 +287,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             });
         }
 
-        var state = getState();
-        var speeds = m_kinematics.toChassisSpeeds(state.ModuleStates);
+        var speeds = getState().Speeds;
         log_vxMPS.accept(speeds.vxMetersPerSecond);
         log_vyMPS.accept(speeds.vyMetersPerSecond);
         log_absoluteRobotSpeed.accept(Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));

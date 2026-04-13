@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanTopic;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -23,7 +22,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.util.WaltDriverStation;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.WpiK;
-import frc.robot.generated.TunerConstants;
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotDataLerp;
 import frc.util.AllianceFlipUtil;
@@ -45,7 +43,6 @@ public class ShooterCalc {
 
     private final Supplier<SwerveDriveState> m_threadsafeSwerveDriveStateSup;
     private final DoubleSupplier m_turretPosRotsSup;
-    private final SwerveDriveKinematics m_swerveKinematics = new SwerveDriveKinematics(TunerConstants.moduleTranslations);
 
     private final BooleanTopic bt_canTurretShoot = new BooleanTopic(NetworkTableInstance.getDefault().getTopic(("ShooterCalc/isTurretAngry")));
     private final BooleanPublisher pub_canTurretShoot;
@@ -164,8 +161,15 @@ public class ShooterCalc {
         // getters from outside
         SwerveDriveState swerveState = m_threadsafeSwerveDriveStateSup.get();
         Pose2d robotPose = swerveState.Pose;
-        ChassisSpeeds robotChassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
-            m_swerveKinematics.toChassisSpeeds(swerveState.ModuleStates), robotPose.getRotation());
+        // swerveState is a copy (getStateCopy), so mutating Speeds in place is safe.
+        // Rotate robot-relative → field-relative (equivalent to ChassisSpeeds.fromRobotRelativeSpeeds).
+        ChassisSpeeds robotChassisSpeeds = swerveState.Speeds;
+        double cosYaw = robotPose.getRotation().getCos();
+        double sinYaw = robotPose.getRotation().getSin();
+        double vxRobot = robotChassisSpeeds.vxMetersPerSecond;
+        double vyRobot = robotChassisSpeeds.vyMetersPerSecond;
+        robotChassisSpeeds.vxMetersPerSecond = vxRobot * cosYaw - vyRobot * sinYaw;
+        robotChassisSpeeds.vyMetersPerSecond = vxRobot * sinYaw + vyRobot * cosYaw;
         double turretPositionRots = m_turretPosRotsSup.getAsDouble();
 
         m_aimTarget = calculateTarget(robotPose);

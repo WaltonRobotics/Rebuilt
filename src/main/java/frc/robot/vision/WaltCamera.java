@@ -1,8 +1,6 @@
 package frc.robot.vision;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,12 +42,12 @@ public class WaltCamera extends PhotonCamera {
     public static final VisionSim m_visionSim = new VisionSim();
 
 
-    public static final List<WaltCamera> AllCameras = Collections.unmodifiableList(Arrays.asList(
+    public static final WaltCamera[] AllCameras = {
         new WaltCamera("FL_HAT", VisionK.kFrontLeftCTR),
         new WaltCamera("FR_HAT", VisionK.kFrontRightCTR),
         new WaltCamera("BL_HAT", VisionK.kBackLeftCTR),
         new WaltCamera("BR_HAT", VisionK.kBackRightCTR)
-    ));
+    };
 
     public static void setFpsLimit(boolean limited) {
         int fpsLimit = limited ? kGlobalFpsLimit : kGlobalFps;
@@ -98,6 +96,9 @@ public class WaltCamera extends PhotonCamera {
     private final StructArrayPublisher<Pose3d> log_camPoseAndTag;
 
     private Matrix<N3, N1> m_curStdDevs;
+
+    // Reused buffer for struct-logging camera→tag line segments, avoids per-call ArrayList allocation.
+    private final ArrayList<Pose3d> m_camToTagLines = new ArrayList<>(16);
 
     /* CONSTRUCTOR */
     public WaltCamera(String cameraName, Transform3d robotToCam) {
@@ -169,7 +170,7 @@ public class WaltCamera extends PhotonCamera {
      */
     private void updateEstimationStdDevs(
             Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets) {
-        List<Pose3d> camToTagLines = new ArrayList<>();
+        m_camToTagLines.clear();
         if (estimatedPose.isEmpty()) {
             // No pose input. Default to single-tag std devs
             m_curStdDevs = kSingleTagStdDevs;
@@ -179,19 +180,20 @@ public class WaltCamera extends PhotonCamera {
             int numTags = 0;
             double avgDist = 0;
 
+            // Hoist invariants out of the per-target loop
+            final Pose3d estRobotPose = estimatedPose.get().estimatedPose;
+            final Pose3d camPose = estRobotPose.plus(m_robotToCam);
+            final edu.wpi.first.math.geometry.Translation2d estRobotTranslation2d =
+                    estRobotPose.toPose2d().getTranslation();
+
             // Precalculation - see how many tags we found, and calculate an average-distance metric
             for (var tgt : targets) {
                 var tagPose = m_estimator.getFieldTags().getTagPose(tgt.getFiducialId());
                 if (tagPose.isEmpty()) continue;
                 numTags++;
-                avgDist +=
-                        tagPose
-                                .get()
-                                .toPose2d()
-                                .getTranslation()
-                                .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
-                camToTagLines.add(estimatedPose.get().estimatedPose.plus(m_robotToCam));
-                camToTagLines.add(tagPose.get());
+                avgDist += tagPose.get().toPose2d().getTranslation().getDistance(estRobotTranslation2d);
+                m_camToTagLines.add(camPose);
+                m_camToTagLines.add(tagPose.get());
             }
 
             if (numTags == 0) {
@@ -209,7 +211,7 @@ public class WaltCamera extends PhotonCamera {
                 m_curStdDevs = estStdDevs;
             }
         }
-        log_camPoseAndTag.set(camToTagLines.toArray(new Pose3d[0]));
+        log_camPoseAndTag.set(m_camToTagLines.toArray(new Pose3d[0]));
     }
 
     /**
