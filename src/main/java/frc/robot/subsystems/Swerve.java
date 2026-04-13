@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.Constants.IndexerK.kLogTab;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -85,6 +86,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private final Detection detection = new Detection();
 
     private final DoubleLogger log_absoluteRobotSpeed = new WaltLogger.DoubleLogger("Swerve", "absoluteRobotSpeed");
+    private final DoubleLogger log_vxMPS = new DoubleLogger("Swerve", "vxMPS");
+    private final DoubleLogger log_vyMPS = new DoubleLogger("Swerve", "vyMPS");
     private final Pose2dLogger log_sampleAt_pose = new Pose2dLogger("Swerve/Autons", "sampleAt_Pose");
     private final DoubleLogger log_currentAutonTotalTime = new DoubleLogger("Swerve/Auton", "currentTotalTime");
     private final DoubleLogger log_sampleAt_velocityX = new DoubleLogger("Swerve/Auton", "sampleAt_velocityX");
@@ -286,6 +289,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
         var state = getState();
         var speeds = m_kinematics.toChassisSpeeds(state.ModuleStates);
+        log_vxMPS.accept(speeds.vxMetersPerSecond);
+        log_vyMPS.accept(speeds.vyMetersPerSecond);
         log_absoluteRobotSpeed.accept(Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
     }
 

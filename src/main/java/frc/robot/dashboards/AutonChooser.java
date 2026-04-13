@@ -12,21 +12,30 @@ public class AutonChooser {
     public static AutoChooser m_chooser;
     public static WaltAdaptableAutonFactory m_adaptableAutonFactory;
 
-    //---AUTON NAMES
+    /* AUTON NAMES */
+    //---1.5 CYCLES
     private final static String kLeftShootAndSweep = "LEFT Sweep 1.5 Cycle";
     private final static String kRightShootAndSweep = "RIGHT Sweep 1.5 Cycle";
     private final static String kLeftShootAndPass = "LEFT Pass 1.5 Cycle";
     private final static String kRightShootAndPass = "RIGHT Pass 1.5 Cycle";
+    private final static String kRightShootAndDepot = "RIGHT Depot 1.5 Cycle";
+    private final static String kLeftShootAndDepot = "LEFT Depot 1.5 Cycle";
+
+    //---2 CYCLES
     private final static String kLeftTwoCycle = "LEFT 2 Cycle";
     private final static String kRightTwoCycle = "RIGHT 2 Cycle";
     private final static String kLeftTrenchTwoCycle = "LEFT Trench 2 Cycle";
     private final static String kRightTrenchTwoCycle = "RIGHT Trench 2 Cycle";
     private final static String kLeftDefenseOneCycle = "LEFT Defense";
     private final static String kRightDefenseOneCycle = "RIGHT Defense";
+    private final static String kLeftTwoCycleReverse = "LEFT Reverse and Trench-side Jab 2 Cycle";
+    private final static String kRightTwoCycleReverse = "RIGHT Reverse and Trench-side Jab 2 Cycle";
+    private final static String kLeftTwoCycleReverseAndJab = "LEFT Reverse and Center Jab 2 Cycle";
+    private final static String kRightTwoCycleReverseAndJab = "RIGHT Reverse and Center Jab 2 Cycle";
+
+    //---MISC
     private final static String kRightHubCircle = "RIGHT Hub Circle";
     private final static String kLeftSweepAndDepot = "LEFT Sweep and Depot";
-    private final static String kLeftTwoCycleReverse = "LEFT Reverse 2 Cycle";
-    private final static String kRightTwoCycleReverse = "RIGHT Reverse 2 Cycle";
 
 
     public static void initialize(WaltAdaptableAutonFactory adaptableAutonFactory) {
@@ -84,6 +93,17 @@ public class AutonChooser {
         m_chooser.addRoutine(kRightDefenseOneCycle,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightDefenseOneCycle,
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneDefense, AutonK.kReshootShootingTimeout, false)}));
+        
+        //---DEPOT AUTONS
+        m_chooser.addRoutine(kLeftShootAndDepot,
+            () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftShootAndDepot, 
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneJab, AutonK.kReshootShootingTimeout, false),
+                                          new AdaptableAutonInfo(AutonK.kLeftTwoDepot, AutonK.kReshootShootingTimeout, false)}));
+
+        m_chooser.addRoutine(kRightShootAndDepot,
+            () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightShootAndDepot, 
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneJab, AutonK.kReshootShootingTimeout, false),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoDepot, AutonK.kReshootShootingTimeout, false)}));
 
         //---MISC
         m_chooser.addRoutine(kRightHubCircle,
@@ -105,6 +125,16 @@ public class AutonChooser {
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightTwoCycleReverse,
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kReshootShootingTimeout, false),
                                           new AdaptableAutonInfo(AutonK.kRightTwoReverse, AutonK.kReshootShootingTimeout, false)}));
+
+        m_chooser.addRoutine(kLeftTwoCycleReverseAndJab,
+            () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftTwoCycleReverseAndJab,
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneReverse, AutonK.kReshootShootingTimeout, false),
+                                          new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kReshootShootingTimeout, false)}));
+
+        m_chooser.addRoutine(kRightTwoCycleReverseAndJab,
+            () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightTwoCycleReverseAndJab,
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kReshootShootingTimeout, false),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kReshootShootingTimeout, false)}));
 
         //Load AutonChooser
         SmartDashboard.putData("AutoChooser", m_chooser);

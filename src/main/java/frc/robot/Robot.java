@@ -14,6 +14,7 @@ import org.photonvision.PhotonCamera;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -24,6 +25,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -48,6 +50,8 @@ import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.WaltCamera;
 import frc.util.HubShiftUtil;
+import frc.util.NetworkPinger;
+import frc.util.PerformanceMonitor;
 import frc.util.SignalManager;
 // import frc.util.WaltVisualSim;
 import frc.util.WaltLogger;
@@ -105,6 +109,8 @@ public class Robot extends TimedRobot {
     //---VISION
 
     private PowerDistribution m_PDH = new PowerDistribution();
+    private final NetworkPinger m_radioPinger = new NetworkPinger("Radio", "10.29.74.1", 0.2, 10);
+    private final NetworkPinger m_coprocessorPinger = new NetworkPinger("Coprocessor", "10.29.74.11", 0.2, 10);
     // private final VisionSim m_visionSim = new VisionSim();
 
     /* TRIGGERS */
@@ -123,6 +129,8 @@ public class Robot extends TimedRobot {
 
     private Trigger trg_intakeShimmy = m_manipulator.leftBumper();
 
+    private Trigger trg_emergencyIntakeBarf = m_manipulator.rightTrigger().and(trg_manipOverride);
+
     //---OVERRIDE TRIGGERS
     private final Trigger trg_limitFPS = RobotModeTriggers.disabled();
     private final Trigger trg_unlimitFps = RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop());
@@ -130,8 +138,14 @@ public class Robot extends TimedRobot {
     private Trigger trg_unjam = m_driver.rightBumper();
 
     private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble(kLogTab, "MiniPC current");
+    private final DoubleLogger log_rioBusVoltage = WaltLogger.logDouble(kLogTab, "RioBusVoltage");
+    private final BooleanLogger log_rioBrownout = WaltLogger.logBoolean(kLogTab, "RioBrownout");
+    private final DoubleLogger log_pdhCurrentTotal = WaltLogger.logDouble(kLogTab, "PDHCurrTotal");
+    private final BooleanLogger log_isDSAttatched = WaltLogger.logBoolean(kLogTab, "isDSAttatched");
     private final Pose2dLogger log_robotPose = WaltLogger.logPose2d("Drive", "Pose");
     private final BooleanLogger log_isBeached = WaltLogger.logBoolean("Drive", "isBeached");
+
+    private final DoubleLogger log_autonTime = WaltLogger.logDouble("Auton", "autonTime");
 
     //DRIVERSTATION LOGS TELL US
     // private final BooleanLogger log_isDisabled = WaltLogger.logBoolean(kLogTab, "is robot disabled");
@@ -147,6 +161,7 @@ public class Robot extends TimedRobot {
     // private final BooleanLogger log_isActiveFudged = WaltLogger.logBoolean("Util/Shift", "isActiveFudged");
 
     // private final Tracer m_periodicTracer = new Tracer();
+    private final PerformanceMonitor m_perfMonitor = new PerformanceMonitor(false);
     private final Command m_preheaterCommand;
 
     /* CONSTRUCTOR */
@@ -171,6 +186,7 @@ public class Robot extends TimedRobot {
 
         DataLogManager.start();
         DriverStation.startDataLog(DataLogManager.getLog());
+
         // MANUAL HOMING IS BEING USED
         // addPeriodic(m_shooter::fastPeriodic, 0.0025);
 
@@ -303,6 +319,10 @@ public class Robot extends TimedRobot {
         trg_emergencyBarf.whileTrue(
             m_superstructure.emergencyBarf()
         );
+
+        trg_emergencyIntakeBarf.whileTrue(
+            m_superstructure.emergencyBarfNOSHOOT()
+        );
         
         trg_intakeShimmy.whileTrue(m_superstructure.intakeShimmy());
 
@@ -351,6 +371,7 @@ public class Robot extends TimedRobot {
     /* PERIODICS */
     @Override
     public void robotPeriodic() {
+        m_perfMonitor.loopStart();
         // m_periodicTracer.addEpoch("Entry (Unused Time)");
         SignalManager.refreshAll();
         CommandScheduler.getInstance().run();
@@ -376,6 +397,10 @@ public class Robot extends TimedRobot {
         // m_periodicTracer.addEpoch("Logging");
 
         log_miniPCCurrent.accept(m_PDH.getCurrent(kMiniPCChannel));
+        log_rioBusVoltage.accept(RobotController.getBatteryVoltage());
+        log_rioBrownout.accept(RobotController.isBrownedOut());
+        log_pdhCurrentTotal.accept(m_PDH.getTotalCurrent());
+        log_isDSAttatched.accept(DriverStation.isDSAttached());
         log_isBeached.accept(m_drivetrain.isBeached());
 
         // log_currentShift.accept(HubShiftUtil.getOfficialShiftInfo().currentShift().toString());
@@ -406,6 +431,7 @@ public class Robot extends TimedRobot {
         /* for the mechanism2D in 3D, drag all 3 mechanisms2ds onto the robot pose
         and also log the shooter position pose */ 
         // m_periodicTracer.printEpochs();
+        m_perfMonitor.loopEnd();
     }
 
     private final Timer m_fpsLimitTimer = new Timer();
@@ -450,7 +476,10 @@ public class Robot extends TimedRobot {
     }
 
     @Override
-    public void autonomousPeriodic() {}
+    public void autonomousPeriodic() {
+        // m_adpatableAutonFactory.logTimer("Auton", () -> m_adpatableAutonFactory.autonTimer);
+        log_autonTime.accept(m_adpatableAutonFactory.autonTimer.get());
+    }
 
     @Override
     public void autonomousExit() {}
@@ -524,7 +553,9 @@ public class Robot extends TimedRobot {
         // instance.logFuels();
         // instance.updateSim();
 
-        // m_visionSim.simulationPeriodic(robotPose);
+        SwerveDriveState robotState = m_drivetrain.getState();
+        Pose2d robotPose = robotState.Pose;
+        WaltCamera.m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();
         m_shooter.simulationPeriodic();
         m_intake.simulationPeriodic();

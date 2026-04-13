@@ -20,6 +20,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.FieldConstants;
+import frc.util.WaltTunable;
 import frc.util.WaltLogger.*;
 import edu.wpi.first.units.measure.Time;
 
@@ -54,6 +55,9 @@ public class ShotCalculator {
 
     private static final boolean kRPSReductionNeeded = false;
 
+    private static double kRPSBoost = 1.25;
+    private static final WaltTunable kRPSBoostTuner = new WaltTunable("Shooter/Calculator/RPSBoost", kRPSBoost); 
+
     /**
      * Zero-allocation sorted-array interpolation tables replacing InterpolatingTreeMap.
      * All values stored in SI units (rad/s, radians, seconds).
@@ -74,23 +78,26 @@ public class ShotCalculator {
         minDistance = 1.168;
         maxDistance = 5.672;
 
+        kRPSBoost = kRPSBoostTuner.enabled() ? kRPSBoostTuner.get() : kRPSBoost;
+
         ShotLerpTable.Builder shot = new ShotLerpTable.Builder();
 
+
         //Ordered via DistanceToTarget
-        shot.add(7.565, 89.00, 0.16, 2.05);
-        shot.add(6.350, 82.25, 0.16, 1.50);
-
+        shot.add(7.565, 89.00 + kRPSBoost, 0.16, 2.05);
+        shot.add(6.350, 82.25 + kRPSBoost, 0.16, 1.50);
+ 
         //NEW BACKLINE
-        shot.add(5.493, 78.95, 0.08, 1.99);
-        shot.add(5.183, 76.79, 0.08, 1.86);
-        shot.add(4.881, 73.21, 0.08, 1.81);
-        shot.add(4.617, 71.50, 0.08, 1.62);
-        shot.add(4.516, 70.00, 0.08, 1.62);
-        shot.add(4.388, 68.00, 0.08, 1.6);
-        shot.add(4.300, 68.40, 0.08, 1.59);
-        shot.add(4.185, 66.60, 0.08, 1.55);
-        shot.add(4.092, 66.34, 0.08, 1.7);
-
+        shot.add(5.493, 78.95 + kRPSBoost, 0.08, 1.99);
+        shot.add(5.183, 76.79 + kRPSBoost, 0.08, 1.86);
+        shot.add(4.881, 73.21 + kRPSBoost, 0.08, 1.81);
+        shot.add(4.617, 71.50 + kRPSBoost, 0.08, 1.62);
+        shot.add(4.516, 70.00 + kRPSBoost, 0.08, 1.62);
+        shot.add(4.388, 68.00 + kRPSBoost, 0.08, 1.6);
+        shot.add(4.300, 68.40 + kRPSBoost, 0.08, 1.59);
+        shot.add(4.185, 66.60 + kRPSBoost, 0.08, 1.55);
+        shot.add(4.092, 66.34 + kRPSBoost, 0.08, 1.7);
+ 
         //redundant data
         // shot.add(5.672, 82.50, 0.08, 2.11);
         // shot.add(5.321, 81.00, 0.08, 1.94);
@@ -104,25 +111,25 @@ public class ShotCalculator {
         // shot.add(4.258, 71.00, 0.08, 1.64);
         // shot.add(4.098, 69.00, 0.08, 1.58);
 
-        shot.add(3.932, 68.00, 0.08, 1.71);
-        shot.add(3.785, 66.90, 0.08, 1.56);
-        shot.add(3.611, 65.40, 0.08, 1.56);
-        shot.add(3.464, 63.90, 0.08, 1.50);
-        shot.add(3.293, 62.40, 0.08, 1.50);
-        shot.add(3.134, 60.90, 0.08, 1.51);
-        shot.add(2.995, 59.40, 0.08, 1.37);
-        shot.add(2.855, 57.90, 0.08, 1.35);
-        shot.add(2.704, 56.40, 0.08, 1.38);
-        shot.add(2.586, 54.90, 0.08, 1.28);
-        shot.add(2.395, 53.50, 0.08, 1.29);
-        shot.add(2.221, 52.00, 0.08, 1.25);
-        shot.add(2.083, 50.50, 0.08, 1.14);
-        shot.add(1.912, 49.00, 0.08, 1.19);
-        shot.add(1.691, 47.50, 0.08, 0.98);
-        shot.add(1.575, 47.50, 0.08, 1.18);
-        shot.add(1.528, 46.00, 0.08, 1.20);
-        shot.add(1.307, 44.50, 0.08, 1.13);
-        shot.add(1.168, 44.50, 0.08, 1.16);
+        shot.add(3.932, 68.00 + kRPSBoost, 0.08, 1.71);
+        shot.add(3.785, 66.90 + kRPSBoost, 0.08, 1.56);
+        shot.add(3.611, 65.40 + kRPSBoost, 0.08, 1.56);
+        shot.add(3.464, 63.90 + kRPSBoost, 0.08, 1.50);
+        shot.add(3.293, 62.40 + kRPSBoost, 0.08, 1.50);
+        shot.add(3.134, 60.90 + kRPSBoost, 0.08, 1.51);
+        shot.add(2.995, 59.40 + kRPSBoost, 0.08, 1.37);
+        shot.add(2.855, 57.90 + kRPSBoost, 0.08, 1.35);
+        shot.add(2.704, 56.40 + kRPSBoost, 0.08, 1.38);
+        shot.add(2.586, 54.90 + kRPSBoost, 0.08, 1.28);
+        shot.add(2.395, 53.50 + kRPSBoost, 0.08, 1.29);
+        shot.add(2.221, 52.00 + kRPSBoost, 0.08, 1.25);
+        shot.add(2.083, 50.50 + kRPSBoost, 0.08, 1.14);
+        shot.add(1.912, 49.00 + kRPSBoost, 0.08, 1.19);
+        shot.add(1.691, 47.50 + kRPSBoost, 0.08, 0.98);
+        shot.add(1.575, 47.50 + kRPSBoost, 0.08, 1.18);
+        shot.add(1.528, 46.00 + kRPSBoost, 0.08, 1.20);
+        shot.add(1.307, 44.50 + kRPSBoost, 0.08, 1.13);
+        shot.add(1.168, 44.50 + kRPSBoost, 0.08, 1.16);
         kShotTable = shot.build();
     }
 
@@ -498,8 +505,11 @@ public class ShotCalculator {
             double prevPredY = predY;
 
             // Inline predictTargetPos — no Translation3d/Time allocation
-            //2974 RAHHHHHHHHHHHHHHH
-            double coeffDrag = 0.2974;  //0.36
+            double coeffDrag = 0.254; //used for SOTM movement
+            //2974 RAHHHHHHHHHHHHHHH – correction: more like 254 RAHHHHHHHHHHHHHHH
+            // if ( (Math.abs(vx) <= 0.05) || (Math.abs(vy) <= 0.05) ) { //NOTE: not sure if these numbers are right
+            //     coeffDrag = 0.2974; //used during static shot (or when the robot is low speed and should be static shooting)
+            // }
             // if (distance >= 3.6) {
             //     coeffDrag = 0.53;   //0.7
             // }
