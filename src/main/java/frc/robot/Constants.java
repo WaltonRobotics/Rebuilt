@@ -2,9 +2,6 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.Constants.ShooterK.kTurretAngleOffset3d;
-import static frc.robot.Constants.ShooterK.kPassingXAsDouble;
-
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CommutationConfigs;
@@ -29,9 +26,6 @@ import com.ctre.phoenix6.signals.AdvancedHallSupportValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.signals.SensorDirectionValue;
-// import com.reduxrobotics.sensors.canandmag.CanandmagSettings;
-
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -54,9 +48,10 @@ import frc.util.AllianceFlipUtil;
 import frc.util.VisionUtil;
 
 public class Constants {
-    public static final boolean kDebugLoggingEnabled = true;
+    public static final boolean kDebugLoggingEnabled = false;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
+    public static final CANBus kRioBus = CANBus.roboRIO();
     public static final CANBus kCanivoreBus = new CANBus("fd");
     public static final CANBus kShooterBus = new CANBus("shooter");
 
@@ -82,6 +77,7 @@ public class Constants {
         public static final Transform3d kTurretTransformNoRotation = new Transform3d(kTurretTranslation, Rotation3d.kZero);
         public static final Transform3d kTurretTransform = new Transform3d(kTurretTranslation, kTurretAngleOffset3d);
         public static final Distance kInchesAboveFunnel = Inches.of(20);// distance the ball must travel above the funnel opening to arc correctly into the hub
+        public static final Angle kTurretBarfPos = Rotations.of(-0.113);
 
         public static final boolean kUseStaticShot = false;
 
@@ -102,6 +98,11 @@ public class Constants {
         public static final double kFunnelRadiusIn = FieldConstants.Hub.funnelRadius.in(Inches);
         public static final double kFunnelHeightPlusAboveIn = FieldConstants.Hub.funnelHeight.plus(kInchesAboveFunnel).in(Inches);
 
+        // Lateral bias compensation: balls drift left/right as a function of turret angle relative to robot.
+        // sin(turretRelAngle) = 0 at 0/180°, +1 at 90° (left bias), -1 at 270° (right bias).
+        // This gain (in rotations) is subtracted * sin to counter the bias. Tune on robot.
+        public static final double kTurretLateralBiasGainRots = -0.005;
+
         public static final int kHopperCapacity = 55; //TODO: find true max
 
         public static final double kGravity = MetersPerSecondPerSecond.of(9.81).in(InchesPerSecondPerSecond);
@@ -111,10 +112,15 @@ public class Constants {
         //     Meters.of(2), Meters.of(1.5), Meters.zero());
         // public static final Translation3d kPassingSpotLeft = new Translation3d(
         //     Meters.of(2), Meters.of(6.5), Meters.zero());
-        public static final Distance kPassingX = Meters.of(2);
-        public static final double kPassingXAsDouble = kPassingX.baseUnitMagnitude();
+        public static final Distance kPassingX = Meters.of(3.5);
+        public static final double kPassingXAsDouble = kPassingX.in(Meters);
+
+        public static final double kNoPassZoneTopX = FieldConstants.Hub.blueInnerCenterPoint.getX() + 2;
+        public static final double kNoPassZoneRightY = Meters.of(3.2).baseUnitMagnitude();
+        public static final double kNoPassZoneLeftY = FieldConstants.fieldWidth - 3.2;
         
         public static final double kShooterTimeout = 1.0;
+        public static final double kBallDetectedDebounceTime = 1.2; //0.9;
 
         /* MOTOR CONSTANTS */
         public static final double kShooterMoI = 0.000349 * 2.5;  //J for 5 3" 0.53lb flywheels
@@ -129,16 +135,18 @@ public class Constants {
         public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.60 ); //0.75 rots in each direction from home
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.in(Rotations));
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.in(Rotations));
-        public static final double kTurretIntakeLockPos = -0.25;
         public static final double kTurretMaxErrD = Rotations.of(0.05).in(Rotations);
+
+        public static final double kTurretMaxNotAbleToPassRange = 0.23; //sorry for this horrible name i dont know a better one lol
+        public static final double kTurretMinNotAbleToPassRange = -0.23; //sorry for this horrible name i dont know a better one lol
 
         public static final AngularVelocity kShooterMaxRPS = MotorK.kX44MaxVelocity.div(kShooterGearing);
         public static final double kShooterMaxRPSd = kShooterMaxRPS.in(RotationsPerSecond);
         public static final AngularVelocity kShooterRPS = kShooterMaxRPS.times(0.65);   //Kraken X44 Max RPM: 7758
-        public static final double kShooterRPSd = kShooterMaxRPSd * 0.65;
+        public static final double kShooterRPSd = 53.50;
         public static final AngularVelocity kShooterAutonCloseRPS = kShooterMaxRPS.times(0.60);  //auton pose is closer to the hub than teleop scoring
         public static final AngularVelocity kShooterAuton_EndSweep_RPS = kShooterMaxRPS.times(0.70); // end of sweep paths
-        public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.31);
+        public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.37);
         public static final AngularVelocity kShooterZeroRPS = RotationsPerSecond.zero();
 
         public static final AngularVelocity kShooterSpunUpMinimum = RotationsPerSecond.of(10);
@@ -225,13 +233,10 @@ public class Constants {
             .withVoltage(kShooterAVoltageConfigs);
 
         private static final MotorOutputConfigs kShooterBOutputConfigs = new MotorOutputConfigs()
-                .withInverted(InvertedValue.CounterClockwise_Positive)
-                .withNeutralMode(NeutralModeValue.Coast);
-        public static final TalonFXConfiguration kShooterBTalonFXConfiguration = new TalonFXConfiguration()
-                .withCurrentLimits(kShooterACurrentLimitConfigs)
-                .withMotorOutput(kShooterBOutputConfigs)
-                .withFeedback(kShooterAFeedbackConfigs)
-                .withVoltage(kShooterAVoltageConfigs);
+            .withInverted(InvertedValue.CounterClockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Coast);
+        public static final TalonFXConfiguration kShooterBTalonFXConfiguration = kShooterATalonFXConfiguration.clone()
+            .withMotorOutput(kShooterBOutputConfigs);
 
         //---HOOD
         private static final Slot0Configs kHoodSlot0Configs = new Slot0Configs()
@@ -418,7 +423,8 @@ public class Constants {
         public static final Distance kRobotFullWidth = Inches.of(33.6875);
         public static final Distance kRobotFullLength = Inches.of(32.6875);
         public static final Distance kBumperHeight = Inches.of(4.5);
-        public static final double kRobotSpeedIntakingLimit = 0.4;
+        public static final double kRobotSpeedIntakingLimit = 0.31;
+        public static final double kRobotEvasionLimit = 1.5;
     }
 
     public static class SuperstructureK {
@@ -444,6 +450,7 @@ public class Constants {
         public static final AngularVelocity kIntakeRollersMaxRPS = MotorK.kX60FOCMaxVelocity.div(kIntakeRollersGearing);
         public static final AngularVelocity kIntakeRollersShootRPS = kIntakeRollersMaxRPS.times(0.2);
         public static final AngularVelocity kIntakeRollersShimmyRPS = kIntakeRollersMaxRPS.times(0.2);
+        public static final double kIntakeRollersBarfVolts = -12;
 
         /* IDS */
         public static final int kIntakeArmCANID = 40;
@@ -469,7 +476,7 @@ public class Constants {
             .withNeutralMode(NeutralModeValue.Brake)
             .withInverted(InvertedValue.Clockwise_Positive);
         private static final MotionMagicConfigs kIntakeArmMotionMagicConfigs = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(0.75)
+            .withMotionMagicCruiseVelocity(1.5)
             .withMotionMagicAcceleration(10)
             .withMotionMagicJerk(0);
         public static final FeedbackConfigs kIntakeArmFeedbackConfigs = new FeedbackConfigs()
@@ -487,16 +494,16 @@ public class Constants {
 
         // IntakeRollers Motors
         private static final CurrentLimitsConfigs kIntakeRollersACurrentLimitConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(85)
-            .withSupplyCurrentLimit(50)
+            .withStatorCurrentLimit(55)
+            .withSupplyCurrentLimit(35)
             .withSupplyCurrentLowerTime(0)
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
         private static final Slot0Configs kIntakeRollersASlot0Configs = new Slot0Configs()
             .withKS(0)
-            .withKV(0.488599348534) // 0.19543973941
+            .withKV(0.048) // 0.488599348534
             .withKA(0)
-            .withKP(0)
+            .withKP(0.05)
             .withKI(0)
             .withKD(0);
         public static final MotorOutputConfigs kIntakeRollersAMotorOutputConfigs = new MotorOutputConfigs()
@@ -517,12 +524,8 @@ public class Constants {
         public static final MotorOutputConfigs kIntakeRollersBMotorOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive)
             .withNeutralMode(NeutralModeValue.Coast);
-        public static final TalonFXConfiguration kIntakeRollersBConfiguration = new TalonFXConfiguration()
-            .withCurrentLimits(kIntakeRollersACurrentLimitConfigs)
-            .withSlot0(kIntakeRollersASlot0Configs)
-            .withMotorOutput(kIntakeRollersBMotorOutputConfigs)
-            .withFeedback(kIntakeRollersAFeedbackConfigs)
-            .withVoltage(kIntakeRollersAVoltageConfigs);
+        public static final TalonFXConfiguration kIntakeRollersBConfiguration = kIntakeRollersAConfiguration.clone()
+            .withMotorOutput(kIntakeRollersBMotorOutputConfigs);
     }
 
     public static class IndexerK {
@@ -541,10 +544,10 @@ public class Constants {
       
         public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60MaxVelocity.div(kSpindexerGearing);
         public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
-        public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(1.0);
+        public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.85);
 
         public static final AngularVelocity kTunnelMaxRPS = MotorK.kX60MaxVelocity.div(kTunnelGearing);
-        public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(1.0);
+        public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(0.77);    //9V
 
         public static final AngularVelocity kTunnelSpunUpMinimum = RotationsPerSecond.of(10);
         public static final double kTunnelSpunUpMinimumD = 10.0;
@@ -632,27 +635,42 @@ public class Constants {
         public static final Pose2d kLeftNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
             Meters.of(5.437880039215088), new Rotation2d(0));
 
-        public static final double kOneSweepMaxTime = 12.5;
-        public static final double kTwoSweepMaxTime = 20;
-
         public static final double kIntakeTimeout = 7.5;
-        public static final double kShootingTimeout = 6; //12
+        public static final double kReshootShootingTimeout = 5.5; //12
+        public static final double kSweepShootingTimeout = 20;
 
-        public static final String kLeftSweepPathName = "LeftSweep";
-        public static final String kRightSweepPathName = "RightSweep";
+        //---RIGHT FIRST CYCLES
+        public static final String kRightOneJab = "RIGHT_one_jab";
+        public static final String kRightOneTrench = "RIGHT_one_trench";
+        public static final String kRightOneDefense = "RIGHT_one_defense";
+        public static final String kRightOneReverse = "RIGHT_one_reverse";
 
-        public static final String kLeftOptimizedSweepPathName = "LeftSweepOptimized";
-        public static final String kRightOptimizedSweepPathName = "RightSweepOptimized";
+        //---RIGHT SECOND CYCLES
+        public static final String kRightTwoSotmDepot = "RIGHT_two_sotmDepot";
+        public static final String kRightTwoDepot = "RIGHT_two_depot";
+        public static final String kRightTwoSweep = "RIGHT_two_sweep";
+        public static final String kRightTwoPassing = "RIGHT_two_passing";
+        public static final String kRightTwoJab = "RIGHT_two_jab";
+        public static final String kRightTwoReverse = "RIGHT_two_reverse";
 
-        public static final String kLeftTwoSweepName = "LeftSweepTwo"; //NO LEFT TWO SWEEP PATH AS OF NOW
-        public static final String kRightTwoSweepName = "RightSweepTwo";
+        //---LEFT FIRST CYCLES
+        public static final String kLeftOneJab = "LEFT_one_jab";
+        public static final String kLeftOneTrench = "LEFT_one_trench";
+        public static final String kLeftOneDefense = "LEFT_one_defense";
+        public static final String kLeftOneReverse = "LEFT_one_reverse";
 
-        public static final String kFastRightTwoSweepName = "RightSweepFast";
-        public static final String kZigzagRightTwo = "RightSweepFast_ZigZag";
-        public static final String kReshootRightTwo = "RightSweepFast_Reshoot";
+        //---LEFT SECOND CYCLES
+        public static final String kLeftTwoSotmDepot = "LEFT_two_sotmDepot";
+        public static final String kLeftTwoDepot = "LEFT_two_depot";
+        public static final String kLeftTwoSweep = "LEFT_two_sweep";
+        public static final String kLeftTwoPassing = "LEFT_two_passing";
+        public static final String kLeftTwoJab = "LEFT_two_jab";
+        public static final String kLeftTwoReverse = "LEFT_two_reverse";
 
-        public static final String kFastLeftTwoSweepName = "LeftSweepFast";
-        public static final String kReshootLeftTwo = "LeftSweepFast_copy1"; //TODO: MUST RENAME THIS
-        // public static final String kReshootLeftTwo = "LeftSweepFast_Reshoot";
+        //---MISC
+        public static final String kRightOneCircle = "RIGHT_one_circle";
+        public static final String kLeftOneSweepAndDepot = "LEFT_one_sweepAndDepot";
+        public static final String kLeftThreeDepotToBump = "LEFT_three_depotToBump";
+        public static final String kRightThreeDepotToBump = "RIGHT_three_depotToBump";
     }
 }

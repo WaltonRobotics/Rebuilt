@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.Constants.IndexerK.kLogTab;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -8,6 +9,7 @@ import java.util.function.Supplier;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -30,6 +32,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -42,8 +45,10 @@ import frc.robot.Constants.RobotK;
 import frc.robot.Constants.SuperstructureK;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.vision.Detection;
+import frc.util.WaltDriverStation;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.Pose2dLogger;
 
 /**
  * CommandSwerveDrivetrain: Class that extends the Phoenix 6 SwerveDrivetrain class 
@@ -58,6 +63,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private double m_lastSimTime;
 
     public SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(getModuleLocations());
+    private final StatusSignal<Angle> sig_gyroRoll = getPigeon2().getRoll();
+    private final StatusSignal<Angle> sig_gyroYaw = getPigeon2().getYaw();
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -68,8 +75,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
-    private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
-    private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
+    // private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
+    // private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
 
     private final PIDController m_pathXController = new PIDController(4.69, 0, 0);
     private final PIDController m_pathYController = new PIDController(4.69, 0, 0);
@@ -81,6 +88,13 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private final Detection detection = new Detection();
 
     private final DoubleLogger log_absoluteRobotSpeed = new WaltLogger.DoubleLogger("Swerve", "absoluteRobotSpeed");
+    private final DoubleLogger log_vxMPS = new DoubleLogger("Swerve", "vxMPS");
+    private final DoubleLogger log_vyMPS = new DoubleLogger("Swerve", "vyMPS");
+    private final Pose2dLogger log_sampleAt_pose = new Pose2dLogger("Swerve/Autons", "sampleAt_Pose");
+    private final DoubleLogger log_currentAutonTotalTime = new DoubleLogger("Swerve/Auton", "currentTotalTime");
+    private final DoubleLogger log_sampleAt_velocityX = new DoubleLogger("Swerve/Auton", "sampleAt_velocityX");
+    private final DoubleLogger log_sampleAt_velocityY = new DoubleLogger("Swerve/Auton", "sampleAt_velocityY");
+    
 
     private final SwerveRequest.FieldCentric swreq_drive = new SwerveRequest.FieldCentric()
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
@@ -101,48 +115,48 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         )
     );
 
-    /* SysId routine for characterizing steer. This is used to find PID gains for the steer motors. */
-    private final SysIdRoutine m_sysIdRoutineSteer = new SysIdRoutine(
-        new SysIdRoutine.Config(
-            null,        // Use default ramp rate (1 V/s)
-            Volts.of(7), // Use dynamic voltage of 7 V
-            null,        // Use default timeout (10 s)
-            // Log state with SignalLogger class
-            state -> SignalLogger.writeString("SysIdSteer_State", state.toString())
-        ),
-        new SysIdRoutine.Mechanism(
-            volts -> setControl(m_steerCharacterization.withVolts(volts)),
-            null,
-            this
-        )
-    );
+    // /* SysId routine for characterizing steer. This is used to find PID gains for the steer motors. */
+    // private final SysIdRoutine m_sysIdRoutineSteer = new SysIdRoutine(
+    //     new SysIdRoutine.Config(
+    //         null,        // Use default ramp rate (1 V/s)
+    //         Volts.of(7), // Use dynamic voltage of 7 V
+    //         null,        // Use default timeout (10 s)
+    //         // Log state with SignalLogger class
+    //         state -> SignalLogger.writeString("SysIdSteer_State", state.toString())
+    //     ),
+    //     new SysIdRoutine.Mechanism(
+    //         volts -> setControl(m_steerCharacterization.withVolts(volts)),
+    //         null,
+    //         this
+    //     )
+    // );
 
-    /*
-     * SysId routine for characterizing rotation.
-     * This is used to find PID gains for the FieldCentricFacingAngle HeadingController.
-     * See the documentation of SwerveRequest.SysIdSwerveRotation for info on importing the log to SysId.
-     */
-    private final SysIdRoutine m_sysIdRoutineRotation = new SysIdRoutine(
-        new SysIdRoutine.Config(
-            /* This is in radians per second², but SysId only supports "volts per second" */
-            Volts.of(Math.PI / 6).per(Second),
-            /* This is in radians per second, but SysId only supports "volts" */
-            Volts.of(Math.PI),
-            null, // Use default timeout (10 s)
-            // Log state with SignalLogger class
-            state -> SignalLogger.writeString("SysIdRotation_State", state.toString())
-        ),
-        new SysIdRoutine.Mechanism(
-            output -> {
-                /* output is actually radians per second, but SysId only supports "volts" */
-                setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
-                /* also log the requested output for SysId */
-                SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
-            },
-            null,
-            this
-        )
-    );
+    // /*
+    //  * SysId routine for characterizing rotation.
+    //  * This is used to find PID gains for the FieldCentricFacingAngle HeadingController.
+    //  * See the documentation of SwerveRequest.SysIdSwerveRotation for info on importing the log to SysId.
+    //  */
+    // private final SysIdRoutine m_sysIdRoutineRotation = new SysIdRoutine(
+    //     new SysIdRoutine.Config(
+    //         /* This is in radians per second², but SysId only supports "volts per second" */
+    //         Volts.of(Math.PI / 6).per(Second),
+    //         /* This is in radians per second, but SysId only supports "volts" */
+    //         Volts.of(Math.PI),
+    //         null, // Use default timeout (10 s)
+    //         // Log state with SignalLogger class
+    //         state -> SignalLogger.writeString("SysIdRotation_State", state.toString())
+    //     ),
+    //     new SysIdRoutine.Mechanism(
+    //         output -> {
+    //             /* output is actually radians per second, but SysId only supports "volts" */
+    //             setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
+    //             /* also log the requested output for SysId */
+    //             SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
+    //         },
+    //         null,
+    //         this
+    //     )
+    // );
 
     /* The SysId routine to test */
     private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
@@ -265,7 +279,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
          * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
          */
         if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
-            DriverStation.getAlliance().ifPresent(allianceColor -> {
+            WaltDriverStation.getAlliance().ifPresent(allianceColor -> {
                 setOperatorPerspectiveForward(
                     allianceColor == Alliance.Red
                         ? kRedAlliancePerspectiveRotation
@@ -275,8 +289,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             });
         }
 
-        ChassisSpeeds currentChassisSpeeds = this.getChassisSpeeds();
-        log_absoluteRobotSpeed.accept(Math.hypot(currentChassisSpeeds.vxMetersPerSecond, currentChassisSpeeds.vyMetersPerSecond));
+        var state = getState();
+        var speeds = m_kinematics.toChassisSpeeds(state.ModuleStates);
+        log_vxMPS.accept(speeds.vxMetersPerSecond);
+        log_vyMPS.accept(speeds.vyMetersPerSecond);
+        log_absoluteRobotSpeed.accept(Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
     }
 
     private void startSimThread() {
@@ -346,9 +363,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private void followPath(SwerveSample sample) {
         m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
         var pose = getState().Pose;
-        var samplePose = sample.getPose();
+        // var samplePose = sample.getPose();
 
-        var speed = getState().Speeds;
+        // var speed = getState().Speeds;
         var targetSpeeds = sample.getChassisSpeeds();
 
         targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(
@@ -381,7 +398,13 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      */
     public AutoFactory createAutoFactory() {
         return createAutoFactory((traj, isStart) -> {
+            SwerveSample sample = traj.sampleAt(4.25, false).get();
             WaltLogger.timedPrint(String.format("TrajLog - isStart: %b", isStart));
+            WaltLogger.timedPrint("Sample at 4.25s (PRE BUMP); X:" + sample.getPose().getX() + " Y:" + traj.sampleAt(4.25, false).get().getPose().getY());
+            log_sampleAt_pose.accept(sample.getPose());
+            log_sampleAt_velocityX.accept(sample.vx);
+            log_sampleAt_velocityY.accept(sample.vy);
+            log_currentAutonTotalTime.accept(traj.getTotalTime());
         });
     }
 
@@ -404,60 +427,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     /**
-     * drive the robot forward slow, then fast
-     *                 backward slow, then fast
-     * then spin the wheels driverMax speed
-     * 
-     * @return Ops check for swerve drive
-     */
-    public Command swerveAutomatedOpsCheck() {
-        return Commands.sequence(
-            //Slow speed forward into high speed
-            applyRequest(() ->
-                swreq_drive.withVelocityX(RobotK.kTranslationOpsCheckSpeed)
-                    .withVelocityY(0)
-                    .withRotationalRate(0)
-            ),
-            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
-            applyRequest(() ->
-                swreq_drive.withVelocityX(RobotK.kMaxTranslationSpeed)
-                    .withVelocityY(0)
-                    .withRotationalRate(0)
-            ),
-            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
-            xBrakeCmd(),
-            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
-
-            //Slow speed backward into high speed
-            applyRequest(() ->
-                swreq_drive.withVelocityX(RobotK.kTranslationOpsCheckSpeed.times(-1))
-                    .withVelocityY(0)
-                    .withRotationalRate(0)
-            ),
-            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
-            applyRequest(() ->
-                swreq_drive.withVelocityX(RobotK.kMaxTranslationSpeed.times(-1))
-                    .withVelocityY(0)
-                    .withRotationalRate(0)
-            ),
-            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
-            xBrakeCmd(),
-            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
-
-            //Turn wheels
-            applyRequest(() ->
-                swreq_drive.withVelocityX(0)
-                    .withVelocityY(0)
-                    .withRotationalRate(RobotK.kMaxAngularRate)
-            ),
-            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
-            xBrakeCmd()
-        );
-
-    }
-
-    /**
-     * robot goes to specified pose
      * @param desPose Posd2d to move to
      * @return a Command that makes the robot move to the desired Pose2d
      */
@@ -541,5 +510,61 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             fuelLocation.getY(),
             desiredRotation
         );
+    }
+
+    /**
+     * drive the robot forward slow, then fast
+     *                 backward slow, then fast
+     * then spin the wheels driverMax speed
+     * 
+     * @return Ops check for swerve drive
+     */
+    public Command swerveAutomatedOpsCheck() {
+        return Commands.sequence(
+            //Slow speed forward into high speed
+            applyRequest(() ->
+                swreq_drive.withVelocityX(RobotK.kTranslationOpsCheckSpeed)
+                    .withVelocityY(0)
+                    .withRotationalRate(0)
+            ),
+            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
+            applyRequest(() ->
+                swreq_drive.withVelocityX(RobotK.kMaxTranslationSpeed)
+                    .withVelocityY(0)
+                    .withRotationalRate(0)
+            ),
+            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
+            xBrakeCmd(),
+            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
+
+            //Slow speed backward into high speed
+            applyRequest(() ->
+                swreq_drive.withVelocityX(RobotK.kTranslationOpsCheckSpeed.times(-1))
+                    .withVelocityY(0)
+                    .withRotationalRate(0)
+            ),
+            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
+            applyRequest(() ->
+                swreq_drive.withVelocityX(RobotK.kMaxTranslationSpeed.times(-1))
+                    .withVelocityY(0)
+                    .withRotationalRate(0)
+            ),
+            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
+            xBrakeCmd(),
+            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
+
+            //Turn wheels
+            applyRequest(() ->
+                swreq_drive.withVelocityX(0)
+                    .withVelocityY(0)
+                    .withRotationalRate(RobotK.kMaxAngularRate)
+            ),
+            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
+            xBrakeCmd()
+        );
+    }
+
+    public boolean isBeached() {
+        return sig_gyroRoll.refresh().isNear(0, 3) && sig_gyroYaw.refresh().isNear(0, 3);
     }
 }

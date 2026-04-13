@@ -2,8 +2,6 @@ package frc.util;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.Optional;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rectangle2d;
@@ -11,8 +9,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 public class AllianceZoneUtil {
     // Measured
@@ -76,10 +72,6 @@ public class AllianceZoneUtil {
         public boolean contains(Pose2d pose) {
             return rect.contains(pose.getTranslation());
         }
-    }
-
-    public static Optional<Alliance> getAlliance() {
-        return DriverStation.getAlliance();
     }
 
     public static Region getZone(Pose2d pose) {

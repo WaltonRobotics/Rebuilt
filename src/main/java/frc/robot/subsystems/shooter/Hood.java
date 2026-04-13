@@ -1,6 +1,5 @@
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.kShooterBus;
 import static frc.robot.Constants.ShooterK.*;
 
@@ -16,7 +15,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.networktables.DoubleSubscriber;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -73,10 +72,7 @@ public class Hood extends SubsystemBase {
         return runOnce(() -> setHoodPos(rots));
     }
 
-    //for TestingDashboard
-    public Command setHoodPositionCmd(DoubleSubscriber sub_rots) {
-        return run(() -> setHoodPos(sub_rots.get()));
-    }
+
 
     private static double getHoodAngleDeg(double posRots) {
         return kPhysicalHoodMinPosition_double + (posRots * 360.0 - kHoodMinRots_double * 360.0) * kAbsoluteToPhysicalAngleRatio;

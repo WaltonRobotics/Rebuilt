@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -10,6 +11,8 @@ import com.ctre.phoenix6.sim.ChassisReference;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static frc.robot.Constants.kRioBus;
 import static frc.robot.Constants.IntakeK.*;
 
 import java.util.function.BooleanSupplier;
@@ -31,12 +34,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltMotorSim;
 import frc.robot.Robot;
-import frc.util.GobildaServoAngled;
 import frc.util.SignalManager;
 import frc.util.WaltLogger;
 
@@ -49,7 +50,8 @@ public class Intake extends SubsystemBase {
     private final TalonFX m_intakeRollersB = new TalonFX(kIntakeRollersB_CANID); //x60Foc
 
     private DynamicMotionMagicVoltage m_MMVReq = new DynamicMotionMagicVoltage(0, 1, 1).withEnableFOC(true);
-    private VoltageOut m_VVReq = new VoltageOut(0).withEnableFOC(true);
+    private VelocityVoltage m_VelVoltReq = new VelocityVoltage(0).withEnableFOC(true);
+    private VoltageOut m_voltsReq = new VoltageOut(0).withEnableFOC(true);
 
     private final StatusSignal<Current> sig_intakeArmStatorCurrent = m_intakeArm.getStatorCurrent();
     private final StatusSignal<AngularVelocity> sig_intakeArmVelo = m_intakeArm.getVelocity();
@@ -106,7 +108,7 @@ public class Intake extends SubsystemBase {
 
         m_intakeRollersB.setControl(new Follower(kIntakeRollersA_CANID, MotorAlignmentValue.Opposed));
 
-        SignalManager.register("rio", sig_intakeArmStatorCurrent, sig_intakeArmVelo, sig_intakeRollersAVelo, sig_intakeArmPos, sig_intakeArmMMAtTarget);
+        SignalManager.register(kRioBus, sig_intakeArmStatorCurrent, sig_intakeArmVelo, sig_intakeRollersAVelo, sig_intakeArmPos, sig_intakeArmMMAtTarget);
 
         if (Robot.isReal()) {
             setDefaultCommand(intakeArmCurrentSenseHoming());
@@ -123,11 +125,11 @@ public class Intake extends SubsystemBase {
 
     /* COMMANDS */
     public void setIntakeArmPos(IntakeArmPosition rots) {
-        setIntakeArmPos(rots.rots, rots == IntakeArmPosition.RETRACTED ? 6 : 3);
+        setIntakeArmPos(rots.rots, rots == IntakeArmPosition.RETRACTED ? 36 : 18);
     }
 
     public Command setIntakeArmPosCmd(IntakeArmPosition rots) {
-        return setIntakeArmPosCmd(rots.rots, rots == IntakeArmPosition.RETRACTED ? 6 : 3);
+        return setIntakeArmPosCmd(rots.rots, rots == IntakeArmPosition.RETRACTED ? 36 : 18);
     }
 
     public Command setIntakeArmPosCmd(Angle rots, double RPSPS) {
@@ -149,13 +151,14 @@ public class Intake extends SubsystemBase {
         Commands.waitUntil(intakeArmAtDest);
 
         return Commands.repeatingSequence(
-            setIntakeRollersVelocityCmd(kIntakeRollersShimmyRPS.baseUnitMagnitude()),
-            setIntakeArmPosCmd(IntakeArmPosition.SHIMMY),
+            stopIntakeRollers(),
+            setIntakeArmPosCmd(IntakeArmPosition.RETRACTED),
             Commands.waitUntil(intakeArmAtDest),
             setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
+            startIntakeRollers(),
             Commands.waitUntil(intakeArmAtDest)
         ).finallyDo(() -> {
-            setIntakeArmPosCmd(IntakeArmPosition.SAFE);
+            setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED);
             setIntakeRollersVelocityCmd(0);
         });
     }
@@ -170,7 +173,7 @@ public class Intake extends SubsystemBase {
     }
 
     public Command startIntakeRollers() {
-        return setIntakeRollersVelocityCmd(12);
+        return setIntakeRollersVelocityCmd(10);
     }
 
     public Command stopIntakeRollers() {
@@ -178,7 +181,8 @@ public class Intake extends SubsystemBase {
     }
 
     public void setIntakeRollersVelocity(double volts) {
-        m_intakeRollersA.setControl(m_VVReq.withOutput(volts));
+        m_intakeRollersA.setControl(m_VelVoltReq.withVelocity(volts / 12 * kIntakeRollersMaxRPS.in(RotationsPerSecond)));   ///kV = 0.488599348534
+        // m_intakeRollersA.setControl(m_voltsReq.withOutput(volts));
     }
 
     public Command setIntakeRollersVelocityCmd(double volts) {
@@ -229,7 +233,7 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic() {
         log_targetIntakeArmRots.accept(m_MMVReq.Position);
-        log_targetIntakeRollersRPS.accept(m_VVReq.Output);
+        log_targetIntakeRollersRPS.accept(m_voltsReq.Output);
         log_intakeRollersRPS.accept(sig_intakeRollersAVelo.getValueAsDouble());
         log_intakeArmRots.accept(sig_intakeArmPos.getValueAsDouble());
     }

@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
@@ -11,6 +10,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -60,12 +60,18 @@ public class Indexer extends SubsystemBase {
 
     private final DoubleLogger log_desiredSpindexerRPS = WaltLogger.logDouble(kLogTab, "desiredSpindexerRPS");
     private final DoubleLogger log_desiredTunnelRPS = WaltLogger.logDouble(kLogTab, "desiredTunnelRPS");
+    private final DoubleLogger log_spindexerStatorCurrent = WaltLogger.logDouble(kLogTab, "spindexerStatorCurrent");
+    private final DoubleLogger log_spindexerSupplyCurrent = WaltLogger.logDouble(kLogTab, "spindexerSupplyCurrent");
 
     private final StatusSignal<AngularVelocity> sig_spindexerVelo = m_spindexer.getVelocity();
+    private final StatusSignal<Current> sig_spindexerStatorCurrent = m_spindexer.getStatorCurrent();
+    private final StatusSignal<Current> sig_spindexerSupplyCurrent = m_spindexer.getSupplyCurrent();;
     private final StatusSignal<AngularVelocity> sig_tunnelVelo = m_tunnel.getVelocity();
     private final StatusSignal<Double> sig_tunnelCLErr = m_tunnel.getClosedLoopError();
+
     private final DoubleLogger log_tunnelClosedLoopError = WaltLogger.logDouble(kLogTab, "tunnelClosedLoopError");
     private final BooleanLogger log_isTunnelSpunUp = WaltLogger.logBoolean(kLogTab, "isTunnelSpunUp");
+
 
     private boolean m_isTunnelSpunUp = false;
     private double m_tunnelVelocityRotPerSec = 0.0;
@@ -75,7 +81,7 @@ public class Indexer extends SubsystemBase {
         m_spindexer.getConfigurator().apply(kSpindexerTalonFXConfiguration);
         m_tunnel.getConfigurator().apply(kTunnelTalonFXConfiguration);
 
-        SignalManager.register(Constants.kCanivoreBus, sig_spindexerVelo, sig_tunnelVelo, sig_tunnelCLErr);
+        SignalManager.register(Constants.kCanivoreBus, sig_spindexerVelo, sig_tunnelVelo, sig_tunnelCLErr, sig_spindexerStatorCurrent, sig_spindexerSupplyCurrent);
 
         initSim();
     }
@@ -177,6 +183,8 @@ public class Indexer extends SubsystemBase {
     @Override
     public void periodic() {
         log_spindexerRPS.accept(sig_spindexerVelo.getValueAsDouble());
+        log_spindexerStatorCurrent.accept(sig_spindexerStatorCurrent.getValueAsDouble());
+        log_spindexerSupplyCurrent.accept(sig_spindexerSupplyCurrent.getValueAsDouble());
         refreshTunnelState();
     }
 

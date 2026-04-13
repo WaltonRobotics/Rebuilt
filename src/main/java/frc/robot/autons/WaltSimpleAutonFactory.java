@@ -1,287 +1,397 @@
-package frc.robot.autons;
+// package frc.robot.autons;
 
-import static frc.robot.Constants.ShooterK.kShooterAuton_EndSweep_RPS;
-import static frc.robot.Constants.SuperstructureK.kLogTab;
+// import static frc.robot.Constants.SuperstructureK.kLogTab;
 
-import choreo.Choreo;
-import choreo.auto.AutoFactory;
-import choreo.auto.AutoRoutine;
-import choreo.auto.AutoTrajectory;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.AutonK;
-import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.Intake.IntakeArmPosition;
-import frc.robot.subsystems.Superstructure;
-import frc.robot.subsystems.Swerve;
-import frc.robot.subsystems.shooter.Shooter;
-import frc.util.WaltLogger;
-import frc.util.WaltLogger.DoubleLogger;
-import frc.util.WaltLogger.Pose2dArrayLogger;
-import frc.util.WaltLogger.StringLogger;
+// import choreo.auto.AutoFactory;
+// import choreo.auto.AutoRoutine;
+// import choreo.auto.AutoTrajectory;
+// import edu.wpi.first.wpilibj2.command.Command;
+// import edu.wpi.first.wpilibj2.command.Commands;
+// import edu.wpi.first.wpilibj2.command.button.Trigger;
+// import frc.robot.Constants.AutonK;
+// import frc.robot.subsystems.Intake;
+// import frc.robot.subsystems.Intake.IntakeArmPosition;
+// import frc.robot.subsystems.Superstructure;
+// import frc.robot.subsystems.Swerve;
+// import frc.util.WaltLogger;
+// import frc.util.WaltLogger.DoubleLogger;
 
-public class WaltSimpleAutonFactory {
-    private final Superstructure m_superstructure;
-    public final AutoFactory m_autoFactory;
-    private final Intake m_intake;
-    private final Shooter m_shooter;
-    private final Swerve m_swerve;
+// public class WaltSimpleAutonFactory {
+//     private final Superstructure m_superstructure;
+//     public final AutoFactory m_autoFactory;
+//     private final Intake m_intake;
+//     private final Swerve m_drivetrain;
 
-    private final DoubleLogger log_autonState = WaltLogger.logDouble(kLogTab, "State");
+//     private final DoubleLogger log_autonState = WaltLogger.logDouble(kLogTab, "State");
 
-    //trajectory logger
-    private final StringLogger log_trajectoryName = new StringLogger(AutonK.kLogTab, "trajectoryName");
-    private final Pose2dArrayLogger log_trajectoryPoses = new Pose2dArrayLogger(AutonK.kLogTab, "trajectoryPoses");
+//     public WaltSimpleAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Swerve swerve) {
+//         m_superstructure = superstructure;
+//         m_autoFactory = autoFactory;
+//         m_intake = intake;
+//         m_drivetrain = swerve;
+//         log_autonState.accept(-1.0);
+//     }
 
-    public WaltSimpleAutonFactory(Superstructure superstructure, AutoFactory autoFactory, Intake intake, Shooter shooter, Swerve swerve) {
-        m_superstructure = superstructure;
-        m_autoFactory = autoFactory;
-        m_intake = intake;
-        m_shooter = shooter;
-        m_swerve = swerve;
-        log_autonState.accept(-1.0);
-    }
+//     // --- Utility methods ---
 
-    // --- Utility methods ---
+//     private Command tp(String message) {
+//         return WaltLogger.timedPrintCmd(message);
+//     }
 
-    private Command logState(double state) {
-        return Commands.runOnce(() -> log_autonState.accept(state));
-    }
+//     private Command waitTurretHomedCmd() {
+//         return Commands.waitUntil(() -> true);
+//     }
 
-    private Command tp(String message) {
-        return WaltLogger.timedPrintCmd(message);
-    }
+//     private Command waitIntakeHomedCmd() {
+//         return Commands.waitUntil(m_intake.intakeHomedSupp);
+//     }
 
-    private Command waitTurretHomedCmd() {
-        return Commands.waitUntil(() -> true);
-    }
+//     private Command homingCmd() {
+//         return Commands.parallel(
+//             Commands.sequence(tp("turretHoming.START"), waitTurretHomedCmd(), tp("turretHoming.END")),
+//             Commands.sequence(tp("intakeArmHoming.START"), waitIntakeHomedCmd(), tp("intakeArmHoming.END"))
+//         ).withTimeout(5);
+//     }
 
-    private Command waitIntakeHomedCmd() {
-        return Commands.waitUntil(m_intake.intakeHomedSupp);
-    }
+//     // --- Preheater (stays as Command, runs during disabled) ---
 
-    private Command homingCmd() {
-        return Commands.parallel(
-            Commands.sequence(tp("turretHoming.START"), waitTurretHomedCmd(), tp("turretHoming.END")),
-            Commands.sequence(tp("intakeArmHoming.START"), waitIntakeHomedCmd(), tp("intakeArmHoming.END"))
-        ).withTimeout(5);
-    }
+//     public AutoRoutine preheater() {
+//         String path = "PreHeat";
+//         AutoRoutine routine = m_autoFactory.newRoutine(path);
+//         AutoTrajectory traj = createTraj(routine, path);
 
-    private Command shootWithTimeout(AngularVelocity speed, double seconds) {
-        return Commands.sequence(
-            tp("shootWithTimeout.START(" + speed + "," + seconds + ")"),
-            m_superstructure.activateOuttakeShotCalc(), //(() -> speed).withTimeout(seconds),
-            tp("shootWithTimeout.END")
-        );
-    }
+//         routine.active().onTrue(
+//             tp("preheat.START")
+//             .andThen(
+//                 traj.cmd(),
+//                 tp("preheat.END"),
+//                 m_drivetrain.xBrakeCmd()
+//             )
+//         );
 
-    // --- Preheater (stays as Command, runs during disabled) ---
+//         return routine;
+//     }
 
-    public AutoRoutine preheater() {
-        String path = "PreHeat";
-        AutoRoutine routine = m_autoFactory.newRoutine(path);
-        AutoTrajectory traj = createTraj(routine, path);
+//     // --- Autoroutine trajectory helper ---
 
-        routine.active().onTrue(
-            tp("preheat.START")
-            .andThen(
-                traj.cmd(),
-                tp("preheat.END"),
-                m_swerve.xBrakeCmd()
-            )
-        );
+//     private AutoTrajectory createTraj(AutoRoutine routine, String name) {
+//         AutoTrajectory traj = routine.trajectory(name);
+//         traj.active().onTrue(Commands.sequence(
+//             Commands.runOnce(() -> {
+//                 // log_trajectoryName.accept(name);
+//                 // log_trajectoryPoses.accept(poses);
+//             }),
+//             tp("traj.START(" + name + ")")
+//         ));
+//         traj.done().onTrue(tp("traj.END(" + name + ")"));
+//         return traj;
+//     }
 
-        return routine;
-    }
+//     // --- AutoRoutine auton methods ---
+//     public AutoRoutine fastTwoSweep_Sweep(boolean left) {
+//         String path1 = left ? AutonK.kFastLeftSweep : AutonK.kFastRightSweep;
+//         String path2 = left ? AutonK.kSweepLeftTwo : AutonK.kSweepRightTwo;
+//         AutoRoutine routine = m_autoFactory.newRoutine(
+//             "fastTwoSweep_Reshoot_" + (left ? "L" : "R"));
+//         AutoTrajectory traj1 = createTraj(routine, path1);
+//         AutoTrajectory traj2 = createTraj(routine, path2);
 
-    // --- AutoRoutine trajectory helper ---
+//         // Phase 1: first sweep + homing/intake
+//         routine.active().onTrue(traj1.cmd());
 
-    private AutoTrajectory createTraj(AutoRoutine routine, String name) {
-        AutoTrajectory traj = routine.trajectory(name);
-        var poses = Choreo.loadTrajectory(name).get().getPoses();
-        traj.active().onTrue(Commands.sequence(
-            Commands.runOnce(() -> {
-                // log_trajectoryName.accept(name);
-                // log_trajectoryPoses.accept(poses);
-            }),
-            tp("traj.START(" + name + ")")
-        ));
-        traj.done().onTrue(tp("traj.END(" + name + ")"));
-        return traj;
-    }
+//         Trigger stopIntk1Trg = traj1.atTime("stopIntake");
+//         Trigger startIntk2Trg = traj2.atTime(0.28);
 
-    // --- AutoRoutine auton methods ---
+//         stopIntk1Trg.onChange(Commands.print("StopIntk1Trg Change!"));
+//         startIntk2Trg.onChange(Commands.print("StartIntk2Trg Change!"));
 
-    public AutoRoutine firstSweep_NoPreload(boolean left) {
-        String path = left ? AutonK.kLeftOptimizedSweepPathName
-                           : AutonK.kRightOptimizedSweepPathName;
-        AutoRoutine routine = m_autoFactory.newRoutine("firstSweep_" + (left ? "L" : "R"));
-        AutoTrajectory traj = createTraj(routine, path);
+//         routine.active().onTrue(
+//             homingCmd().andThen(
+//                 m_superstructure.intake(() -> false)
+//             ).until(stopIntk1Trg)
+//         );
 
-        // Trajectory starts immediately
-        routine.active().onTrue(traj.cmd().withTimeout(AutonK.kOneSweepMaxTime));
+//         // Transition: xBrake -> shoot -> traj2
+//         traj1.done().onTrue(
+//             m_drivetrain.xBrakeCmd()
+//         );
 
-        // Homing then intake in parallel with trajectory (no .asProxy() needed)
-        routine.active().onTrue(
-            homingCmd().andThen(
-                m_superstructure.intake(() -> false).withTimeout(AutonK.kIntakeTimeout)
-            )
-        );
+//         // cope to "stop" superstructure intaking
+//         traj1.done().onTrue(
+//             m_intake.setIntakeRollersVelocityCmd(4)
+//         );
 
-        // After trajectory: xBrake + shoot
-        traj.done().onTrue(Commands.sequence(
-            m_swerve.xBrakeCmd(),
-            shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout)
-        ));
+//         traj1.doneDelayed(2.5).onTrue(
+//             m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+//         );
 
-        // Retract intake 3.5s after trajectory ends (during shoot phase)
-        traj.doneDelayed(3.5).onTrue(
-            m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
-        );
+//         traj1.doneFor(AutonK.kReshootShootingTimeout).whileTrue(
+//             m_superstructure.activateOuttakeShotCalc()
+//         );
 
-        return routine;
-    }
+//         traj1.doneDelayed(AutonK.kReshootShootingTimeout + 0.04).onTrue(traj2.cmd());
 
-    public AutoRoutine preloadAuton() {
-        String path = "PreHeat";
-        AutoRoutine routine = m_autoFactory.newRoutine("preloadAuton");
-        AutoTrajectory traj = createTraj(routine, path);
+//         // Phase 2: intake during reshoot path
+//         startIntk2Trg.onTrue(
+//             m_superstructure.intake(() -> false));
 
-        routine.active().onTrue(traj.cmd().withTimeout(5));
+//         return routine;
+//     }
 
-        routine.active().onTrue(
-            homingCmd().andThen(
-                m_superstructure.activateOuttakeShotCalc()
-            )
-        );
+//     //TODO: THIS LOGIC NEEDS TO CHANGE
+//     /**
+//      * 2 full cycle auto routine
+//      * <p> (goes to neutral zone, picks up balls, goes back to alliance zone to shoot them) x2
+//      * @param left
+//      * @return
+//      */
+//     public AutoRoutine fastTwoSweep_Reshoot(boolean left) {
+//         String path1 = left ? AutonK.kFastLeftSweep : AutonK.kFastRightSweep;
+//         String path2 = left ? AutonK.kReshootLeftTwo : AutonK.kReshootRightTwo;
+//         AutoRoutine routine = m_autoFactory.newRoutine(
+//             "fastTwoSweep_Reshoot_" + (left ? "L" : "R"));
+//         AutoTrajectory traj1 = createTraj(routine, path1);
+//         AutoTrajectory traj2 = createTraj(routine, path2);
 
-        return routine;
-    }
+//         // Phase 1: first sweep + homing/intake
+//         routine.active().onTrue(traj1.cmd());
 
-    public AutoRoutine fastOneSweep(boolean left) {
-        String path = left ? AutonK.kFastLeftTwoSweepName
-                           : AutonK.kFastRightTwoSweepName;
-        AutoRoutine routine = m_autoFactory.newRoutine("fastOneSweep_" + (left ? "L" : "R"));
-        AutoTrajectory traj = createTraj(routine, path);
+//         Trigger stopIntk1Trg = traj1.atTime("stopIntake");
+//         Trigger stopIntk2Trg = traj2.atTime("stopIntake");
+//         Trigger startIntk2Trg = traj2.atTime(0.28);
 
-        routine.active().onTrue(traj.cmd().withTimeout(6));
+//         stopIntk1Trg.onChange(Commands.print("StopIntk1Trg Change!"));
+//         stopIntk2Trg.onChange(Commands.print("StopIntk2Trg Change!"));
+//         startIntk2Trg.onChange(Commands.print("StartIntk2Trg Change!"));
 
-        routine.active().onTrue(
-            homingCmd().andThen(
-                m_superstructure.intake(() -> false).withTimeout(3.5)
-            )
-        );
+//         routine.active().onTrue(
+//             homingCmd().andThen(
+//                 m_superstructure.intake(() -> false)
+//             ).until(stopIntk1Trg)
+//         );
 
-        traj.done().onTrue(Commands.sequence(
-            m_swerve.xBrakeCmd(),
-            shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout)
-        ));
+//         // Transition: xBrake -> shoot -> traj2
+//         traj1.done().onTrue(
+//             m_drivetrain.xBrakeCmd()
+//         );
 
-        traj.doneDelayed(3.5).onTrue(
-            m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
-        );
+//         // cope to "stop" superstructure intaking
+//         traj1.done().onTrue(
+//             m_intake.setIntakeRollersVelocityCmd(4)
+//         );
 
-        return routine;
-    }
+//         traj1.doneDelayed(2.5).onTrue(
+//             m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+//         );
 
-    public AutoRoutine fastRightTwoSweep_ZigZag() {
-        AutoRoutine routine = m_autoFactory.newRoutine("fastRightTwoSweep_ZigZag");
-        AutoTrajectory traj1 = createTraj(routine, AutonK.kFastRightTwoSweepName);
-        AutoTrajectory traj2 = createTraj(routine, AutonK.kZigzagRightTwo);
+//         traj1.doneFor(AutonK.kReshootShootingTimeout).whileTrue(
+//             m_superstructure.activateOuttakeShotCalc()
+//         );
 
-        // Phase 1: first sweep + homing/intake
-        routine.active().onTrue(traj1.cmd().withTimeout(6));
+//         traj1.doneDelayed(AutonK.kReshootShootingTimeout + 0.04).onTrue(traj2.cmd());
 
-        routine.active().onTrue(
-            homingCmd().andThen(
-                m_superstructure.intake(() -> false).withTimeout(3.5)
-            )
-        );
+//         // Phase 2: intake during reshoot path
+//         startIntk2Trg.onTrue(
+//             m_superstructure.intake(() -> false).until(stopIntk2Trg)
+//         );
 
-        // Transition: xBrake -> shoot -> traj2
-        traj1.done().onTrue(Commands.sequence(
-            m_swerve.xBrakeCmd(),
-            shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout),
-            traj2.cmd().withTimeout(12)
-        ));
+//         // Final: xBrake + shoot after traj2
+//         traj2.done().onTrue(m_drivetrain.xBrakeCmd());
 
-        traj1.doneDelayed(3.5).onTrue(
-            m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
-        );
+//         traj2.doneFor(AutonK.kReshootShootingTimeout).whileTrue(
+//             m_superstructure.activateOuttakeShotCalc()
+//         );
 
-        // Phase 2: intake during zigzag (no final shoot)
-        traj2.atTime(2).onTrue(
-            m_superstructure.intake(() -> false).withTimeout(10)
-        );
+//         traj2.doneDelayed(2.75).onTrue(
+//             m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+//         );
 
-        traj2.done().onTrue(m_swerve.xBrakeCmd());
+//         return routine;
+//     }
 
-        return routine;
-    }
+//     /**
+//      * one sweep auton path that complements an auton ON THE SAME SIDE from a trench bot
+//      * @param left
+//      * @return
+//      */
+//     public AutoRoutine oneTrenchSweep(boolean left) {
+//         String path = left ? AutonK.kTrenchLeftSweep : AutonK.kTrenchRightSweep;
+//         AutoRoutine routine = m_autoFactory.newRoutine("oneTrenchSweep_" + (left ? "L" : "R"));
+//         AutoTrajectory traj = createTraj(routine, path);
 
-    public AutoRoutine fastTwoSweep_Reshoot(boolean left) {
-        String path1 = left ? AutonK.kFastLeftTwoSweepName : AutonK.kFastRightTwoSweepName;
-        String path2 = left ? AutonK.kReshootLeftTwo : AutonK.kReshootRightTwo;
-        AutoRoutine routine = m_autoFactory.newRoutine(
-            "fastTwoSweep_Reshoot_" + (left ? "L" : "R"));
-        AutoTrajectory traj1 = createTraj(routine, path1);
-        AutoTrajectory traj2 = createTraj(routine, path2);
+//         Trigger stopIntakeTrg = traj.atTime("stopIntake");
 
-        // Phase 1: first sweep + homing/intake
-        routine.active().onTrue(traj1.cmd());
+//         routine.active().onTrue(traj.cmd().withTimeout(8));
 
-        Trigger stopIntk1Trg = traj1.atTime("stopIntake");
-        // Trigger stopIntk2Trg = traj2.atTime("stopIntake");
-        Trigger startIntk2Trg = traj2.atTime(0.28);
+//         routine.active().onTrue(
+//             homingCmd().andThen(
+//                 m_superstructure.intake(() -> false)
+//             ).until(stopIntakeTrg)
+//         );
 
-        stopIntk1Trg.onChange(Commands.print("StopIntk1Trg Change!"));
-        // stopIntk2Trg.onChange(Commands.print("StopIntk2Trg Change!"));
-        startIntk2Trg.onChange(Commands.print("StartIntk2Trg Change!"));
+//         traj.done().onTrue(
+//             m_drivetrain.xBrakeCmd()
+//         );
 
-        routine.active().onTrue(
-            homingCmd().andThen(
-                m_superstructure.intake(() -> false)
-            ).until(stopIntk1Trg)
-        );
+//         traj.doneFor(AutonK.kReshootShootingTimeout).whileTrue(
+//             m_superstructure.activateOuttakeShotCalc()
+//         );
 
-        // Transition: xBrake -> shoot -> traj2
-        traj1.done().onTrue(
-            m_swerve.xBrakeCmd()
-        );
+//         traj.doneDelayed(2.5).onTrue(
+//             m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+//         );
 
-        // cope to "stop" superstructure intaking
-        traj1.done().onTrue(
-            m_intake.setIntakeRollersVelocityCmd(4)
-        );
+//         return routine;
+//     }
 
-        traj1.doneDelayed(2.5).onTrue(
-            m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
-        );
+//     /**
+//      * one sweep auton, going to the depot after the first sweep, and then heading back to the neutral zone + coming back to reshoot
+//      * <p> once the first sweep traj ends, the robot starts shooting and continues to shoot until auton ends
+//      * @return
+//      */
+//     public AutoRoutine oneSweepToDepot() {
+//         String path1 = AutonK.kFastLeftSweep;
+//         String path2 = "LeftSweepTwo_Depot_copy1"; //AutonK.kDepotLeftTwo;
+//         String path3 = AutonK.kReshootLeftTwo;
+//         AutoRoutine routine = m_autoFactory.newRoutine("oneSweepToDepot");
+//         AutoTrajectory traj1 = createTraj(routine, path1);
+//         AutoTrajectory traj2 = createTraj(routine, path2);
+//         AutoTrajectory traj3 = createTraj(routine, path3);
 
-        traj1.doneFor(AutonK.kShootingTimeout).whileTrue(
-            m_superstructure.activateOuttakeShotCalc()
-        );
+//         Trigger stopIntk1Trg = traj1.atTime("stopIntake");
+//         Trigger startIntk1Trg = traj2.atTime("startIntake");
+//         Trigger retractIntakeTrg = traj2.atTime("retractIntake");
+//         Trigger startIntk2Trg = traj3.atTime("startIntake");
+//         Trigger stopIntk2Trg = traj3.atTime("stopIntake");
 
-        traj1.doneDelayed(AutonK.kShootingTimeout + 0.04).onTrue(traj2.cmd());
+//         routine.active().onTrue(
+//             homingCmd().andThen(
+//                 m_superstructure.intake(() -> false)
+//             ).until(stopIntk1Trg)
+//         );
 
-        // Phase 2: intake during reshoot path
-        startIntk2Trg.onTrue(
-            m_superstructure.intake(() -> false) //.until(stopIntk2Trg)
-        );
+//         // cope to "stop" superstructure intaking
+//         traj1.done().onTrue(
+//             m_intake.setIntakeRollersVelocityCmd(4)
+//         );
 
-        // Final: xBrake + shoot after traj2
-        // traj2.done().onTrue(m_swerve.xBrakeCmd());
+//         traj1.done().onTrue(
+//             m_superstructure.activateOuttakeShotCalc()
+//         );
 
-        // traj2.doneFor(AutonK.kShootingTimeout).whileTrue(
-        //     m_superstructure.activateOuttakeShotCalc()
-        // );
+//         traj1.done().onTrue(traj2.cmd());
 
-        // traj2.doneDelayed(2.75).onTrue(
-        //     m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
-        // );
+//         startIntk1Trg.onTrue(
+//             m_superstructure.intake(() -> false)
+//         );
 
-        return routine;
-    }
-}
+//         retractIntakeTrg.onTrue(
+//             m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+//         );
+
+//         traj2.done().onTrue(traj3.cmd());
+
+//         startIntk2Trg.onTrue(
+//             m_superstructure.intake(() -> false).until(stopIntk2Trg)
+//         );
+
+//         traj3.done().onTrue(
+//             m_superstructure.activateOuttakeShotCalc()
+//         );
+
+//         return routine;
+//     }
+
+//     // --- UNUSED AutoRoutine auton methods ---
+//     //TODO: should confirm if these even need to exist
+
+//     // public AutoRoutine fastOneSweep(boolean left) {
+//     //     String path = left ? AutonK.kFastLeftTwoSweepName
+//     //                        : AutonK.kFastRightTwoSweepName;
+//     //     AutoRoutine routine = m_autoFactory.newRoutine("fastOneSweep_" + (left ? "L" : "R"));
+//     //     AutoTrajectory traj = createTraj(routine, path);
+
+//     //     routine.active().onTrue(traj.cmd().withTimeout(6));
+
+//     //     routine.active().onTrue(
+//     //         homingCmd().andThen(
+//     //             m_superstructure.intake(() -> false).withTimeout(3.5)
+//     //         )
+//     //     );
+
+//     //     traj.done().onTrue(Commands.sequence(
+//     //         m_swerve.xBrakeCmd(),
+//     //         shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout)
+//     //     ));
+
+//     //     traj.doneDelayed(3.5).onTrue(
+//     //         m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+//     //     );
+
+//     //     return routine;
+//     // }
+
+//     // public AutoRoutine fastRightTwoSweep_ZigZag() {
+//     //     AutoRoutine routine = m_autoFactory.newRoutine("fastRightTwoSweep_ZigZag");
+//     //     AutoTrajectory traj1 = createTraj(routine, AutonK.kFastRightTwoSweepName);
+//     //     AutoTrajectory traj2 = createTraj(routine, AutonK.kZigzagRightTwo);
+
+//     //     // Phase 1: first sweep + homing/intake
+//     //     routine.active().onTrue(traj1.cmd().withTimeout(6));
+
+//     //     routine.active().onTrue(
+//     //         homingCmd().andThen(
+//     //             m_superstructure.intake(() -> false).withTimeout(3.5)
+//     //         )
+//     //     );
+
+//     //     // Transition: xBrake -> shoot -> traj2
+//     //     traj1.done().onTrue(Commands.sequence(
+//     //         m_swerve.xBrakeCmd(),
+//     //         shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout),
+//     //         traj2.cmd().withTimeout(12)
+//     //     ));
+
+//     //     traj1.doneDelayed(3.5).onTrue(
+//     //         m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+//     //     );
+
+//     //     // Phase 2: intake during zigzag (no final shoot)
+//     //     traj2.atTime(2).onTrue(
+//     //         m_superstructure.intake(() -> false).withTimeout(10)
+//     //     );
+
+//     //     traj2.done().onTrue(m_swerve.xBrakeCmd());
+
+//     //     return routine;
+//     // }
+
+//     // public AutoRoutine firstSweep_NoPreload(boolean left) {
+//     //     String path1 = left ? AutonK.kFastLeftTwoSweepName : AutonK.kFastRightTwoSweepName;
+//     //     AutoRoutine routine = m_autoFactory.newRoutine("firstSweep_" + (left ? "L" : "R"));
+//     //     AutoTrajectory traj = createTraj(routine, path);
+
+//     //     // Trajectory starts immediately
+//     //     routine.active().onTrue(traj.cmd().withTimeout(AutonK.kOneSweepMaxTime));
+
+//     //     // Homing then intake in parallel with trajectory (no .asProxy() needed)
+//     //     routine.active().onTrue(
+//     //         homingCmd().andThen(
+//     //             m_superstructure.intake(() -> false).withTimeout(AutonK.kIntakeTimeout)
+//     //         )
+//     //     );
+
+//     //     // After trajectory: xBrake + shoot
+//     //     traj.done().onTrue(Commands.sequence(
+//     //         m_swerve.xBrakeCmd(),
+//     //         shootWithTimeout(kShooterAuton_EndSweep_RPS, AutonK.kShootingTimeout)
+//     //     ));
+
+//     //     // Retract intake 3.5s after trajectory ends (during shoot phase)
+//     //     traj.doneDelayed(3.5).onTrue(
+//     //         m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+//     //     );
+
+//     //     return routine;
+//     // }
+// }
