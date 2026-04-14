@@ -98,10 +98,13 @@ public class Shooter extends SubsystemBase {
     // ---LOGIC BOOLEANS
     private final Trigger trg_inShootCtrlMode = new Trigger(() -> {return sig_shooterACtrlMode.getValue() == ControlModeValue.VelocityVoltage; });
     private final Trigger trg_ballDetected = new Trigger(() -> detectShot()).and(trg_inShootCtrlMode);
+    private final Trigger trg_shotDropSeen = new Trigger(() -> m_shotDropSeen);
+    private final Trigger trg_debounceHit = new Trigger(() -> m_shotRecoveryTimer.hasElapsed(1.2));
+
     private final Trigger trg_ballShotDebounced = trg_inShootCtrlMode
-        .and(new Trigger(() -> m_shotDropSeen))
+        .and(trg_shotDropSeen)
         .and(trg_ballDetected.negate())
-        .and(new Trigger(() -> m_shotRecoveryTimer.hasElapsed(kBallDetectedDebounceTime)));
+        .and(trg_debounceHit);
 
     /* SIM OBJECTS */
     private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(
@@ -155,8 +158,6 @@ public class Shooter extends SubsystemBase {
         trg_ballDetected.onTrue(Commands.runOnce(() -> { m_shotDropSeen = true; m_shotRecoveryTimer.restart(); m_ballsShot++;}));
         trg_ballDetected.onFalse(Commands.runOnce(() -> { m_shotRecoveryTimer.restart(); }));
         trg_inShootCtrlMode.onFalse(Commands.runOnce(() -> { m_shotDropSeen = false; m_shotRecoveryTimer.stop(); m_shotRecoveryTimer.reset(); }));
-
-        trg_ballDetected.onTrue(Commands.runOnce(() -> {m_ballsShot++;}));
 
         // m_turretVisualizer = new TurretVisualizer(
         //         () -> new Pose3d(m_poseSupplier.get().rotateAround(
@@ -323,7 +324,7 @@ public class Shooter extends SubsystemBase {
                     m_calcFlywheelVelocityRotPerSec = kShooterRPSOverride.enabled()
                         ? kShooterRPSOverride.get()
                         : calcData.shooterReferenceRps();
-                    if (false) { // ENABLE THIS TO ALLOW DRIVER RPS TWEAK
+                    if (kAllowDriverRPSTweak) { // ENABLE THIS TO ALLOW DRIVER RPS TWEAK
                         m_calcFlywheelVelocityRotPerSec += m_driverRPSTweak;
                         m_calcFlywheelVelocityRotPerSec = MathUtil.clamp(m_calcFlywheelVelocityRotPerSec, 0, kShooterMaxRPSd);    //clamp here or clamp only when setShooterVel is called?
                     }
@@ -338,11 +339,11 @@ public class Shooter extends SubsystemBase {
                 // m_calcHoodRots = kHoodEmergencyRots;
                 m_hood.setHoodPos(kHoodEmergencyRots);
             } else {
-            if (m_turret.getTurretLocked()) {
+                if (m_turret.getTurretLocked()) {
                     m_calcHoodRots = kHoodLockedPosRots;
                     // m_hood.setHoodPos(kHoodLockedPosRots);
-            } else {
-                if (!m_turret.getHoldTurretAtIntake()) {
+                } else {
+                    if (!m_turret.getHoldTurretAtIntake()) {
                     m_calcHoodRots = kHoodRotsOverride.enabled()
                         ? kHoodRotsOverride.get()
                         : hoodReference;

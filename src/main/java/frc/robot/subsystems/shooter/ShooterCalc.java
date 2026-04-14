@@ -40,6 +40,7 @@ import static frc.robot.Constants.ShooterK.*;
 import frc.util.WaltTunable;
 
 public class ShooterCalc {
+    private static final String kLogTab = "ShotCalc";
     private static final WaltTunable kLateralBiasTuner =
         new WaltTunable("/ShotCalc/lateralBiasGainRots", kTurretLateralBiasGainRots);
 
@@ -50,20 +51,22 @@ public class ShooterCalc {
     private final BooleanTopic bt_canTurretShoot = new BooleanTopic(NetworkTableInstance.getDefault().getTopic(("ShooterCalc/isTurretAngry")));
     private final BooleanPublisher pub_canTurretShoot;
 
-    private final Pose3dLogger log_globalShotTarget = WaltLogger.logPose3d("ShotCalc", "globalTarget");
-    // private final Pose3dLogger log_calculatedShotTarget = WaltLogger.logPose3d("ShotCalc", "shotCalcTarget");
-    private final DoubleLogger log_rawDesiredTurretRot = WaltLogger.logDouble("ShotCalc", "rawDesiredTurretRots");
-    private final DoubleLogger log_desiredTurretRot = new DoubleLogger("ShotCalc", "desiredTurretRotations");
-    private final DoubleLogger log_timeOfFlight = new DoubleLogger("ShotCalc", "timeOfFlight");
-    private final Pose3dLogger log_desiredAimPose = WaltLogger.logPose3d("ShotCalc", "DesiredAimPose");
-    private final Pose3dLogger log_currentAimPose = WaltLogger.logPose3d("ShotCalc", "CurrentAimPose");
-    private final Translation3dArrayLogger log_ballTrajectory = WaltLogger.logTranslation3dArray("ShotCalc", "ballTrajectory");
-    private final DoubleLogger log_loopTime = WaltLogger.logDouble("ShotCalc", "LoopTimeMsec");
-    private static final Pose3dLogger log_turretRobotPose = WaltLogger.logPose3d("ShotCalc", "turretRobotPose");
-    private static final Pose3dLogger log_turretFieldPose = WaltLogger.logPose3d("ShotCalc", "turretFieldPose");
-    private final BooleanLogger log_robotPastOurZoneX = WaltLogger.logBoolean("ShotCalc", "robotInOurZone");
-    private final BooleanLogger log_robotInHubPassingZone = WaltLogger.logBoolean("ShotCalc", "robotInHubPassingZone");
-    private final BooleanLogger log_canTurretShoot = WaltLogger.logBoolean("ShotCalc", "canTurretShoot");
+    private final Pose3dLogger log_globalShotTarget = WaltLogger.logPose3d(kLogTab, "globalTarget");
+    // private final Pose3dLogger log_calculatedShotTarget = WaltLogger.logPose3d(kLogTab, "shotCalcTarget");
+    private final DoubleLogger log_rawDesiredTurretRot = WaltLogger.logDouble(kLogTab, "rawDesiredTurretRots");
+    private final DoubleLogger log_desiredTurretRot = new DoubleLogger(kLogTab, "desiredTurretRotations");
+    private final DoubleLogger log_timeOfFlight = new DoubleLogger(kLogTab, "timeOfFlight");
+    private final Pose3dLogger log_desiredAimPose = WaltLogger.logPose3d(kLogTab, "DesiredAimPose");
+    private final Pose3dLogger log_currentAimPose = WaltLogger.logPose3d(kLogTab, "CurrentAimPose");
+    private final Translation3dArrayLogger log_ballTrajectory = WaltLogger.logTranslation3dArray(kLogTab, "ballTrajectory");
+    private final DoubleLogger log_loopTime = WaltLogger.logDouble(kLogTab, "LoopTimeMsec");
+    private static final Pose3dLogger log_turretRobotPose = WaltLogger.logPose3d(kLogTab, "turretRobotPose");
+    private static final Pose3dLogger log_turretFieldPose = WaltLogger.logPose3d(kLogTab, "turretFieldPose");
+    private final BooleanLogger log_robotPastOurZoneX = WaltLogger.logBoolean(kLogTab, "robotInOurZone");
+    private final BooleanLogger log_robotInHubPassingZone = WaltLogger.logBoolean(kLogTab, "robotInHubPassingZone");
+    private final BooleanLogger log_canTurretShoot = WaltLogger.logBoolean(kLogTab, "canTurretShoot");
+    private final BooleanLogger log_inTrenchZone = WaltLogger.logBoolean(kLogTab, "inTrenchZone");
+    private final BooleanLogger log_underTrench = WaltLogger.logBoolean(kLogTab, "underTrench");
 
     // Precomputed doubles for calculateTarget zone checks
     private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
@@ -213,7 +216,9 @@ public class ShooterCalc {
         boolean robotPastOurZoneX = isRed ? robotX < kRedHubCenterX : robotX > kBlueHubCenterX;
         log_robotPastOurZoneX.accept(robotPastOurZoneX);
 
-        robotInNoPassingZone = robotPastOurZoneX && robotY < kNoPassZoneLeftY && robotY > kNoPassZoneRightY && isRed ? robotX > FieldConstants.fieldLength - kNoPassZoneTopX : robotX < kNoPassZoneTopX;
+        robotInNoPassingZone = (robotPastOurZoneX && (robotY < kNoPassZoneLeftY) && (robotY > kNoPassZoneRightY) && isRed)
+            ? (robotX > FieldConstants.fieldLength - kNoPassZoneTopX)
+            : robotX < kNoPassZoneTopX;
         log_robotInHubPassingZone.accept(robotInNoPassingZone);
 
         if (robotPastOurZoneX) {

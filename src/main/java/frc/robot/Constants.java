@@ -78,6 +78,7 @@ public class Constants {
         public static final Angle kTurretBarfPos = Rotations.of(-0.113);
 
         public static final boolean kUseStaticShot = false;
+        public static final boolean kAllowDriverRPSTweak = false;
 
         // private static final Pose3dLogger log_turretTransform = WaltLogger.logPose3d(kLogTab, "TurretTransformRaw");
         // static {
@@ -160,13 +161,15 @@ public class Constants {
         private static final Angle kHoodAbsoluteMaxRots = Rotations.of(1.174805); //ABSOLUTE MAX
         public static final Angle kHoodMaxDegs = Degrees.of(kHoodAbsoluteMaxRots.in(Degrees));
         public static final Angle kHoodLockDegs = Degrees.of(kHoodMaxDegs.times(0.75).in(Degrees));
+        public static final double kHoodRotsd = 0.08;
+        public static final double kHoodEmergencyRots = Rotations.of(0.00).magnitude(); // TOOD: this will grind against the gear but idk if this is optimal or somethign along those lines
+
 
         //double versions
         public static final double kHoodMinRots_double = 0.0;
         public static final double kHoodMaxRots_double = kHoodAbsoluteMaxRots.in(Rotations);
         public static final double kPhysicalHoodMinPosition_double = 0;
         public static final double kPhysicalHoodMaxPosition_double = 48;
-        public static final double kHoodLockRots_double = kHoodMaxRots_double * 0.75;
 
         //TODO: ensure this is the home value
         // public static final Angle kHoodHomePosition = Degrees.of(10);
