@@ -187,10 +187,6 @@ public class Robot extends TimedRobot {
         DataLogManager.start();
         DriverStation.startDataLog(DataLogManager.getLog());
 
-        // MANUAL HOMING IS BEING USED
-        // addPeriodic(m_shooter::fastPeriodic, 0.0025);
-
-
         m_preheaterCommand = AutonChooser.getPreheater();
         CommandScheduler.getInstance().schedule(m_preheaterCommand);
     }
@@ -202,11 +198,11 @@ public class Robot extends TimedRobot {
      * @return swerve drive command
      */
     private Command driveCommand(double speedMult, double rotationMult) {
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
+        // X=Forward, Y=Left
         // Drivetrain will execute this command periodically
         final double slowMps = kMaxTranslationMps * speedMult;
         final double slowRotRps = kMaxAngularRps * rotationMult;
+
         return m_drivetrain.applyRequest(() -> {
             double translationMps = m_driver.leftTrigger().getAsBoolean() ? slowMps : kMaxTranslationMps;
 
@@ -217,9 +213,9 @@ public class Robot extends TimedRobot {
                 : kMaxAngularRps * -m_driver.getRightX();
 
             return drive
-                .withVelocityX(driverXVelo) // Drive forward with Y (forward)
-                .withVelocityY(driverYVelo) // Drive left with X (left)
-                .withRotationalRate(driverYawRate); // Drive counterclockwise with negative X (left)
+                .withVelocityX(driverXVelo)
+                .withVelocityY(driverYVelo)
+                .withRotationalRate(driverYawRate);
             }
         );
     }
@@ -231,10 +227,8 @@ public class Robot extends TimedRobot {
 
     //---BINDINGS
     private void configureBindings() {
-        /* GENERATED SWERVE BINDS */
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
         m_drivetrain.setDefaultCommand(driveCommand(RobotK.kRobotSpeedIntakingLimit, RobotK.kRobotEvasionLimit));
+        // m_drivetrain.registerTelemetry(logger::telemeterize);    //UNUSED - runs at 250hz which is burning CPU
 
         // Trigger trg_hubActiveOrPassing =
         //     new Trigger(
@@ -242,28 +236,15 @@ public class Robot extends TimedRobot {
         //             HubShiftUtil.getShiftedShiftInfo().active()
         //                 || m_shooter.getCurrentGoal().equals(ShooterGoal.PASSING));
 
-        // Idle while the robot is disabled. This ensures the configured
-        // neutral mode is applied to the drive motors while disabled.
+        // Idle while the robot is disabled. This ensures the configured neutral mode is applied to the drive motors while disabled.
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
             m_drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        // m_driver.a().whileTrue(m_drivetrain.applyRequest(() -> brake));
-        // m_driver.b().whileTrue(m_drivetrain.applyRequest(() ->
-        //     point.withModuleDirection(new Rotation2d(-m_driver.getLeftY(), -m_driver.getLeftX()))
-        // ));
-
         // Reset the field-centric heading on left bumper press.
         m_driver.leftBumper().and(trg_driverOverride).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));
 
-        // m_driver.y().whileTrue(m_drivetrain.applyRequest(() -> tuneDrive.withVelocityX(0.5)));
-        // m_driver.x().whileTrue(m_drivetrain.applyRequest(() -> tuneDrive.withVelocityX(-0.5)));
-        // m_driver.a().whileTrue(m_drivetrain.applyRequest(() -> tuneDrive.withVelocityX(0)));
-
-        // m_drivetrain.registerTelemetry(logger::telemeterize);
-
-        /* CUSTOM BINDS */
         trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   
         trg_unlimitFps.onTrue(WaltCamera.setFpsLimitCmd(false));
 
@@ -272,22 +253,14 @@ public class Robot extends TimedRobot {
         //     m_drivetrain.swerveToObject()
         // );
 
-        //---NORMAL SEQUENCES
-        //Intake
         trg_intake.and(trg_shoot.negate()).and(trg_emergencyBarf.negate()).whileTrue(
             m_superstructure.intake(() -> false)
         );
 
-        // trg_retractIntake.onTrue(
-        //     m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
-        // );
+        trg_turretInShootRange.whileFalse(Commands.run(() -> m_driver.setRumble(RumbleType.kBothRumble, 0.3))
+            .finallyDo(() -> m_driver.setRumble(RumbleType.kBothRumble, 0))
+        );
 
-        //Shooting
-        // NORMAL FIXED SHOT
-        // trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
-        trg_turretInShootRange.whileFalse(Commands.run(() -> m_driver.setRumble(RumbleType.kBothRumble, 0.3)).finallyDo(() -> m_driver.setRumble(RumbleType.kBothRumble, 0)));
-
-        // DRIVER SHOOTING 
         trg_shoot
             .and(() -> m_shooter.m_turret.atPosition())
             .and(() -> ShooterCalc.canTurretShoot())
@@ -298,8 +271,6 @@ public class Robot extends TimedRobot {
             .and(trg_turretInShootRange.negate())
             .whileTrue(m_superstructure.spinUpFlywheel()); 
 
-        // m_manipulator.rightTrigger().and(trg_manipOverride).whileTrue(Commands.run(() -> m_intake.setIntakeRollersVelocity(kIntakeRollersBarfVolts)).finallyDo(() -> m_intake.setIntakeRollersVelocity(0)));
-
         // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));
         // m_driver.a().onTrue(m_shooter.driverRPSAlter(false));
 
@@ -307,7 +278,6 @@ public class Robot extends TimedRobot {
 
         // m_driver.leftBumper().whileTrue(m_shooter.driverRPSIncreaseWhileHeldCmd());
 
-        // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
 
         trg_intake.and(trg_shoot).and(trg_emergencyBarf.negate()).whileTrue(
@@ -334,24 +304,16 @@ public class Robot extends TimedRobot {
             m_superstructure.unjamCmd(()-> true)
         );
 
-        //---OVERRIDE COMMANDS
         m_manipulator.x().and(trg_manipOverride).onTrue(m_intake.intakeArmCurrentSenseHoming());
 
         m_manipulator.start().and(trg_manipOverride).onTrue(m_shooter.m_hood.hoodCurrentSenseHomingCmd());
         m_manipulator.leftTrigger().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double / 2.0));
-
-        // m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
 
         m_driver.povDown().onTrue(m_shooter.m_turret.setTurretLockCmd(false));
         m_driver.povRight().onTrue(m_shooter.m_turret.setTurretLockCmd(true));
 
         m_manipulator.y().and(trg_manipOverride).onTrue(Commands.runOnce(() -> m_shooter.m_turret.homeTurret(true)));
         
-        // m_driver.povDown().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX(), m_drivetrain.getState().Pose.getY() - Inches.of(20).magnitude()), 0.001));
-        // m_driver.povUp().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX(), m_drivetrain.getState().Pose.getY() + Inches.of(20).magnitude()), 0.001));
-        // m_driver.povRight().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX() + Inches.of(20).magnitude(), m_drivetrain.getState().Pose.getY()), 0.001));
-        // m_driver.povLeft().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX() - Inches.of(20).magnitude(), m_drivetrain.getState().Pose.getY()), 0.001));
-
         // m_driver.start().whileTrue(m_superstructure.activateOuttakeNOSHOOT());
         // trg_optimalPrefireTime.whileTrue(
         //     Commands.run(() -> setBothRumble(RumbleType.kBothRumble, 0.5)).finallyDo(() -> setBothRumble(RumbleType.kBothRumble, 0))
