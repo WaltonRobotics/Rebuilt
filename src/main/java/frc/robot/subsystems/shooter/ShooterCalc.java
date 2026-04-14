@@ -100,6 +100,7 @@ public class ShooterCalc {
     private static volatile boolean m_isPassingFlag = false;
     private static final BooleanSupplier m_isPassing = () -> m_isPassingFlag;
     private static volatile boolean m_canTurretShoot = false;
+    private static volatile boolean m_underTrench = false;
 
     private final Notifier m_notifier = new Notifier(this::calcCallback);
     private final Timer m_calcTimer = new Timer();
@@ -138,6 +139,10 @@ public class ShooterCalc {
         return m_canTurretShoot;
     }
 
+    public static boolean getUnderTrench() {
+        return m_underTrench;
+    }
+
     /**
      * first checks if we're passing. If we're not passing, then we can shoot whenever
      * If we are passing, it checks if we're NOT in the unable-to-pass range. If we're not in it, then the turret can shoot!
@@ -167,7 +172,9 @@ public class ShooterCalc {
         ChassisSpeeds robotChassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
             m_swerveKinematics.toChassisSpeeds(swerveState.ModuleStates), robotPose.getRotation());
         double turretPositionRots = m_turretPosRotsSup.getAsDouble();
+        Pose3d turretPose = new Pose3d(robotPose).transformBy(kTurretTransform);
 
+        m_underTrench = underTrench(turretPose.toPose2d());
         m_aimTarget = calculateTarget(robotPose);
         m_shotCalcOutputs = calcShot(robotPose, m_useStaticShot, m_aimTarget, turretPositionRots, robotChassisSpeeds);
         refreshCanTurretShoot();
@@ -222,6 +229,34 @@ public class ShooterCalc {
         m_ballTrajBuffer[1] = theTarget;
         log_ballTrajectory.accept(m_ballTrajBuffer);
         return AllianceFlipUtil.apply(theTarget);
+    }
+
+    //do we want to pass in the turret pose?
+    private boolean underTrench(Pose2d turretPose) {
+        isRed = WaltDriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+
+        double robotX = turretPose.getX();
+        double robotY = turretPose.getY();
+
+        boolean inTrenchZone = isRed 
+            ? (robotY < FieldConstants.LinesHorizontal.rightTrenchOpenStart || robotY > FieldConstants.LinesHorizontal.leftTrenchOpenEnd) 
+            : (robotY > FieldConstants.LinesHorizontal.rightTrenchOpenStart || robotY < FieldConstants.LinesHorizontal.leftTrenchOpenEnd);
+
+        double trenchCenterX = isRed 
+            ? FieldConstants.LinesVertical.oppHubCenter 
+            : FieldConstants.LinesVertical.hubCenter;
+        double trenchHalfDepth = FieldConstants.LeftTrench.depth / 2.0;
+        boolean inTrenchX = Math.abs(robotX - trenchCenterX) < trenchHalfDepth + 0.3; // 0.3m buffer
+
+        log_inTrenchZone.accept(inTrenchZone);
+
+        log_underTrench.accept(inTrenchZone && inTrenchX);
+
+        if (inTrenchZone && inTrenchX) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public record AzimuthCalcDetails(

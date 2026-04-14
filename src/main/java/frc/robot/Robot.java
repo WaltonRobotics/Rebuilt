@@ -117,6 +117,7 @@ public class Robot extends TimedRobot {
     // private Trigger trg_optimalPrefireTime = new Trigger(HubShiftUtil.optimalPrefireTime());
     // private Trigger trg_comebackTime = new Trigger(HubShiftUtil.comebackTime());
     private Trigger trg_turretInShootRange = new Trigger(() -> ShooterCalc.canTurretShoot());
+    private Trigger trg_underTrench = new Trigger(() -> ShooterCalc.getUnderTrench());
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
 
@@ -291,13 +292,17 @@ public class Robot extends TimedRobot {
         trg_shoot
             .and(() -> m_shooter.m_turret.atPosition())
             .and(() -> ShooterCalc.canTurretShoot())
+            .and(trg_underTrench.negate())
             .whileTrue(m_superstructure.activateOuttakeShotCalc());
         
         trg_shoot
             .and(() -> m_shooter.m_turret.atPosition())
             .and(trg_turretInShootRange.negate())
-            .whileTrue(m_superstructure.spinUpFlywheel()); 
+            .whileTrue(m_superstructure.spinUpFlywheel());
 
+        trg_shoot
+            .and(trg_underTrench)
+            .whileTrue(m_superstructure.spinUpFlywheel());
         // m_manipulator.rightTrigger().and(trg_manipOverride).whileTrue(Commands.run(() -> m_intake.setIntakeRollersVelocity(kIntakeRollersBarfVolts)).finallyDo(() -> m_intake.setIntakeRollersVelocity(0)));
 
         // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));

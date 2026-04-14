@@ -85,6 +85,7 @@ public class Shooter extends SubsystemBase {
     private final ShooterCalc m_shooterCalc;
 
     private double m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
+    private double m_calcHoodRots = kHoodRotsd;
     private double m_driverRPSTweak = 0.0;
 
     private int m_ballsShot = 0;
@@ -182,6 +183,10 @@ public class Shooter extends SubsystemBase {
 
     public Command shootFromCalc() {
         return run(() -> setShooterVelocity(m_calcFlywheelVelocityRotPerSec));
+    }
+
+    public Command hoodFromCalc() {
+        return m_hood.run(() -> m_hood.setHoodPos(m_calcHoodRots));
     }
 
     public Command driverRPSIncreaseWhileHeldCmd() {
@@ -299,6 +304,8 @@ public class Shooter extends SubsystemBase {
         sig_shooterCLErr.refresh();
         log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
 
+        boolean inTrenchZone = ShooterCalc.getUnderTrench();
+
         // set turret reference
         if (m_turret.isTurretHomed()) {
             var turretReference = calcData.turretReferenceRots();
@@ -327,13 +334,22 @@ public class Shooter extends SubsystemBase {
         if (m_hood.isHoodHomed()) {
             double hoodReference = calcData.hoodReferenceRots();
 
+            if (inTrenchZone) {
+                // m_calcHoodRots = kHoodEmergencyRots;
+                m_hood.setHoodPos(kHoodEmergencyRots);
+            } else {
             if (m_turret.getTurretLocked()) {
-                m_hood.setHoodPos(kHoodLockedPosRots);
+                    m_calcHoodRots = kHoodLockedPosRots;
+                    // m_hood.setHoodPos(kHoodLockedPosRots);
             } else {
                 if (!m_turret.getHoldTurretAtIntake()) {
-                    m_hood.setHoodPos(kHoodRotsOverride.enabled()
+                    m_calcHoodRots = kHoodRotsOverride.enabled()
                         ? kHoodRotsOverride.get()
-                        : hoodReference);
+                        : hoodReference;
+                        // m_hood.setHoodPos(kHoodRotsOverride.enabled()
+                        // ? kHoodRotsOverride.get()
+                        // : hoodReference);
+                    }
                 }
             }
         }
