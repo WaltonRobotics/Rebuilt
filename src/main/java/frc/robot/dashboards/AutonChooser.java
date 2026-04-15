@@ -46,95 +46,95 @@ public class AutonChooser {
         //---MAIN AUTONS
         m_chooser.addRoutine(kLeftShootAndSweep,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftShootAndSweep,
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneJab, AutonK.kSweepShootingTimeout, false),
-                                          new AdaptableAutonInfo(AutonK.kLeftTwoSweep, AutonK.kSweepShootingTimeout, true)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneJab, AutonK.kSweepShootingTimeout, false, false),
+                                          new AdaptableAutonInfo(AutonK.kLeftTwoSweep, AutonK.kSweepShootingTimeout, true, false)}));
         
         m_chooser.addRoutine(kLeftShootAndPass,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftShootAndPass, 
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneJab, AutonK.kReshootShootingTimeout, false),
-                                          new AdaptableAutonInfo(AutonK.kLeftTwoPassing, AutonK.kReshootShootingTimeout, true)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneJab, AutonK.kReshootShootingTimeout, false, false),
+                                          new AdaptableAutonInfo(AutonK.kLeftTwoPassing, AutonK.kReshootShootingTimeout, true, false)}));
 
         m_chooser.addRoutine(kLeftTwoCycle,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftTwoCycle,
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneJab, AutonK.kReshootShootingTimeout, false),
-                                          new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kReshootShootingTimeout, false)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneJab, AutonK.kReshootShootingTimeout, false, false),
+                                          new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kReshootShootingTimeout, false, false)}));
 
         m_chooser.addRoutine(kRightShootAndSweep,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightShootAndSweep,
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneJab, AutonK.kSweepShootingTimeout, false),
-                                          new AdaptableAutonInfo(AutonK.kRightTwoSweep, AutonK.kSweepShootingTimeout, false)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneJab, AutonK.kSweepShootingTimeout, false, false),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoSweep, AutonK.kSweepShootingTimeout, false, false)}));
 
         m_chooser.addRoutine(kRightTwoCycle,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightTwoCycle,
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneJab, AutonK.kReshootShootingTimeout, false),
-                                          new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kReshootShootingTimeout, false)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneJab, AutonK.kReshootShootingTimeout, false, false),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kReshootShootingTimeout, false, false)}));
 
         //---TRENCH ASSIST AUTONS
         m_chooser.addRoutine(kLeftTrenchTwoCycle,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftTrenchTwoCycle, 
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneTrench, AutonK.kReshootShootingTimeout, false),
-                                          new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kReshootShootingTimeout, false)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneTrench, AutonK.kReshootShootingTimeout, false, false),
+                                          new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kReshootShootingTimeout, false, false)}));
         
         m_chooser.addRoutine(kRightTrenchTwoCycle,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightTrenchTwoCycle, 
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneTrench, AutonK.kReshootShootingTimeout, false),
-                                          new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kReshootShootingTimeout, false)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneTrench, AutonK.kReshootShootingTimeout, false, false),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kReshootShootingTimeout, false, false)}));
 
         m_chooser.addRoutine(kRightShootAndPass,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightShootAndPass, 
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneJab, AutonK.kReshootShootingTimeout, false),
-                                          new AdaptableAutonInfo(AutonK.kRightTwoPassing, AutonK.kReshootShootingTimeout, true)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneJab, AutonK.kReshootShootingTimeout, false, false),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoPassing, AutonK.kReshootShootingTimeout, true, false)}));
         
         //---DEFENSE AUTONS
         m_chooser.addRoutine(kLeftDefenseOneCycle,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftDefenseOneCycle,
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneDefense, AutonK.kReshootShootingTimeout, false)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneDefense, AutonK.kReshootShootingTimeout, false, false)}));
 
         m_chooser.addRoutine(kRightDefenseOneCycle,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightDefenseOneCycle,
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneDefense, AutonK.kReshootShootingTimeout, false)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneDefense, AutonK.kReshootShootingTimeout, false, false)}));
         
         //---DEPOT AUTONS
         m_chooser.addRoutine(kLeftShootAndDepot,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftShootAndDepot, 
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneJab, AutonK.kReshootShootingTimeout, false),
-                                          new AdaptableAutonInfo(AutonK.kLeftTwoDepot, AutonK.kReshootShootingTimeout, false)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneJab, AutonK.kReshootShootingTimeout, false, false),
+                                          new AdaptableAutonInfo(AutonK.kLeftTwoDepot, AutonK.kReshootShootingTimeout, false, false)}));
 
         m_chooser.addRoutine(kRightShootAndDepot,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightShootAndDepot, 
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneJab, AutonK.kReshootShootingTimeout, false),
-                                          new AdaptableAutonInfo(AutonK.kRightTwoDepot, AutonK.kReshootShootingTimeout, false)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneJab, AutonK.kReshootShootingTimeout, false, false),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoDepot, AutonK.kReshootShootingTimeout, false, false)}));
 
         //---MISC
         m_chooser.addRoutine(kRightHubCircle,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightHubCircle,
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneCircle, AutonK.kReshootShootingTimeout, true),
-                                          new AdaptableAutonInfo(AutonK.kRightTwoSweep, AutonK.kReshootShootingTimeout, true)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneCircle, AutonK.kReshootShootingTimeout, true, false),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoSweep, AutonK.kReshootShootingTimeout, true, false)}));
         
         m_chooser.addRoutine(kLeftSweepAndDepot,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftSweepAndDepot,
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneSweepAndDepot, AutonK.kReshootShootingTimeout, true),
-                                          new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kReshootShootingTimeout, true)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneSweepAndDepot, AutonK.kReshootShootingTimeout, true, false),
+                                          new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kReshootShootingTimeout, true, false)}));
 
         m_chooser.addRoutine(kLeftTwoCycleReverse,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftTwoCycleReverse,
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneReverse, AutonK.kReshootShootingTimeout, false),
-                                          new AdaptableAutonInfo(AutonK.kLeftTwoReverse, AutonK.kReshootShootingTimeout, false)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneReverse, AutonK.kReshootShootingTimeout, false, false),
+                                          new AdaptableAutonInfo(AutonK.kLeftTwoReverse, AutonK.kReshootShootingTimeout, false, false)}));
         
         m_chooser.addRoutine(kRightTwoCycleReverse,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightTwoCycleReverse,
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kReshootShootingTimeout, false),
-                                          new AdaptableAutonInfo(AutonK.kRightTwoReverse, AutonK.kReshootShootingTimeout, false)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kReshootShootingTimeout, false, false),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoReverse, AutonK.kReshootShootingTimeout, false, false)}));
 
         m_chooser.addRoutine(kLeftTwoCycleReverseAndJab,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftTwoCycleReverseAndJab,
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneReverse, AutonK.kReshootShootingTimeout, false),
-                                          new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kReshootShootingTimeout, false)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneReverse, AutonK.kReshootShootingTimeout, false, false),
+                                          new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kReshootShootingTimeout, false, false)}));
 
         m_chooser.addRoutine(kRightTwoCycleReverseAndJab,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightTwoCycleReverseAndJab,
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kReshootShootingTimeout, false),
-                                          new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kReshootShootingTimeout, false)}));
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kReshootShootingTimeout, false, false),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kReshootShootingTimeout, false, false)}));
 
         //Load AutonChooser
         SmartDashboard.putData("AutoChooser", m_chooser);
