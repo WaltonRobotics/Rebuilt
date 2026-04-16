@@ -141,19 +141,19 @@ public class AutonChooser {
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kReshootShootingTimeout, false),
                                           new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kReshootShootingTimeout, false)}));
 
-        m_chooser.addRoutine(kRightStressTestLong,
-            () -> m_adaptableAutonFactory.adaptableAuton(kRightStressTestLong, new AdaptableAutonInfo(AutonK.kRightStressTestLong, 100, true)));
+        // m_chooser.addRoutine(kRightStressTestLong,
+        //     () -> m_adaptableAutonFactory.adaptableAuton(kRightStressTestLong, new AdaptableAutonInfo(AutonK.kRightStressTestLong, 100, true)));
         
-        m_chooser.addRoutine(kRightStressTestOverlap,
-            () -> m_adaptableAutonFactory.adaptableAuton(kRightStressTestOverlap, new AdaptableAutonInfo(AutonK.kRightStressTestOverlap, 100, true)));
+        // m_chooser.addRoutine(kRightStressTestOverlap,
+        //     () -> m_adaptableAutonFactory.adaptableAuton(kRightStressTestOverlap, new AdaptableAutonInfo(AutonK.kRightStressTestOverlap, 100, true)));
 
-        m_chooser.addRoutine(kRightStressTestFiveTimes,
-            () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightStressTestFiveTimes,
-                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true),
-                                          new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true),
-                                          new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true),
-                                          new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true),
-                                          new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true)}));
+        // m_chooser.addRoutine(kRightStressTestFiveTimes,
+        //     () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightStressTestFiveTimes,
+        //         new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true),
+        //                                   new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true),
+        //                                   new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true),
+        //                                   new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true),
+        //                                   new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true)}));
 
         //Load AutonChooser
         SmartDashboard.putData("AutoChooser", m_chooser);
