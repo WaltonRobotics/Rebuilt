@@ -37,6 +37,11 @@ public class AutonChooser {
     private final static String kRightHubCircle = "RIGHT Hub Circle";
     private final static String kLeftSweepAndDepot = "LEFT Sweep and Depot";
 
+    //---STRESS TEST
+    private final static String kRightStressTestLong = "RIGHT Long Stress Test";
+    private final static String kRightStressTestOverlap = "RIGHT Overlap Stress Test";
+    private final static String kRightStressTestFiveTimes = "RIGHT Five Times Stress Test";
+
 
     public static void initialize(WaltAdaptableAutonFactory adaptableAutonFactory) {
         m_adaptableAutonFactory = adaptableAutonFactory;
@@ -130,11 +135,25 @@ public class AutonChooser {
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftTwoCycleReverseAndJab,
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneReverse, AutonK.kReshootShootingTimeout, false),
                                           new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kReshootShootingTimeout, false)}));
-
+        
         m_chooser.addRoutine(kRightTwoCycleReverseAndJab,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightTwoCycleReverseAndJab,
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kReshootShootingTimeout, false),
                                           new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kReshootShootingTimeout, false)}));
+
+        m_chooser.addRoutine(kRightStressTestLong,
+            () -> m_adaptableAutonFactory.adaptableAuton(kRightStressTestLong, new AdaptableAutonInfo(AutonK.kRightStressTestLong, 100, true)));
+        
+        m_chooser.addRoutine(kRightStressTestOverlap,
+            () -> m_adaptableAutonFactory.adaptableAuton(kRightStressTestOverlap, new AdaptableAutonInfo(AutonK.kRightStressTestOverlap, 100, true)));
+
+        m_chooser.addRoutine(kRightStressTestFiveTimes,
+            () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightStressTestFiveTimes,
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true),
+                                          new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true),
+                                          new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true),
+                                          new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true),
+                                          new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true)}));
 
         //Load AutonChooser
         SmartDashboard.putData("AutoChooser", m_chooser);

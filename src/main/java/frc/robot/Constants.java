@@ -656,5 +656,12 @@ public class Constants {
         public static final String kLeftOneSweepAndDepot = "LEFT_one_sweepAndDepot";
         public static final String kLeftThreeDepotToBump = "LEFT_three_depotToBump";
         public static final String kRightThreeDepotToBump = "RIGHT_three_depotToBump";
+
+        //---STRESS TEST
+        public static final String kRightStressTestLong = "RIGHT_stress_test_long";
+        public static final String kRightStressTestOverlap = "RIGHT_stress_test_overlap";
+
+        //---NEW
+        public static final String kRightBeanTrench = "RIGHT_one_bean";
     }
 }
