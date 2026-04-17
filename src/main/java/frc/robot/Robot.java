@@ -396,7 +396,6 @@ public class Robot extends TimedRobot {
         m_disableChangeDelayTimer.restart();
     }
 
-
     @Override
     public void disabledPeriodic() {
         if (m_fpsLimitTimer.hasElapsed(3) && !WaltCamera.areCamsFpsLimited()) {
