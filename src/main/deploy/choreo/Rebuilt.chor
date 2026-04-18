@@ -3,15 +3,37 @@
  "version":2,
  "type":"Swerve",
  "variables":{
-  "expressions":{},
+  "expressions":{
+   "spinUpBuffer":{
+    "dimension":"Time",
+    "var":{
+     "exp":"-0.25 s",
+     "val":-0.25
+    }
+   }
+  },
   "poses":{
+   "depot":{
+    "x":{
+     "exp":"0.9519230127334595 m",
+     "val":0.9519230127334596
+    },
+    "y":{
+     "exp":"5.997664928436279 m",
+     "val":5.997664928436279
+    },
+    "heading":{
+     "exp":"3.141592653589793 rad",
+     "val":3.141592653589793
+    }
+   },
    "leftAllianceBump":{
     "x":{
-     "exp":"leftStart.x + 0.1 m",
+     "exp":"leftStartBump.x + 0.1 m",
      "val":3.692900037765503
     },
     "y":{
-     "exp":"leftShoot.y",
+     "exp":"leftShootBump.y",
      "val":5.514090032577514
     },
     "heading":{
@@ -21,11 +43,11 @@
    },
    "leftNeutralBump":{
     "x":{
-     "exp":"leftStart.x + 2 m",
+     "exp":"leftStartBump.x + 2 m",
      "val":5.592900037765503
     },
     "y":{
-     "exp":"leftStart.y",
+     "exp":"leftStartBump.y",
      "val":5.514090032577514
     },
     "heading":{
@@ -33,13 +55,13 @@
      "val":0.0
     }
    },
-   "leftShoot":{
+   "leftShootBump":{
     "x":{
      "exp":"3.3139100074768066 m",
      "val":3.313910007476806
     },
     "y":{
-     "exp":"leftStart.y",
+     "exp":"leftStartBump.y",
      "val":5.514090032577514
     },
     "heading":{
@@ -47,7 +69,7 @@
      "val":0.0
     }
    },
-   "leftStart":{
+   "leftStartBump":{
     "x":{
      "exp":"3.592900037765503 m",
      "val":3.592900037765503
@@ -61,13 +83,55 @@
      "val":0.0
     }
    },
+   "leftStartTrench":{
+    "x":{
+     "exp":"4.438728332519531 m",
+     "val":4.438728332519531
+    },
+    "y":{
+     "exp":"8 m - 0.6825088858604431 m",
+     "val":7.317491114139557
+    },
+    "heading":{
+     "exp":"0 rad",
+     "val":0.0
+    }
+   },
+   "leftTrenchEntry":{
+    "x":{
+     "exp":"3.3245766162872314 m",
+     "val":3.324576616287231
+    },
+    "y":{
+     "exp":"8 m - 0.8472248911857605 m",
+     "val":7.1527751088142395
+    },
+    "heading":{
+     "exp":"83.14123188844121 mrad",
+     "val":0.08314123188844122
+    }
+   },
+   "outpost":{
+    "x":{
+     "exp":"0.7341592907905579 m",
+     "val":0.7341592907905579
+    },
+    "y":{
+     "exp":"0.6228576302528381 m",
+     "val":0.6228576302528381
+    },
+    "heading":{
+     "exp":"pi rad",
+     "val":3.141592653589793
+    }
+   },
    "rightAllianceBump":{
     "x":{
-     "exp":"rightShoot.x + 0.3 m",
+     "exp":"rightShootBump.x + 0.3 m",
      "val":3.596527862548828
     },
     "y":{
-     "exp":"rightShoot.y",
+     "exp":"rightShootBump.y",
      "val":2.455909967422486
     },
     "heading":{
@@ -77,11 +141,11 @@
    },
    "rightNeutralBump":{
     "x":{
-     "exp":"rightShoot.x + 2.3 m",
+     "exp":"rightShootBump.x + 2.3 m",
      "val":5.596527862548828
     },
     "y":{
-     "exp":"rightShoot.y",
+     "exp":"rightShootBump.y",
      "val":2.455909967422486
     },
     "heading":{
@@ -89,13 +153,13 @@
      "val":0.0
     }
    },
-   "rightShoot":{
+   "rightShootBump":{
     "x":{
      "exp":"3.296527862548828 m",
      "val":3.296527862548828
     },
     "y":{
-     "exp":"rightStart.y",
+     "exp":"rightStartBump.y",
      "val":2.455909967422486
     },
     "heading":{
@@ -103,7 +167,7 @@
      "val":0.0
     }
    },
-   "rightStart":{
+   "rightStartBump":{
     "x":{
      "exp":"3.592900037765503 m",
      "val":3.592900037765503
@@ -115,6 +179,34 @@
     "heading":{
      "exp":"0 rad",
      "val":0.0
+    }
+   },
+   "rightStartTrench":{
+    "x":{
+     "exp":"4.438728332519531 m",
+     "val":4.438728332519531
+    },
+    "y":{
+     "exp":"0.6825088858604431 m",
+     "val":0.6825088858604431
+    },
+    "heading":{
+     "exp":"0 rad",
+     "val":0.0
+    }
+   },
+   "rightTrenchEntry":{
+    "x":{
+     "exp":"3.3245766162872314 m",
+     "val":3.324576616287231
+    },
+    "y":{
+     "exp":"0.8472248911857605 m",
+     "val":0.8472248911857605
+    },
+    "heading":{
+     "exp":"-83.14123188844121 mrad",
+     "val":-0.08314123188844122
     }
    }
   }
