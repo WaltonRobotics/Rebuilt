@@ -1,5 +1,5 @@
 {
- "name":"RIGHT_one_orbit",
+ "name":"RIGHT_one_selfPass",
  "version":3,
  "snapshot":{
   "waypoints":[
@@ -497,5 +497,5 @@
  "events":[
    {"name":"pass", "from":{"target":1, "targetTimestamp":0.8077, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"pass"}}},
    {"name":"stopPass", "from":{"target":7, "targetTimestamp":9.89813, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"stopPass"}}},
-   {"name":"shoot", "from":{"target":9, "targetTimestamp":11.37021, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"shoot"}}}]
+   {"name":"pass", "from":{"target":9, "targetTimestamp":11.37021, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"pass"}}}]
 }
