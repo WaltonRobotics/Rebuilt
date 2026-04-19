@@ -520,8 +520,8 @@ public class Constants {
         public static final int kSpindexerCANID = 10;
         public static final int kTunnelCANID = 11;
 
-        public static final double kSpindexerGearing = 5.0;
-        public static final double kTunnelGearing = 1/1.2 * 0.5;
+        public static final double kSpindexerGearing = 4.0; //5
+        public static final double kTunnelGearing = 20/30;
 
         public static final double kSpindexerMOI = 0.00166190059;
         public static final double kTunnelMOI = 0.000215968064;

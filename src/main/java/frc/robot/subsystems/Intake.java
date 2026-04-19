@@ -111,7 +111,7 @@ public class Intake extends SubsystemBase {
         SignalManager.register(kRioBus, sig_intakeArmStatorCurrent, sig_intakeArmVelo, sig_intakeRollersAVelo, sig_intakeArmPos, sig_intakeArmMMAtTarget);
 
         if (Robot.isReal()) {
-            setDefaultCommand(intakeArmCurrentSenseHoming());
+            // setDefaultCommand(intakeArmCurrentSenseHoming());
             // setDefaultCommand(intakeArmHome());
         }
 
