@@ -40,7 +40,7 @@ public class AutonChooser {
     //---STRESS TEST
     private final static String kRightStressTestLong = "RIGHT Long Stress Test";
     private final static String kRightStressTestOverlap = "RIGHT Overlap Stress Test";
-    private final static String kRightStressTestFiveTimes = "RIGHT Five Times Stress Test";
+    private final static String kRightStressTestTenTimes = "RIGHT Five Times Stress Test";
 
     /* NEW AUTON NAMES */
     //---2 CYCLES
@@ -159,19 +159,24 @@ public class AutonChooser {
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kReshootShootingTimeout, false),
                                           new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kReshootShootingTimeout, false)}));
 
-        // m_chooser.addRoutine(kRightStressTestLong,
-        //     () -> m_adaptableAutonFactory.adaptableAuton(kRightStressTestLong, new AdaptableAutonInfo(AutonK.kRightStressTestLong, 100, true)));
+        m_chooser.addRoutine(kRightStressTestLong,
+            () -> m_adaptableAutonFactory.adaptableAuton(kRightStressTestLong, new AdaptableAutonInfo(AutonK.kRightStressTestLong, 100, true)));
         
-        // m_chooser.addRoutine(kRightStressTestOverlap,
-        //     () -> m_adaptableAutonFactory.adaptableAuton(kRightStressTestOverlap, new AdaptableAutonInfo(AutonK.kRightStressTestOverlap, 100, true)));
+        m_chooser.addRoutine(kRightStressTestOverlap,
+            () -> m_adaptableAutonFactory.adaptableAuton(kRightStressTestOverlap, new AdaptableAutonInfo(AutonK.kRightStressTestOverlap, 100, true)));
 
-        // m_chooser.addRoutine(kRightStressTestFiveTimes,
-        //     () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightStressTestFiveTimes,
-        //         new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true),
-        //                                   new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true),
-        //                                   new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true),
-        //                                   new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true),
-        //                                   new AdaptableAutonInfo(AutonK.kRightBeanTrench, 100, true)}));
+        m_chooser.addRoutine(kRightStressTestTenTimes,
+            () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightStressTestTenTimes,
+                new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true),
+                                          new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true),
+                                          new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true),
+                                          new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true),
+                                          new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true)}));
 
         /* NEW AUTON OPTIONS */
         //---2 CYCLES
