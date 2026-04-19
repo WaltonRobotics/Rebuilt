@@ -9,7 +9,6 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -60,8 +59,8 @@ public class ShooterCalc {
     private final Pose3dLogger log_currentAimPose = WaltLogger.logPose3d(kLogTab, "CurrentAimPose");
     private final Translation3dArrayLogger log_ballTrajectory = WaltLogger.logTranslation3dArray(kLogTab, "ballTrajectory");
     private final DoubleLogger log_loopTime = WaltLogger.logDouble(kLogTab, "LoopTimeMsec");
-    private static final Pose3dLogger log_turretRobotPose = WaltLogger.logPose3d(kLogTab, "turretRobotPose");
-    private static final Pose3dLogger log_turretFieldPose = WaltLogger.logPose3d(kLogTab, "turretFieldPose");
+    // private static final Pose3dLogger log_turretRobotPose = WaltLogger.logPose3d(kLogTab, "turretRobotPose");
+    // private static final Pose3dLogger log_turretFieldPose = WaltLogger.logPose3d(kLogTab, "turretFieldPose");
     private final BooleanLogger log_robotPastOurZoneX = WaltLogger.logBoolean(kLogTab, "robotInOurZone");
     private final BooleanLogger log_robotInHubPassingZone = WaltLogger.logBoolean(kLogTab, "robotInHubPassingZone");
     private final BooleanLogger log_canTurretShoot = WaltLogger.logBoolean(kLogTab, "canTurretShoot");
@@ -286,8 +285,8 @@ public class ShooterCalc {
      */
     // Precomputed for calcAzimuth logging
     private static final double kTurretOffsetZ_m = kTurretTransform.getTranslation().getZ();
-    private static final Rotation3d kTurretRealPoseRotation =
-        new Rotation3d(0, 0, -(kTurretAngleOffset.plus(Rotation2d.kPi)).getRadians());
+    // private static final Rotation3d kTurretRealPoseRotation =
+    //     new Rotation3d(0, 0, -(kTurretAngleOffset.plus(Rotation2d.kPi)).getRadians());
 
     public static AzimuthCalcDetails calcAzimuth(Translation3d target, Pose2d robotPose, double turretHeading, ChassisSpeeds fieldSpeeds) {
         // Compute turret pivot position and zero direction with raw doubles

@@ -12,7 +12,6 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 
 import com.ctre.phoenix6.Utils;
-import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -50,7 +49,6 @@ import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.WaltCamera;
 import frc.util.HubShiftUtil;
-import frc.util.NetworkPinger;
 import frc.util.PerformanceMonitor;
 import frc.util.SignalManager;
 // import frc.util.WaltVisualSim;
@@ -109,8 +107,8 @@ public class Robot extends TimedRobot {
     //---VISION
 
     private PowerDistribution m_PDH = new PowerDistribution();
-    private final NetworkPinger m_radioPinger = new NetworkPinger("Radio", "10.29.74.1", 0.2, 10);
-    private final NetworkPinger m_coprocessorPinger = new NetworkPinger("Coprocessor", "10.29.74.11", 0.2, 10);
+    // private final NetworkPinger m_radioPinger = new NetworkPinger("Radio", "10.29.74.1", 0.2, 10);
+    // private final NetworkPinger m_coprocessorPinger = new NetworkPinger("Coprocessor", "10.29.74.11", 0.2, 10);
     // private final VisionSim m_visionSim = new VisionSim();
 
     /* TRIGGERS */
@@ -268,7 +266,7 @@ public class Robot extends TimedRobot {
         trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   
         trg_unlimitFps.onTrue(WaltCamera.setFpsLimitCmd(false));
 
-        //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
+        // robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
         // trg_swerveToObject.whileTrue(
         //     m_drivetrain.swerveToObject()
         // );
