@@ -163,6 +163,8 @@ public class Constants {
         public static final Angle kHoodLockDegs = Degrees.of(kHoodMaxDegs.times(0.75).in(Degrees));
         public static final double kHoodRotsd = 0.08;
         public static final double kHoodEmergencyRots = Rotations.of(0.00).magnitude(); // TOOD: this will grind against the gear but idk if this is optimal or somethign along those lines
+        public static final double kHoodMaxErrD = Rotations.of(0.005).in(Rotations);
+
 
 
         //double versions
@@ -174,8 +176,6 @@ public class Constants {
         //TODO: ensure this is the home value
         // public static final Angle kHoodHomePosition = Degrees.of(10);
         public static final Angle kHoodTrenchPosition = Degrees.of(5);
-
-        public static final Angle kHoodShootingTolerance = Degrees.of(0.5);
 
         public static final DCMotor khoodDCMotorGearbox = new DCMotor(
             6, 
@@ -516,7 +516,7 @@ public class Constants {
     }
 
     public static class IndexerK {
-        public static String kLogTab = "Indexer";
+        public static final String kLogTab = "Indexer";
         
         /* IDS */
         //TODO: Make ids accurate
