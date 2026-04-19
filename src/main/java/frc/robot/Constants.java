@@ -38,10 +38,12 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import frc.robot.generated.TunerConstants;
 import frc.util.AllianceFlipUtil;
 import frc.util.VisionUtil;
 
@@ -258,6 +260,9 @@ public class Constants {
         private static final VoltageConfigs kHoodVoltageConfigs = new VoltageConfigs()
             .withPeakForwardVoltage(16)
             .withPeakReverseVoltage(-16);
+        private static final SoftwareLimitSwitchConfigs kHoodSoftwareLimitSwitchConfigs = new SoftwareLimitSwitchConfigs()
+            .withForwardSoftLimitEnable(true)
+            .withForwardSoftLimitThreshold(kHoodMaxRots_double);
         private static final CommutationConfigs kHoodCommutationConfigs = new CommutationConfigs()
             .withAdvancedHallSupport(AdvancedHallSupportValue.Enabled)
             .withMotorArrangement(MotorArrangementValue.NEO550_JST);
@@ -409,6 +414,11 @@ public class Constants {
 
         public static final int kMiniPCChannel = 14;
 
+        public static final LinearVelocity kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts; // kSpeedAt12Volts desired top speed
+        public static final AngularVelocity kMaxAngularRate = RotationsPerSecond.of(1.05); // 3/4 of a rotation per second max angular velocity
+
+        public static final LinearVelocity kTranslationOpsCheckSpeed = MetersPerSecond.of(0.1);
+
         // real values
         public static final Distance kRobotFullWidth = Inches.of(33.6875);
         public static final Distance kRobotFullLength = Inches.of(32.6875);
@@ -419,6 +429,12 @@ public class Constants {
 
     public static class SuperstructureK {
         public static final String kLogTab = "Superstructure";
+
+        public static final double kLongOpsCheckPause = 4; //in secs
+        public static final double kShortOpsCheckPause = 2.5; //in secs
+
+        public static final double kShortOpsCheckShooterTime = 5;
+        public static final double kShortOpsCheckIntakeTime = 5;
     }
 
     public static class IntakeK {

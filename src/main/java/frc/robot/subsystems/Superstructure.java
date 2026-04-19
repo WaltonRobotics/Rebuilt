@@ -5,8 +5,10 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.IndexerK;
 import frc.robot.Constants.IntakeK;
+import frc.robot.Constants.SuperstructureK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -19,12 +21,16 @@ public class Superstructure extends SubsystemBase {
     private final Intake m_intake;
     private final Indexer m_indexer;
     private final Shooter m_shooter;
+    private final Swerve m_drivetrain;
+
+    public boolean m_isLongOpsCheck = true;
     
     /* CONSTRUCTOR */
-    public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
+    public Superstructure(Intake intake, Indexer indexer, Shooter shooter, Swerve drivetrain) {
         m_intake = intake;
         m_indexer = indexer;
         m_shooter = shooter;
+        m_drivetrain = drivetrain;
     }
 
     /* BUTTON BIND SEQUENCES */
@@ -209,6 +215,84 @@ public class Superstructure extends SubsystemBase {
     public Command intakeTo(IntakeArmPosition pos) {
         return Commands.sequence(
             m_intake.setIntakeArmPosCmd(pos)
+        );
+    }
+
+    /**
+     * runs each subsytem in order of how the ball will flow through the robot (intake -> spindxer -> tunnel -> shooter -> swerve) 
+     * and then everything runs together like they would in a match
+     * 
+     * @return an automated ops check that runs each subsystem individually
+     */
+    public Command longOpsCheck() {
+        return Commands.sequence(
+            Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
+
+            //deploy intake
+            m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
+            Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
+
+            //run intake rollers
+            m_intake.startIntakeRollers(),
+            Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
+
+            //run spindexer
+            m_intake.stopIntakeRollers(),
+            m_indexer.setSpindexerVelocityCmd(IndexerK.kSpindexerShootRPS),
+            Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
+
+            //Stop Spindexer; run tunnel
+            m_indexer.stopSpindexerCmd(),
+            m_indexer.setTunnelVelocityCmd(IndexerK.kTunnelShootRPS),
+            Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
+
+            //Stop tunnel; run shooter
+            m_indexer.stopTunnelCmd(),
+            m_shooter.setShooterVelocityCmd(ShooterK.kShooterRPS),
+            Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
+
+            //shooter stopped
+            m_shooter.setShooterVelocityCmd(RotationsPerSecond.zero()),
+            Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
+
+            //turret move
+            m_shooter.m_turret.setTurretLockCmd(true),
+            Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
+            m_shooter.m_turret.setTurretLockCmd(true),
+
+            //hood move
+            m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodLockRots_double),
+            Commands.waitSeconds(SuperstructureK.kLongOpsCheckPause),
+            m_shooter.m_hood.setHoodPosCmd(0.1),
+
+            //Run short Ops check (intake, shoot, swerve)
+            shortOpsCheck()
+        );
+    }
+
+    /**
+     * runs the intaking cmd – 5 seconds,
+     * the outaking cmd – 4 seconds,
+     * and then the swerve tests (run wheels forward, backward, and then rotates them) – 2.5 seconds between each test
+     * 
+     * @return a sequence of commands that runs the subsystems in groups – how they would run together in a match
+     * (ex. intaking cmd runs intake arm and rollers, spindexer and turret)
+     */
+    public Command shortOpsCheck() {
+        return Commands.sequence(
+            //runs intaking cmd
+            Commands.print("================================= ACTIVATE INTAKE CMD ================================="),
+            intake(() -> false).withTimeout(SuperstructureK.kShortOpsCheckIntakeTime),
+            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
+
+            //runs shooting cmd
+            Commands.print("================================= ACTIVATE OUTTAKE CMD ================================="),
+            activateOuttakeShotCalc().withTimeout(SuperstructureK.kShortOpsCheckShooterTime),
+            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
+
+            //Swerve test
+            Commands.print("================================= START SWERVE OPSP CHECK ================================="),
+            m_drivetrain.swerveAutomatedOpsCheck()
         );
     }
 }

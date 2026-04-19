@@ -41,6 +41,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants.RobotK;
+import frc.robot.Constants.SuperstructureK;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.vision.Detection;
 import frc.util.WaltDriverStation;
@@ -507,6 +509,58 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             fuelLocation.getX(),
             fuelLocation.getY(),
             desiredRotation
+        );
+    }
+
+    /**
+     * drive the robot forward slow, then fast
+     *                 backward slow, then fast
+     * then spin the wheels driverMax speed
+     * 
+     * @return Ops check for swerve drive
+     */
+    public Command swerveAutomatedOpsCheck() {
+        return Commands.sequence(
+            //Slow speed forward into high speed
+            applyRequest(() ->
+                swreq_drive.withVelocityX(RobotK.kTranslationOpsCheckSpeed)
+                    .withVelocityY(0)
+                    .withRotationalRate(0)
+            ),
+            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
+            applyRequest(() ->
+                swreq_drive.withVelocityX(RobotK.kMaxTranslationSpeed)
+                    .withVelocityY(0)
+                    .withRotationalRate(0)
+            ),
+            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
+            xBrakeCmd(),
+            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
+
+            //Slow speed backward into high speed
+            applyRequest(() ->
+                swreq_drive.withVelocityX(RobotK.kTranslationOpsCheckSpeed.times(-1))
+                    .withVelocityY(0)
+                    .withRotationalRate(0)
+            ),
+            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
+            applyRequest(() ->
+                swreq_drive.withVelocityX(RobotK.kMaxTranslationSpeed.times(-1))
+                    .withVelocityY(0)
+                    .withRotationalRate(0)
+            ),
+            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
+            xBrakeCmd(),
+            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
+
+            //Turn wheels
+            applyRequest(() ->
+                swreq_drive.withVelocityX(0)
+                    .withVelocityY(0)
+                    .withRotationalRate(RobotK.kMaxAngularRate)
+            ),
+            Commands.waitSeconds(SuperstructureK.kShortOpsCheckPause),
+            xBrakeCmd()
         );
     }
 

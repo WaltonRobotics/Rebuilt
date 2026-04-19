@@ -20,6 +20,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -62,8 +63,6 @@ import frc.util.WaltLogger.Pose2dLogger;
 public class Robot extends TimedRobot {
     /* CLASS VARIABLES */
     //---CONSTANTS
-    private final LinearVelocity kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts; // kSpeedAt12Volts desired top speed
-    private final AngularVelocity kMaxAngularRate = RotationsPerSecond.of(1.05); // 3/4 of a rotation per second max angular velocity
 
     // Pre-computed doubles for driveCommand hot path (avoids .times() measure allocations every tick)
     private final double kMaxTranslationMps = kMaxTranslationSpeed.in(MetersPerSecond);
@@ -101,7 +100,7 @@ public class Robot extends TimedRobot {
     private final Indexer m_indexer = new Indexer();
 
     // private final WaltVisualSim m_visualSim;
-    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
+    private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter, m_drivetrain);
 
     //---AUTONS
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
@@ -344,6 +343,11 @@ public class Robot extends TimedRobot {
 
         m_driver.povDown().onTrue(m_shooter.m_turret.setTurretLockCmd(false));
         m_driver.povRight().onTrue(m_shooter.m_turret.setTurretLockCmd(true));
+        
+        // m_driver.povDown().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX(), m_drivetrain.getState().Pose.getY() - Inches.of(20).magnitude()), 0.001));
+        // m_driver.povUp().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX(), m_drivetrain.getState().Pose.getY() + Inches.of(20).magnitude()), 0.001));
+        // m_driver.povRight().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX() + Inches.of(20).magnitude(), m_drivetrain.getState().Pose.getY()), 0.001));
+        // m_driver.povLeft().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX() - Inches.of(20).magnitude(), m_drivetrain.getState().Pose.getY()), 0.001));
 
         m_manipulator.y().and(trg_manipOverride).onTrue(Commands.runOnce(() -> m_shooter.m_turret.homeTurret(true)));
         
@@ -497,43 +501,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void testInit() {
-        CommandScheduler.getInstance().cancelAll();
-        
-        CommandScheduler.getInstance().schedule(
-            Commands.sequence(
-                m_drivetrain.runOnce(m_drivetrain::seedFieldCentric),
-                Commands.waitSeconds(1),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(kMaxTranslationSpeed)
-                        .withVelocityY(0)
-                        .withRotationalRate(0)
-                ),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.xBrakeCmd(),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(kMaxTranslationSpeed.unaryMinus())
-                        .withVelocityY(0)
-                        .withRotationalRate(0)
-                ),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.xBrakeCmd(),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(0)
-                        .withVelocityY(0)
-                        .withRotationalRate(kMaxAngularRate)
-                ),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.xBrakeCmd(),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(0)
-                        .withVelocityY(0)
-                        .withRotationalRate(0)
-                )
-            )
-        );
+        CommandScheduler.getInstance().schedule(m_superstructure.longOpsCheck());
     }
 
     @Override
