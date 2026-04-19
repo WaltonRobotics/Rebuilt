@@ -623,6 +623,7 @@ public class Constants {
         public static final double kReshootShootingTimeout = 5.5; //12
         public static final double kSweepShootingTimeout = 20;
 
+        /* OLD PATHS */
         //---RIGHT FIRST CYCLES
         public static final String kRightOneJab = "RIGHT_one_jab";
         public static final String kRightOneTrench = "RIGHT_one_trench";
@@ -660,8 +661,40 @@ public class Constants {
         //---STRESS TEST
         public static final String kRightStressTestLong = "RIGHT_stress_test_long";
         public static final String kRightStressTestOverlap = "RIGHT_stress_test_overlap";
+      
+        /* NEW PATHS */
+        //---BUMP RETURN PATHS
+        public static final String kRightOneBumpReturn = "RIGHT_one_bumpReturn";
+        public static final String kLeftOneBumpReturn = "LEFT_one_bumpReturn";
+        public static final String kRightTwoBumpReturn = "RIGHT_two_bumpReturn";
+        public static final String kLeftTwoBumpReturn = "LEFT_two_bumpReturn";
+        public static final String kRightTwoBumpToTrench = "RIGHT_two_bumpToTrench";
+        public static final String kLeftTwoBumpToTrench = "LEFT_two_bumpToTrench";
 
-        //---NEW
-        public static final String kRightBeanTrench = "RIGHT_one_bean";
+        //---TRENCH RETURN PATHS
+        public static final String kRightOneTrenchReturn = "RIGHT_one_trenchReturn";
+        public static final String kLeftOneTrenchReturn = "LEFT_one_trenchReturn";
+        public static final String kRightTwoTrenchReturn = "RIGHT_two_trenchReturn";
+        public static final String kLeftTwoTrenchReturn = "LEFT_two_trenchReturn";
+        
+        //---OUTPOST PATHS
+        public static final String kRightOneTrenchToOutpost = "RIGHT_one_trenchToOutpost";
+        public static final String kRightTwoTrenchToOutpost = "RIGHT_two_trenchToOutpost";
+        public static final String kRightTwoOutpostToTrench = "RIGHT_two_outpostToTrench";
+        public static final String kRightOneBumpToOutpost = "RIGHT_one_bumpToOutpost";
+        public static final String kRightTwoBumpToOutpost = "RIGHT_two_bumpToOutpost";
+        public static final String kRightTwoOutpostToBump = "RIGHT_two_outpostToBump";
+
+        //---DEPOT PATHS
+        public static final String kLeftOneTrenchToDepot = "LEFT_one_trenchToDepot";
+        public static final String kLeftTwoTrenchToDepot = "LEFT_two_trenchToDepot";
+        public static final String kLeftTwoDepotToTrench = "LEFT_two_depotToTrench";
+        public static final String kLeftOneBumpToDepot = "LEFT_one_bumpToDepot";
+        public static final String kLeftTwoBumpToDepot = "LEFT_two_bumpToDepot";
+        public static final String kLeftTwoDepotToBump = "LEFT_two_depotToBump";
+
+        //---MISC
+        public static final String kRightOneSelfPass = "RIGHT_one_selfPass";
+        public static final String kLeftOneSelfPass = "LEFT_one_selfPass";
     }
 }
