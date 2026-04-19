@@ -226,7 +226,7 @@ public class Constants {
             .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kShooterAOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.CounterClockwise_Positive   )
+            .withInverted(InvertedValue.CounterClockwise_Positive)
             .withNeutralMode(NeutralModeValue.Coast);
         private static final FeedbackConfigs kShooterAFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kShooterGearing);
