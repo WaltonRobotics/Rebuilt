@@ -207,10 +207,6 @@ public class Constants {
         public static final int kTurretCANID = 12;
         public static final int kHoodCANID = 22;
 
-        // public static final int kExitBeamBreakChannel = 1; //TODO: Update channel number
-        public static final int kHoodChannel = 0;
-        public static final int kHoodEncoderCANID = 25;
-
         /* CONFIGS */
         // TODO: Check what more configs would be necessary
         private static final Slot0Configs kShooterASlot0Configs = new Slot0Configs()   //Note to self (hrehaan) (and saarth cuz i did the same thing): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
