@@ -199,7 +199,7 @@ public class WaltAdaptableAutonFactory {
     public void setUpTrajTriggers(AutoTrajectory traj, double shooterTimeout, boolean SOTM) {
         //---TRIGGER ACTIONS
         traj.atTime("intake").onTrue(
-            m_superstructure.intake(() -> false, kIntakeRollersIntakeVolts, true).until(trg_isAtStopIntake)
+            m_superstructure.intake(() -> false, () -> false).until(trg_isAtStopIntake)
         );
 
         // traj.atTime("intake").onTrue(
@@ -250,7 +250,7 @@ public class WaltAdaptableAutonFactory {
         );
 
         traj.atTime("pass").onTrue(
-            m_superstructure.intake(() -> true, kIntakeRollersIntakeVolts, true).until(traj.atTime("stopPass"))
+            m_superstructure.intake(() -> true, () -> false).until(traj.atTime("stopPass"))
         );
 
         traj.atTime("pass").onTrue(
