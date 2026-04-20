@@ -11,6 +11,8 @@ import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK;
+import static frc.robot.Constants.IntakeK.kIntakeRollersShimmyVolts;
+
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
@@ -32,11 +34,11 @@ public class Superstructure extends SubsystemBase {
      * @param isShooting is if the robot is shooting
      * @return the intake Command
      */
-    public Command intake(BooleanSupplier isShooting) {
+    public Command intake(BooleanSupplier isShooting, double volts, boolean stopRollers) {
         return Commands.sequence(
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
             Commands.waitUntil(() -> m_intake.isIntakeArmAtDest()).withTimeout(0.25),
-            m_intake.setIntakeRollersVelocityCmd(11),
+            m_intake.setIntakeRollersVelocityCmd(volts),
             Commands.run(
             () -> {
                 // boolean shooting = isShooting.getAsBoolean();
@@ -47,7 +49,8 @@ public class Superstructure extends SubsystemBase {
             () -> {
                 // boolean shooting = isShooting.getAsBoolean();
                 // m_shooter.m_turret.setIntaking(false);
-                m_intake.setIntakeRollersVelocity(0);
+                if (stopRollers)
+                    m_intake.setIntakeRollersVelocity(0) ;
                 // if (!shooting) {
                 //     m_indexer.setSpindexerVelocity(RotationsPerSecond.zero());
                 // }
@@ -172,7 +175,11 @@ public class Superstructure extends SubsystemBase {
     }
 
     public Command intakeShimmy() {
-       return m_intake.shimmy();
+       return Commands.repeatingSequence(
+            intake(() -> false, kIntakeRollersShimmyVolts, false).withTimeout(0.5),
+            m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED),
+            Commands.waitSeconds(0.5)
+       );
     }
 
     /**

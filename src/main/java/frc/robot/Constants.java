@@ -441,6 +441,8 @@ public class Constants {
         public static final AngularVelocity kIntakeRollersShootRPS = kIntakeRollersMaxRPS.times(0.2);
         public static final AngularVelocity kIntakeRollersShimmyRPS = kIntakeRollersMaxRPS.times(0.2);
         public static final double kIntakeRollersBarfVolts = -12;
+        public static final double kIntakeRollersIntakeVolts = 11;
+        public static final double kIntakeRollersShimmyVolts = 5;
 
         /* IDS */
         public static final int kIntakeArmCANID = 40;
@@ -466,8 +468,8 @@ public class Constants {
             .withNeutralMode(NeutralModeValue.Brake)
             .withInverted(InvertedValue.Clockwise_Positive);
         private static final MotionMagicConfigs kIntakeArmMotionMagicConfigs = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(1.5)
-            .withMotionMagicAcceleration(10)
+            .withMotionMagicCruiseVelocity(20)
+            .withMotionMagicAcceleration(64)
             .withMotionMagicJerk(0);
         public static final FeedbackConfigs kIntakeArmFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kIntakeArmGearing);
