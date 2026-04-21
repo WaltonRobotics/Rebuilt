@@ -129,6 +129,17 @@ public class Superstructure extends SubsystemBase {
         });
     }
 
+    public Command hoodAndFlywheelShotCalc() {
+        return Commands.parallel(
+            m_shooter.hoodFromCalc(),
+            m_shooter.shootFromCalc()
+        )
+        .finallyDo( () -> {
+            hoodBackToSafe();
+            turnOffFlywheel();
+        });
+    }
+
     /**
      * deactivates the outtake
      */

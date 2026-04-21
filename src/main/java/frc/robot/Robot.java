@@ -25,7 +25,6 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -114,8 +113,7 @@ public class Robot extends TimedRobot {
     /* TRIGGERS */
     // private Trigger trg_optimalPrefireTime = new Trigger(HubShiftUtil.optimalPrefireTime());
     // private Trigger trg_comebackTime = new Trigger(HubShiftUtil.comebackTime());
-    private Trigger trg_turretInShootRange = new Trigger(() -> ShooterCalc.canTurretShoot());
-    private Trigger trg_underTrench = new Trigger(() -> ShooterCalc.getUnderTrench());
+    private Trigger trg_snappingBack = new Trigger(ShooterCalc.isSnappingBack());
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
 
@@ -283,25 +281,18 @@ public class Robot extends TimedRobot {
 
         //Shooting
         // NORMAL FIXED SHOT
-        // trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
-        trg_turretInShootRange.whileFalse(Commands.run(() -> m_driver.setRumble(RumbleType.kBothRumble, 0.3)).finallyDo(() -> m_driver.setRumble(RumbleType.kBothRumble, 0)));
+        // trg_turretInShootRange.whileFalse(Commands.run(() -> m_driver.setRumble(RumbleType.kBothRumble, 0.3)).finallyDo(() -> m_driver.setRumble(RumbleType.kBothRumble, 0)));
 
         // DRIVER SHOOTING 
         trg_shoot
             .and(() -> m_shooter.m_turret.atPosition())
             .and(() -> m_shooter.m_hood.atPosition())
-            // .and(() -> ShooterCalc.canTurretShoot())
-            .and(trg_underTrench.negate())
+            .and(trg_snappingBack.negate())
             .whileTrue(m_superstructure.activateOuttakeShotCalc());
-        
-        trg_shoot
-            .and(() -> m_shooter.m_turret.atPosition())
-            // .and(trg_turretInShootRange.negate())
-            .whileTrue(m_superstructure.spinUpFlywheel());
 
         trg_shoot
-            .and(trg_underTrench)
-            .whileTrue(m_superstructure.spinUpFlywheel());
+            .and(trg_snappingBack)
+            .whileTrue(m_superstructure.hoodAndFlywheelShotCalc());
         // m_manipulator.rightTrigger().and(trg_manipOverride).whileTrue(Commands.run(() -> m_intake.setIntakeRollersVelocity(kIntakeRollersBarfVolts)).finallyDo(() -> m_intake.setIntakeRollersVelocity(0)));
 
         // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));
@@ -366,11 +357,7 @@ public class Robot extends TimedRobot {
         // );
     }
 
-    private void configureTestBindings() {
-        m_driver.povLeft().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMinRots_double));
-        m_driver.povUp().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double));
-    }
-
+    private void configureTestBindings() {}
 
     /* PERIODICS */
     @Override

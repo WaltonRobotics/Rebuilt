@@ -103,6 +103,7 @@ public class ShooterCalc {
     private static final BooleanSupplier m_isPassing = () -> m_isPassingFlag;
     private static volatile boolean m_canTurretShoot = false;
     private static volatile boolean m_underTrench = false;
+    private static volatile boolean m_isSnappingBack = false;
 
     private final Notifier m_notifier = new Notifier(this::calcCallback);
     private final Timer m_calcTimer = new Timer();
@@ -143,6 +144,10 @@ public class ShooterCalc {
 
     public static boolean getUnderTrench() {
         return m_underTrench;
+    }
+
+    public static BooleanSupplier isSnappingBack() {
+        return () -> m_isSnappingBack;
     }
 
     /**
@@ -235,7 +240,6 @@ public class ShooterCalc {
         return AllianceFlipUtil.apply(theTarget);
     }
 
-    //do we want to pass in the turret pose?
     private boolean underTrench(Pose2d turretPose) {
         isRed = WaltDriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
 
@@ -330,9 +334,13 @@ public class ShooterCalc {
         // this is the snapback function, to make sure that you will always be tracking
         // and you will not go over your physical limits.
         if (turretHeadingRots > 0 && angleRotations + 1 <= kTurretMaxRotsD) {
+            m_isSnappingBack = true;
             snapbackSafeAngleRotations += 1;
         } else if (turretHeadingRots < 0 && angleRotations - 1 >= kTurretMinRotsD) {
+            m_isSnappingBack = true;
             snapbackSafeAngleRotations -= 1;
+        } else {
+            m_isSnappingBack = false;
         }
 
 
