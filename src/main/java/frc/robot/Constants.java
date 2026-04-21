@@ -1,7 +1,22 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.InchesPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CommutationConfigs;
@@ -12,20 +27,15 @@ import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.configs.VoltageConfigs;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-
-import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.signals.AdvancedHallSupportValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -35,13 +45,13 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Time;
 import frc.util.AllianceFlipUtil;
 import frc.util.VisionUtil;
 
@@ -196,22 +206,18 @@ public class Constants {
         public static final Angle kInitPosition = Rotations.of(-0.145);
 
         /* IDS */
-        public static final int kShooterA_CANID = 20;
-        public static final int kShooterB_CANID = 21;
+        public static final int kShooterA_CANID = 21;
+        public static final int kShooterB_CANID = 20;
         public static final int kTurretCANID = 12;
         public static final int kHoodCANID = 22;
-
-        // public static final int kExitBeamBreakChannel = 1; //TODO: Update channel number
-        public static final int kHoodChannel = 0;
-        public static final int kHoodEncoderCANID = 25;
 
         /* CONFIGS */
         // TODO: Check what more configs would be necessary
         private static final Slot0Configs kShooterASlot0Configs = new Slot0Configs()   //Note to self (hrehaan) (and saarth cuz i did the same thing): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
-            .withKS(0.2998046875)
-            .withKV(0.09)
+            .withKS(0.37)
+            .withKV(0.1)
             .withKA(0)
-            .withKP(0.3)
+            .withKP(0.5)
             .withKI(0)
             .withKD(0); // kP was causing the werid sinusoid behavior, kS and kA were adding inconsistency with the destination values
         private static final CurrentLimitsConfigs kShooterACurrentLimitConfigs = new CurrentLimitsConfigs()
@@ -220,7 +226,7 @@ public class Constants {
             .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kShooterAOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.CounterClockwise_Positive   )
+            .withInverted(InvertedValue.CounterClockwise_Positive)
             .withNeutralMode(NeutralModeValue.Coast);
         private static final FeedbackConfigs kShooterAFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kShooterGearing);
@@ -350,7 +356,6 @@ public class Constants {
     public static class VisionK {
         // public static final Camera[] kCameras = new Camera[4];
         // private static final String kSimCameraSimVisualNames = /"VisionEstimation"; //suffixed to each camera name
-        //TODO:idk if it should be -20 rotY or 20 rotY
         public static final Transform3d kFrontLeftCTR = VisionUtil.transformToRobo(12.306, 9.325, 20.800, 0, 20, 45);
         public static final Transform3d kFrontRightCTR = VisionUtil.transformToRobo(12.296, -9.325, 20.800, 0, 20, 315);
         public static final Transform3d kBackLeftCTR = VisionUtil.transformToRobo(-12.254, 11.753, 20.640, 0, 20, 135);
@@ -439,6 +444,8 @@ public class Constants {
         public static final AngularVelocity kIntakeRollersShootRPS = kIntakeRollersMaxRPS.times(0.2);
         public static final AngularVelocity kIntakeRollersShimmyRPS = kIntakeRollersMaxRPS.times(0.2);
         public static final double kIntakeRollersBarfVolts = -12;
+        public static final double kIntakeRollersIntakeVolts = 11;
+        public static final double kIntakeRollersShimmyVolts = 5;
 
         /* IDS */
         public static final int kIntakeArmCANID = 40;
@@ -464,8 +471,8 @@ public class Constants {
             .withNeutralMode(NeutralModeValue.Brake)
             .withInverted(InvertedValue.Clockwise_Positive);
         private static final MotionMagicConfigs kIntakeArmMotionMagicConfigs = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(1.5)
-            .withMotionMagicAcceleration(10)
+            .withMotionMagicCruiseVelocity(20)
+            .withMotionMagicAcceleration(64)
             .withMotionMagicJerk(0);
         public static final FeedbackConfigs kIntakeArmFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kIntakeArmGearing);
@@ -524,8 +531,8 @@ public class Constants {
         public static final int kSpindexerCANID = 10;
         public static final int kTunnelCANID = 11;
 
-        public static final double kSpindexerGearing = 5.0;
-        public static final double kTunnelGearing = 1/1.2 * 0.5;
+        public static final double kSpindexerGearing = 5.0 ; //5
+        public static final double kTunnelGearing = 20/30;
 
         public static final double kSpindexerMOI = 0.00166190059;
         public static final double kTunnelMOI = 0.000215968064;
@@ -544,10 +551,10 @@ public class Constants {
         /* CONFIGS */
         //TODO: Make transfer configs accurate
         private static final Slot0Configs kSpindexerSlot0Configs = new Slot0Configs()
-            .withKS(0.2)
-            .withKV(0.545)
+            .withKS(0.420)
+            .withKV(0.560)
             .withKA(0)
-            .withKP(0.75)
+            .withKP(1.5)
             .withKI(0)
             .withKD(0);
         private static final CurrentLimitsConfigs kSpindexerCurrentLimitConfigs = new CurrentLimitsConfigs()
@@ -558,7 +565,7 @@ public class Constants {
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kSpindexerMotorOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.CounterClockwise_Positive)
+            .withInverted(InvertedValue.Clockwise_Positive)
             .withNeutralMode(NeutralModeValue.Coast);
         private static final FeedbackConfigs kSpindexerFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kSpindexerGearing);
@@ -573,10 +580,10 @@ public class Constants {
             .withVoltage(kSpindexerVoltageConfigs);
 
         private static final Slot0Configs kTunnelSlot0Configs = new Slot0Configs()
-            .withKS(0.4)
-            .withKV(0.047)
+            .withKS(0.2)
+            .withKV(0.115)
             .withKA(0)
-            .withKP(0.1)
+            .withKP(0.37)
             .withKI(0)
             .withKD(0);
         private static final CurrentLimitsConfigs kTunnelCurrentLimitConfigs = new CurrentLimitsConfigs()
@@ -587,7 +594,7 @@ public class Constants {
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kTunnelMotorOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.Clockwise_Positive)
+            .withInverted(InvertedValue.CounterClockwise_Positive)
             .withNeutralMode(NeutralModeValue.Coast);
         private static final FeedbackConfigs kTunnelFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kTunnelGearing);

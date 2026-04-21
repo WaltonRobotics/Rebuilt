@@ -6,6 +6,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.Constants.IntakeK.kIntakeRollersIntakeVolts;
 import static frc.robot.Constants.RobotK.*;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
@@ -272,7 +273,7 @@ public class Robot extends TimedRobot {
         //---NORMAL SEQUENCES
         //Intake
         trg_intake.and(trg_shoot.negate()).and(trg_emergencyBarf.negate()).whileTrue(
-            m_superstructure.intake(() -> false)
+            m_superstructure.intake(() -> false, () -> false)
         );
 
         // trg_retractIntake.onTrue(
@@ -306,7 +307,7 @@ public class Robot extends TimedRobot {
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
 
         trg_intake.and(trg_shoot).and(trg_emergencyBarf.negate()).whileTrue(
-            m_superstructure.intake(() -> true)
+            m_superstructure.intake(() -> true, () -> false)
         );
 
         trg_retractIntake.onTrue(m_superstructure.retractIntake());

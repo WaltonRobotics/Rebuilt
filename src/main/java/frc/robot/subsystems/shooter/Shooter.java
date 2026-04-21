@@ -72,7 +72,7 @@ public class Shooter extends SubsystemBase {
     // ---MOTORS + CONTROL REQUESTS
     private final TalonFX m_shooterA = new TalonFX(kShooterA_CANID, Constants.kShooterBus); // X44
     private final TalonFX m_shooterB = new TalonFX(kShooterB_CANID, Constants.kShooterBus); // X44
-    private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(false);
+    private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(true);
     private final CoastOut m_motorIdleReq = new CoastOut();
 
     private final Supplier<SwerveDriveState> m_threadsafeSwerveSup;
