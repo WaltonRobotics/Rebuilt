@@ -340,7 +340,7 @@ public class Constants {
             .withVoltage(kTurretVoltageConfigs);
 
         public static final MagnetSensorConfigs kEncoderAMagnetSensorConfigs = new MagnetSensorConfigs()
-            .withMagnetOffset(-0.331787109375);
+            .withMagnetOffset(TurretK.kEncAMagnetOffset);
         public static final CANcoderConfiguration kEncoderAConfiguration = new CANcoderConfiguration()
             .withMagnetSensor(kEncoderAMagnetSensorConfigs);
 
@@ -616,8 +616,9 @@ public class Constants {
         public static final double kGearOneToothCount = 10;
         public static final double kGearTwoToothCount = 19;
 
-        public static final double kLCMAtHomeRots = 0.0; // measure: turretLCMPos log value when turret is at home
-        public static final double kEncBOffset = 0.610415; // measure: encB reading when turret is at encA=0 //NEW ONE
+        public static final double kLCMAtHomeRots = 0.251; // measure: turretLCMPos log value when turret is at home
+        public static final double kEncAMagnetOffset = -0.2490234375;
+        public static final double kEncBOffset = 0.816119; // measure: encB reading when turret is at encA=0 //NEW ONE
     }
     public static class AutonK {
         public static final String kLogTab = "Auton";

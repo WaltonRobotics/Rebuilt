@@ -66,6 +66,7 @@ public class ShooterCalc {
     private final BooleanLogger log_canTurretShoot = WaltLogger.logBoolean(kLogTab, "canTurretShoot");
     private final BooleanLogger log_inTrenchZone = WaltLogger.logBoolean(kLogTab, "inTrenchZone");
     private final BooleanLogger log_underTrench = WaltLogger.logBoolean(kLogTab, "underTrench");
+    private static final BooleanLogger log_isSnappingBack = WaltLogger.logBoolean(kLogTab, "snappingBack");
 
     // Precomputed doubles for calculateTarget zone checks
     private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
@@ -357,6 +358,7 @@ public class ShooterCalc {
             turretX, turretY,
             fieldYawRad, currentFieldYawRad,
             angleRotations);
+        log_isSnappingBack.accept(m_isSnappingBack);
         // logger.accept(calcDetails);
         return calcDetails;
     }
