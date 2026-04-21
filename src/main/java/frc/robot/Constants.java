@@ -349,11 +349,11 @@ public class Constants {
     public static class VisionK {
         // public static final Camera[] kCameras = new Camera[4];
         // private static final String kSimCameraSimVisualNames = /"VisionEstimation"; //suffixed to each camera name
-
-        public static final Transform3d kFrontLeftCTR = VisionUtil.transformToRobo(10.413, 12.394, 28.844, 0, -10, 45);
-        public static final Transform3d kFrontRightCTR = VisionUtil.transformToRobo(10.413, -12.394, 28.844, 0, -10, 315);
-        public static final Transform3d kBackLeftCTR = VisionUtil.transformToRobo(-11.894, 12.394, 28.844, 0, -10, 135);
-        public static final Transform3d kBackRightCTR = VisionUtil.transformToRobo(-11.894, -12.394, 28.844, 0, -10, 225);
+        //TODO:idk if it should be -20 rotY or 20 rotY
+        public static final Transform3d kFrontLeftCTR = VisionUtil.transformToRobo(12.306, 9.325, 20.800, 0, 20, 45);
+        public static final Transform3d kFrontRightCTR = VisionUtil.transformToRobo(12.296, -9.325, 20.800, 0, 20, 315);
+        public static final Transform3d kBackLeftCTR = VisionUtil.transformToRobo(-12.254, 11.753, 20.640, 0, 20, 135);
+        public static final Transform3d kBackRightCTR = VisionUtil.transformToRobo(-12.455, -12.670, 18.278, 0, 20, 225);
         //Initialize cameras
         // static {
         //     kCameras[0] = new Camera(
