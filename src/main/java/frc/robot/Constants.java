@@ -162,7 +162,8 @@ public class Constants {
         public static final Angle kHoodMaxDegs = Degrees.of(kHoodAbsoluteMaxRots.in(Degrees));
         public static final Angle kHoodLockDegs = Degrees.of(kHoodMaxDegs.times(0.75).in(Degrees));
         public static final double kHoodRotsd = 0.08;
-        public static final double kHoodEmergencyRots = Rotations.of(0.00).magnitude(); // TOOD: this will grind against the gear but idk if this is optimal or somethign along those lines
+        public static final double kHoodRotsHalfwayD = kHoodAbsoluteMaxRots.magnitude() / 2.0;
+        public static final double kHoodEmergencyRotsD = Rotations.of(0.00).magnitude();
         public static final double kHoodMaxErrD = Rotations.of(0.005).in(Rotations);
 
 

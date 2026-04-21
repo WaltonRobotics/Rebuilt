@@ -190,6 +190,10 @@ public class Shooter extends SubsystemBase {
         return m_hood.run(() -> m_hood.setHoodPos(m_calcHoodRots));
     }
 
+    public Command hoodToHalfway() {
+        return m_hood.run(() -> m_hood.setHoodPos(kHoodRotsHalfwayD));
+    }
+
     public Command driverRPSIncreaseWhileHeldCmd() {
         return Commands.runOnce(() -> {
             driverRPSAlterStatic(true);
@@ -334,11 +338,6 @@ public class Shooter extends SubsystemBase {
 
         if (m_hood.isHoodHomed()) {
             double hoodReference = calcData.hoodReferenceRots();
-
-            if (inTrenchZone) {
-                // m_calcHoodRots = kHoodEmergencyRots;
-                m_hood.setHoodPos(kHoodEmergencyRots);
-            } else {
                 if (m_turret.getTurretLocked()) {
                     m_calcHoodRots = kHoodLockedPosRots;
                     // m_hood.setHoodPos(kHoodLockedPosRots);
@@ -350,7 +349,6 @@ public class Shooter extends SubsystemBase {
                         // m_hood.setHoodPos(kHoodRotsOverride.enabled()
                         // ? kHoodRotsOverride.get()
                         // : hoodReference);
-                    }
                 }
             }
         }

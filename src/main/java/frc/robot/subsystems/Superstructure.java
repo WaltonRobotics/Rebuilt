@@ -99,7 +99,8 @@ public class Superstructure extends SubsystemBase {
     public Command activateOuttakeShotCalc() {
         return Commands.parallel(
             m_shooter.shootFromCalc(),
-            m_shooter.hoodFromCalc(),
+            // m_shooter.hoodFromCalc(),
+            m_shooter.hoodToHalfway(),
 
             Commands.sequence(
                 Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocityRotPerSec() >= ShooterK.kShooterSpunUpMinimumD))).withTimeout(ShooterK.kShooterSpunUpTimeout),
@@ -142,7 +143,7 @@ public class Superstructure extends SubsystemBase {
     }
 
     public void hoodBackToSafe() {
-        m_shooter.m_hood.setHoodPos(ShooterK.kHoodEmergencyRots);
+        m_shooter.m_hood.setHoodPos(ShooterK.kHoodEmergencyRotsD);
     }
 
     /**
