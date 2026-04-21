@@ -116,15 +116,15 @@ public class Shooter extends SubsystemBase {
     // );
 
     /* LOGGERS */
-    private final DoubleLogger log_shooterVelocityRPS = WaltLogger.logDouble("Shooter/Flywheel", "shooterVelocityRPS");
-    private final DoubleLogger log_shooterAccelRPS = WaltLogger.logDouble("Shooter/Flywheel", "shooterAccelRPS");
-    private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble("Shooter/Turret", "turretPositionRots");
-    private final DoubleLogger log_turretPositionRobotRelativeRots = WaltLogger.logDouble("Shooter/Turret", "turretPositionRobotRelativeRots");
+    private final DoubleLogger log_shooterVelocityRPS = WaltLogger.logDouble("Shooter/Flywheel", "velocityRPS");
+    private final DoubleLogger log_shooterAccelRPS = WaltLogger.logDouble("Shooter/Flywheel", "accelRPS");
+    private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble("Turret", "positionRots");
+    private final DoubleLogger log_turretPositionRobotRelativeRots = WaltLogger.logDouble("Turret", "positionRobotRelativeRots");
 
     private final BooleanLogger log_spunUp = WaltLogger.logBoolean(kLogTab, "spunUp");
     // private final BooleanLogger log_canTurretShoot = WaltLogger.logBoolean(kLogTab, "canTurretShoot");
 
-    private final DoubleLogger log_shooterClosedLoopError = WaltLogger.logDouble("Shooter", "shooterClosedLoopError");
+    private final DoubleLogger log_shooterClosedLoopError = WaltLogger.logDouble("Shooter/Flywheel", "closedLoopError");
 
     private final BooleanLogger log_ballDetected = WaltLogger.logBoolean(kLogTab, "ballDetected");
     private final BooleanLogger log_ballShotDebounce = WaltLogger.logBoolean(kLogTab, "ballShot");
@@ -309,8 +309,6 @@ public class Shooter extends SubsystemBase {
         sig_shooterCLErr.refresh();
         log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
 
-        boolean inTrenchZone = ShooterCalc.getUnderTrench();
-
         // set turret reference
         if (m_turret.isTurretHomed()) {
             var turretReference = calcData.turretReferenceRots();
@@ -338,17 +336,17 @@ public class Shooter extends SubsystemBase {
 
         if (m_hood.isHoodHomed()) {
             double hoodReference = calcData.hoodReferenceRots();
-                if (m_turret.getTurretLocked()) {
-                    m_calcHoodRots = kHoodLockedPosRots;
-                    // m_hood.setHoodPos(kHoodLockedPosRots);
-                } else {
-                    if (!m_turret.getHoldTurretAtIntake()) {
-                    m_calcHoodRots = kHoodRotsOverride.enabled()
-                        ? kHoodRotsOverride.get()
-                        : hoodReference;
-                        // m_hood.setHoodPos(kHoodRotsOverride.enabled()
-                        // ? kHoodRotsOverride.get()
-                        // : hoodReference);
+            if (m_turret.getTurretLocked()) {
+                m_calcHoodRots = kHoodLockedPosRots;
+                // m_hood.setHoodPos(kHoodLockedPosRots);
+            } else {
+                if (!m_turret.getHoldTurretAtIntake()) {
+                m_calcHoodRots = kHoodRotsOverride.enabled()
+                    ? kHoodRotsOverride.get()
+                    : hoodReference;
+                    // m_hood.setHoodPos(kHoodRotsOverride.enabled()
+                    // ? kHoodRotsOverride.get()
+                    // : hoodReference);
                 }
             }
         }

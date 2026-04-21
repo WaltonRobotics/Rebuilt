@@ -55,13 +55,13 @@ public class Indexer extends SubsystemBase {
     );
     
     /* LOGGERS */
-    private final DoubleLogger log_spindexerRPS = WaltLogger.logDouble(kLogTab, "spindexerRPS");
-    private final DoubleLogger log_tunnelRPS = WaltLogger.logDouble(kLogTab, "tunnelRPS");
+    private final DoubleLogger log_spindexerRPS = WaltLogger.logDouble(kLogTab + "/Spindexer", "spindexerRPS");
+    private final DoubleLogger log_tunnelRPS = WaltLogger.logDouble(kLogTab + "/Tunnel", "tunnelRPS");
 
-    private final DoubleLogger log_desiredSpindexerRPS = WaltLogger.logDouble(kLogTab, "desiredSpindexerRPS");
-    private final DoubleLogger log_desiredTunnelRPS = WaltLogger.logDouble(kLogTab, "desiredTunnelRPS");
-    private final DoubleLogger log_spindexerStatorCurrent = WaltLogger.logDouble(kLogTab, "spindexerStatorCurrent");
-    private final DoubleLogger log_spindexerSupplyCurrent = WaltLogger.logDouble(kLogTab, "spindexerSupplyCurrent");
+    private final DoubleLogger log_desiredSpindexerRPS = WaltLogger.logDouble(kLogTab + "/Spindexer", "desiredRPS");
+    private final DoubleLogger log_desiredTunnelRPS = WaltLogger.logDouble(kLogTab + "/Tunnel", "desiredRPS");
+    private final DoubleLogger log_spindexerStatorCurrent = WaltLogger.logDouble(kLogTab + "/Spindexer", "statorCurrent");
+    private final DoubleLogger log_spindexerSupplyCurrent = WaltLogger.logDouble(kLogTab + "/Spindexer", "supplyCurrent");
 
     private final StatusSignal<AngularVelocity> sig_spindexerVelo = m_spindexer.getVelocity();
     private final StatusSignal<Current> sig_spindexerStatorCurrent = m_spindexer.getStatorCurrent();
@@ -69,8 +69,8 @@ public class Indexer extends SubsystemBase {
     private final StatusSignal<AngularVelocity> sig_tunnelVelo = m_tunnel.getVelocity();
     private final StatusSignal<Double> sig_tunnelCLErr = m_tunnel.getClosedLoopError();
 
-    private final DoubleLogger log_tunnelClosedLoopError = WaltLogger.logDouble(kLogTab, "tunnelClosedLoopError");
-    private final BooleanLogger log_isTunnelSpunUp = WaltLogger.logBoolean(kLogTab, "isTunnelSpunUp");
+    private final DoubleLogger log_tunnelClosedLoopError = WaltLogger.logDouble(kLogTab + "/Tunnel", "closedLoopError");
+    private final BooleanLogger log_isTunnelSpunUp = WaltLogger.logBoolean(kLogTab + "/Tunnel", "spunUp");
 
 
     private boolean m_isTunnelSpunUp = false;
