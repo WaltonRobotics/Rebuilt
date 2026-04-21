@@ -185,24 +185,28 @@ public class AutonChooser {
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true),
                                           new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true),
                                           new AdaptableAutonInfo(AutonK.kRightTwoBumpReturn, 100, true),
-                                          new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true)}));
+                                          new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoGoOut, 100, true)}));
 
         m_chooser.addRoutine(kLeftTwoCycleBumpReturn,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftTwoCycleBumpReturn,
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneBumpReturn, 100, true),
                                           new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, 100, true),
                                           new AdaptableAutonInfo(AutonK.kLeftTwoBumpReturn, 100, true),
-                                          new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, 100, true)}));
+                                          new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, 100, true),
+                                          new AdaptableAutonInfo(AutonK.kLeftTwoGoOut, 100, true)}));
 
         m_chooser.addRoutine(kRightTwoCycleTrenchReturn,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kRightTwoCycleTrenchReturn,
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kRightOneTrenchReturn, AutonK.kReshootShootingTimeout, false),
-                                          new AdaptableAutonInfo(AutonK.kRightTwoTrenchReturn, 100, false)}));
+                                          new AdaptableAutonInfo(AutonK.kRightTwoTrenchReturn, 100, false),
+                                          new AdaptableAutonInfo(AutonK.kRightTwoGoOut, 100, false)}));
 
         m_chooser.addRoutine(kLeftTwoCycleTrenchReturn,
             () -> m_adaptableAutonFactory.multiAdaptableAuton(kLeftTwoCycleTrenchReturn,
                 new AdaptableAutonInfo[] {new AdaptableAutonInfo(AutonK.kLeftOneTrenchReturn, AutonK.kReshootShootingTimeout, false),
-                                          new AdaptableAutonInfo(AutonK.kLeftTwoTrenchReturn, 100, false)}));
+                                          new AdaptableAutonInfo(AutonK.kLeftTwoTrenchReturn, 100, false),
+                                          new AdaptableAutonInfo(AutonK.kLeftTwoGoOut, 100, false)}));
 
         //---2 CYCLES PLUS OUTPOST
         m_chooser.addRoutine(kRightTwoCycleBumpReturnOutpost,

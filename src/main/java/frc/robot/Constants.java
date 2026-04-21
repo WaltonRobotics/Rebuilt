@@ -696,5 +696,7 @@ public class Constants {
         //---MISC
         public static final String kRightOneSelfPass = "RIGHT_one_selfPass";
         public static final String kLeftOneSelfPass = "LEFT_one_selfPass";
+        public static final String kRightTwoGoOut = "RIGHT_two_goOut";
+        public static final String kLeftTwoGoOut = "LEFT_two_goOut";
     }
 }
