@@ -356,6 +356,7 @@ public class Constants {
     public static class VisionK {
         // public static final Camera[] kCameras = new Camera[4];
         // private static final String kSimCameraSimVisualNames = /"VisionEstimation"; //suffixed to each camera name
+        // ONSHAPE X IS OUR Y -- ONSHAPE Y IS OUR X !!! NOTE THIS PLEASE DO NOT FORGET
         public static final Transform3d kFrontLeftCTR = VisionUtil.transformToRobo(8.875, 12.18175, 20.45, 180, -20, 45);
         public static final Transform3d kFrontRightCTR = VisionUtil.transformToRobo(8.875, -12.18175, 20.45, 180, -20, -45);
         public static final Transform3d kBackLeftCTR = VisionUtil.transformToRobo(-11.375, 11.875, 20.5625, 0, -20, 135);
