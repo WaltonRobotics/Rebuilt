@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
@@ -34,6 +35,8 @@ public class Indexer extends SubsystemBase {
 
     private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
     private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
+
+    private final CoastOut m_motorIdleReq = new CoastOut();
 
     /* SIM OBJECTS */
     // private final DCMotorSim m_spindexerSim = new DCMotorSim(
@@ -151,6 +154,10 @@ public class Indexer extends SubsystemBase {
 
     //---SPINDEXER
     public void setSpindexerVelocity(AngularVelocity RPS) {
+        if (RPS.equals(RotationsPerSecond.zero())) {
+            m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(0));
+            m_spindexer.setControl(m_motorIdleReq);
+        }
         m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RPS));
         log_desiredSpindexerRPS.accept(RPS.in(RotationsPerSecond));
     }
@@ -166,6 +173,10 @@ public class Indexer extends SubsystemBase {
 
     //---TUNNEL
     public void setTunnelVelocity(AngularVelocity RPS) {
+        if (RPS.equals(RotationsPerSecond.zero())) {
+            m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(0));
+            m_tunnel.setControl(m_motorIdleReq);
+        }
         m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS));
         log_desiredTunnelRPS.accept(RPS.in(RotationsPerSecond));
     }
