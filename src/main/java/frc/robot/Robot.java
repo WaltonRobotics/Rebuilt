@@ -287,7 +287,6 @@ public class Robot extends TimedRobot {
         // DRIVER SHOOTING 
         trg_shoot
             .and(() -> m_shooter.m_turret.atPosition())
-            .and(() -> m_shooter.m_hood.atPosition())
             .and(trg_snappingBack.negate())
             .whileTrue(m_superstructure.activateOuttakeShotCalc());
 

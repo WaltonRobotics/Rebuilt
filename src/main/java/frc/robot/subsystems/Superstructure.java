@@ -105,10 +105,11 @@ public class Superstructure extends SubsystemBase {
     public Command activateOuttakeShotCalc() {
         return Commands.parallel(
             m_shooter.shootFromCalc(),
-            // m_shooter.hoodFromCalc(),
-            m_shooter.hoodToHalfway(),
+            m_shooter.hoodFromCalc(),
+            // m_shooter.hoodToHalfway(),
 
             Commands.sequence(
+                Commands.waitUntil(() -> m_shooter.m_hood.atPosition()).withTimeout(0.2),
                 Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocityRotPerSec() >= ShooterK.kShooterSpunUpMinimumD))).withTimeout(ShooterK.kShooterSpunUpTimeout),
                 m_indexer.startTunnelCmd(),
                 Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocityRotPerSec() >= IndexerK.kTunnelSpunUpMinimumD)).withTimeout(IndexerK.kTunnelSpunUpTimeout),
@@ -207,7 +208,10 @@ public class Superstructure extends SubsystemBase {
             intake(() -> false, () -> true).withTimeout(0.5),
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED),
             Commands.waitSeconds(0.5)
-       );
+       )
+       .finallyDo(() -> {
+            m_intake.stopIntakeRollers();
+       });
     }
 
     /**
