@@ -56,7 +56,7 @@ import frc.util.AllianceFlipUtil;
 import frc.util.VisionUtil;
 
 public class Constants {
-    public static final boolean kDebugLoggingEnabled = false;
+    public static final boolean kDebugLoggingEnabled = true;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
     public static final CANBus kRioBus = CANBus.roboRIO();
@@ -110,7 +110,7 @@ public class Constants {
         // Lateral bias compensation: balls drift left/right as a function of turret angle relative to robot.
         // sin(turretRelAngle) = 0 at 0/180°, +1 at 90° (left bias), -1 at 270° (right bias).
         // This gain (in rotations) is subtracted * sin to counter the bias. Tune on robot.
-        public static final double kTurretLateralBiasGainRots = -0.005;
+        public static final double kTurretLateralBiasGainRots = 0;//-0.005
 
         public static final int kHopperCapacity = 55; //TODO: find true max
 
@@ -141,7 +141,7 @@ public class Constants {
 
         public static final int kPeakShooterVolts = 16;
 
-        public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.60 ); //0.75 rots in each direction from home
+        public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.55 ); //0.75 rots in each direction from home
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.in(Rotations));
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.in(Rotations));
         public static final double kTurretMaxErrD = Rotations.of(0.05).in(Rotations);
@@ -172,9 +172,9 @@ public class Constants {
         public static final Angle kHoodMaxDegs = Degrees.of(kHoodAbsoluteMaxRots.in(Degrees));
         public static final Angle kHoodLockDegs = Degrees.of(kHoodMaxDegs.times(0.75).in(Degrees));
         public static final double kHoodRotsd = 0.08;
-        public static final double kHoodRotsHalfwayD = kHoodAbsoluteMaxRots.magnitude() / 2.0;
-        public static final double kHoodEmergencyRotsD = Rotations.of(0.00).magnitude();
-        public static final double kHoodMaxErrD = Rotations.of(0.005).in(Rotations);
+        public static final double kHoodRotsHalfwayD = kHoodAbsoluteMaxRots.magnitude() * 0.75;
+        public static final double kHoodEmergencyRotsD = Rotations.of(0.371338).magnitude();
+        public static final double kHoodMaxErrD = Rotations.of(0.01).in(Rotations);
 
 
 
@@ -356,10 +356,10 @@ public class Constants {
     public static class VisionK {
         // public static final Camera[] kCameras = new Camera[4];
         // private static final String kSimCameraSimVisualNames = /"VisionEstimation"; //suffixed to each camera name
-        public static final Transform3d kFrontLeftCTR = VisionUtil.transformToRobo(12.306, 9.325, 20.800, 0, 20, 45);
-        public static final Transform3d kFrontRightCTR = VisionUtil.transformToRobo(12.296, -9.325, 20.800, 0, 20, 315);
-        public static final Transform3d kBackLeftCTR = VisionUtil.transformToRobo(-12.254, 11.753, 20.640, 0, 20, 135);
-        public static final Transform3d kBackRightCTR = VisionUtil.transformToRobo(-12.455, -12.670, 18.278, 0, 20, 225);
+        public static final Transform3d kFrontLeftCTR = VisionUtil.transformToRobo(8.875, 12.18175, 20.45, 180, -20, 45);
+        public static final Transform3d kFrontRightCTR = VisionUtil.transformToRobo(8.875, -12.18175, 20.45, 180, -20, -45);
+        public static final Transform3d kBackLeftCTR = VisionUtil.transformToRobo(-11.375, 11.875, 20.5625, 0, -20, 135);
+        public static final Transform3d kBackRightCTR = VisionUtil.transformToRobo(-12.455, -12.055, 18.25, 180,-20, -135);
         //Initialize cameras
         // static {
         //     kCameras[0] = new Camera(
@@ -532,7 +532,7 @@ public class Constants {
         public static final int kTunnelCANID = 11;
 
         public static final double kSpindexerGearing = 5.0 ; //5
-        public static final double kTunnelGearing = 20/30;
+        public static final double kTunnelGearing = 20.0/30.0;
 
         public static final double kSpindexerMOI = 0.00166190059;
         public static final double kTunnelMOI = 0.000215968064;
@@ -541,7 +541,7 @@ public class Constants {
         public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.85);
 
-        public static final AngularVelocity kTunnelMaxRPS = MotorK.kX60MaxVelocity.div(kTunnelGearing);
+        public static final AngularVelocity kTunnelMaxRPS = MotorK.kX60FOCMaxVelocity.div(kTunnelGearing);
         public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(0.77);    //9V
 
         public static final AngularVelocity kTunnelSpunUpMinimum = RotationsPerSecond.of(10);
@@ -617,8 +617,8 @@ public class Constants {
         public static final double kGearTwoToothCount = 19;
 
         public static final double kLCMAtHomeRots = 0.251; // measure: turretLCMPos log value when turret is at home
-        public static final double kEncAMagnetOffset = -0.2490234375;
-        public static final double kEncBOffset = 0.816119; // measure: encB reading when turret is at encA=0 //NEW ONE
+        public static final double kEncAMagnetOffset = 0.320556640625;
+        public static final double kEncBOffset = 0.529614; // measure: encB reading when turret is at encA=0 //NEW ONE
     }
     public static class AutonK {
         public static final String kLogTab = "Auton";
