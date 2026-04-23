@@ -6,13 +6,13 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.Constants.IntakeK.kIntakeRollersIntakeVolts;
 import static frc.robot.Constants.RobotK.*;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 
 import com.ctre.phoenix6.Utils;
-import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -26,7 +26,6 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -50,7 +49,6 @@ import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.WaltCamera;
 import frc.util.HubShiftUtil;
-import frc.util.NetworkPinger;
 import frc.util.PerformanceMonitor;
 import frc.util.SignalManager;
 // import frc.util.WaltVisualSim;
@@ -109,14 +107,14 @@ public class Robot extends TimedRobot {
     //---VISION
 
     private PowerDistribution m_PDH = new PowerDistribution();
-    private final NetworkPinger m_radioPinger = new NetworkPinger("Radio", "10.29.74.1", 0.2, 10);
-    private final NetworkPinger m_coprocessorPinger = new NetworkPinger("Coprocessor", "10.29.74.11", 0.2, 10);
+    // private final NetworkPinger m_radioPinger = new NetworkPinger("Radio", "10.29.74.1", 0.2, 10);
+    // private final NetworkPinger m_coprocessorPinger = new NetworkPinger("Coprocessor", "10.29.74.11", 0.2, 10);
     // private final VisionSim m_visionSim = new VisionSim();
 
     /* TRIGGERS */
     // private Trigger trg_optimalPrefireTime = new Trigger(HubShiftUtil.optimalPrefireTime());
     // private Trigger trg_comebackTime = new Trigger(HubShiftUtil.comebackTime());
-    private Trigger trg_turretInShootRange = new Trigger(() -> ShooterCalc.canTurretShoot());
+    private Trigger trg_snappingBack = new Trigger(ShooterCalc.isSnappingBack());
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
 
@@ -216,12 +214,13 @@ public class Robot extends TimedRobot {
         final double slowRotRps = kMaxAngularRps * rotationMult;
         return m_drivetrain.applyRequest(() -> {
             double translationMps = m_driver.leftTrigger().getAsBoolean() ? slowMps : kMaxTranslationMps;
+            double rotationalMps = m_driver.leftTrigger().getAsBoolean() ? slowRotRps : kMaxAngularRps;
 
             double driverXVelo = translationMps * -m_driver.getLeftY();
             double driverYVelo = translationMps * -m_driver.getLeftX();
-            double driverYawRate = m_driver.leftBumper().getAsBoolean()
-                ? slowRotRps * -m_driver.getRightX()
-                : kMaxAngularRps * -m_driver.getRightX();
+            double driverYawRate = rotationalMps * -m_driver.getRightX(); //m_driver.leftBumper().getAsBoolean()
+                // ? slowRotRps * -m_driver.getRightX()
+                // : kMaxAngularRps * -m_driver.getRightX();
 
             return drive
                 .withVelocityX(driverXVelo) // Drive forward with Y (forward)
@@ -274,7 +273,7 @@ public class Robot extends TimedRobot {
         trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   
         trg_unlimitFps.onTrue(WaltCamera.setFpsLimitCmd(false));
 
-        //robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
+        // robot heads toward fuel when detected :D (hypothetically)(robo could blow up instead)
         // trg_swerveToObject.whileTrue(
         //     m_drivetrain.swerveToObject()
         // );
@@ -282,7 +281,7 @@ public class Robot extends TimedRobot {
         //---NORMAL SEQUENCES
         //Intake
         trg_intake.and(trg_shoot.negate()).and(trg_emergencyBarf.negate()).whileTrue(
-            m_superstructure.intake(() -> false)
+            m_superstructure.intake(() -> false, () -> false)
         );
 
         // trg_retractIntake.onTrue(
@@ -291,20 +290,17 @@ public class Robot extends TimedRobot {
 
         //Shooting
         // NORMAL FIXED SHOT
-        // trg_shoot.whileTrue(m_superstructure.activateOuttake(() -> RotationsPerSecond.of(TestingDashboard.sub_shooterVelocityRPS.get())));
-        trg_turretInShootRange.whileFalse(Commands.run(() -> m_driver.setRumble(RumbleType.kBothRumble, 0.3)).finallyDo(() -> m_driver.setRumble(RumbleType.kBothRumble, 0)));
+        // trg_turretInShootRange.whileFalse(Commands.run(() -> m_driver.setRumble(RumbleType.kBothRumble, 0.3)).finallyDo(() -> m_driver.setRumble(RumbleType.kBothRumble, 0)));
 
         // DRIVER SHOOTING 
         trg_shoot
             .and(() -> m_shooter.m_turret.atPosition())
-            .and(() -> ShooterCalc.canTurretShoot())
+            .and(trg_snappingBack.negate())
             .whileTrue(m_superstructure.activateOuttakeShotCalc());
-        
-        trg_shoot
-            .and(() -> m_shooter.m_turret.atPosition())
-            .and(trg_turretInShootRange.negate())
-            .whileTrue(m_superstructure.spinUpFlywheel()); 
 
+        trg_shoot
+            .and(trg_snappingBack)
+            .whileTrue(m_superstructure.hoodAndFlywheelShotCalc());
         // m_manipulator.rightTrigger().and(trg_manipOverride).whileTrue(Commands.run(() -> m_intake.setIntakeRollersVelocity(kIntakeRollersBarfVolts)).finallyDo(() -> m_intake.setIntakeRollersVelocity(0)));
 
         // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));
@@ -318,7 +314,7 @@ public class Robot extends TimedRobot {
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
 
         trg_intake.and(trg_shoot).and(trg_emergencyBarf.negate()).whileTrue(
-            m_superstructure.intake(() -> true)
+            m_superstructure.intake(() -> true, () -> false)
         );
 
         trg_retractIntake.onTrue(m_superstructure.retractIntake());
@@ -369,11 +365,7 @@ public class Robot extends TimedRobot {
         // );
     }
 
-    private void configureTestBindings() {
-        m_driver.povLeft().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMinRots_double));
-        m_driver.povUp().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double));
-    }
-
+    private void configureTestBindings() {}
 
     /* PERIODICS */
     @Override

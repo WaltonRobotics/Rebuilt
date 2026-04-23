@@ -1,7 +1,23 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.InchesPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
+import static frc.robot.Constants.IndexerK.kSpindexerShootRPSD;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CommutationConfigs;
@@ -12,20 +28,15 @@ import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.configs.VoltageConfigs;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-
-import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.signals.AdvancedHallSupportValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -35,18 +46,18 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Time;
 import frc.util.AllianceFlipUtil;
 import frc.util.VisionUtil;
 
 public class Constants {
-    public static final boolean kDebugLoggingEnabled = false;
+    public static final boolean kDebugLoggingEnabled = true;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
     public static final CANBus kRioBus = CANBus.roboRIO();
@@ -71,13 +82,14 @@ public class Constants {
         public static final String kLogTab = "Shooter";
         public static final Rotation2d kTurretAngleOffset = Rotation2d.fromRotations(0.106 + 0.0067); //4.87        //0.132324  // was 0.12, decreased 0.014 (~5deg) to fix consistent rightward aim error
         public static final Rotation3d kTurretAngleOffset3d = new Rotation3d(kTurretAngleOffset);
-        public static final Translation3d kTurretTranslation = new Translation3d(Inches.of(-4.744), Inches.of(-4.239), Inches.of(17.260));
+        public static final Translation3d kTurretTranslation = new Translation3d(Inches.of(-4.744), Inches.of(-4.239), Inches.of(15.769));
         public static final Transform3d kTurretTransformNoRotation = new Transform3d(kTurretTranslation, Rotation3d.kZero);
         public static final Transform3d kTurretTransform = new Transform3d(kTurretTranslation, kTurretAngleOffset3d);
         public static final Distance kInchesAboveFunnel = Inches.of(20);// distance the ball must travel above the funnel opening to arc correctly into the hub
         public static final Angle kTurretBarfPos = Rotations.of(-0.113);
 
         public static final boolean kUseStaticShot = false;
+        public static final boolean kAllowDriverRPSTweak = false;
 
         // private static final Pose3dLogger log_turretTransform = WaltLogger.logPose3d(kLogTab, "TurretTransformRaw");
         // static {
@@ -99,7 +111,7 @@ public class Constants {
         // Lateral bias compensation: balls drift left/right as a function of turret angle relative to robot.
         // sin(turretRelAngle) = 0 at 0/180°, +1 at 90° (left bias), -1 at 270° (right bias).
         // This gain (in rotations) is subtracted * sin to counter the bias. Tune on robot.
-        public static final double kTurretLateralBiasGainRots = -0.005;
+        public static final double kTurretLateralBiasGainRots = 0;//-0.005
 
         public static final int kHopperCapacity = 55; //TODO: find true max
 
@@ -130,7 +142,7 @@ public class Constants {
 
         public static final int kPeakShooterVolts = 16;
 
-        public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.60 ); //0.75 rots in each direction from home
+        public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.55); //0.75 rots in each direction from home
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.in(Rotations));
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.in(Rotations));
         public static final double kTurretMaxErrD = Rotations.of(0.05).in(Rotations);
@@ -160,19 +172,22 @@ public class Constants {
         private static final Angle kHoodAbsoluteMaxRots = Rotations.of(1.174805); //ABSOLUTE MAX
         public static final Angle kHoodMaxDegs = Degrees.of(kHoodAbsoluteMaxRots.in(Degrees));
         public static final Angle kHoodLockDegs = Degrees.of(kHoodMaxDegs.times(0.75).in(Degrees));
+        public static final double kHoodRotsd = 0.08;
+        public static final double kHoodRotsHalfwayD = kHoodAbsoluteMaxRots.magnitude() * 0.75;
+        public static final double kHoodEmergencyRotsD = Rotations.of(0.371338).magnitude();
+        public static final double kHoodMaxErrD = Rotations.of(0.01).in(Rotations);
+
+
 
         //double versions
         public static final double kHoodMinRots_double = 0.0;
         public static final double kHoodMaxRots_double = kHoodAbsoluteMaxRots.in(Rotations);
         public static final double kPhysicalHoodMinPosition_double = 0;
         public static final double kPhysicalHoodMaxPosition_double = 48;
-        public static final double kHoodLockRots_double = kHoodMaxRots_double * 0.75;
 
         //TODO: ensure this is the home value
         // public static final Angle kHoodHomePosition = Degrees.of(10);
         public static final Angle kHoodTrenchPosition = Degrees.of(5);
-
-        public static final Angle kHoodShootingTolerance = Degrees.of(0.5);
 
         public static final DCMotor khoodDCMotorGearbox = new DCMotor(
             6, 
@@ -192,22 +207,18 @@ public class Constants {
         public static final Angle kInitPosition = Rotations.of(-0.145);
 
         /* IDS */
-        public static final int kShooterA_CANID = 20;
-        public static final int kShooterB_CANID = 21;
+        public static final int kShooterA_CANID = 21;
+        public static final int kShooterB_CANID = 20;
         public static final int kTurretCANID = 12;
         public static final int kHoodCANID = 22;
-
-        // public static final int kExitBeamBreakChannel = 1; //TODO: Update channel number
-        public static final int kHoodChannel = 0;
-        public static final int kHoodEncoderCANID = 25;
 
         /* CONFIGS */
         // TODO: Check what more configs would be necessary
         private static final Slot0Configs kShooterASlot0Configs = new Slot0Configs()   //Note to self (hrehaan) (and saarth cuz i did the same thing): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
-            .withKS(0.2998046875)
-            .withKV(0.09)
+            .withKS(0.37)
+            .withKV(0.1)
             .withKA(0)
-            .withKP(0.3)
+            .withKP(0.5)
             .withKI(0)
             .withKD(0); // kP was causing the werid sinusoid behavior, kS and kA were adding inconsistency with the destination values
         private static final CurrentLimitsConfigs kShooterACurrentLimitConfigs = new CurrentLimitsConfigs()
@@ -216,7 +227,7 @@ public class Constants {
             .withSupplyCurrentLowerLimit(20)
             .withStatorCurrentLimitEnable(true);
         private static final MotorOutputConfigs kShooterAOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.CounterClockwise_Positive   )
+            .withInverted(InvertedValue.CounterClockwise_Positive)
             .withNeutralMode(NeutralModeValue.Coast);
         private static final FeedbackConfigs kShooterAFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kShooterGearing);
@@ -330,7 +341,7 @@ public class Constants {
             .withVoltage(kTurretVoltageConfigs);
 
         public static final MagnetSensorConfigs kEncoderAMagnetSensorConfigs = new MagnetSensorConfigs()
-            .withMagnetOffset(-0.331787109375);
+            .withMagnetOffset(TurretK.kEncAMagnetOffset);
         public static final CANcoderConfiguration kEncoderAConfiguration = new CANcoderConfiguration()
             .withMagnetSensor(kEncoderAMagnetSensorConfigs);
 
@@ -346,11 +357,11 @@ public class Constants {
     public static class VisionK {
         // public static final Camera[] kCameras = new Camera[4];
         // private static final String kSimCameraSimVisualNames = /"VisionEstimation"; //suffixed to each camera name
-
-        public static final Transform3d kFrontLeftCTR = VisionUtil.transformToRobo(10.413, 12.394, 28.844, 0, -10, 45);
-        public static final Transform3d kFrontRightCTR = VisionUtil.transformToRobo(10.413, -12.394, 28.844, 0, -10, 315);
-        public static final Transform3d kBackLeftCTR = VisionUtil.transformToRobo(-11.894, 12.394, 28.844, 0, -10, 135);
-        public static final Transform3d kBackRightCTR = VisionUtil.transformToRobo(-11.894, -12.394, 28.844, 0, -10, 225);
+        // ONSHAPE X IS OUR Y -- ONSHAPE Y IS OUR X !!! NOTE THIS PLEASE DO NOT FORGET
+        public static final Transform3d kFrontLeftCTR = VisionUtil.transformToRobo(8.875, 12.18175, 20.45, 180, -20, 45);
+        public static final Transform3d kFrontRightCTR = VisionUtil.transformToRobo(8.875, -12.18175, 20.45, 180, -20, -45);
+        public static final Transform3d kBackLeftCTR = VisionUtil.transformToRobo(-11.375, 11.875, 20.5625, 0, -20, 135);
+        public static final Transform3d kBackRightCTR = VisionUtil.transformToRobo(-12.455, -12.055, 18.25, 180,-20, -135);
         //Initialize cameras
         // static {
         //     kCameras[0] = new Camera(
@@ -435,6 +446,8 @@ public class Constants {
         public static final AngularVelocity kIntakeRollersShootRPS = kIntakeRollersMaxRPS.times(0.2);
         public static final AngularVelocity kIntakeRollersShimmyRPS = kIntakeRollersMaxRPS.times(0.2);
         public static final double kIntakeRollersBarfVolts = -12;
+        public static final double kIntakeRollersIntakeVolts = 11;
+        public static final double kIntakeRollersShimmyVolts = 5;
 
         /* IDS */
         public static final int kIntakeArmCANID = 40;
@@ -460,8 +473,8 @@ public class Constants {
             .withNeutralMode(NeutralModeValue.Brake)
             .withInverted(InvertedValue.Clockwise_Positive);
         private static final MotionMagicConfigs kIntakeArmMotionMagicConfigs = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(1.5)
-            .withMotionMagicAcceleration(10)
+            .withMotionMagicCruiseVelocity(20)
+            .withMotionMagicAcceleration(64)
             .withMotionMagicJerk(0);
         public static final FeedbackConfigs kIntakeArmFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kIntakeArmGearing);
@@ -513,15 +526,15 @@ public class Constants {
     }
 
     public static class IndexerK {
-        public static String kLogTab = "Indexer";
+        public static final String kLogTab = "Indexer";
         
         /* IDS */
         //TODO: Make ids accurate
         public static final int kSpindexerCANID = 10;
         public static final int kTunnelCANID = 11;
 
-        public static final double kSpindexerGearing = 5.0;
-        public static final double kTunnelGearing = 1/1.2 * 0.5;
+        public static final double kSpindexerGearing = 5.0 ; //5
+        public static final double kTunnelGearing = 20.0/30.0;
 
         public static final double kSpindexerMOI = 0.00166190059;
         public static final double kTunnelMOI = 0.000215968064;
@@ -529,21 +542,35 @@ public class Constants {
         public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60MaxVelocity.div(kSpindexerGearing);
         public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.85);
+        public static final double kSpindexerMaxRPSD    = kSpindexerMaxRPS.in(RotationsPerSecond);
+        public static final double kSpindexerShootRPSD = kSpindexerShootRPS.in(RotationsPerSecond);
+        public static final double kSpindexerIntakeRPSD = kSpindexerIntakeRPS.in(RotationsPerSecond);
 
-        public static final AngularVelocity kTunnelMaxRPS = MotorK.kX60MaxVelocity.div(kTunnelGearing);
+        public static final AngularVelocity kTunnelMaxRPS = MotorK.kX60FOCMaxVelocity.div(kTunnelGearing);
         public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(0.77);    //9V
+        public static final double kTunnelMaxRPSD    = kTunnelMaxRPS.in(RotationsPerSecond);
+        public static final double kTunnelShootRPSD = kTunnelShootRPS.in(RotationsPerSecond);
 
         public static final AngularVelocity kTunnelSpunUpMinimum = RotationsPerSecond.of(10);
         public static final double kTunnelSpunUpMinimumD = 10.0;
         public static final Time kTunnelSpunUpTimeout = Seconds.of(1);  //double expected spinup time
-        
+
+        /* VELOCITY RATIO (shooter RPS → indexer RPS) */
+        public static final double kR_bigFlywheel    = ShooterK.kFlywheelRadiusM; // 0.0381 m
+        public static final double kR_smallFlywheel  = 0.0215;  // m
+        public static final double kR_tunnelPulley   = 0.018;   // m
+        public static final double kR_spindexerFloor = 6.5 * 0.0254; // 0.1651 m
+
+        public static final double kTunnelFromShooterRatio    = (kR_bigFlywheel + kR_smallFlywheel) / (2.0 * kR_tunnelPulley);
+        public static final double kSpindexerFromShooterRatio = (kR_bigFlywheel + kR_smallFlywheel) / (2.0 * kR_spindexerFloor);
+
         /* CONFIGS */
         //TODO: Make transfer configs accurate
         private static final Slot0Configs kSpindexerSlot0Configs = new Slot0Configs()
-            .withKS(0.2)
-            .withKV(0.545)
+            .withKS(0.420)
+            .withKV(0.560)
             .withKA(0)
-            .withKP(0.75)
+            .withKP(1.5)
             .withKI(0)
             .withKD(0);
         private static final CurrentLimitsConfigs kSpindexerCurrentLimitConfigs = new CurrentLimitsConfigs()
@@ -554,7 +581,7 @@ public class Constants {
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kSpindexerMotorOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.CounterClockwise_Positive)
+            .withInverted(InvertedValue.Clockwise_Positive)
             .withNeutralMode(NeutralModeValue.Coast);
         private static final FeedbackConfigs kSpindexerFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kSpindexerGearing);
@@ -569,10 +596,10 @@ public class Constants {
             .withVoltage(kSpindexerVoltageConfigs);
 
         private static final Slot0Configs kTunnelSlot0Configs = new Slot0Configs()
-            .withKS(0.4)
-            .withKV(0.047)
+            .withKS(0.2)
+            .withKV(0.086)
             .withKA(0)
-            .withKP(0.1)
+            .withKP(0.37)
             .withKI(0)
             .withKD(0);
         private static final CurrentLimitsConfigs kTunnelCurrentLimitConfigs = new CurrentLimitsConfigs()
@@ -583,7 +610,7 @@ public class Constants {
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true);
         private static final MotorOutputConfigs kTunnelMotorOutputConfigs = new MotorOutputConfigs()
-            .withInverted(InvertedValue.Clockwise_Positive)
+            .withInverted(InvertedValue.CounterClockwise_Positive)
             .withNeutralMode(NeutralModeValue.Coast);
         private static final FeedbackConfigs kTunnelFeedbackConfigs = new FeedbackConfigs()
             .withSensorToMechanismRatio(kTunnelGearing);
@@ -605,8 +632,9 @@ public class Constants {
         public static final double kGearOneToothCount = 10;
         public static final double kGearTwoToothCount = 19;
 
-        public static final double kLCMAtHomeRots = 0.0; // measure: turretLCMPos log value when turret is at home
-        public static final double kEncBOffset = 0.610415; // measure: encB reading when turret is at encA=0 //NEW ONE
+        public static final double kLCMAtHomeRots = 0.251; // measure: turretLCMPos log value when turret is at home
+        public static final double kEncAMagnetOffset = 0.320556640625;
+        public static final double kEncBOffset = 0.529614; // measure: encB reading when turret is at encA=0 //NEW ONE
     }
     public static class AutonK {
         public static final String kLogTab = "Auton";

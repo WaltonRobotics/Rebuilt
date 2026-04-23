@@ -24,8 +24,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.Constants.FieldK;
-import frc.robot.Constants.VisionK;
 import frc.robot.Robot;
 import frc.util.VisionUtil;
 import frc.util.WaltLogger;
@@ -88,8 +86,8 @@ public class WaltCamera extends PhotonCamera {
     public final PhotonPoseEstimator m_estimator;
     private final SimCameraProperties m_simCameraProps = VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0);
     
-    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.0, 1.0, 3); //1.5, 1.5, 6.24
-    public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.25, 0.25, 1.25);  //0.5, 0.5, 5.24
+    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.0, 1.0, .3); //1.5, 1.5, 6.24
+    public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.25, 0.25, 0.75);  //0.5, 0.5, 5.24
 
     private final Pose2dLogger log_camPose;
     private final Pose3dLogger log_camTransform;

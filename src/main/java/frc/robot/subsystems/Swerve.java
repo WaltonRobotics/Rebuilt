@@ -1,8 +1,6 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.Constants.IndexerK.kLogTab;
-
 import java.util.Optional;
 import java.util.function.Supplier;
 

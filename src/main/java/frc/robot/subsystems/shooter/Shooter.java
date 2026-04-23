@@ -57,7 +57,7 @@ public class Shooter extends SubsystemBase {
     /* VARIABLES */
     // boolean m_useShotCalculator = true;
 
-    private double m_latestFlywheelVelocityRotPerSec;
+    private double m_currentFlywheelVelocityRotPerSec;
     private double m_latestFlywheelAccelerationRotPerSec;
     private boolean m_isShooterSpunUp = false;
     private boolean m_shotDropSeen = false;
@@ -72,7 +72,7 @@ public class Shooter extends SubsystemBase {
     // ---MOTORS + CONTROL REQUESTS
     private final TalonFX m_shooterA = new TalonFX(kShooterA_CANID, Constants.kShooterBus); // X44
     private final TalonFX m_shooterB = new TalonFX(kShooterB_CANID, Constants.kShooterBus); // X44
-    private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(false);
+    private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(true);
     private final CoastOut m_motorIdleReq = new CoastOut();
 
     private final Supplier<SwerveDriveState> m_threadsafeSwerveSup;
@@ -85,6 +85,7 @@ public class Shooter extends SubsystemBase {
     private final ShooterCalc m_shooterCalc;
 
     private double m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
+    private double m_calcHoodRots = kHoodRotsd;
     private double m_driverRPSTweak = 0.0;
 
     private int m_ballsShot = 0;
@@ -97,10 +98,13 @@ public class Shooter extends SubsystemBase {
     // ---LOGIC BOOLEANS
     private final Trigger trg_inShootCtrlMode = new Trigger(() -> {return sig_shooterACtrlMode.getValue() == ControlModeValue.VelocityVoltage; });
     private final Trigger trg_ballDetected = new Trigger(() -> detectShot()).and(trg_inShootCtrlMode);
+    private final Trigger trg_shotDropSeen = new Trigger(() -> m_shotDropSeen);
+    private final Trigger trg_debounceHit = new Trigger(() -> m_shotRecoveryTimer.hasElapsed(1.2));
+
     private final Trigger trg_ballShotDebounced = trg_inShootCtrlMode
-        .and(new Trigger(() -> m_shotDropSeen))
+        .and(trg_shotDropSeen)
         .and(trg_ballDetected.negate())
-        .and(new Trigger(() -> m_shotRecoveryTimer.hasElapsed(kBallDetectedDebounceTime)));
+        .and(trg_debounceHit);
 
     /* SIM OBJECTS */
     private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(
@@ -112,15 +116,15 @@ public class Shooter extends SubsystemBase {
     // );
 
     /* LOGGERS */
-    private final DoubleLogger log_shooterVelocityRPS = WaltLogger.logDouble("Shooter/Flywheel", "shooterVelocityRPS");
-    private final DoubleLogger log_shooterAccelRPS = WaltLogger.logDouble("Shooter/Flywheel", "shooterAccelRPS");
-    private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble("Shooter/Turret", "turretPositionRots");
-    private final DoubleLogger log_turretPositionRobotRelativeRots = WaltLogger.logDouble("Shooter/Turret", "turretPositionRobotRelativeRots");
+    private final DoubleLogger log_shooterVelocityRPS = WaltLogger.logDouble("Shooter/Flywheel", "velocityRPS");
+    private final DoubleLogger log_shooterAccelRPS = WaltLogger.logDouble("Shooter/Flywheel", "accelRPS");
+    private final DoubleLogger log_turretPositionRots = WaltLogger.logDouble("Turret", "positionRots");
+    private final DoubleLogger log_turretPositionRobotRelativeRots = WaltLogger.logDouble("Turret", "positionRobotRelativeRots");
 
     private final BooleanLogger log_spunUp = WaltLogger.logBoolean(kLogTab, "spunUp");
     // private final BooleanLogger log_canTurretShoot = WaltLogger.logBoolean(kLogTab, "canTurretShoot");
 
-    private final DoubleLogger log_shooterClosedLoopError = WaltLogger.logDouble("Shooter", "shooterClosedLoopError");
+    private final DoubleLogger log_shooterClosedLoopError = WaltLogger.logDouble("Shooter/Flywheel", "closedLoopError");
 
     private final BooleanLogger log_ballDetected = WaltLogger.logBoolean(kLogTab, "ballDetected");
     private final BooleanLogger log_ballShotDebounce = WaltLogger.logBoolean(kLogTab, "ballShot");
@@ -148,14 +152,12 @@ public class Shooter extends SubsystemBase {
 
         SignalManager.register(Constants.kShooterBus, sig_shooterAVelo, sig_shooterCLErr, sig_shooterACtrlMode, sig_shooterAAccel);
 
-        m_latestFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
+        m_currentFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
         m_latestFlywheelAccelerationRotPerSec = sig_shooterAAccel.getValueAsDouble();
 
         trg_ballDetected.onTrue(Commands.runOnce(() -> { m_shotDropSeen = true; m_shotRecoveryTimer.restart(); m_ballsShot++;}));
         trg_ballDetected.onFalse(Commands.runOnce(() -> { m_shotRecoveryTimer.restart(); }));
         trg_inShootCtrlMode.onFalse(Commands.runOnce(() -> { m_shotDropSeen = false; m_shotRecoveryTimer.stop(); m_shotRecoveryTimer.reset(); }));
-
-        trg_ballDetected.onTrue(Commands.runOnce(() -> {m_ballsShot++;}));
 
         // m_turretVisualizer = new TurretVisualizer(
         //         () -> new Pose3d(m_poseSupplier.get().rotateAround(
@@ -182,6 +184,14 @@ public class Shooter extends SubsystemBase {
 
     public Command shootFromCalc() {
         return run(() -> setShooterVelocity(m_calcFlywheelVelocityRotPerSec));
+    }
+
+    public Command hoodFromCalc() {
+        return m_hood.run(() -> m_hood.setHoodPos(m_calcHoodRots));
+    }
+
+    public Command hoodToHalfway() {
+        return m_hood.run(() -> m_hood.setHoodPos(kHoodRotsHalfwayD));
     }
 
     public Command driverRPSIncreaseWhileHeldCmd() {
@@ -233,7 +243,11 @@ public class Shooter extends SubsystemBase {
 
     /* GETTERS */
     public double getShooterVelocityRotPerSec() {
-        return m_latestFlywheelVelocityRotPerSec;
+        return m_currentFlywheelVelocityRotPerSec;
+    }
+
+    public double getShooterDesiredRotPerSec() {
+        return m_calcFlywheelVelocityRotPerSec;
     }
 
     /* SIMULATION */
@@ -291,7 +305,7 @@ public class Shooter extends SubsystemBase {
         // Cache all signals at the top so every consumer in this loop sees the same values
         // THIS IS USED SNEAKILY BY SHOTCALC DO NOT MOVE THIS
         m_latestTurretPositionRots = m_turret.getCurrTurretPos();
-        m_latestFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
+        m_currentFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
         m_latestFlywheelAccelerationRotPerSec = sig_shooterAAccel.getValueAsDouble();
 
         ShotCalcOutputs calcData = m_shooterCalc.getLatestShotCalcOutputs();
@@ -316,7 +330,7 @@ public class Shooter extends SubsystemBase {
                     m_calcFlywheelVelocityRotPerSec = kShooterRPSOverride.enabled()
                         ? kShooterRPSOverride.get()
                         : calcData.shooterReferenceRps();
-                    if (false) { // ENABLE THIS TO ALLOW DRIVER RPS TWEAK
+                    if (kAllowDriverRPSTweak) { // ENABLE THIS TO ALLOW DRIVER RPS TWEAK
                         m_calcFlywheelVelocityRotPerSec += m_driverRPSTweak;
                         m_calcFlywheelVelocityRotPerSec = MathUtil.clamp(m_calcFlywheelVelocityRotPerSec, 0, kShooterMaxRPSd);    //clamp here or clamp only when setShooterVel is called?
                     }
@@ -326,14 +340,17 @@ public class Shooter extends SubsystemBase {
 
         if (m_hood.isHoodHomed()) {
             double hoodReference = calcData.hoodReferenceRots();
-
             if (m_turret.getTurretLocked()) {
-                m_hood.setHoodPos(kHoodLockedPosRots);
+                m_calcHoodRots = kHoodLockedPosRots;
+                // m_hood.setHoodPos(kHoodLockedPosRots);
             } else {
                 if (!m_turret.getHoldTurretAtIntake()) {
-                    m_hood.setHoodPos(kHoodRotsOverride.enabled()
-                        ? kHoodRotsOverride.get()
-                        : hoodReference);
+                m_calcHoodRots = kHoodRotsOverride.enabled()
+                    ? kHoodRotsOverride.get()
+                    : hoodReference;
+                    // m_hood.setHoodPos(kHoodRotsOverride.enabled()
+                    // ? kHoodRotsOverride.get()
+                    // : hoodReference);
                 }
             }
         }
@@ -342,7 +359,7 @@ public class Shooter extends SubsystemBase {
 
         log_turretPositionRobotRelativeRots.accept(kDriverRPSIncreaseD);
         log_ballsShot.accept(m_ballsShot);
-        log_shooterVelocityRPS.accept(m_latestFlywheelVelocityRotPerSec);
+        log_shooterVelocityRPS.accept(m_currentFlywheelVelocityRotPerSec);
         log_shooterAccelRPS.accept(m_latestFlywheelAccelerationRotPerSec);
         log_turretPositionRots.accept(m_latestTurretPositionRots);
         log_spunUp.accept(m_isShooterSpunUp);

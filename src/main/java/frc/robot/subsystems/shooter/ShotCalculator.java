@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
+import static frc.robot.Constants.IntakeK.kLogTab;
 import static frc.robot.Constants.ShooterK.*;
 
 import edu.wpi.first.math.MathUtil;
@@ -38,7 +39,7 @@ public class ShotCalculator {
     // Horizontal drag damping: actual drift = v * (1 - e^(-c*t)) / c < v*t
     // c = 0 disables drag compensation. Enable via /ShotCalc/sotmDragCoeff/enabled.
     //YAYAYAYYAYAYAY 2974 IS OUR LUCKY NUMBER HUZZAH YAY YIPPEE
-    // private static final WaltTunable kDragCoeffTuner = new WaltTunable("/ShotCalc/sotmDragCoeff", 0.2974, true);
+    private static final WaltTunable kDragCoeffTuner = new WaltTunable("/ShotCalc/sotmDragCoeff", 0.2974, true);
     // private static final Tracer m_iterativeTracer = new Tracer();
 
     // private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
@@ -72,7 +73,6 @@ public class ShotCalculator {
         kNewFuelAdjTable.put(distance, calcRPSReduction(distance));
     }
 
-    //LERP MADE ON 3/15/2025
     static {
         //TODO: find the actual minDistance and maxDistance for shooting
         minDistance = 1.168;
@@ -82,54 +82,12 @@ public class ShotCalculator {
 
         ShotLerpTable.Builder shot = new ShotLerpTable.Builder();
 
+        shot.add(2.451, 42.900, 0.33, 1.19, 0.24);
+        shot.add(1.268, 42.400, 0.08, 1.15, 0.24);
+        shot.add(5.636, 62.600, 0.67, 1.57, 0.24);
+        shot.add(3.686, 50.890, 0.53, 1.25, 0.24);
 
-        //Ordered via DistanceToTarget
-        shot.add(7.565, 89.00 + kRPSBoost, 0.16, 2.05);
-        shot.add(6.350, 82.25 + kRPSBoost, 0.16, 1.50);
- 
-        //NEW BACKLINE
-        shot.add(5.493, 78.95 + kRPSBoost, 0.08, 1.99);
-        shot.add(5.183, 76.79 + kRPSBoost, 0.08, 1.86);
-        shot.add(4.881, 73.21 + kRPSBoost, 0.08, 1.81);
-        shot.add(4.617, 71.50 + kRPSBoost, 0.08, 1.62);
-        shot.add(4.516, 70.00 + kRPSBoost, 0.08, 1.62);
-        shot.add(4.388, 68.00 + kRPSBoost, 0.08, 1.6);
-        shot.add(4.300, 68.40 + kRPSBoost, 0.08, 1.59);
-        shot.add(4.185, 66.60 + kRPSBoost, 0.08, 1.55);
-        shot.add(4.092, 66.34 + kRPSBoost, 0.08, 1.7);
- 
-        //redundant data
-        // shot.add(5.672, 82.50, 0.08, 2.11);
-        // shot.add(5.321, 81.00, 0.08, 1.94);
-        // shot.add(5.223, 75.75, 0.08, 1.79);
-        // shot.add(5.167, 79.50, 0.08, 2.03);
-        // shot.add(4.996, 78.00, 0.08, 1.97);
-        // shot.add(4.869, 76.50, 0.08, 1.80);
-        // shot.add(4.696, 75.00, 0.08, 1.33);
-        // shot.add(4.546, 73.50, 0.08, 1.83);
-        // shot.add(4.402, 72.50, 0.08, 1.85);
-        // shot.add(4.258, 71.00, 0.08, 1.64);
-        // shot.add(4.098, 69.00, 0.08, 1.58);
 
-        shot.add(3.932, 68.00 + kRPSBoost, 0.08, 1.71);
-        shot.add(3.785, 66.90 + kRPSBoost, 0.08, 1.56);
-        shot.add(3.611, 65.40 + kRPSBoost, 0.08, 1.56);
-        shot.add(3.464, 63.90 + kRPSBoost, 0.08, 1.50);
-        shot.add(3.293, 62.40 + kRPSBoost, 0.08, 1.50);
-        shot.add(3.134, 60.90 + kRPSBoost, 0.08, 1.51);
-        shot.add(2.995, 59.40 + kRPSBoost, 0.08, 1.37);
-        shot.add(2.855, 57.90 + kRPSBoost, 0.08, 1.35);
-        shot.add(2.704, 56.40 + kRPSBoost, 0.08, 1.38);
-        shot.add(2.586, 54.90 + kRPSBoost, 0.08, 1.28);
-        shot.add(2.395, 53.50 + kRPSBoost, 0.08, 1.29);
-        shot.add(2.221, 52.00 + kRPSBoost, 0.08, 1.25);
-        shot.add(2.083, 50.50 + kRPSBoost, 0.08, 1.14);
-        shot.add(1.912, 49.00 + kRPSBoost, 0.08, 1.19);
-        shot.add(1.691, 47.50 + kRPSBoost, 0.08, 0.98);
-        shot.add(1.575, 47.50 + kRPSBoost, 0.08, 1.18);
-        shot.add(1.528, 46.00 + kRPSBoost, 0.08, 1.20);
-        shot.add(1.307, 44.50 + kRPSBoost, 0.08, 1.13);
-        shot.add(1.168, 44.50 + kRPSBoost, 0.08, 1.16);
         kShotTable = shot.build();
     }
 
@@ -148,35 +106,35 @@ public class ShotCalculator {
     static {
         ShotLerpTable.Builder passing = new ShotLerpTable.Builder();
         //---PASSING POINTS
-        passing.add(4.0080, 48.000, 0.70, 1.35);
-        passing.add(4.8160, 50.000, 0.90, 1.29);
-        passing.add(5.0440, 51.000, 1.00, 1.20);
-        passing.add(5.3520, 52.000, 1.10, 1.15);
-        passing.add(5.6750, 54.000, 1.15, 1.19);
-        passing.add(5.9900, 56.000, 1.15, 1.27);
-        passing.add(6.3200, 58.000, 1.15, 1.27);
-        passing.add(6.5830, 60.000, 1.15, 1.30);
-        passing.add(6.8850, 62.000, 1.15, 1.36);
-        passing.add(7.1690, 64.000, 1.15, 1.41);
-        passing.add(7.5120, 66.000, 1.15, 1.43);
-        passing.add(7.7780, 66.990, 1.15, 1.46);
-        passing.add(8.1140, 67.750, 1.15, 1.45);
-        passing.add(8.4420, 68.750, 1.15, 1.58);
-        passing.add(8.7350, 70.250, 1.15, 1.63);
-        passing.add(8.9970, 71.350, 1.15, 1.71);
-        passing.add(10.419, 78.800, 1.16, 1.78);
-        passing.add(10.722, 80.300, 1.16, 1.80);
-        passing.add(11.076, 82.100, 1.16, 1.79);
-        passing.add(11.367, 82.500, 1.16, 1.87);
-        passing.add(11.722, 84.400, 1.16, 1.85);
-        passing.add(12.060, 86.100, 1.16, 1.87);
-        passing.add(12.358, 88.200, 1.16, 1.92);
-        passing.add(12.670, 89.350, 1.16, 1.95);
-        passing.add(13.048, 91.300, 1.16, 1.92);
-        passing.add(13.053, 92.700, 1.16, 2.04);
-        passing.add(13.657, 94.760, 1.16, 2.02);
-        passing.add(14.020, 101.70, 1.16, 2.00);
-        passing.add(14.355, 104.39, 1.16, 2.08);
+        passing.add(4.0080, 48.000 - kRPSBoost, 0.70, 1.35, 0.254);
+        passing.add(4.8160, 50.000 - kRPSBoost, 0.90, 1.29, 0.254);
+        passing.add(5.0440, 51.000 - kRPSBoost, 1.00, 1.20, 0.254);
+        passing.add(5.3520, 52.000 - kRPSBoost, 1.10, 1.15, 0.254);
+        passing.add(5.6750, 54.000 - kRPSBoost, 1.15, 1.19, 0.254);
+        passing.add(5.9900, 56.000 - kRPSBoost, 1.15, 1.27, 0.254);
+        passing.add(6.3200, 58.000 - kRPSBoost, 1.15, 1.27, 0.254);
+        passing.add(6.5830, 60.000 - kRPSBoost, 1.15, 1.30, 0.254);
+        passing.add(6.8850, 62.000 - kRPSBoost, 1.15, 1.36, 0.254);
+        passing.add(7.1690, 64.000 - kRPSBoost, 1.15, 1.41, 0.254);
+        passing.add(7.5120, 66.000 - kRPSBoost, 1.15, 1.43, 0.254);
+        passing.add(7.7780, 66.990 - kRPSBoost, 1.15, 1.46, 0.254);
+        passing.add(8.1140, 67.750 - kRPSBoost, 1.15, 1.45, 0.254);
+        passing.add(8.4420, 68.750 - kRPSBoost, 1.15, 1.58, 0.254);
+        passing.add(8.7350, 70.250 - kRPSBoost, 1.15, 1.63, 0.254);
+        passing.add(8.9970, 71.350 - kRPSBoost, 1.15, 1.71, 0.254);
+        passing.add(10.419, 78.800 - kRPSBoost, 1.16, 1.78, 0.254);
+        passing.add(10.722, 80.300 - kRPSBoost, 1.16, 1.80, 0.254);
+        passing.add(11.076, 82.100 - kRPSBoost, 1.16, 1.79, 0.254);
+        passing.add(11.367, 82.500 - kRPSBoost, 1.16, 1.87, 0.254);
+        passing.add(11.722, 84.400 - kRPSBoost, 1.16, 1.85, 0.254);
+        passing.add(12.060, 86.100 - kRPSBoost, 1.16, 1.87, 0.254);
+        passing.add(12.358, 88.200 - kRPSBoost, 1.16, 1.92, 0.254);
+        passing.add(12.670, 89.350 - kRPSBoost, 1.16, 1.95, 0.254);
+        passing.add(13.048, 91.300 - kRPSBoost, 1.16, 1.92, 0.254);
+        passing.add(13.053, 92.700 - kRPSBoost, 1.16, 2.04, 0.254);
+        passing.add(13.657, 94.760 - kRPSBoost, 1.16, 2.02, 0.254);
+        passing.add(14.020, 101.70 - kRPSBoost, 1.16, 2.00, 0.254);
+        passing.add(14.355, 104.39 - kRPSBoost, 1.16, 2.08, 0.254);
         kPassingTable = passing.build();
     }
     static {
@@ -477,6 +435,15 @@ public class ShotCalculator {
         double targetZ = target.getZ();
         double vx = fieldSpeeds.vxMetersPerSecond;
         double vy = fieldSpeeds.vyMetersPerSecond;
+        double omega = fieldSpeeds.omegaRadiansPerSecond;
+        double cosH = Math.cos(headingRad);
+        double sinH = Math.sin(headingRad);
+        double turretX = robotX + kTurretOffsetX_m * cosH - kTurretOffsetY_m * sinH;
+        double turretY = robotY + kTurretOffsetX_m * sinH + kTurretOffsetY_m * cosH;
+
+        //turret pivot actual velocity
+        double vxLaunch = vx - (turretY - robotY) * omega;
+        double vyLaunch = vy + (turretX - robotX) * omega;
 
         double distance = getDistanceToTargetM(robotX, robotY, headingRad, targetX, targetY);
         boolean passing = ShooterCalc.isPassing().getAsBoolean();
@@ -505,7 +472,8 @@ public class ShotCalculator {
             double prevPredY = predY;
 
             // Inline predictTargetPos — no Translation3d/Time allocation
-            double coeffDrag = 0.254; //used for SOTM movement
+            double coeffDrag = 0.254; //used for SOTM movement SIDE TO SIDE
+            // double coeffDrag = shotTable.drag(distance);
             //2974 RAHHHHHHHHHHHHHHH – correction: more like 254 RAHHHHHHHHHHHHHHH
             // if ( (Math.abs(vx) <= 0.05) || (Math.abs(vy) <= 0.05) ) { //NOTE: not sure if these numbers are right
             //     coeffDrag = 0.2974; //used during static shot (or when the robot is low speed and should be static shooting)
@@ -513,9 +481,11 @@ public class ShotCalculator {
             // if (distance >= 3.6) {
             //     coeffDrag = 0.53;   //0.7
             // }
+
+            coeffDrag = kDragCoeffTuner.enabled() ? kDragCoeffTuner.get(): coeffDrag;
             double driftT = dragCompensatedTOF(tofSec, coeffDrag);
-            predX = targetX - vx * driftT;
-            predY = targetY - vy * driftT;
+            predX = targetX - vxLaunch * driftT;
+            predY = targetY - vyLaunch * driftT;
 
             distance = getDistanceToTargetM(robotX, robotY, headingRad, predX, predY);
             passing = ShooterCalc.isPassing().getAsBoolean();
@@ -540,7 +510,9 @@ public class ShotCalculator {
         }
         log_calcConvergedBreakout.accept(converged);
         log_lerpIterationCount.accept(iterCount);
-        return new ShotDataLerp(exitVel, hoodAngle, new Translation3d(predX, predY, targetZ), tofSec);
+        ShotDataLerp data = new ShotDataLerp(exitVel, hoodAngle, new Translation3d(predX, predY, targetZ), tofSec);
+        data.acceptLogging(data);
+        return data;
     }
 
     public record ShotData (double exitVelocity, double hoodAngle, Translation3d target) {
@@ -593,6 +565,19 @@ public class ShotCalculator {
         public ShotDataLerp(ShotData data, double tofSec) {
             this(data.exitVelocity, data.hoodAngle, data.target, tofSec);
         }
+        private static final String kCalcTab = "/ShotDataLerp";
+
+        private static final DoubleLogger log_exitVelocity = new DoubleLogger(kLogTab + kCalcTab, "exitVelocity");
+        private static final DoubleLogger log_hoodAngle = new DoubleLogger(kLogTab + kCalcTab, "hoodAngle");
+        private static final Pose3dLogger log_target = new Pose3dLogger(kLogTab + kCalcTab, "target");
+        private static final DoubleLogger log_tofSec = new DoubleLogger(kLogTab + kCalcTab, "tofSec");
+
+        public void acceptLogging(ShotDataLerp data) {
+            log_exitVelocity.accept(data.exitVelocity);
+            log_hoodAngle.accept(data.hoodAngle);
+            log_target.accept(data.target);
+            log_tofSec.accept(data.tofSec);
+        }
 
         public double getExitVelocity() { return exitVelocity; }
         public double getHoodAngle() { return hoodAngle; }
@@ -610,12 +595,14 @@ public class ShotCalculator {
         private final double[] exitVels;    // rad/s
         private final double[] hoodAngles;  // radians
         private final double[] tofs;        // seconds
+        private final double[] drags;
 
-        private ShotLerpTable(double[] keys, double[] exitVels, double[] hoodAngles, double[] tofs) {
+        private ShotLerpTable(double[] keys, double[] exitVels, double[] hoodAngles, double[] tofs, double[] drags) {
             this.keys = keys;
             this.exitVels = exitVels;
             this.hoodAngles = hoodAngles;
             this.tofs = tofs;
+            this.drags = drags;
         }
 
         /** Interpolated exit velocity in rad/s. Zero allocation. */
@@ -624,6 +611,8 @@ public class ShotCalculator {
         public double hoodAngle(double dist) { return lerp(dist, keys, hoodAngles); }
         /** Interpolated time of flight in seconds. Zero allocation. */
         public double tof(double dist) { return lerp(dist, keys, tofs); }
+        /** Interpolated drag */
+        public double drag(double dist) { return lerp(dist, keys, drags); }
 
         private static double lerp(double dist, double[] ks, double[] vs) {
             int n = ks.length;
@@ -643,11 +632,12 @@ public class ShotCalculator {
             private final TreeMap<Double, double[]> entries = new TreeMap<>();
 
             /** dist: meters, rps: rot/s (shooter), hoodRots: rotations, tof: seconds */
-            public void add(double dist, double rps, double hoodRots, double tof) {
+            public void add(double dist, double rps, double hoodRots, double tof, double drag) {
                 entries.put(dist, new double[]{
                     rps * (2.0 * Math.PI),        // rot/s → rad/s
                     hoodRots * (2.0 * Math.PI),   // rotations → radians
-                    tof
+                    tof,
+                    drag
                 });
             }
 
@@ -657,6 +647,7 @@ public class ShotCalculator {
                 double[] evs = new double[n];
                 double[] has = new double[n];
                 double[] ts = new double[n];
+                double[] ds = new double[n];
                 int i = 0;
                 for (var e : entries.entrySet()) {
                     ks[i] = e.getKey();
@@ -664,9 +655,10 @@ public class ShotCalculator {
                     evs[i] = v[0] - (kRPSReductionNeeded ? kNewFuelAdjTable.get(v[0]) : 0);
                     has[i] = v[1];
                     ts[i] = v[2];
+                    ds[i] = v[3];
                     i++;
                 }
-                return new ShotLerpTable(ks, evs, has, ts);
+                return new ShotLerpTable(ks, evs, has, ts, ds);
             }
         }
     }
