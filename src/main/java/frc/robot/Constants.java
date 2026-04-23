@@ -622,6 +622,7 @@ public class Constants {
         public static final double kIntakeTimeout = 7.5;
         public static final double kReshootShootingTimeout = 5.5; //12
         public static final double kSweepShootingTimeout = 20;
+        public static final double kDelayedAutonTime = 3;
 
         /* OLD PATHS */
         //---RIGHT FIRST CYCLES

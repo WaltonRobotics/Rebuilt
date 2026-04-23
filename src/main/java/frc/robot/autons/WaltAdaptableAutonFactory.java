@@ -74,7 +74,7 @@ public class WaltAdaptableAutonFactory {
 
     public AutoRoutine preheater() {
         System.out.println("PREHEAT MADE");
-        return adaptableAuton("PreHeat", new AdaptableAutonInfo("PreHeat", AutonK.kReshootShootingTimeout, false));
+        return adaptableAuton("PreHeat", new AdaptableAutonInfo("PreHeat", AutonK.kReshootShootingTimeout, false, false));
     }
 
     /**
@@ -163,10 +163,17 @@ public class WaltAdaptableAutonFactory {
         }
         System.out.println("trajTriggers built");
 
-
-        routine.active().onTrue(
-            autonTrajs[0].cmd().alongWith(homingCmd())
-        );
+        if (autonInfos[0].delayed) {
+            routine.active().onTrue(
+                Commands.sequence(
+                    Commands.waitSeconds(AutonK.kDelayedAutonTime),
+                    autonTrajs[0].cmd().alongWith(homingCmd())
+                )
+            );
+        } else {
+            routine.active().onTrue(
+            autonTrajs[0].cmd().alongWith(homingCmd()));
+        }
 
         System.out.println("routine active built");
 
@@ -297,6 +304,7 @@ public class WaltAdaptableAutonFactory {
     public final record AdaptableAutonInfo(
         String autonName,
         double shooterTimeout,
-        boolean SOTM
+        boolean SOTM,
+        boolean delayed
     ) {}
 };
