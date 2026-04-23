@@ -120,7 +120,7 @@ public class ShooterCalc {
 
         pub_canTurretShoot = bt_canTurretShoot.publish();
         m_notifier.setName("ShooterCalc");
-        m_notifier.startPeriodic(Hertz.of(25)); // 2x slower than robot loop
+        m_notifier.startPeriodic(Hertz.of(75)); // 2x slower than robot loop
     }
 
     public void shouldUseStaticShot(boolean should) {
@@ -312,6 +312,9 @@ public class ShooterCalc {
         double toTargetY = target.getY() - turretY;
         double fieldYawRad = Math.atan2(toTargetY, toTargetX);
 
+        double vx = fieldSpeeds.vxMetersPerSecond + (-turretX) * fieldSpeeds.omegaRadiansPerSecond;
+        double vy = fieldSpeeds.vyMetersPerSecond + turretY * fieldSpeeds.omegaRadiansPerSecond;
+
         // Direction in rotations: normalize to [-0.5, 0.5] first (matches Rotation2d.minus behavior),
         // then clamp to turret range
         double directionRots = MathUtil.inputModulus(
@@ -347,11 +350,18 @@ public class ShooterCalc {
 
         double turretReferenceRots = snapbackSafeAngleRotations;
 
-        double d2 = toTargetX * toTargetX + toTargetY * toTargetY;
-        double turretFFRadPerSec = d2 > 0
-            ? (toTargetY * fieldSpeeds.vxMetersPerSecond - toTargetX * fieldSpeeds.vyMetersPerSecond) / d2
-                - fieldSpeeds.omegaRadiansPerSecond
-            : 0.0;
+        // double d2 = toTargetX * toTargetX + toTargetY * toTargetY;
+        // double turretFFRadPerSec = d2 > 0
+        //     ? (toTargetY * fieldSpeeds.vxMetersPerSecond - toTargetX * fieldSpeeds.vyMetersPerSecond) / d2
+        //         - fieldSpeeds.omegaRadiansPerSecond
+        //     : 0.0;
+
+
+        double distance = Math.hypot(toTargetX, toTargetY);
+        double tangentialVel = (toTargetX * vx - toTargetY * vy) / distance;
+        double turretFFRadPerSec = tangentialVel / distance;
+
+        turretFFRadPerSec -= fieldSpeeds.omegaRadiansPerSecond;
 
         AzimuthCalcDetails calcDetails = new AzimuthCalcDetails(
             turretReferenceRots, turretFFRadPerSec,
