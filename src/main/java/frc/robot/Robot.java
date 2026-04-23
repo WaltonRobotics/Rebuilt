@@ -171,6 +171,13 @@ public class Robot extends TimedRobot {
 
         AutonChooser.initialize(m_adpatableAutonFactory);
 
+        // Choreo warmup. Runs synchronously on the main thread during robotInit so
+        // class-loading, trajectory JSON parsing, and routine/trigger composition all
+        // happen up-front instead of on the first autonomousInit tick.
+        AutonChooser.forceLoadChoreoClasses();
+        m_adpatableAutonFactory.preloadAllTrajectories(AutonChooser.allTrajectoryNames());
+        AutonChooser.preheatAllRoutines();
+
         RobotModeTriggers.autonomous().whileTrue(
             AutonChooser.m_chooser.selectedCommandScheduler().withTimeout(20.3)
         );

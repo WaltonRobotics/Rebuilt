@@ -5,7 +5,6 @@ import static frc.robot.Constants.IntakeK.kIntakeRollersIntakeVolts;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import choreo.Choreo;
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
@@ -35,6 +34,14 @@ public class WaltAdaptableAutonFactory {
 
     // state logger
     // private final DoubleLogger log_autonState = WaltLogger.logDouble(kLogTab, "State");
+
+    // waypoint constants
+    private final String kIntakeWaypoint = "intake";
+    private final String kStopIntakeWaypoint = "stopIntake";
+    private final String kShootWaypoint = "shoot";
+    private final String kStopShootWaypoint = "stopShoot";
+    private final String kIntakeAndShootWaypoint = "intakeAndShoot";
+    private final String kStopIntakeAndShootWaypoint = "stopIntakeAndShoot";
 
     // trajectory logger
     private final StringLogger log_trajectoryName = new StringLogger(AutonK.kLogTab, "trajectoryName");
@@ -77,7 +84,19 @@ public class WaltAdaptableAutonFactory {
 
     public AutoRoutine preheater() {
         System.out.println("PREHEAT MADE");
-        return adaptableAuton("PreHeat", new AdaptableAutonInfo("PreHeat", AutonK.kReshootShootingTimeout, false));
+        return adaptableAuton("PreHeat", new AdaptableAutonInfo("PreHeat", AutonK.kReshootShootingTimeout, false, 0));
+    }
+
+    /**
+     * Eagerly loads every given trajectory into the AutoFactory's TrajectoryCache.
+     * After this runs, {@code routine.trajectory(name)} during autonomousInit is a
+     * HashMap hit instead of a disk read + GSON parse. Call once during robotInit.
+     */
+    public void preloadAllTrajectories(String[] names) {
+        var cache = m_autoFactory.cache();
+        for (String name : names) {
+            cache.loadTrajectory(name);
+        }
     }
 
     //thank you grac
@@ -102,7 +121,9 @@ public class WaltAdaptableAutonFactory {
     //---AUTOROUTINE TRAJECTORY HELPER
     private AutoTrajectory createTraj(AutoRoutine routine, String name) {
         AutoTrajectory traj = routine.trajectory(name);
-        var poses = Choreo.loadTrajectory(name).get().getPoses();
+        // Go through the factory's TrajectoryCache so this is a HashMap hit after preload,
+        // instead of a second disk read + GSON parse on top of routine.trajectory(name)'s load.
+        var poses = m_autoFactory.cache().loadTrajectory(name).get().getPoses();
         traj.active().onTrue(Commands.sequence(
             Commands.runOnce(() -> {
                 log_trajectoryName.accept(name);
@@ -152,9 +173,11 @@ public class WaltAdaptableAutonFactory {
         }
         System.out.println("trajTriggers built");
 
-
         routine.active().onTrue(
-            autonTrajs[0].cmd().alongWith(homingCmd())
+            Commands.sequence(
+                Commands.waitSeconds(autonInfos[0].delay()).alongWith(homingCmd()),
+                autonTrajs[0].cmd().alongWith()
+            )
         );
 
         System.out.println("routine active built");
@@ -166,15 +189,18 @@ public class WaltAdaptableAutonFactory {
             var thisInfo = autonInfos[i];
             System.out.println("traj idx " + i + " (" + thisInfo.autonName + ") .done().onTrue() built");
             thisTraj.done().onTrue(
-                thisInfo.SOTM ? 
-                    autonTrajs[i+1].cmd() : 
+                thisInfo.SOTM ? Commands.sequence(
+                    Commands.waitSeconds(autonInfos[i + 1].delay()),
+                    autonTrajs[i + 1].cmd()) : 
                     Commands.sequence(
                         tp("WAITING FOR SHOOTING DONE"),
                         Commands.race(
                             Commands.waitUntil(m_shooter.getBallShotDebounceTrg().or(trg_isAtStopShoot)),
                             Commands.waitSeconds(thisInfo.shooterTimeout())
                         ),
-                        tp("TRAJ 2 STARTED"),
+                        tp("TRAJ " + (i + 1) + " DELAY STARTED"),
+                        Commands.waitSeconds(autonInfos[i + 1].delay()),
+                        tp("TRAJ " + (i + 1) + " STARTED"),
                         autonTrajs[i + 1].cmd()
                     )
             );
@@ -198,15 +224,15 @@ public class WaltAdaptableAutonFactory {
     /* CHECK IF TURRET IS ABLE TO SHOOT FOR PASSING PLEASEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
     public void setUpTrajTriggers(AutoTrajectory traj, double shooterTimeout, boolean SOTM) {
         //---TRIGGER ACTIONS
-        traj.atTime("intake").onTrue(
+        traj.atTime(kIntakeWaypoint).onTrue(
             m_superstructure.intake(() -> false, () -> false).until(trg_isAtStopIntake)
         );
 
-        // traj.atTime("intake").onTrue(
+        // traj.atTime(kIntakeWaypoint).onTrue(
         //     logTimer("intaking", () -> autonTimer)
         // );
 
-        traj.atTime("shoot").and(() -> !SOTM).onTrue(
+        traj.atTime(kShootWaypoint).and(() -> !SOTM).onTrue(
             // stopShoot acts as an override STOP SHOOTING to continue the pathing whereas the debounceTrg can help us move on faster if we're already outta balls
             Commands.race(
                 m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg()),
@@ -215,77 +241,78 @@ public class WaltAdaptableAutonFactory {
             // (m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg())).withTimeout(shooterTimeout)
         );
 
-        traj.atTime("shoot").and(() -> SOTM).onTrue(
+        traj.atTime(kShootWaypoint).and(() -> SOTM).onTrue(
             // stopShoot acts as an override STOP SHOOTING to continue the pathing whereas the debounceTrg can help us move on faster if we're already outta balls
             m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg().or(trg_isAtStopShoot))
         );
 
-        traj.atTime("shoot").onTrue(
+        traj.atTime(kShootWaypoint).onTrue(
             m_superstructure.intakeShimmy()
         );
 
-        // traj.atTime("shoot").onTrue(
-        //     logTimer("shoot", () -> autonTimer)
+        // traj.atTime(kShootWaypoint).onTrue(
+        //     logTimer(kShootWaypoint, () -> autonTimer)
         // );
 
-        traj.atTime("stopShoot").onChange(
+        traj.atTime(kStopShootWaypoint).onChange(
             Commands.runOnce(() -> {
                 m_isAtStopShoot = !m_isAtStopShoot;
                 log_isAtStopShoot.accept(m_isAtStopShoot);
             })
         );
 
-        traj.atTime("stopIntake").onTrue(
+        traj.atTime(kStopIntakeWaypoint).onTrue(
             Commands.runOnce(() -> {
                 m_isAtStopIntake = true;
                 log_isAtStopIntake.accept(m_isAtStopIntake);
             })
         );
 
-        traj.atTime("stopIntake").onFalse(
+        traj.atTime(kStopIntakeWaypoint).onFalse(
             Commands.runOnce(() -> {
                 m_isAtStopIntake = false;
                 log_isAtStopIntake.accept(m_isAtStopIntake);
             })
         );
 
-        traj.atTime("pass").onTrue(
-            m_superstructure.intake(() -> true, () -> false).until(traj.atTime("stopPass"))
+        traj.atTime(kIntakeAndShootWaypoint).onTrue(
+            m_superstructure.intake(() -> true, () -> false).until(traj.atTime(kStopIntakeAndShootWaypoint))
         );
 
-        traj.atTime("pass").onTrue(
-            m_superstructure.activateOuttakeShotCalc().until(traj.atTime("stopPass"))
+        traj.atTime(kIntakeAndShootWaypoint).onTrue(
+            m_superstructure.activateOuttakeShotCalc().until(traj.atTime(kStopIntakeAndShootWaypoint))
         );
 
         //---TRIGGER LOGGERS
-        traj.atTime("intake").onTrue(
-            updateAutonEventMarkerLogger("intake")
+        traj.atTime(kIntakeWaypoint).onTrue(
+            updateAutonEventMarkerLogger(kIntakeWaypoint)
         );
 
-        traj.atTime("pass").onTrue(
-            updateAutonEventMarkerLogger("pass")
+        traj.atTime(kIntakeAndShootWaypoint).onTrue(
+            updateAutonEventMarkerLogger(kIntakeAndShootWaypoint)
         );
 
-        traj.atTime("stopPass").onTrue(
-            updateAutonEventMarkerLogger("stopPass")
+        traj.atTime(kStopIntakeAndShootWaypoint).onTrue(
+            updateAutonEventMarkerLogger(kStopIntakeAndShootWaypoint)
         );
 
-        traj.atTime("stopIntake").onTrue(
-            updateAutonEventMarkerLogger("stopIntake")
+        traj.atTime(kStopIntakeWaypoint).onTrue(
+            updateAutonEventMarkerLogger(kStopIntakeWaypoint)
         );
 
-        traj.atTime("shoot").onTrue(
-            updateAutonEventMarkerLogger("shoot")
+        traj.atTime(kShootWaypoint).onTrue(
+            updateAutonEventMarkerLogger(kShootWaypoint)
         );
 
-        traj.atTime("stopShoot").onTrue(
-            updateAutonEventMarkerLogger("stopShoot")
+        traj.atTime(kStopShootWaypoint).onTrue(
+            updateAutonEventMarkerLogger(kStopShootWaypoint)
         );
     }
     
     public final record AdaptableAutonInfo(
         String autonName,
         double shooterTimeout,
-        boolean SOTM
+        boolean SOTM,
+        double delay
     ) {}
 };
