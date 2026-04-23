@@ -24,16 +24,16 @@
  },
  "params":{
   "waypoints":[
-    {"x":{"exp":"rightStart.x", "val":3.592900037765503}, "y":{"exp":"rightStart.y", "val":2.455909967422486}, "heading":{"exp":"rightStart.heading", "val":0.0}, "intervals":20, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"4.6449384689331055 m", "val":4.6449384689331055}, "y":{"exp":"rightStart.y", "val":2.455909967422486}, "heading":{"exp":"rightStart.heading", "val":0.0}, "intervals":19, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"rightStartBump.x", "val":3.592900037765503}, "y":{"exp":"rightStartBump.y", "val":2.455909967422486}, "heading":{"exp":"rightStartBump.heading", "val":0.0}, "intervals":20, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"4.6449384689331055 m", "val":4.6449384689331055}, "y":{"exp":"rightStartBump.y", "val":2.455909967422486}, "heading":{"exp":"rightStartBump.heading", "val":0.0}, "intervals":19, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"rightNeutralBump.x", "val":5.596527862548828}, "y":{"exp":"rightNeutralBump.y", "val":2.455909967422486}, "heading":{"exp":"rightNeutralBump.heading", "val":0.0}, "intervals":27, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"6.978832721710205 m", "val":6.978832721710205}, "y":{"exp":"3.5724422931671143 m", "val":3.5724422931671143}, "heading":{"exp":"0 deg", "val":0.0}, "intervals":21, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
     {"x":{"exp":"7.731026649475098 m", "val":7.731026649475098}, "y":{"exp":"4.065258979797363 m", "val":4.065258979797363}, "heading":{"exp":"-57.59310918015139 mrad", "val":-0.05759310918015139}, "intervals":27, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"6.797268390655518 m", "val":6.797268390655518}, "y":{"exp":"4.000414848327637 m", "val":4.000414848327637}, "heading":{"exp":"0.36869547301131456 rad", "val":0.36869547301131456}, "intervals":26, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"6.161794185638428 m", "val":6.161794185638428}, "y":{"exp":"3.222282886505127 m", "val":3.222282886505127}, "heading":{"exp":"0 deg", "val":0.0}, "intervals":19, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"rightNeutralBump.x", "val":5.596527862548828}, "y":{"exp":"rightNeutralBump.y", "val":2.455909967422486}, "heading":{"exp":"rightNeutralBump.heading", "val":0.0}, "intervals":19, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"4.580273628234863 m", "val":4.580273628234863}, "y":{"exp":"rightStart.y", "val":2.455909967422486}, "heading":{"exp":"rightNeutralBump.heading", "val":0.0}, "intervals":22, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"rightShoot.x", "val":3.296527862548828}, "y":{"exp":"rightShoot.y", "val":2.455909967422486}, "heading":{"exp":"rightShoot.heading", "val":0.0}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":{"exp":"4.580273628234863 m", "val":4.580273628234863}, "y":{"exp":"rightStartBump.y", "val":2.455909967422486}, "heading":{"exp":"rightNeutralBump.heading", "val":0.0}, "intervals":22, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"rightShootBump.x", "val":3.296527862548828}, "y":{"exp":"rightShootBump.y", "val":2.455909967422486}, "heading":{"exp":"rightShootBump.heading", "val":0.0}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
