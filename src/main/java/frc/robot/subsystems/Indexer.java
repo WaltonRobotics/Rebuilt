@@ -7,12 +7,9 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -23,6 +20,7 @@ import static frc.robot.Constants.IndexerK.*;
 import frc.robot.Constants;
 import frc.util.SignalManager;
 import frc.util.WaltMotorSim;
+import frc.util.WaltTunable;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -62,13 +60,16 @@ public class Indexer extends SubsystemBase {
     // );
     
     /* LOGGERS */
-    private final DoubleLogger log_spindexerRPS = WaltLogger.logDouble(kLogTab + "/Spindexer", "spindexerRPS");
-    private final DoubleLogger log_tunnelRPS = WaltLogger.logDouble(kLogTab + "/Tunnel", "tunnelRPS");
+    private final String kTunnelLogTab = "/Tunnel";
+    private final String kSpindexerLogTab = "/Spindexer";
 
-    private final DoubleLogger log_desiredSpindexerRPS = WaltLogger.logDouble(kLogTab + "/Spindexer", "desiredRPS");
-    private final DoubleLogger log_desiredTunnelRPS = WaltLogger.logDouble(kLogTab + "/Tunnel", "desiredRPS");
-    private final DoubleLogger log_spindexerStatorCurrent = WaltLogger.logDouble(kLogTab + "/Spindexer", "statorCurrent");
-    private final DoubleLogger log_spindexerSupplyCurrent = WaltLogger.logDouble(kLogTab + "/Spindexer", "supplyCurrent");
+    private final DoubleLogger log_spindexerRPS = WaltLogger.logDouble(kLogTab + kSpindexerLogTab, "spindexerRPS");
+    private final DoubleLogger log_tunnelRPS = WaltLogger.logDouble(kLogTab + kTunnelLogTab, "tunnelRPS");
+
+    private final DoubleLogger log_desiredSpindexerRPS = WaltLogger.logDouble(kLogTab + kSpindexerLogTab, "desiredRPS");
+    private final DoubleLogger log_desiredTunnelRPS = WaltLogger.logDouble(kLogTab + kTunnelLogTab, "desiredRPS");
+    private final DoubleLogger log_spindexerStatorCurrent = WaltLogger.logDouble(kLogTab + kSpindexerLogTab, "statorCurrent");
+    private final DoubleLogger log_spindexerSupplyCurrent = WaltLogger.logDouble(kLogTab + kSpindexerLogTab, "supplyCurrent");
 
     private final StatusSignal<AngularVelocity> sig_spindexerVelo = m_spindexer.getVelocity();
     private final StatusSignal<Current> sig_spindexerStatorCurrent = m_spindexer.getStatorCurrent();
@@ -76,9 +77,8 @@ public class Indexer extends SubsystemBase {
     private final StatusSignal<AngularVelocity> sig_tunnelVelo = m_tunnel.getVelocity();
     private final StatusSignal<Double> sig_tunnelCLErr = m_tunnel.getClosedLoopError();
 
-    private final DoubleLogger log_tunnelClosedLoopError = WaltLogger.logDouble(kLogTab + "/Tunnel", "closedLoopError");
-    private final BooleanLogger log_isTunnelSpunUp = WaltLogger.logBoolean(kLogTab + "/Tunnel", "spunUp");
-
+    private final DoubleLogger log_tunnelClosedLoopError = WaltLogger.logDouble(kLogTab + kTunnelLogTab, "closedLoopError");
+    private final BooleanLogger log_isTunnelSpunUp = WaltLogger.logBoolean(kLogTab + kTunnelLogTab, "spunUp");
 
     private boolean m_isTunnelSpunUp = false;
     private double m_tunnelVelocityRotPerSec = 0.0;
