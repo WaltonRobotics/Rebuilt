@@ -72,7 +72,6 @@ public class ShotCalculator {
         kNewFuelAdjTable.put(distance, calcRPSReduction(distance));
     }
 
-    //LERP MADE ON 3/15/2025
     static {
         //TODO: find the actual minDistance and maxDistance for shooting
         minDistance = 1.168;
@@ -82,52 +81,12 @@ public class ShotCalculator {
 
         ShotLerpTable.Builder shot = new ShotLerpTable.Builder();
 
+        shot.add(2.451, 42.900, 0.33, 1.19, 0.24);
+        shot.add(1.268, 42.400, 0.08, 1.15, 0.24);
+        shot.add(5.636, 62.600, 0.67, 1.57, 0.24);
+        shot.add(3.686, 50.890, 0.53, 1.25, 0.24);
 
-        //Ordered via DistanceToTarget
-        shot.add(7.565, 89.00 + kRPSBoost, 0.16, 2.05, 0.254);
-        shot.add(6.350, 82.25 + kRPSBoost, 0.16, 1.50, 0.254);
-        //NEW BACKLINE,
-        shot.add(5.493, 78.95 + kRPSBoost, 0.08, 1.99, 0.254);
-        shot.add(5.183, 76.79 + kRPSBoost, 0.08, 1.86, 0.254);
-        shot.add(4.881, 73.21 + kRPSBoost, 0.08, 1.81, 0.254);
-        shot.add(4.617, 71.50 + kRPSBoost, 0.08, 1.62, 0.254);
-        shot.add(4.516, 70.00 + kRPSBoost, 0.08, 1.62, 0.254);
-        shot.add(4.388, 68.00 + kRPSBoost, 0.08, 1.60, 0.254);
-        shot.add(4.300, 68.40 + kRPSBoost, 0.08, 1.59, 0.254);
-        shot.add(4.185, 66.60 + kRPSBoost, 0.08, 1.55, 0.254);
-        shot.add(4.092, 66.34 + kRPSBoost, 0.08, 1.70, 0.254);
-        //redundant data,
-        // shot.add(5.672, 82.50, 0.08, 2.11, 0.254);
-        // shot.add(5.321, 81.00, 0.08, 1.94, 0.254);
-        // shot.add(5.223, 75.75, 0.08, 1.79, 0.254);
-        // shot.add(5.167, 79.50, 0.08, 2.03, 0.254);
-        // shot.add(4.996, 78.00, 0.08, 1.97, 0.254);
-        // shot.add(4.869, 76.50, 0.08, 1.80, 0.254);
-        // shot.add(4.696, 75.00, 0.08, 1.33, 0.254);
-        // shot.add(4.546, 73.50, 0.08, 1.83, 0.254);
-        // shot.add(4.402, 72.50, 0.08, 1.85, 0.254);
-        // shot.add(4.258, 71.00, 0.08, 1.64, 0.254);
-        // shot.add(4.098, 69.00, 0.08, 1.58, 0.254);
 
-        shot.add(3.932, 68.00 + kRPSBoost, 0.08, 1.71, 0.254);
-        shot.add(3.785, 66.90 + kRPSBoost, 0.08, 1.56, 0.254);
-        shot.add(3.611, 65.40 + kRPSBoost, 0.08, 1.56, 0.254);
-        shot.add(3.464, 63.90 + kRPSBoost, 0.08, 1.50, 0.254);
-        shot.add(3.293, 62.40 + kRPSBoost, 0.08, 1.50, 0.254);
-        shot.add(3.134, 60.90 + kRPSBoost, 0.08, 1.51, 0.254);
-        shot.add(2.995, 59.40 + kRPSBoost, 0.08, 1.37, 0.254);
-        shot.add(2.855, 57.90 + kRPSBoost, 0.08, 1.35, 0.254);
-        shot.add(2.704, 56.40 + kRPSBoost, 0.08, 1.38, 0.254);
-        shot.add(2.586, 54.90 + kRPSBoost, 0.08, 1.28, 0.254);
-        shot.add(2.395, 53.50 + kRPSBoost, 0.08, 1.29, 0.254);
-        shot.add(2.221, 52.00 + kRPSBoost, 0.08, 1.25, 0.254);
-        shot.add(2.083, 50.50 + kRPSBoost, 0.08, 1.14, 0.254);
-        shot.add(1.912, 49.00 + kRPSBoost, 0.08, 1.19, 0.254);
-        shot.add(1.691, 47.50 + kRPSBoost, 0.08, 0.98, 0.254);
-        shot.add(1.575, 47.50 + kRPSBoost, 0.08, 1.18, 0.254);
-        shot.add(1.528, 46.00 + kRPSBoost, 0.08, 1.20, 0.254);
-        shot.add(1.307, 44.50 + kRPSBoost, 0.08, 1.13, 0.254);
-        shot.add(1.168, 44.50 + kRPSBoost, 0.08, 1.16, 0.254);
         kShotTable = shot.build();
     }
 
