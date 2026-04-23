@@ -33,6 +33,14 @@ public class WaltAdaptableAutonFactory {
     // state logger
     // private final DoubleLogger log_autonState = WaltLogger.logDouble(kLogTab, "State");
 
+    // waypoint constants
+    private final String kIntakeWaypoint = "intake";
+    private final String kStopIntakeWaypoint = "stopIntake";
+    private final String kShootWaypoint = "shoot";
+    private final String kStopShootWaypoint = "stopShoot";
+    private final String kIntakeAndShootWaypoint = "intakeAndShoot";
+    private final String kStopIntakeAndShootWaypoint = "stopIntakeAndShoot";
+
     // trajectory logger
     private final StringLogger log_trajectoryName = new StringLogger(AutonK.kLogTab, "trajectoryName");
     private final Pose2dArrayLogger log_trajectoryPoses = new Pose2dArrayLogger(AutonK.kLogTab, "trajectoryPoses");
@@ -214,15 +222,15 @@ public class WaltAdaptableAutonFactory {
     /* CHECK IF TURRET IS ABLE TO SHOOT FOR PASSING PLEASEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
     public void setUpTrajTriggers(AutoTrajectory traj, double shooterTimeout, boolean SOTM) {
         //---TRIGGER ACTIONS
-        traj.atTime("intake").onTrue(
+        traj.atTime(kIntakeWaypoint).onTrue(
             m_superstructure.intake(() -> false).until(trg_isAtStopIntake)
         );
 
-        // traj.atTime("intake").onTrue(
+        // traj.atTime(kIntakeWaypoint).onTrue(
         //     logTimer("intaking", () -> autonTimer)
         // );
 
-        traj.atTime("shoot").and(() -> !SOTM).onTrue(
+        traj.atTime(kShootWaypoint).and(() -> !SOTM).onTrue(
             // stopShoot acts as an override STOP SHOOTING to continue the pathing whereas the debounceTrg can help us move on faster if we're already outta balls
             Commands.race(
                 m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg()),
@@ -231,71 +239,71 @@ public class WaltAdaptableAutonFactory {
             // (m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg())).withTimeout(shooterTimeout)
         );
 
-        traj.atTime("shoot").and(() -> SOTM).onTrue(
+        traj.atTime(kShootWaypoint).and(() -> SOTM).onTrue(
             // stopShoot acts as an override STOP SHOOTING to continue the pathing whereas the debounceTrg can help us move on faster if we're already outta balls
             m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg().or(trg_isAtStopShoot))
         );
 
-        traj.atTime("shoot").onTrue(
+        traj.atTime(kShootWaypoint).onTrue(
             m_superstructure.intakeShimmy()
         );
 
-        // traj.atTime("shoot").onTrue(
-        //     logTimer("shoot", () -> autonTimer)
+        // traj.atTime(kShootWaypoint).onTrue(
+        //     logTimer(kShootWaypoint, () -> autonTimer)
         // );
 
-        traj.atTime("stopShoot").onChange(
+        traj.atTime(kStopShootWaypoint).onChange(
             Commands.runOnce(() -> {
                 m_isAtStopShoot = !m_isAtStopShoot;
                 log_isAtStopShoot.accept(m_isAtStopShoot);
             })
         );
 
-        traj.atTime("stopIntake").onTrue(
+        traj.atTime(kStopIntakeWaypoint).onTrue(
             Commands.runOnce(() -> {
                 m_isAtStopIntake = true;
                 log_isAtStopIntake.accept(m_isAtStopIntake);
             })
         );
 
-        traj.atTime("stopIntake").onFalse(
+        traj.atTime(kStopIntakeWaypoint).onFalse(
             Commands.runOnce(() -> {
                 m_isAtStopIntake = false;
                 log_isAtStopIntake.accept(m_isAtStopIntake);
             })
         );
 
-        traj.atTime("intakeAndShoot").onTrue(
-            m_superstructure.intake(() -> true).until(traj.atTime("stopIntakeAndShoot"))
+        traj.atTime(kIntakeAndShootWaypoint).onTrue(
+            m_superstructure.intake(() -> true).until(traj.atTime(kStopIntakeAndShootWaypoint))
         );
 
-        traj.atTime("intakeAndShoot").onTrue(
-            m_superstructure.activateOuttakeShotCalc().until(traj.atTime("stopIntakeAndShoot"))
+        traj.atTime(kIntakeAndShootWaypoint).onTrue(
+            m_superstructure.activateOuttakeShotCalc().until(traj.atTime(kStopIntakeAndShootWaypoint))
         );
 
         //---TRIGGER LOGGERS
-        traj.atTime("intake").onTrue(
-            updateAutonEventMarkerLogger("intake")
+        traj.atTime(kIntakeWaypoint).onTrue(
+            updateAutonEventMarkerLogger(kIntakeWaypoint)
         );
 
-        traj.atTime("intakeAndShoot").onTrue(
-            updateAutonEventMarkerLogger("intakeAndShoot")
+        traj.atTime(kIntakeAndShootWaypoint).onTrue(
+            updateAutonEventMarkerLogger(kIntakeAndShootWaypoint)
         );
 
-        traj.atTime("stopIntakeAndShoot").onTrue(
-            updateAutonEventMarkerLogger("stopIntakeAndShoot")
+        traj.atTime(kStopIntakeAndShootWaypoint).onTrue(
+            updateAutonEventMarkerLogger(kStopIntakeAndShootWaypoint)
         );
 
-        traj.atTime("stopIntake").onTrue(
-            updateAutonEventMarkerLogger("stopIntake")
+        traj.atTime(kStopIntakeWaypoint).onTrue(
+            updateAutonEventMarkerLogger(kStopIntakeWaypoint)
         );
 
-        traj.atTime("shoot").onTrue(
-            updateAutonEventMarkerLogger("shoot")
+        traj.atTime(kShootWaypoint).onTrue(
+            updateAutonEventMarkerLogger(kShootWaypoint)
         );
 
-        traj.atTime("stopShoot").onTrue(
-            updateAutonEventMarkerLogger("stopShoot")
+        traj.atTime(kStopShootWaypoint).onTrue(
+            updateAutonEventMarkerLogger(kStopShootWaypoint)
         );
     }
     
