@@ -207,12 +207,13 @@ public class Robot extends TimedRobot {
         final double slowRotRps = kMaxAngularRps * rotationMult;
         return m_drivetrain.applyRequest(() -> {
             double translationMps = m_driver.leftTrigger().getAsBoolean() ? slowMps : kMaxTranslationMps;
+            double rotationalMps = m_driver.leftTrigger().getAsBoolean() ? slowRotRps : kMaxAngularRps;
 
             double driverXVelo = translationMps * -m_driver.getLeftY();
             double driverYVelo = translationMps * -m_driver.getLeftX();
-            double driverYawRate = m_driver.leftBumper().getAsBoolean()
-                ? slowRotRps * -m_driver.getRightX()
-                : kMaxAngularRps * -m_driver.getRightX();
+            double driverYawRate = rotationalMps * -m_driver.getRightX(); //m_driver.leftBumper().getAsBoolean()
+                // ? slowRotRps * -m_driver.getRightX()
+                // : kMaxAngularRps * -m_driver.getRightX();
 
             return drive
                 .withVelocityX(driverXVelo) // Drive forward with Y (forward)
