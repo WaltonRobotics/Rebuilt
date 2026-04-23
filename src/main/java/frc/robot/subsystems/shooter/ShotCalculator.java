@@ -38,7 +38,7 @@ public class ShotCalculator {
     // Horizontal drag damping: actual drift = v * (1 - e^(-c*t)) / c < v*t
     // c = 0 disables drag compensation. Enable via /ShotCalc/sotmDragCoeff/enabled.
     //YAYAYAYYAYAYAY 2974 IS OUR LUCKY NUMBER HUZZAH YAY YIPPEE
-    // private static final WaltTunable kDragCoeffTuner = new WaltTunable("/ShotCalc/sotmDragCoeff", 0.2974, true);
+    private static final WaltTunable kDragCoeffTuner = new WaltTunable("/ShotCalc/sotmDragCoeff", 0.2974, true);
     // private static final Tracer m_iterativeTracer = new Tracer();
 
     // private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
@@ -105,35 +105,35 @@ public class ShotCalculator {
     static {
         ShotLerpTable.Builder passing = new ShotLerpTable.Builder();
         //---PASSING POINTS
-        passing.add(4.0080, 48.000, 0.70, 1.35, 0.254);
-        passing.add(4.8160, 50.000, 0.90, 1.29, 0.254);
-        passing.add(5.0440, 51.000, 1.00, 1.20, 0.254);
-        passing.add(5.3520, 52.000, 1.10, 1.15, 0.254);
-        passing.add(5.6750, 54.000, 1.15, 1.19, 0.254);
-        passing.add(5.9900, 56.000, 1.15, 1.27, 0.254);
-        passing.add(6.3200, 58.000, 1.15, 1.27, 0.254);
-        passing.add(6.5830, 60.000, 1.15, 1.30, 0.254);
-        passing.add(6.8850, 62.000, 1.15, 1.36, 0.254);
-        passing.add(7.1690, 64.000, 1.15, 1.41, 0.254);
-        passing.add(7.5120, 66.000, 1.15, 1.43, 0.254);
-        passing.add(7.7780, 66.990, 1.15, 1.46, 0.254);
-        passing.add(8.1140, 67.750, 1.15, 1.45, 0.254);
-        passing.add(8.4420, 68.750, 1.15, 1.58, 0.254);
-        passing.add(8.7350, 70.250, 1.15, 1.63, 0.254);
-        passing.add(8.9970, 71.350, 1.15, 1.71, 0.254);
-        passing.add(10.419, 78.800, 1.16, 1.78, 0.254);
-        passing.add(10.722, 80.300, 1.16, 1.80, 0.254);
-        passing.add(11.076, 82.100, 1.16, 1.79, 0.254);
-        passing.add(11.367, 82.500, 1.16, 1.87, 0.254);
-        passing.add(11.722, 84.400, 1.16, 1.85, 0.254);
-        passing.add(12.060, 86.100, 1.16, 1.87, 0.254);
-        passing.add(12.358, 88.200, 1.16, 1.92, 0.254);
-        passing.add(12.670, 89.350, 1.16, 1.95, 0.254);
-        passing.add(13.048, 91.300, 1.16, 1.92, 0.254);
-        passing.add(13.053, 92.700, 1.16, 2.04, 0.254);
-        passing.add(13.657, 94.760, 1.16, 2.02, 0.254);
-        passing.add(14.020, 101.70, 1.16, 2.00, 0.254);
-        passing.add(14.355, 104.39, 1.16, 2.08, 0.254);
+        passing.add(4.0080, 48.000 - kRPSBoost, 0.70, 1.35, 0.254);
+        passing.add(4.8160, 50.000 - kRPSBoost, 0.90, 1.29, 0.254);
+        passing.add(5.0440, 51.000 - kRPSBoost, 1.00, 1.20, 0.254);
+        passing.add(5.3520, 52.000 - kRPSBoost, 1.10, 1.15, 0.254);
+        passing.add(5.6750, 54.000 - kRPSBoost, 1.15, 1.19, 0.254);
+        passing.add(5.9900, 56.000 - kRPSBoost, 1.15, 1.27, 0.254);
+        passing.add(6.3200, 58.000 - kRPSBoost, 1.15, 1.27, 0.254);
+        passing.add(6.5830, 60.000 - kRPSBoost, 1.15, 1.30, 0.254);
+        passing.add(6.8850, 62.000 - kRPSBoost, 1.15, 1.36, 0.254);
+        passing.add(7.1690, 64.000 - kRPSBoost, 1.15, 1.41, 0.254);
+        passing.add(7.5120, 66.000 - kRPSBoost, 1.15, 1.43, 0.254);
+        passing.add(7.7780, 66.990 - kRPSBoost, 1.15, 1.46, 0.254);
+        passing.add(8.1140, 67.750 - kRPSBoost, 1.15, 1.45, 0.254);
+        passing.add(8.4420, 68.750 - kRPSBoost, 1.15, 1.58, 0.254);
+        passing.add(8.7350, 70.250 - kRPSBoost, 1.15, 1.63, 0.254);
+        passing.add(8.9970, 71.350 - kRPSBoost, 1.15, 1.71, 0.254);
+        passing.add(10.419, 78.800 - kRPSBoost, 1.16, 1.78, 0.254);
+        passing.add(10.722, 80.300 - kRPSBoost, 1.16, 1.80, 0.254);
+        passing.add(11.076, 82.100 - kRPSBoost, 1.16, 1.79, 0.254);
+        passing.add(11.367, 82.500 - kRPSBoost, 1.16, 1.87, 0.254);
+        passing.add(11.722, 84.400 - kRPSBoost, 1.16, 1.85, 0.254);
+        passing.add(12.060, 86.100 - kRPSBoost, 1.16, 1.87, 0.254);
+        passing.add(12.358, 88.200 - kRPSBoost, 1.16, 1.92, 0.254);
+        passing.add(12.670, 89.350 - kRPSBoost, 1.16, 1.95, 0.254);
+        passing.add(13.048, 91.300 - kRPSBoost, 1.16, 1.92, 0.254);
+        passing.add(13.053, 92.700 - kRPSBoost, 1.16, 2.04, 0.254);
+        passing.add(13.657, 94.760 - kRPSBoost, 1.16, 2.02, 0.254);
+        passing.add(14.020, 101.70 - kRPSBoost, 1.16, 2.00, 0.254);
+        passing.add(14.355, 104.39 - kRPSBoost, 1.16, 2.08, 0.254);
         kPassingTable = passing.build();
     }
     static {
@@ -462,8 +462,8 @@ public class ShotCalculator {
             double prevPredY = predY;
 
             // Inline predictTargetPos — no Translation3d/Time allocation
-            // double coeffDrag = 0.254; //used for SOTM movement SIDE TO SIDE
-            double coeffDrag = shotTable.drag(distance);
+            double coeffDrag = 0.254; //used for SOTM movement SIDE TO SIDE
+            // double coeffDrag = shotTable.drag(distance);
             //2974 RAHHHHHHHHHHHHHHH – correction: more like 254 RAHHHHHHHHHHHHHHH
             // if ( (Math.abs(vx) <= 0.05) || (Math.abs(vy) <= 0.05) ) { //NOTE: not sure if these numbers are right
             //     coeffDrag = 0.2974; //used during static shot (or when the robot is low speed and should be static shooting)
@@ -471,6 +471,8 @@ public class ShotCalculator {
             // if (distance >= 3.6) {
             //     coeffDrag = 0.53;   //0.7
             // }
+
+            coeffDrag = kDragCoeffTuner.enabled() ? kDragCoeffTuner.get(): coeffDrag;
             double driftT = dragCompensatedTOF(tofSec, coeffDrag);
             predX = targetX - vx * driftT;
             predY = targetY - vy * driftT;
