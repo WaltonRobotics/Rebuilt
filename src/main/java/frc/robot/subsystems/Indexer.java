@@ -36,7 +36,11 @@ public class Indexer extends SubsystemBase {
     private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
     private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
 
-    private final CoastOut m_motorIdleReq = new CoastOut();
+    private static final WaltTunable kTunnelRPSOverride = new WaltTunable("/Indexer/Tunnel/tunnelRPSOverride", kTunnelShootRPSD);
+    private static final WaltTunable kSpindexerRPSOverride = new WaltTunable("/Indexer/Spindexer/spindexerRPSOverride", kSpindexerShootRPSD);
+
+    private final CoastOut m_spindexerMotorIdleReq = new CoastOut();
+    private final CoastOut m_tunnelMotorIdleReq = new CoastOut();
 
     /* SIM OBJECTS */
     // private final DCMotorSim m_spindexerSim = new DCMotorSim(
@@ -120,7 +124,12 @@ public class Indexer extends SubsystemBase {
     }
 
     public void stopSpindexer() {
-        setSpindexerVelocity(RotationsPerSecond.zero());
+        setSpindexerVelocity(0);
+    }
+
+    public void setIndexerFromShooterRPS(double shooterRPS) {
+        setTunnelVelocity(tunnelRPSFromShooter(shooterRPS));
+        setSpindexerVelocity(spindexerRPSFromShooter(shooterRPS));
     }
 
     public Command startTunnelCmd() {
@@ -132,7 +141,7 @@ public class Indexer extends SubsystemBase {
     }
 
     public void stopTunnel() {
-        setTunnelVelocity(RotationsPerSecond.zero());
+        setTunnelVelocity(0);
     }
 
     private void refreshTunnelState() {
@@ -140,7 +149,7 @@ public class Indexer extends SubsystemBase {
         log_tunnelRPS.accept(m_tunnelVelocityRotPerSec);
 
         log_tunnelClosedLoopError.accept(sig_tunnelCLErr.getValueAsDouble());
-        m_isTunnelSpunUp = sig_tunnelCLErr.isNear(0, 30);
+        m_isTunnelSpunUp = sig_tunnelCLErr.isNear(0, 6);
         log_isTunnelSpunUp.accept(m_isTunnelSpunUp);
     }
 
@@ -153,41 +162,54 @@ public class Indexer extends SubsystemBase {
     }
 
     //---SPINDEXER
-    public void setSpindexerVelocity(AngularVelocity RPS) {
-        if (RPS.equals(RotationsPerSecond.zero())) {
+    public void setSpindexerVelocity(double RPS) {
+        if (RPS == 0) {
             m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(0));
-            m_spindexer.setControl(m_motorIdleReq);
+            m_spindexer.setControl(m_spindexerMotorIdleReq);
+        } else {
+            RPS = kSpindexerRPSOverride.enabled() ? kSpindexerRPSOverride.get() : RPS; 
+            m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RPS));
         }
-        m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RPS));
-        log_desiredSpindexerRPS.accept(RPS.in(RotationsPerSecond));
+        log_desiredSpindexerRPS.accept(RPS);
     }
 
     public Command setSpindexerVelocityCmd(AngularVelocity RPS) {
-        return runOnce(() -> setSpindexerVelocity(RPS));
+        return runOnce(() -> setSpindexerVelocity(RPS.in(RotationsPerSecond)));
     }
 
     //for TestingDashboard
     public Command setSpindexerVelocityCmd(DoubleSubscriber sub_RPS) {
-        return run(() -> setSpindexerVelocity(RotationsPerSecond.of(sub_RPS.get())));
+        return run(() -> setSpindexerVelocity(sub_RPS.get()));
     }
 
     //---TUNNEL
-    public void setTunnelVelocity(AngularVelocity RPS) {
-        if (RPS.equals(RotationsPerSecond.zero())) {
+    public void setTunnelVelocity(double RPS) {
+        if (RPS == 0) {
             m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(0));
-            m_tunnel.setControl(m_motorIdleReq);
+            m_tunnel.setControl(m_tunnelMotorIdleReq);
+        } else {
+            RPS = kTunnelRPSOverride.enabled() ? kTunnelRPSOverride.get() : RPS; 
+            m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS));
         }
-        m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS));
-        log_desiredTunnelRPS.accept(RPS.in(RotationsPerSecond));
+        log_desiredTunnelRPS.accept(RPS);
     }
 
     public Command setTunnelVelocityCmd(AngularVelocity RPS) {
-        return runOnce(() -> setTunnelVelocity(RPS));
+        return runOnce(() -> setTunnelVelocity(RPS.in(RotationsPerSecond)));
     }
 
     //for TestingDashboard
     public Command setTunnelVelocityCmd(DoubleSubscriber sub_RPS) {
-        return run(() -> setTunnelVelocity(RotationsPerSecond.of(sub_RPS.get())));
+        return run(() -> setTunnelVelocity(sub_RPS.get()));
+    }
+
+    //STATICS for conversions
+    public static double tunnelRPSFromShooter(double shooterRPS) {
+            return Math.min(shooterRPS * kTunnelFromShooterRatio, kTunnelMaxRPSD);
+        }
+
+    public static double spindexerRPSFromShooter(double shooterRPS) {
+        return Math.min(shooterRPS * kSpindexerFromShooterRatio, kSpindexerMaxRPSD);
     }
 
     /* PERIODICS */

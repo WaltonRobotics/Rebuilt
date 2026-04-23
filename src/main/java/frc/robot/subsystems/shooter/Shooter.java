@@ -57,7 +57,7 @@ public class Shooter extends SubsystemBase {
     /* VARIABLES */
     // boolean m_useShotCalculator = true;
 
-    private double m_latestFlywheelVelocityRotPerSec;
+    private double m_currentFlywheelVelocityRotPerSec;
     private double m_latestFlywheelAccelerationRotPerSec;
     private boolean m_isShooterSpunUp = false;
     private boolean m_shotDropSeen = false;
@@ -152,7 +152,7 @@ public class Shooter extends SubsystemBase {
 
         SignalManager.register(Constants.kShooterBus, sig_shooterAVelo, sig_shooterCLErr, sig_shooterACtrlMode, sig_shooterAAccel);
 
-        m_latestFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
+        m_currentFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
         m_latestFlywheelAccelerationRotPerSec = sig_shooterAAccel.getValueAsDouble();
 
         trg_ballDetected.onTrue(Commands.runOnce(() -> { m_shotDropSeen = true; m_shotRecoveryTimer.restart(); m_ballsShot++;}));
@@ -243,7 +243,11 @@ public class Shooter extends SubsystemBase {
 
     /* GETTERS */
     public double getShooterVelocityRotPerSec() {
-        return m_latestFlywheelVelocityRotPerSec;
+        return m_currentFlywheelVelocityRotPerSec;
+    }
+
+    public double getShooterDesiredRotPerSec() {
+        return m_calcFlywheelVelocityRotPerSec;
     }
 
     /* SIMULATION */
@@ -301,7 +305,7 @@ public class Shooter extends SubsystemBase {
         // Cache all signals at the top so every consumer in this loop sees the same values
         // THIS IS USED SNEAKILY BY SHOTCALC DO NOT MOVE THIS
         m_latestTurretPositionRots = m_turret.getCurrTurretPos();
-        m_latestFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
+        m_currentFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
         m_latestFlywheelAccelerationRotPerSec = sig_shooterAAccel.getValueAsDouble();
 
         ShotCalcOutputs calcData = m_shooterCalc.getLatestShotCalcOutputs();
@@ -355,7 +359,7 @@ public class Shooter extends SubsystemBase {
 
         log_turretPositionRobotRelativeRots.accept(kDriverRPSIncreaseD);
         log_ballsShot.accept(m_ballsShot);
-        log_shooterVelocityRPS.accept(m_latestFlywheelVelocityRotPerSec);
+        log_shooterVelocityRPS.accept(m_currentFlywheelVelocityRotPerSec);
         log_shooterAccelRPS.accept(m_latestFlywheelAccelerationRotPerSec);
         log_turretPositionRots.accept(m_latestTurretPositionRots);
         log_spunUp.accept(m_isShooterSpunUp);

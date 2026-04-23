@@ -11,6 +11,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
+import static frc.robot.Constants.IndexerK.kSpindexerShootRPSD;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,7 +82,7 @@ public class Constants {
         public static final String kLogTab = "Shooter";
         public static final Rotation2d kTurretAngleOffset = Rotation2d.fromRotations(0.106 + 0.0067); //4.87        //0.132324  // was 0.12, decreased 0.014 (~5deg) to fix consistent rightward aim error
         public static final Rotation3d kTurretAngleOffset3d = new Rotation3d(kTurretAngleOffset);
-        public static final Translation3d kTurretTranslation = new Translation3d(Inches.of(-4.744), Inches.of(-4.239), Inches.of(17.260));
+        public static final Translation3d kTurretTranslation = new Translation3d(Inches.of(-4.744), Inches.of(-4.239), Inches.of(15.769));
         public static final Transform3d kTurretTransformNoRotation = new Transform3d(kTurretTranslation, Rotation3d.kZero);
         public static final Transform3d kTurretTransform = new Transform3d(kTurretTranslation, kTurretAngleOffset3d);
         public static final Distance kInchesAboveFunnel = Inches.of(20);// distance the ball must travel above the funnel opening to arc correctly into the hub
@@ -141,7 +142,7 @@ public class Constants {
 
         public static final int kPeakShooterVolts = 16;
 
-        public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.55 ); //0.75 rots in each direction from home
+        public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.55); //0.75 rots in each direction from home
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.in(Rotations));
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.in(Rotations));
         public static final double kTurretMaxErrD = Rotations.of(0.05).in(Rotations);
@@ -541,14 +542,28 @@ public class Constants {
         public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60MaxVelocity.div(kSpindexerGearing);
         public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.85);
+        public static final double kSpindexerMaxRPSD    = kSpindexerMaxRPS.in(RotationsPerSecond);
+        public static final double kSpindexerShootRPSD = kSpindexerShootRPS.in(RotationsPerSecond);
+        public static final double kSpindexerIntakeRPSD = kSpindexerIntakeRPS.in(RotationsPerSecond);
 
         public static final AngularVelocity kTunnelMaxRPS = MotorK.kX60FOCMaxVelocity.div(kTunnelGearing);
         public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(0.77);    //9V
+        public static final double kTunnelMaxRPSD    = kTunnelMaxRPS.in(RotationsPerSecond);
+        public static final double kTunnelShootRPSD = kTunnelShootRPS.in(RotationsPerSecond);
 
         public static final AngularVelocity kTunnelSpunUpMinimum = RotationsPerSecond.of(10);
         public static final double kTunnelSpunUpMinimumD = 10.0;
         public static final Time kTunnelSpunUpTimeout = Seconds.of(1);  //double expected spinup time
-        
+
+        /* VELOCITY RATIO (shooter RPS → indexer RPS) */
+        public static final double kR_bigFlywheel    = ShooterK.kFlywheelRadiusM; // 0.0381 m
+        public static final double kR_smallFlywheel  = 0.0215;  // m
+        public static final double kR_tunnelPulley   = 0.018;   // m
+        public static final double kR_spindexerFloor = 6.5 * 0.0254; // 0.1651 m
+
+        public static final double kTunnelFromShooterRatio    = (kR_bigFlywheel + kR_smallFlywheel) / (2.0 * kR_tunnelPulley);
+        public static final double kSpindexerFromShooterRatio = (kR_bigFlywheel + kR_smallFlywheel) / (2.0 * kR_spindexerFloor);
+
         /* CONFIGS */
         //TODO: Make transfer configs accurate
         private static final Slot0Configs kSpindexerSlot0Configs = new Slot0Configs()
@@ -582,7 +597,7 @@ public class Constants {
 
         private static final Slot0Configs kTunnelSlot0Configs = new Slot0Configs()
             .withKS(0.2)
-            .withKV(0.115)
+            .withKV(0.086)
             .withKA(0)
             .withKP(0.37)
             .withKI(0)
