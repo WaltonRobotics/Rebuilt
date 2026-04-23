@@ -272,7 +272,28 @@ public class ShooterCalc {
         double turretReferenceRots, double turretVelocityFF,
         double turretX, double turretY,
         double fieldYawRad, double currentFieldYawRad,
-        double rawDesiredRotations) {}
+        double rawDesiredRotations
+        ) {
+        private static final String kCalcTab = "/AzimuthCalcDetails";
+
+        private static final DoubleLogger log_turretReferenceRots = new DoubleLogger(kLogTab + kCalcTab, "turretReferenceRots");
+        private static final DoubleLogger log_turretVelocityFF = new DoubleLogger(kLogTab + kCalcTab, "turretVelocityFF");
+        private static final DoubleLogger log_turretX = new DoubleLogger(kLogTab + kCalcTab, "turretX");
+        private static final DoubleLogger log_turretY = new DoubleLogger(kLogTab + kCalcTab, "turretY");
+        private static final DoubleLogger log_fieldYawRad = new DoubleLogger(kLogTab + kCalcTab, "fieldYawRad");
+        private static final DoubleLogger log_currentFieldYawRad = new DoubleLogger(kLogTab + kCalcTab, "currentFieldYawRad");
+        private static final DoubleLogger log_rawDesiredRotations = new DoubleLogger(kLogTab + kCalcTab, "rawDesiredRotations");
+        
+        public void acceptLogging(AzimuthCalcDetails details) {
+            log_turretReferenceRots.accept(details.turretReferenceRots);
+            log_turretVelocityFF.accept(details.turretVelocityFF);
+            log_turretX.accept(details.turretX);
+            log_turretY.accept(details.turretY);
+            log_fieldYawRad.accept(details.fieldYawRad);
+            log_currentFieldYawRad.accept(details.currentFieldYawRad);
+            log_rawDesiredRotations.accept(details.rawDesiredRotations);
+        }
+    }
 
     /**
      * Calculates the turret's *TARGET* angle while ensuring it stays within
@@ -312,8 +333,9 @@ public class ShooterCalc {
         double toTargetY = target.getY() - turretY;
         double fieldYawRad = Math.atan2(toTargetY, toTargetX);
 
-        double vx = fieldSpeeds.vxMetersPerSecond + (-turretX) * fieldSpeeds.omegaRadiansPerSecond;
-        double vy = fieldSpeeds.vyMetersPerSecond + turretY * fieldSpeeds.omegaRadiansPerSecond;
+        //vx | vy is turret pivot not absolute field position
+        double vx = fieldSpeeds.vxMetersPerSecond - (turretY - robotY) * fieldSpeeds.omegaRadiansPerSecond; //-ry * omega
+        double vy = fieldSpeeds.vyMetersPerSecond + (turretX - robotX) * fieldSpeeds.omegaRadiansPerSecond; //+rx * omega
 
         // Direction in rotations: normalize to [-0.5, 0.5] first (matches Rotation2d.minus behavior),
         // then clamp to turret range
@@ -368,8 +390,8 @@ public class ShooterCalc {
             turretX, turretY,
             fieldYawRad, currentFieldYawRad,
             angleRotations);
+        calcDetails.acceptLogging(calcDetails);
         log_isSnappingBack.accept(m_isSnappingBack);
-        // logger.accept(calcDetails);
         return calcDetails;
     }
 
@@ -379,7 +401,19 @@ public class ShooterCalc {
         double turretReferenceRots,
         double hoodReferenceRots,
         double shooterReferenceRps
-    ) {}
+    ) {
+        private static final String kCalcTab = "/ShotCalcOutputs";
+
+        private static final DoubleLogger log_turretReferenceRots = new DoubleLogger(kLogTab + kCalcTab, "turretReferenceRots");
+        private static final DoubleLogger log_hoodReferenceRots = new DoubleLogger(kLogTab + kCalcTab, "hoodReferenceRots");
+        private static final DoubleLogger log_shooterReferenceRPS = new DoubleLogger(kLogTab + kCalcTab, "shooterReferenceRPS");
+
+        public void acceptLogging(ShotCalcOutputs outputs) {
+            log_turretReferenceRots.accept(outputs.turretReferenceRots);
+            log_hoodReferenceRots.accept(outputs.hoodReferenceRots);
+            log_shooterReferenceRPS.accept(outputs.shooterReferenceRps);
+        }
+    }
 
     /**
      * Calculates the ideal shot to put the FUEL™ into the HUB™
@@ -408,7 +442,8 @@ public class ShooterCalc {
         double turretReferenceRots = azCalcDetails.turretReferenceRots();
         double hoodReferenceRots = calculatedShot.hoodAngle() / (2.0 * Math.PI);
         double shooterReferenceRPS = calculatedShot.exitVelocity() / (2.0 * Math.PI);
-        return new ShotCalcOutputs(
-            azCalcDetails, calculatedShot, turretReferenceRots, hoodReferenceRots, shooterReferenceRPS);
+        ShotCalcOutputs outputs = new ShotCalcOutputs(azCalcDetails, calculatedShot, turretReferenceRots, hoodReferenceRots, shooterReferenceRPS);
+        outputs.acceptLogging(outputs);
+        return outputs;
     }
 }

@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
+import static frc.robot.Constants.IntakeK.kLogTab;
 import static frc.robot.Constants.ShooterK.*;
 
 import edu.wpi.first.math.MathUtil;
@@ -434,6 +435,15 @@ public class ShotCalculator {
         double targetZ = target.getZ();
         double vx = fieldSpeeds.vxMetersPerSecond;
         double vy = fieldSpeeds.vyMetersPerSecond;
+        double omega = fieldSpeeds.omegaRadiansPerSecond;
+        double cosH = Math.cos(headingRad);
+        double sinH = Math.sin(headingRad);
+        double turretX = robotX + kTurretOffsetX_m * cosH - kTurretOffsetY_m * sinH;
+        double turretY = robotY + kTurretOffsetX_m * sinH + kTurretOffsetY_m * cosH;
+
+        //turret pivot actual velocity
+        double vxLaunch = vx - (turretY - robotY) * omega;
+        double vyLaunch = vy + (turretX - robotX) * omega;
 
         double distance = getDistanceToTargetM(robotX, robotY, headingRad, targetX, targetY);
         boolean passing = ShooterCalc.isPassing().getAsBoolean();
@@ -474,8 +484,8 @@ public class ShotCalculator {
 
             coeffDrag = kDragCoeffTuner.enabled() ? kDragCoeffTuner.get(): coeffDrag;
             double driftT = dragCompensatedTOF(tofSec, coeffDrag);
-            predX = targetX - vx * driftT;
-            predY = targetY - vy * driftT;
+            predX = targetX - vxLaunch * driftT;
+            predY = targetY - vyLaunch * driftT;
 
             distance = getDistanceToTargetM(robotX, robotY, headingRad, predX, predY);
             passing = ShooterCalc.isPassing().getAsBoolean();
@@ -500,7 +510,9 @@ public class ShotCalculator {
         }
         log_calcConvergedBreakout.accept(converged);
         log_lerpIterationCount.accept(iterCount);
-        return new ShotDataLerp(exitVel, hoodAngle, new Translation3d(predX, predY, targetZ), tofSec);
+        ShotDataLerp data = new ShotDataLerp(exitVel, hoodAngle, new Translation3d(predX, predY, targetZ), tofSec);
+        data.acceptLogging(data);
+        return data;
     }
 
     public record ShotData (double exitVelocity, double hoodAngle, Translation3d target) {
@@ -552,6 +564,19 @@ public class ShotCalculator {
     public record ShotDataLerp(double exitVelocity, double hoodAngle, Translation3d target, double tofSec) {
         public ShotDataLerp(ShotData data, double tofSec) {
             this(data.exitVelocity, data.hoodAngle, data.target, tofSec);
+        }
+        private static final String kCalcTab = "/ShotDataLerp";
+
+        private static final DoubleLogger log_exitVelocity = new DoubleLogger(kLogTab + kCalcTab, "exitVelocity");
+        private static final DoubleLogger log_hoodAngle = new DoubleLogger(kLogTab + kCalcTab, "hoodAngle");
+        private static final Pose3dLogger log_target = new Pose3dLogger(kLogTab + kCalcTab, "target");
+        private static final DoubleLogger log_tofSec = new DoubleLogger(kLogTab + kCalcTab, "tofSec");
+
+        public void acceptLogging(ShotDataLerp data) {
+            log_exitVelocity.accept(data.exitVelocity);
+            log_hoodAngle.accept(data.hoodAngle);
+            log_target.accept(data.target);
+            log_tofSec.accept(data.tofSec);
         }
 
         public double getExitVelocity() { return exitVelocity; }
