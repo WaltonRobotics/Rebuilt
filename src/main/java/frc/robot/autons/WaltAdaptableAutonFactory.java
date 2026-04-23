@@ -74,7 +74,7 @@ public class WaltAdaptableAutonFactory {
 
     public AutoRoutine preheater() {
         System.out.println("PREHEAT MADE");
-        return adaptableAuton("PreHeat", new AdaptableAutonInfo("PreHeat", AutonK.kReshootShootingTimeout, false, false));
+        return adaptableAuton("PreHeat", new AdaptableAutonInfo("PreHeat", AutonK.kReshootShootingTimeout, false, 0));
     }
 
     /**
@@ -163,17 +163,12 @@ public class WaltAdaptableAutonFactory {
         }
         System.out.println("trajTriggers built");
 
-        if (autonInfos[0].delayed) {
-            routine.active().onTrue(
-                Commands.sequence(
-                    Commands.waitSeconds(AutonK.kDelayedAutonTime),
-                    autonTrajs[0].cmd().alongWith(homingCmd())
-                )
-            );
-        } else {
-            routine.active().onTrue(
-            autonTrajs[0].cmd().alongWith(homingCmd()));
-        }
+        routine.active().onTrue(
+            Commands.sequence(
+                Commands.waitSeconds(autonInfos[0].delay()).alongWith(homingCmd()),
+                autonTrajs[0].cmd().alongWith()
+            )
+        );
 
         System.out.println("routine active built");
 
@@ -184,15 +179,18 @@ public class WaltAdaptableAutonFactory {
             var thisInfo = autonInfos[i];
             System.out.println("traj idx " + i + " (" + thisInfo.autonName + ") .done().onTrue() built");
             thisTraj.done().onTrue(
-                thisInfo.SOTM ? 
-                    autonTrajs[i+1].cmd() : 
+                thisInfo.SOTM ? Commands.sequence(
+                    Commands.waitSeconds(autonInfos[i + 1].delay()),
+                    autonTrajs[i + 1].cmd()) : 
                     Commands.sequence(
                         tp("WAITING FOR SHOOTING DONE"),
                         Commands.race(
                             Commands.waitUntil(m_shooter.getBallShotDebounceTrg().or(trg_isAtStopShoot)),
                             Commands.waitSeconds(thisInfo.shooterTimeout())
                         ),
-                        tp("TRAJ 2 STARTED"),
+                        tp("TRAJ " + (i + 1) + " DELAY STARTED"),
+                        Commands.waitSeconds(autonInfos[i + 1].delay()),
+                        tp("TRAJ " + (i + 1) + " STARTED"),
                         autonTrajs[i + 1].cmd()
                     )
             );
@@ -305,6 +303,6 @@ public class WaltAdaptableAutonFactory {
         String autonName,
         double shooterTimeout,
         boolean SOTM,
-        boolean delayed
+        double delay
     ) {}
 };
