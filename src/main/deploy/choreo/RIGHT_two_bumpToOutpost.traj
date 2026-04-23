@@ -145,6 +145,5 @@
   "splits":[0]
  },
  "events":[
-   {"name":"intake", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"intake"}}},
-   {"name":"shoot", "from":{"target":1, "targetTimestamp":3.36836, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"shoot"}}}]
+   {"name":"intakeAndShoot", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"intakeAndShoot"}}}]
 }

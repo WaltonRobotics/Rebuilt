@@ -265,12 +265,12 @@ public class WaltAdaptableAutonFactory {
             })
         );
 
-        traj.atTime("pass").onTrue(
-            m_superstructure.intake(() -> true).until(traj.atTime("stopPass"))
+        traj.atTime("intakeAndShoot").onTrue(
+            m_superstructure.intake(() -> true).until(traj.atTime("stopIntakeAndShoot"))
         );
 
-        traj.atTime("pass").onTrue(
-            m_superstructure.activateOuttakeShotCalc().until(traj.atTime("stopPass"))
+        traj.atTime("intakeAndShoot").onTrue(
+            m_superstructure.activateOuttakeShotCalc().until(traj.atTime("stopIntakeAndShoot"))
         );
 
         //---TRIGGER LOGGERS
@@ -278,12 +278,12 @@ public class WaltAdaptableAutonFactory {
             updateAutonEventMarkerLogger("intake")
         );
 
-        traj.atTime("pass").onTrue(
-            updateAutonEventMarkerLogger("pass")
+        traj.atTime("intakeAndShoot").onTrue(
+            updateAutonEventMarkerLogger("intakeAndShoot")
         );
 
-        traj.atTime("stopPass").onTrue(
-            updateAutonEventMarkerLogger("stopPass")
+        traj.atTime("stopIntakeAndShoot").onTrue(
+            updateAutonEventMarkerLogger("stopIntakeAndShoot")
         );
 
         traj.atTime("stopIntake").onTrue(

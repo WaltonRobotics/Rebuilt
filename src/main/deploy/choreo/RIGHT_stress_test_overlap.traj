@@ -453,17 +453,17 @@
  "events":[
    {"name":"intake", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"intake"}}},
    {"name":"shoot", "from":{"target":1, "targetTimestamp":2.10098, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"shoot"}}},
-   {"name":"stopPass", "from":{"target":2, "targetTimestamp":3.97194, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"stopPass"}}},
+   {"name":"stopIntakeAndShoot", "from":{"target":2, "targetTimestamp":3.97194, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"stopIntakeAndShoot"}}},
    {"name":"stopIntake", "from":{"target":3, "targetTimestamp":5.8429, "offset":{"exp":"-0.5 s", "val":-0.5}}, "event":{"type":"named", "data":{"name":"stopIntake"}}},
    {"name":"stopShoot", "from":{"target":3, "targetTimestamp":5.8429, "offset":{"exp":"-0.5 s", "val":-0.5}}, "event":{"type":"named", "data":{"name":"stopShoot"}}},
-   {"name":"pass", "from":{"target":3, "targetTimestamp":5.8429, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"pass"}}},
+   {"name":"intakeAndShoot", "from":{"target":3, "targetTimestamp":5.8429, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"intakeAndShoot"}}},
    {"name":"stopIntake", "from":{"target":4, "targetTimestamp":7.80899, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"stopIntake"}}},
    {"name":"stopShoot", "from":{"target":5, "targetTimestamp":9.53198, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"stopShoot"}}},
-   {"name":"stopPass", "from":{"target":6, "targetTimestamp":11.40294, "offset":{"exp":"-0.5 s", "val":-0.5}}, "event":{"type":"named", "data":{"name":"stopPass"}}},
+   {"name":"stopIntakeAndShoot", "from":{"target":6, "targetTimestamp":11.40294, "offset":{"exp":"-0.5 s", "val":-0.5}}, "event":{"type":"named", "data":{"name":"stopIntakeAndShoot"}}},
    {"name":"intake", "from":{"target":6, "targetTimestamp":11.40294, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"intake"}}},
    {"name":"shoot", "from":{"target":6, "targetTimestamp":11.40294, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"shoot"}}},
-   {"name":"pass", "from":{"target":7, "targetTimestamp":13.54159, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"pass"}}},
-   {"name":"stopPass", "from":{"target":8, "targetTimestamp":15.2733, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"stopPass"}}},
+   {"name":"intakeAndShoot", "from":{"target":7, "targetTimestamp":13.54159, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"intakeAndShoot"}}},
+   {"name":"stopintakeAndShoot", "from":{"target":8, "targetTimestamp":15.2733, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"stopIntakeAndShoot"}}},
    {"name":"stopIntake", "from":{"target":9, "targetTimestamp":17.02895, "offset":{"exp":"-0.1 s", "val":-0.1}}, "event":{"type":"named", "data":{"name":"stopIntake"}}},
    {"name":"stopShoot", "from":{"target":9, "targetTimestamp":17.02895, "offset":{"exp":"-0.1 s", "val":-0.1}}, "event":{"type":"named", "data":{"name":"stopShoot"}}}]
 }
