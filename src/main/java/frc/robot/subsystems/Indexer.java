@@ -149,7 +149,7 @@ public class Indexer extends SubsystemBase {
         log_tunnelRPS.accept(m_tunnelVelocityRotPerSec);
 
         log_tunnelClosedLoopError.accept(sig_tunnelCLErr.getValueAsDouble());
-        m_isTunnelSpunUp = sig_tunnelCLErr.isNear(0, 6);
+        m_isTunnelSpunUp = sig_tunnelCLErr.isNear(0, 3);
         log_isTunnelSpunUp.accept(m_isTunnelSpunUp);
     }
 
