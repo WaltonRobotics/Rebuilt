@@ -148,6 +148,8 @@ public class Robot extends TimedRobot {
 
     private final DoubleLogger log_autonTime = WaltLogger.logDouble("Auton", "autonTime");
 
+    DoubleLogger tomfoolery = WaltLogger.logDouble(kLogTab, kLogTab);
+
     //DRIVERSTATION LOGS TELL US
     // private final BooleanLogger log_isDisabled = WaltLogger.logBoolean(kLogTab, "is robot disabled");
 
