@@ -50,7 +50,7 @@ public class Shooter extends SubsystemBase {
         new WaltTunable("/Shooter/shooterRPSOverride", kShooterRPSd);
     private static final WaltTunable kHoodRotsOverride =
         new WaltTunable("/Shooter/hoodRotsOverride", 0.0);
-    private static final double kHoodLockedPosRots = Rotations.of(0.08).magnitude();
+    private static final double kHoodLockedPosRots = Rotations.of(0.33).magnitude();
     /* VARIABLES */
     // boolean m_useShotCalculator = true;
 
@@ -232,7 +232,7 @@ public class Shooter extends SubsystemBase {
 
     private void refreshShooterSpunUp() {
         log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
-        m_isShooterSpunUp = sig_shooterCLErr.isNear(0, 3);
+        m_isShooterSpunUp = sig_shooterCLErr.isNear(0, 1.8);
     }
 
     public boolean isShooterSpunUp() {
