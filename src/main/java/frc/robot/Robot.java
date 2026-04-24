@@ -138,6 +138,8 @@ public class Robot extends TimedRobot {
 
     private Trigger trg_unjam = m_driver.rightBumper();
 
+    //tomfoolery
+
     private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble(kLogTab, "MiniPC current");
     private final DoubleLogger log_rioBusVoltage = WaltLogger.logDouble(kLogTab, "RioBusVoltage");
     private final BooleanLogger log_rioBrownout = WaltLogger.logBoolean(kLogTab, "RioBrownout");
@@ -149,6 +151,7 @@ public class Robot extends TimedRobot {
     private final DoubleLogger log_autonTime = WaltLogger.logDouble("Auton", "autonTime");
 
     DoubleLogger log_shenanigans = WaltLogger.logDouble(kLogTab, kLogTab);
+    DoubleLogger tomfoolery = WaltLogger.logDouble(kLogTab, kLogTab);
 
     //DRIVERSTATION LOGS TELL US
     // private final BooleanLogger log_isDisabled = WaltLogger.logBoolean(kLogTab, "is robot disabled");
