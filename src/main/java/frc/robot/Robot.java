@@ -167,6 +167,8 @@ public class Robot extends TimedRobot {
     private final PerformanceMonitor m_perfMonitor = new PerformanceMonitor(false);
     private final Command m_preheaterCommand;
 
+    //shenanigans
+
     /* CONSTRUCTOR */
     public Robot() {
         configureBindings();
