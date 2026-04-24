@@ -1,5 +1,7 @@
 package frc.robot.autons;
 
+import static frc.robot.Constants.IntakeK.kIntakeRollersIntakeVolts;
+
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -223,7 +225,7 @@ public class WaltAdaptableAutonFactory {
     public void setUpTrajTriggers(AutoTrajectory traj, double shooterTimeout, boolean SOTM) {
         //---TRIGGER ACTIONS
         traj.atTime(kIntakeWaypoint).onTrue(
-            m_superstructure.intake(() -> false).until(trg_isAtStopIntake)
+            m_superstructure.intake(() -> false, () -> false).until(trg_isAtStopIntake)
         );
 
         // traj.atTime(kIntakeWaypoint).onTrue(
@@ -245,7 +247,7 @@ public class WaltAdaptableAutonFactory {
         );
 
         traj.atTime(kShootWaypoint).onTrue(
-            m_superstructure.intakeShimmy()
+            m_superstructure.intakeShimmy(() -> true)
         );
 
         // traj.atTime(kShootWaypoint).onTrue(
@@ -274,7 +276,7 @@ public class WaltAdaptableAutonFactory {
         );
 
         traj.atTime(kIntakeAndShootWaypoint).onTrue(
-            m_superstructure.intake(() -> true).until(traj.atTime(kStopIntakeAndShootWaypoint))
+            m_superstructure.intake(() -> true, () -> false).until(traj.atTime(kStopIntakeAndShootWaypoint))
         );
 
         traj.atTime(kIntakeAndShootWaypoint).onTrue(

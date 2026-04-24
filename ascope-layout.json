@@ -3,8 +3,8 @@
     {
       "x": -8,
       "y": -8,
-      "width": 1936,
-      "height": 1168,
+      "width": 1536,
+      "height": 816,
       "state": {
         "sidebar": {
           "width": 352,
@@ -151,27 +151,23 @@
             "/NT/SmartDashboard/AutoChooser",
             "/NT/Shuffleboard",
             "/NT/Shuffleboard/.metadata",
-            "/Robot/Shooter",
             "/NT/Robot/CANBusStatus",
             "/NT/Robot/CANBusStatus/shooter",
             "/Robot/CANBusStatus/shooter",
             "/Robot/CANBusStatus/rio",
             "/Robot/CANBusStatus/fd",
             "/NT/Robot/Swerve",
-            "/Robot/Swerve",
-            "/Robot/Auton",
             "/Robot/Drive/Pose",
             "/NT/photonvision/FL_HAT/rawBytes/multitagResult",
             "/NT/photonvision/FL_HAT/rawBytes/multitagResult/fiducialIDsUsed",
             "/NT/photonvision/BL_HAT",
-            "/Robot",
-            "/Robot/CANBusStatus",
             "/NT/Robot/CANBusStatus/rio",
-            "/NT/Robot/CANBusStatus/fd"
+            "/NT/Robot/CANBusStatus/fd",
+            "/Robot"
           ]
         },
         "tabs": {
-          "selected": 11,
+          "selected": 3,
           "tabs": [
             {
               "type": 0,
@@ -1384,9 +1380,9 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  -7.462873658389256,
+                  -7.462873658389254,
                   16.389112045493363,
-                  -11.896888080483599
+                  -11.896888080483595
                 ],
                 "cameraTarget": [
                   -2.085786677759407,
@@ -1394,6 +1390,126 @@
                   -2.2481185416228504
                 ]
               },
+              "controlsHeight": 200
+            }
+          ]
+        }
+      }
+    },
+    {
+      "x": 2,
+      "y": 4,
+      "width": 1539,
+      "height": 819,
+      "state": {
+        "sidebar": {
+          "width": 300,
+          "expanded": [
+            "/Vision",
+            "/Vision/BL_HAT",
+            "/Vision/BR_HAT",
+            "/Vision/FL_HAT",
+            "/Vision/FR_HAT"
+          ]
+        },
+        "tabs": {
+          "selected": 2,
+          "tabs": [
+            {
+              "type": 0,
+              "title": "",
+              "controller": null,
+              "controllerUUID": "0mcpujwkscycdyeiqlf3sgdh00z5kee2",
+              "renderer": "",
+              "controlsHeight": 0
+            },
+            {
+              "type": 1,
+              "title": "Line Graph",
+              "controller": {
+                "leftSources": [],
+                "rightSources": [],
+                "discreteSources": [],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "dc4dp2e7hin3obcnyp09pmn90i2rqjbb",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 2,
+              "title": "2D Field",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "trajectory",
+                    "logKey": "NT:Vision/FL_HAT/estPoseAndTag",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ff00",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "trajectory",
+                    "logKey": "NT:Vision/BL_HAT/estPoseAndTag",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ff00",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "trajectory",
+                    "logKey": "NT:Vision/BR_HAT/estPoseAndTag",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ff00",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "trajectory",
+                    "logKey": "NT:Vision/FR_HAT/estPoseAndTag",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ff00",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "field": "FRC:2026 Field",
+                "orientation": 2,
+                "size": "large"
+              },
+              "controllerUUID": "38z2ffko9e7k02nz32hbxs3o0ku6lae6",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 3,
+              "title": "3D Field",
+              "controller": {
+                "sources": [],
+                "game": "FRC:2026 Field"
+              },
+              "controllerUUID": "jhgg4rwtbsz2xbp6tgh9fgdxtiffdk7m",
+              "renderer": null,
               "controlsHeight": 200
             }
           ]
