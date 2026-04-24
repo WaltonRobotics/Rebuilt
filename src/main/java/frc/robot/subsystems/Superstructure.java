@@ -44,16 +44,15 @@ public class Superstructure extends SubsystemBase {
             () -> {
                 boolean shooting = isShooting.getAsBoolean();
                 // m_shooter.m_turret.setIntaking(!shooting);
-                if (!isShimmying.getAsBoolean()) {
-                    m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPSD : IndexerK.kSpindexerIntakeRPSD);
-                }
+                m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPSD : IndexerK.kSpindexerIntakeRPSD);
             })
         ).finallyDo(
             () -> {
                 boolean shooting = isShooting.getAsBoolean();
+                boolean shimmying = isShimmying.getAsBoolean();
                 // m_shooter.m_turret.setIntaking(false);
-                if (!isShimmying.getAsBoolean())
-                    m_intake.setIntakeRollersVelocity(0) ;
+                if (!shimmying)
+                    m_intake.setIntakeRollersVelocity(0);
                 if (!shooting) {
                     m_indexer.setSpindexerVelocity(0);
                 }
@@ -203,9 +202,9 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
-    public Command intakeShimmy() {
+    public Command intakeShimmy(BooleanSupplier isShooting) {
        return Commands.repeatingSequence(
-            intake(() -> false, () -> true).withTimeout(0.5),
+            intake(isShooting, () -> true).withTimeout(0.5),
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED),
             Commands.waitSeconds(0.5)
        )

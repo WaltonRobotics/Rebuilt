@@ -221,7 +221,7 @@ public class WaltAdaptableAutonFactory {
         );
 
         traj.atTime("shoot").onTrue(
-            m_superstructure.intakeShimmy()
+            m_superstructure.intakeShimmy(() -> true)
         );
 
         // traj.atTime("shoot").onTrue(

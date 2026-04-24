@@ -320,7 +320,9 @@ public class Robot extends TimedRobot {
             m_superstructure.emergencyBarfNOSHOOT()
         );
         
-        trg_intakeShimmy.whileTrue(m_superstructure.intakeShimmy());
+        trg_intakeShimmy.whileTrue(m_superstructure.intakeShimmy(() -> false));
+
+        trg_intakeShimmy.and(trg_shoot).whileTrue(m_superstructure.intakeShimmy(() -> true));
 
         trg_unjam.and(trg_shoot.negate()).whileTrue(
             m_superstructure.unjamCmd(() -> false)
