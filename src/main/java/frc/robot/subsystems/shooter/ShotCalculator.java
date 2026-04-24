@@ -39,7 +39,7 @@ public class ShotCalculator {
     // Horizontal drag damping: actual drift = v * (1 - e^(-c*t)) / c < v*t
     // c = 0 disables drag compensation. Enable via /ShotCalc/sotmDragCoeff/enabled.
     //YAYAYAYYAYAYAY 2974 IS OUR LUCKY NUMBER HUZZAH YAY YIPPEE
-    private static final WaltTunable kDragCoeffTuner = new WaltTunable("/ShotCalc/sotmDragCoeff", 0.2974, true);
+    private static final WaltTunable kDragCoeffTuner = new WaltTunable("/ShotCalc/sotmDragCoeff", 0.5000, false);
     // private static final Tracer m_iterativeTracer = new Tracer();
 
     // private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
@@ -82,10 +82,11 @@ public class ShotCalculator {
 
         ShotLerpTable.Builder shot = new ShotLerpTable.Builder();
 
-        shot.add(2.451, 42.900, 0.33, 1.19, 0.24);
-        shot.add(1.268, 42.400, 0.08, 1.15, 0.24);
-        shot.add(5.636, 62.600, 0.67, 1.57, 0.24);
-        shot.add(3.686, 50.890, 0.53, 1.25, 0.24);
+        shot.add(2.451, 42.900 + kRPSBoost, 0.33, 1.19, 0.24);
+        shot.add(1.268, 42.400 + kRPSBoost, 0.08, 1.15, 0.24);
+        shot.add(5.636, 62.600 + kRPSBoost, 0.67, 1.57, 0.24);
+        shot.add(3.686, 50.890 + kRPSBoost, 0.53, 1.25, 0.24);
+        shot.add(4.496, 56.800 + kRPSBoost, 0.60, 1.40, 0.24);
 
 
         kShotTable = shot.build();
@@ -472,7 +473,7 @@ public class ShotCalculator {
             double prevPredY = predY;
 
             // Inline predictTargetPos — no Translation3d/Time allocation
-            double coeffDrag = 0.254; //used for SOTM movement SIDE TO SIDE
+            double coeffDrag = 0.5000; //used for SOTM movement SIDE TO SIDE
             // double coeffDrag = shotTable.drag(distance);
             //2974 RAHHHHHHHHHHHHHHH – correction: more like 254 RAHHHHHHHHHHHHHHH
             // if ( (Math.abs(vx) <= 0.05) || (Math.abs(vy) <= 0.05) ) { //NOTE: not sure if these numbers are right

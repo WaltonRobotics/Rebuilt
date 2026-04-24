@@ -4,7 +4,7 @@ package frc.robot.subsystems.shooter;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.units.measure.AngularAcceleration;
@@ -14,8 +14,6 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
-// import com.reduxrobotics.canand.CanandEventLoop;
-// import com.reduxrobotics.sensors.canandmag.Canandmag;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -27,7 +25,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-// import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -72,7 +69,8 @@ public class Shooter extends SubsystemBase {
     // ---MOTORS + CONTROL REQUESTS
     private final TalonFX m_shooterA = new TalonFX(kShooterA_CANID, Constants.kShooterBus); // X44
     private final TalonFX m_shooterB = new TalonFX(kShooterB_CANID, Constants.kShooterBus); // X44
-    private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(true);
+    // private final VelocityVoltage m_velocityRequest = new VelocityVoltage(0).withEnableFOC(true).withSlot(0);
+    private final VelocityTorqueCurrentFOC m_veloTQFOCReq = new VelocityTorqueCurrentFOC(0).withSlot(1);
     private final CoastOut m_motorIdleReq = new CoastOut();
 
     private final Supplier<SwerveDriveState> m_threadsafeSwerveSup;
@@ -225,10 +223,10 @@ public class Shooter extends SubsystemBase {
     public void setShooterVelocity(double rotPerSec) {
         if (rotPerSec == 0) {
             // cope to get clErr to 0
-            m_shooterA.setControl(m_velocityRequest.withVelocity(0));
+            m_shooterA.setControl(m_veloTQFOCReq.withVelocity(0));
             m_shooterA.setControl(m_motorIdleReq);
         } else {
-            m_shooterA.setControl(m_velocityRequest.withVelocity(rotPerSec));
+            m_shooterA.setControl(m_veloTQFOCReq.withVelocity(rotPerSec));
         }
     }
 

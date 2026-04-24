@@ -28,6 +28,7 @@ import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
@@ -234,12 +235,22 @@ public class Constants {
         private static final VoltageConfigs kShooterAVoltageConfigs = new VoltageConfigs()
             .withPeakForwardVoltage(kPeakShooterVolts)
             .withPeakReverseVoltage(-kPeakShooterVolts);
+        private static final Slot1Configs kShooterASlot1Configs = new Slot1Configs()
+            .withKP(5)
+            .withKI(0)
+            .withKD(0)
+            .withKS(4.5)
+            .withKV(0.16)
+            .withKA(0);
         public static final TalonFXConfiguration kShooterATalonFXConfiguration = new TalonFXConfiguration()
             .withSlot0(kShooterASlot0Configs)
+            .withSlot1(kShooterASlot1Configs)
             .withCurrentLimits(kShooterACurrentLimitConfigs)
             .withMotorOutput(kShooterAOutputConfigs)
             .withFeedback(kShooterAFeedbackConfigs)
             .withVoltage(kShooterAVoltageConfigs);
+
+
 
         private static final MotorOutputConfigs kShooterBOutputConfigs = new MotorOutputConfigs()
             .withInverted(InvertedValue.CounterClockwise_Positive)
