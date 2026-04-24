@@ -50,7 +50,7 @@ public class Shooter extends SubsystemBase {
         new WaltTunable("/Shooter/shooterRPSOverride", kShooterRPSd);
     private static final WaltTunable kHoodRotsOverride =
         new WaltTunable("/Shooter/hoodRotsOverride", 0.0);
-    private static final double kHoodLockedPosRots = Rotations.of(0.08).magnitude();
+    private static final double kHoodLockedPosRots = Rotations.of(0.33).magnitude();
     /* VARIABLES */
     // boolean m_useShotCalculator = true;
 
