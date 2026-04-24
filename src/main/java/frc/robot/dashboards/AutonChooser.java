@@ -37,20 +37,20 @@ public class AutonChooser {
     private final static String kLeftShootAndDepot = "LEFT Depot 1.5 Cycle";
 
     //---2 CYCLES
-    private final static String kLeftTwoCycle = "LEFT 2 Cycle";
-    private final static String kRightTwoCycle = "RIGHT 2 Cycle";
-    private final static String kLeftTrenchTwoCycle = "LEFT Trench 2 Cycle";
-    private final static String kRightTrenchTwoCycle = "RIGHT Trench 2 Cycle";
-    private final static String kLeftDefenseOneCycle = "LEFT Defense";
-    private final static String kRightDefenseOneCycle = "RIGHT Defense";
-    private final static String kLeftTwoCycleReverse = "LEFT Reverse and Trench-side Jab 2 Cycle";
-    private final static String kRightTwoCycleReverse = "RIGHT Reverse and Trench-side Jab 2 Cycle";
-    private final static String kLeftTwoCycleReverseAndJab = "LEFT Reverse and Center Jab 2 Cycle";
-    private final static String kRightTwoCycleReverseAndJab = "RIGHT Reverse and Center Jab 2 Cycle";
+    private final static String kLeftTwoCycle = "LEFT Bump 2 Cycle";
+    private final static String kRightTwoCycle = "RIGHT Bump 2 Cycle";
+    private final static String kLeftTrenchASSISTTwoCycle = "LEFT Bump Trench ASSIST 2 Cycle";
+    private final static String kRightTrenchASSISTTwoCycle = "RIGHT Bump Trench ASSIST 2 Cycle";
+    private final static String kLeftDefenseOneCycle = "LEFT Bump Defense";
+    private final static String kRightDefenseOneCycle = "RIGHT Bump Defense";
+    private final static String kLeftTwoCycleReverse = "LEFT Bump Reverse and Trench-side Jab 2 Cycle";
+    private final static String kRightTwoCycleReverse = "RIGHT Bump Reverse and Trench-side Jab 2 Cycle";
+    private final static String kLeftTwoCycleReverseAndJab = "LEFT Bump Reverse and Center Jab 2 Cycle";
+    private final static String kRightTwoCycleReverseAndJab = "RIGHT Bump Reverse and Center Jab 2 Cycle";
 
     //---MISC
-    private final static String kRightHubCircle = "RIGHT Hub Circle";
-    private final static String kLeftSweepAndDepot = "LEFT Sweep and Depot";
+    private final static String kRightHubCircle = "RIGHT Bump Hub Circle";
+    private final static String kLeftSweepAndDepot = "LEFT Bump Sweep and Depot";
 
     //---STRESS TEST
     private final static String kRightStressTestLong = "RIGHT Long Stress Test";
@@ -59,22 +59,22 @@ public class AutonChooser {
 
     /* NEW AUTON NAMES */
     //---2 CYCLES
-    private final static String kRightTwoCycleBumpReturn = "RIGHT Two Cycle Bump Return";
-    private final static String kLeftTwoCycleBumpReturn = "LEFT Two Cycle Bump Return";
-    private final static String kRightTwoCycleTrenchReturn = "RIGHT Two Cycle Trench Return";
-    private final static String kLeftTwoCycleTrenchReturn = "LEFT Two Cycle Trench Return";
+    private final static String kRightTrenchTwoCycleBumpReturn = "RIGHT Trench 2 Cycle Bump Return";
+    private final static String kLeftTrenchTwoCycleBumpReturn = "LEFT Trench 2 Cycle Bump Return";
+    private final static String kRightTrechTwoCycleTrenchReturn = "RIGHT Trench 2 Cycle Trench Return";
+    private final static String kLeftTrenchTwoCycleTrenchReturn = "LEFT Trench 2 Cycle Trench Return";
 
     //---2 CYCLES PLUS OUTPOST
-    private final static String kRightTwoCycleBumpReturnOutpost = "RIGHT Two Cycle Bump Return Plus Outpost";
-    private final static String kRightTwoCycleTrenchReturnOutpost = "RIGHT Two Cycle Trench Return Plus Outpost";
+    private final static String kRightTrenchTwoCycleBumpReturnOutpost = "RIGHT Trench 2 Cycle Bump Return Plus Outpost";
+    private final static String kRightTrenchTwoCycleTrenchReturnOutpost = "RIGHT Trench 2 Cycle Trench Return Plus Outpost";
 
     //---2 CYCLES PLUS DEPOT
-    private final static String kLeftTwoCycleBumpReturnDepot = "LEFT Two Cycle Bump Return Plus Depot";
-    private final static String kLeftTwoCycleTrenchReturnDepot = "LEFT Two Cycle Trench Return Plus Depot";
+    private final static String kLeftTrenchTwoCycleBumpReturnDepot = "LEFT Trench 2 Cycle Bump Return Plus Depot";
+    private final static String kLeftTrenchTwoCycleTrenchReturnDepot = "LEFT Trench 2 Cycle Trench Return Plus Depot";
 
     //--MISC
-    private final static String kRightOrbit = "RIGHT Orbit";
-    private final static String kLeftOrbit = "LEFT Orbit";
+    private final static String kRightTrenchSelfPass = "RIGHT Orbit";
+    private final static String kLeftTrenchSelfPass = "LEFT Orbit";
 
     public static void initialize(WaltAdaptableAutonFactory adaptableAutonFactory) {
         m_adaptableAutonFactory = adaptableAutonFactory;
@@ -104,11 +104,11 @@ public class AutonChooser {
             new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kReshootShootingTimeout, false, 0));
 
         //---TRENCH ASSIST AUTONS
-        addMultiAuton(kLeftTrenchTwoCycle,
+        addMultiAuton(kLeftTrenchASSISTTwoCycle,
             new AdaptableAutonInfo(AutonK.kLeftOneTrench, AutonK.kReshootShootingTimeout, false, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kReshootShootingTimeout, false, 0));
 
-        addMultiAuton(kRightTrenchTwoCycle,
+        addMultiAuton(kRightTrenchASSISTTwoCycle,
             new AdaptableAutonInfo(AutonK.kRightOneTrench, AutonK.kReshootShootingTimeout, false, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kReshootShootingTimeout, false, 0));
 
@@ -157,80 +157,80 @@ public class AutonChooser {
             new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kReshootShootingTimeout, false, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kReshootShootingTimeout, false, 0));
 
-        addAuton(kRightStressTestLong, new AdaptableAutonInfo(AutonK.kRightStressTestLong, 100, true, 0));
+        // addAuton(kRightStressTestLong, new AdaptableAutonInfo(AutonK.kRightStressTestLong, 100, true, 0));
         
-        addAuton(kRightStressTestOverlap, new AdaptableAutonInfo(AutonK.kRightStressTestOverlap, 100, true, 0));
+        // addAuton(kRightStressTestOverlap, new AdaptableAutonInfo(AutonK.kRightStressTestOverlap, 100, true, 0));
 
-        addMultiAuton(kRightStressTestTenTimes,
-            new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0));
+        // addMultiAuton(kRightStressTestTenTimes,
+        //     new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0));
 
         /* NEW AUTON OPTIONS */
         //---2 CYCLES
-        addMultiAuton(kRightTwoCycleBumpReturn,
+        addMultiAuton(kRightTrenchTwoCycleBumpReturn,
             new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoBumpReturn, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoGoOut, 100, true, 0));
 
-        addMultiAuton(kLeftTwoCycleBumpReturn,
+        addMultiAuton(kLeftTrenchTwoCycleBumpReturn,
             new AdaptableAutonInfo(AutonK.kLeftOneBumpReturn, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoBumpReturn, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoGoOut, 100, true, 0));
 
-        addMultiAuton(kRightTwoCycleTrenchReturn,
+        addMultiAuton(kRightTrechTwoCycleTrenchReturn,
             new AdaptableAutonInfo(AutonK.kRightOneTrenchReturn, AutonK.kReshootShootingTimeout, false, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoTrenchReturn, 100, false, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoGoOut, 100, false, 0));
 
-        addMultiAuton(kLeftTwoCycleTrenchReturn,
+        addMultiAuton(kLeftTrenchTwoCycleTrenchReturn,
             new AdaptableAutonInfo(AutonK.kLeftOneTrenchReturn, AutonK.kReshootShootingTimeout, false, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoTrenchReturn, 100, false, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoGoOut, 100, false, 0));
 
         //---2 CYCLES PLUS OUTPOST
-        addMultiAuton(kRightTwoCycleBumpReturnOutpost,
+        addMultiAuton(kRightTrenchTwoCycleBumpReturnOutpost,
             new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoBumpToOutpost, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoOutpostToTrench, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoBumpReturn, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0));
 
-        addMultiAuton(kRightTwoCycleTrenchReturnOutpost,
+        addMultiAuton(kRightTrenchTwoCycleTrenchReturnOutpost,
             new AdaptableAutonInfo(AutonK.kRightOneTrenchReturn, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoTrenchToOutpost, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoOutpostToTrench, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoTrenchReturn, 100, false, 0));
 
         //---2 CYCLES PLUS DEPOT
-        addMultiAuton(kLeftTwoCycleBumpReturnDepot,
+        addMultiAuton(kLeftTrenchTwoCycleBumpReturnDepot,
             new AdaptableAutonInfo(AutonK.kLeftOneBumpReturn, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoBumpToDepot, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoDepotToTrench, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoBumpReturn, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, 100, true, 0));
 
-        addMultiAuton(kLeftTwoCycleTrenchReturnDepot,
+        addMultiAuton(kLeftTrenchTwoCycleTrenchReturnDepot,
             new AdaptableAutonInfo(AutonK.kLeftOneTrenchReturn, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoTrenchToDepot, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoDepotToTrench, 100, true, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoTrenchReturn, 100, false, 0));
 
         //---MISC
-        addAuton(kRightOrbit, new AdaptableAutonInfo(AutonK.kRightOneSelfPass, 100, true, 0));
+        addAuton(kRightTrenchSelfPass, new AdaptableAutonInfo(AutonK.kRightOneSelfPass, 100, true, 0));
 
-        addMultiAuton(kLeftOrbit, new AdaptableAutonInfo(AutonK.kLeftOneSelfPass, 100, true, 0));
+        addMultiAuton(kLeftTrenchSelfPass, new AdaptableAutonInfo(AutonK.kLeftOneSelfPass, 100, true, 0));
         
         //Load AutonChooser
         SmartDashboard.putData("AutoChooser", m_chooser);
