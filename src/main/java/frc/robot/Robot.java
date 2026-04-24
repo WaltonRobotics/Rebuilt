@@ -150,6 +150,7 @@ public class Robot extends TimedRobot {
 
     private final DoubleLogger log_autonTime = WaltLogger.logDouble("Auton", "autonTime");
 
+    DoubleLogger log_shenanigans = WaltLogger.logDouble(kLogTab, kLogTab);
     DoubleLogger tomfoolery = WaltLogger.logDouble(kLogTab, kLogTab);
 
     //DRIVERSTATION LOGS TELL US
@@ -168,6 +169,8 @@ public class Robot extends TimedRobot {
     // private final Tracer m_periodicTracer = new Tracer();
     private final PerformanceMonitor m_perfMonitor = new PerformanceMonitor(false);
     private final Command m_preheaterCommand;
+
+    //shenanigans
 
     /* CONSTRUCTOR */
     public Robot() {
