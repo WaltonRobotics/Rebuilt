@@ -232,7 +232,7 @@ public class Shooter extends SubsystemBase {
 
     private void refreshShooterSpunUp() {
         log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
-        m_isShooterSpunUp = sig_shooterCLErr.isNear(0, 1.8);
+        m_isShooterSpunUp = sig_shooterCLErr.isNear(0, 0.5);
     }
 
     public boolean isShooterSpunUp() {
