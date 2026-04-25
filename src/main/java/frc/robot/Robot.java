@@ -117,7 +117,7 @@ public class Robot extends TimedRobot {
     /* TRIGGERS */
     // private Trigger trg_optimalPrefireTime = new Trigger(HubShiftUtil.optimalPrefireTime());
     // private Trigger trg_comebackTime = new Trigger(HubShiftUtil.comebackTime());
-    private Trigger trg_snappingBack = new Trigger(ShooterCalc.isSnappingBack());
+    private Trigger trg_snappingBack = new Trigger(m_shooter.m_turret.isSnappingBack());
     private Trigger trg_driverOverride = m_driver.b();
     private Trigger trg_manipOverride = m_manipulator.b();
 
