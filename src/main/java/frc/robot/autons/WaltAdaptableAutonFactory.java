@@ -94,9 +94,17 @@ public class WaltAdaptableAutonFactory {
      */
     public void preloadAllTrajectories(String[] names) {
         var cache = m_autoFactory.cache();
+        long totalStart = System.nanoTime();
         for (String name : names) {
+            long ts = System.nanoTime();
             cache.loadTrajectory(name);
+            long elapsed = System.nanoTime() - ts;
+            if (elapsed > 5_000_000) { // only log if > 5ms
+                System.out.printf("[PRELOAD] %s: %.1f ms%n", name, elapsed * 1e-6);
+            }
         }
+        System.out.printf("[PRELOAD] %d trajectories total: %.1f ms%n",
+            names.length, (System.nanoTime() - totalStart) * 1e-6);
     }
 
     //thank you grac

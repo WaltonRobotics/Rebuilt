@@ -58,6 +58,9 @@ import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.Pose2dLogger;
 
 public class Robot extends TimedRobot {
+    // Captured before any field initializers run (subsystem construction, etc.)
+    private static final long kFieldInitStart = System.nanoTime();
+
     /* CLASS VARIABLES */
     //---CONSTANTS
     private final LinearVelocity kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts; // kSpeedAt12Volts desired top speed
@@ -164,19 +167,40 @@ public class Robot extends TimedRobot {
 
     /* CONSTRUCTOR */
     public Robot() {
+        long t0 = System.nanoTime();
+        long tPrev = t0;
+        System.out.printf("[INIT PROFILE] field initializers (subsystems, HW): %7.1f ms%n", (t0 - kFieldInitStart) * 1e-6);
+
         configureBindings();
         // configureTestBindings();    //this should be commented out during competition matches
+        long tBindings = System.nanoTime();
+        System.out.printf("[INIT PROFILE] configureBindings:        %7.1f ms%n", (tBindings - tPrev) * 1e-6);
+        tPrev = tBindings;
 
         lastGotTagMsmtTimer.start();
 
         AutonChooser.initialize(m_adpatableAutonFactory);
+        long tChooserInit = System.nanoTime();
+        System.out.printf("[INIT PROFILE] AutonChooser.initialize:  %7.1f ms%n", (tChooserInit - tPrev) * 1e-6);
+        tPrev = tChooserInit;
 
         // Choreo warmup. Runs synchronously on the main thread during robotInit so
         // class-loading, trajectory JSON parsing, and routine/trigger composition all
         // happen up-front instead of on the first autonomousInit tick.
         AutonChooser.forceLoadChoreoClasses();
+        long tClassLoad = System.nanoTime();
+        System.out.printf("[INIT PROFILE] forceLoadChoreoClasses:   %7.1f ms%n", (tClassLoad - tPrev) * 1e-6);
+        tPrev = tClassLoad;
+
         m_adpatableAutonFactory.preloadAllTrajectories(AutonChooser.allTrajectoryNames());
+        long tPreload = System.nanoTime();
+        System.out.printf("[INIT PROFILE] preloadAllTrajectories:   %7.1f ms%n", (tPreload - tPrev) * 1e-6);
+        tPrev = tPreload;
+
         AutonChooser.preheatAllRoutines();
+        long tPreheat = System.nanoTime();
+        System.out.printf("[INIT PROFILE] preheatAllRoutines:       %7.1f ms%n", (tPreheat - tPrev) * 1e-6);
+        tPrev = tPreheat;
 
         RobotModeTriggers.autonomous().whileTrue(
             AutonChooser.m_chooser.selectedCommandScheduler().withTimeout(20.3)
@@ -195,9 +219,17 @@ public class Robot extends TimedRobot {
         // MANUAL HOMING IS BEING USED
         // addPeriodic(m_shooter::fastPeriodic, 0.0025);
 
+        long tMisc = System.nanoTime();
+        System.out.printf("[INIT PROFILE] misc (cameras/logging):   %7.1f ms%n", (tMisc - tPrev) * 1e-6);
+        tPrev = tMisc;
 
         m_preheaterCommand = AutonChooser.getPreheater();
         CommandScheduler.getInstance().schedule(m_preheaterCommand);
+
+        long tEnd = System.nanoTime();
+        System.out.printf("[INIT PROFILE] preheater cmd build:      %7.1f ms%n", (tEnd - tPrev) * 1e-6);
+        System.out.printf("[INIT PROFILE] =============================%n");
+        System.out.printf("[INIT PROFILE] CONSTRUCTOR TOTAL:        %7.1f ms%n", (tEnd - t0) * 1e-6);
     }
 
     /* COMMANDS */

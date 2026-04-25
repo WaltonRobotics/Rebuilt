@@ -291,12 +291,22 @@ public class AutonChooser {
      * build is a cache hit instead of a disk read.
      */
     public static void preheatAllRoutines() {
+        long totalStart = System.nanoTime();
+        int count = 0;
         for (AutonEntry e : s_autons) {
+            long ts = System.nanoTime();
             m_adaptableAutonFactory.adaptableAuton(e.name(), e.infos());
+            count++;
+            System.out.printf("[PREHEAT] %s: %.1f ms%n", e.name(), (System.nanoTime() - ts) * 1e-6);
         }
         for (MultiAutonEntry e : s_multiAutons) {
+            long ts = System.nanoTime();
             m_adaptableAutonFactory.multiAdaptableAuton(e.name(), e.infos());
+            count++;
+            System.out.printf("[PREHEAT] %s: %.1f ms%n", e.name(), (System.nanoTime() - ts) * 1e-6);
         }
+        System.out.printf("[PREHEAT] %d routines total: %.1f ms%n",
+            count, (System.nanoTime() - totalStart) * 1e-6);
     }
 
     /**
@@ -340,15 +350,23 @@ public class AutonChooser {
             "choreo.util.TrajSchemaVersion",
         };
         ClassLoader cl = AutonChooser.class.getClassLoader();
+        long totalStart = System.nanoTime();
         for (String cls : classes) {
             try {
+                long ts = System.nanoTime();
                 Class.forName(cls, true, cl);
+                long elapsed = System.nanoTime() - ts;
+                if (elapsed > 5_000_000) { // only log if > 5ms
+                    System.out.printf("[CLASSLOAD] %s: %.1f ms%n", cls, elapsed * 1e-6);
+                }
             } catch (ClassNotFoundException e) {
                 DriverStation.reportWarning(
                     "ChoreoLib warmup: class not found: " + cls + " (library version mismatch?)",
                     false);
             }
         }
+        System.out.printf("[CLASSLOAD] %d classes total: %.1f ms%n",
+            classes.length, (System.nanoTime() - totalStart) * 1e-6);
     }
 
     public static Command getPreheater() {
