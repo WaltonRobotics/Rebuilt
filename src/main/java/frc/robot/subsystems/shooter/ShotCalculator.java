@@ -80,18 +80,23 @@ public class ShotCalculator {
 
         kRPSBoost = kRPSBoostTuner.enabled() ? kRPSBoostTuner.get() : kRPSBoost;
 
+
         ShotLerpTable.Builder shot = new ShotLerpTable.Builder();
 
         shot.add(8.627, 69.000, 1.160, 1.65, 0.500);
         shot.add(7.801, 64.700, 1.134, 1.37, 0.500);
         shot.add(6.973, 62.300, 1.104, 1.33, 0.500);
         shot.add(6.126, 58.000, 1.071, 1.33, 0.500);
-        shot.add(5.421, 58.830, 1.046, 1.19, 0.500);
+        shot.add(5.577, 57.600, 1.046, 1.19, 0.500);
+        shot.add(4.555, 54.200, 0.994, 1.12, 0.500);
         shot.add(4.231, 54.400, 0.974, 1.09, 0.500);
-        /*                   NEED MORE POINTS HERE                           */
+        shot.add(3.798, 51.900, 0.852, 1.08, 0.500);
+        shot.add(3.267, 47.600, 0.907, 0.95, 0.500);
         shot.add(2.826, 46.400, 0.869, 0.93, 0.500);
+        shot.add(2.212, 42.500, 0.608, 0.98, 0.500);
         shot.add(1.929, 41.700, 0.500, 0.87, 0.500);
         shot.add(1.093, 43.450, 0.000, 1.02, 0.500);
+        shot.add(0.985, 40.000, 0.000, 0.97, 0.500);
 
 
         kShotTable = shot.build();
