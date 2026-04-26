@@ -201,7 +201,7 @@ public class WaltAdaptableAutonFactory {
             //         var sample = thisTraj.getRawTrajectory().sampleAt(i, m_isAtStopIntake);
             //     }))
             // )
-            if (autonInfos[i + 1].delay() == 0) {
+            if (autonInfos[i + 1].delay() != 0) {
                 thisTraj.done().onTrue(
                 thisInfo.SOTM ? Commands.sequence(
                     Commands.waitSeconds(autonInfos[i + 1].delay()),
