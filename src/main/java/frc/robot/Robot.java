@@ -9,10 +9,13 @@ import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.IntakeK.kIntakeRollersIntakeVolts;
 import static frc.robot.Constants.RobotK.*;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
+
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveModule.SteerRequestType;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -77,7 +80,7 @@ public class Robot extends TimedRobot {
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
         .withDeadband(kMaxTranslationSpeed.times(0.1)).withRotationalDeadband(kMaxAngularRate.times(0.1)) // Add a 10% deadband
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-    // private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     // private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
     // private final SwerveRequest.RobotCentric tuneDrive = new SwerveRequest.RobotCentric()
@@ -245,6 +248,8 @@ public class Robot extends TimedRobot {
         final double slowMps = kMaxTranslationMps * speedMult;
         final double slowRotRps = kMaxAngularRps * rotationMult;
         return m_drivetrain.applyRequest(() -> {
+            boolean notStandingStill = (m_driver.getLeftY() > 0.005 || m_driver.getLeftX() > 0.005) || (m_driver.getRightX() > 0.005 || m_driver.getRightY() > 0.005);
+
             double translationMps = m_driver.leftTrigger().getAsBoolean() ? slowMps : kMaxTranslationMps;
             double rotationalMps = m_driver.leftTrigger().getAsBoolean() ? slowRotRps : kMaxAngularRps;
 
@@ -253,14 +258,17 @@ public class Robot extends TimedRobot {
             double driverYawRate = rotationalMps * -m_driver.getRightX(); //m_driver.leftBumper().getAsBoolean()
                 // ? slowRotRps * -m_driver.getRightX()
                 // : kMaxAngularRps * -m_driver.getRightX();
-
-            return drive
-                .withVelocityX(driverXVelo) // Drive forward with Y (forward)
-                .withVelocityY(driverYVelo) // Drive left with X (left)
-                .withRotationalRate(driverYawRate); // Drive counterclockwise with negative X (left)
+            
+            if (notStandingStill) {
+                return drive
+                    .withVelocityX(driverXVelo) // Drive forward with Y (forward)
+                    .withVelocityY(driverYVelo) // Drive left with X (left)
+                    .withRotationalRate(driverYawRate); // Drive counterclockwise with negative X (left)
+            } else {
+                return brake;
             }
-        );
-    }
+        });
+    } 
 
     // private void setBothRumble(RumbleType type, double intensity) {
     //     m_driver.setRumble(type, intensity);
