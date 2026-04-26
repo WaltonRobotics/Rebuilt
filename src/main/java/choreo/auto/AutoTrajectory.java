@@ -64,7 +64,7 @@ public class AutoTrajectory {
       ChoreoAlert.multiAlert(
           causes -> "Unable to get initial pose for trajectories " + causes + ".", kError);
 
-  private static final Alert outOfBounds =
+  public static final Alert outOfBounds =
       ChoreoAlert.alert("Path paused due to the robot falling out the path's bounds", kWarning);
 
   private final String name;
@@ -181,7 +181,7 @@ public class AutoTrajectory {
     if (poseSupplier.get().getTranslation().getDistance(sample.getPose().getTranslation()) > 0.2) {
         activeTimer.stop();
         outOfBounds.set(true);
-    } else {
+    } else if (poseSupplier.get().getTranslation().getDistance(sample.getPose().getTranslation()) < 0.05) {
       activeTimer.start();
       outOfBounds.set(false);
     }
