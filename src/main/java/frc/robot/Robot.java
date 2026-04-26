@@ -197,10 +197,10 @@ public class Robot extends TimedRobot {
         System.out.printf("[INIT PROFILE] preloadAllTrajectories:   %7.1f ms%n", (tPreload - tPrev) * 1e-6);
         tPrev = tPreload;
 
-        AutonChooser.preheatAllRoutines();
-        long tPreheat = System.nanoTime();
-        System.out.printf("[INIT PROFILE] preheatAllRoutines:       %7.1f ms%n", (tPreheat - tPrev) * 1e-6);
-        tPrev = tPreheat;
+        // AutonChooser.preheatAllRoutines();
+        // long tPreheat = System.nanoTime();
+        // System.out.printf("[INIT PROFILE] preheatAllRoutines:       %7.1f ms%n", (tPreheat - tPrev) * 1e-6);
+        // tPrev = tPreheat;
 
         RobotModeTriggers.autonomous().whileTrue(
             AutonChooser.m_chooser.selectedCommandScheduler().withTimeout(20.3)
@@ -225,6 +225,8 @@ public class Robot extends TimedRobot {
 
         m_preheaterCommand = AutonChooser.getPreheater();
         CommandScheduler.getInstance().schedule(m_preheaterCommand);
+        // m_preheaterCommand = AutonChooser.m_chooser.selectedCommandScheduler();
+        // CommandScheduler.getInstance().schedule(m_preheaterCommand);
 
         long tEnd = System.nanoTime();
         System.out.printf("[INIT PROFILE] preheater cmd build:      %7.1f ms%n", (tEnd - tPrev) * 1e-6);

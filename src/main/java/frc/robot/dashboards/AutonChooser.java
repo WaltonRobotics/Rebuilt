@@ -374,6 +374,7 @@ public class AutonChooser {
             return Commands.print("Tried to preheat before factory init!");
         }
 
-        return m_adaptableAutonFactory.preheater().cmd().ignoringDisable(true);
+        // return m_adaptableAutonFactory.preheater().cmd().ignoringDisable(true);
+        return m_chooser.selectedCommand();
     }
 }
