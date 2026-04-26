@@ -58,7 +58,7 @@ import frc.util.AllianceFlipUtil;
 import frc.util.VisionUtil;
 
 public class Constants {
-    public static final boolean kDebugLoggingEnabled = true;
+    public static final boolean kDebugLoggingEnabled = false;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
     public static final CANBus kRioBus = CANBus.roboRIO();
@@ -415,6 +415,9 @@ public class Constants {
         public static final double kFieldLengthMeters = Units.inchesToMeters(651.22); 
         public static final double kFieldWidthMeters = Units.inchesToMeters(317.69);
 
+        public static final Pose2d kLeftResetPose = new Pose2d(0.478, 8 - 0.392, Rotation2d.kZero);
+        public static final Pose2d kRightResetPose = new Pose2d(0.478, 0.392, Rotation2d.kZero);
+
         public static final AprilTagFieldLayout kTagLayout;
 
         //Ignore trench April Tags
@@ -660,7 +663,7 @@ public class Constants {
             Meters.of(5.437880039215088), new Rotation2d(0));
 
         public static final double kIntakeTimeout = 7.5;
-        public static final double kShootingTimeout = 4.5; //12
+        public static final double kShootingTimeout = 4; //12
         public static final double kSOTMTimeout = 100; //12
         public static final double kSweepShootingTimeout = 20;
 

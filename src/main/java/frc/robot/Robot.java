@@ -6,6 +6,8 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.Constants.FieldK.kLeftResetPose;
+import static frc.robot.Constants.FieldK.kRightResetPose;
 import static frc.robot.Constants.IntakeK.kIntakeRollersIntakeVolts;
 import static frc.robot.Constants.RobotK.*;
 import java.util.Optional;
@@ -136,6 +138,9 @@ public class Robot extends TimedRobot {
     private final Trigger trg_limitFPS = RobotModeTriggers.disabled();
     private final Trigger trg_unlimitFps = RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop());
 
+    private Trigger trg_resetPoseLeft = m_driver.leftBumper().and(trg_driverOverride.and(m_driver.povLeft()));
+    private Trigger trg_resetPoseRight = m_driver.leftBumper().and(trg_driverOverride.and(m_driver.povRight()));
+
     private Trigger trg_unjam = m_driver.rightBumper();
 
     private final DoubleLogger log_miniPCCurrent = WaltLogger.logDouble(kLogTab, "MiniPC current");
@@ -192,10 +197,10 @@ public class Robot extends TimedRobot {
         System.out.printf("[INIT PROFILE] forceLoadChoreoClasses:   %7.1f ms%n", (tClassLoad - tPrev) * 1e-6);
         tPrev = tClassLoad;
 
-        m_adpatableAutonFactory.preloadAllTrajectories(AutonChooser.allTrajectoryNames());
-        long tPreload = System.nanoTime();
-        System.out.printf("[INIT PROFILE] preloadAllTrajectories:   %7.1f ms%n", (tPreload - tPrev) * 1e-6);
-        tPrev = tPreload;
+        // m_adpatableAutonFactory.preloadAllTrajectories(AutonChooser.allTrajectoryNames());
+        // long tPreload = System.nanoTime();
+        // System.out.printf("[INIT PROFILE] preloadAllTrajectories:   %7.1f ms%n", (tPreload - tPrev) * 1e-6);
+        // tPrev = tPreload;
 
         // AutonChooser.preheatAllRoutines();
         // long tPreheat = System.nanoTime();
@@ -381,10 +386,13 @@ public class Robot extends TimedRobot {
 
         // m_driver.y().and(trg_driverOverride).onTrue(m_shooter.turretHomingCmd(false));  //false? im not sure
 
-        m_driver.povDown().onTrue(m_shooter.m_turret.setTurretLockCmd(false));
-        m_driver.povRight().onTrue(m_shooter.m_turret.setTurretLockCmd(true));
+        m_driver.povDown().and(trg_driverOverride.negate()).onTrue(m_shooter.m_turret.setTurretLockCmd(false));
+        m_driver.povRight().and(trg_driverOverride.negate()).onTrue(m_shooter.m_turret.setTurretLockCmd(true));
 
         m_manipulator.y().and(trg_manipOverride).onTrue(Commands.runOnce(() -> m_shooter.m_turret.homeTurret(true)));
+
+        trg_resetPoseLeft.onTrue(Commands.runOnce(() -> m_drivetrain.resetPose(kLeftResetPose)));
+        trg_resetPoseRight.onTrue(Commands.runOnce(() -> m_drivetrain.resetPose(kRightResetPose)));
         
         // m_driver.povDown().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX(), m_drivetrain.getState().Pose.getY() - Inches.of(20).magnitude()), 0.001));
         // m_driver.povUp().onTrue(m_drivetrain.roboToTranslation(new Translation2d(m_drivetrain.getState().Pose.getX(), m_drivetrain.getState().Pose.getY() + Inches.of(20).magnitude()), 0.001));

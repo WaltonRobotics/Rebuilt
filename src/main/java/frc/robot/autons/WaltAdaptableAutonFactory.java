@@ -183,8 +183,8 @@ public class WaltAdaptableAutonFactory {
 
         routine.active().onTrue(
             Commands.sequence(
-                Commands.waitSeconds(autonInfos[0].delay()).alongWith(homingCmd()),
-                autonTrajs[0].cmd().alongWith()
+                Commands.waitSeconds(autonInfos[0].delay()),
+                autonTrajs[0].cmd().alongWith(homingCmd())
             )
         );
 
