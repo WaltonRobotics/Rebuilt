@@ -32,27 +32,27 @@ public class Indexer extends SubsystemBase {
     private final TalonFX m_spindexer = new TalonFX(kSpindexerCANID, Constants.kCanivoreBus); // X60Foc
     private final TalonFX m_tunnel = new TalonFX(kTunnelCANID, Constants.kCanivoreBus); // X60Foc
 
-    private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(0).withEnableFOC(false);
-    private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(0).withEnableFOC(false);
+    private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
+    private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
 
     /* SIM OBJECTS */
-    private final DCMotorSim m_spindexerSim = new DCMotorSim(
-        LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX60Foc(1),
-            kSpindexerMOI,
-            kSpindexerGearing
-        ),
-        DCMotor.getKrakenX60Foc(1)
-    );
+    // private final DCMotorSim m_spindexerSim = new DCMotorSim(
+    //     LinearSystemId.createDCMotorSystem(
+    //         DCMotor.getKrakenX60Foc(1),
+    //         kSpindexerMOI,
+    //         kSpindexerGearing
+    //     ),
+    //     DCMotor.getKrakenX60Foc(1)
+    // );
 
-    private final DCMotorSim m_tunnelSim = new DCMotorSim(
-        LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX60Foc(1),
-            kTunnelMOI,
-            kTunnelGearing
-        ),
-        DCMotor.getKrakenX60Foc(1)
-    );
+    // private final DCMotorSim m_tunnelSim = new DCMotorSim(
+    //     LinearSystemId.createDCMotorSystem(
+    //         DCMotor.getKrakenX60Foc(1),
+    //         kTunnelMOI,
+    //         kTunnelGearing
+    //     ),
+    //     DCMotor.getKrakenX60Foc(1)
+    // );
     
     /* LOGGERS */
     private final DoubleLogger log_spindexerRPS = WaltLogger.logDouble(kLogTab, "spindexerRPS");
@@ -178,9 +178,9 @@ public class Indexer extends SubsystemBase {
         refreshTunnelState();
     }
 
-    @Override
-    public void simulationPeriodic() {
-        WaltMotorSim.updateSimFX(m_tunnel, m_tunnelSim);
-        WaltMotorSim.updateSimFX(m_spindexer, m_spindexerSim);
-    }
+    // @Override
+    // public void simulationPeriodic() {
+    //     WaltMotorSim.updateSimFX(m_tunnel, m_tunnelSim);
+    //     WaltMotorSim.updateSimFX(m_spindexer, m_spindexerSim);
+    // }
 }

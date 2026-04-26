@@ -72,8 +72,6 @@ public class Hood extends SubsystemBase {
         return runOnce(() -> setHoodPos(rots));
     }
 
-
-
     private static double getHoodAngleDeg(double posRots) {
         return kPhysicalHoodMinPosition_double + (posRots * 360.0 - kHoodMinRots_double * 360.0) * kAbsoluteToPhysicalAngleRatio;
     }

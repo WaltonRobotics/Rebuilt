@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
@@ -49,7 +50,7 @@ public class Intake extends SubsystemBase {
     private final TalonFX m_intakeRollersA = new TalonFX(kIntakeRollersA_CANID); //x60Foc
     private final TalonFX m_intakeRollersB = new TalonFX(kIntakeRollersB_CANID); //x60Foc
 
-    private DynamicMotionMagicVoltage m_MMVReq = new DynamicMotionMagicVoltage(0, 1, 1).withEnableFOC(true);
+    private MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0).withEnableFOC(true);
     private VelocityVoltage m_VelVoltReq = new VelocityVoltage(0).withEnableFOC(true);
     private VoltageOut m_voltsReq = new VoltageOut(0).withEnableFOC(true);
 
@@ -61,7 +62,8 @@ public class Intake extends SubsystemBase {
 
     private BooleanSupplier m_currentSpike = () -> sig_intakeArmStatorCurrent.getValueAsDouble() > 5.0;
     private BooleanSupplier m_veloIsNearZero = () -> Math.abs(sig_intakeArmVelo.getValueAsDouble()) < 0.005;
-
+    private BooleanSupplier m_shimmyVeloIsNearZero = () -> Math.abs(sig_intakeArmVelo.getValueAsDouble()) < 0.05;
+    
     private VoltageOut m_intakeArmZeroingReq = new VoltageOut(0);
 
     private Debouncer m_currentDebouncer = new Debouncer(0.100, DebounceType.kRising);
@@ -125,50 +127,31 @@ public class Intake extends SubsystemBase {
 
     /* COMMANDS */
     public void setIntakeArmPos(IntakeArmPosition rots) {
-        setIntakeArmPos(rots.rots, rots == IntakeArmPosition.RETRACTED ? 36 : 18);
+        setIntakeArmPos(rots.rots); // rots == IntakeArmPosition.RETRACTED ? 36 : 18
     }
 
     public Command setIntakeArmPosCmd(IntakeArmPosition rots) {
-        return setIntakeArmPosCmd(rots.rots, rots == IntakeArmPosition.RETRACTED ? 36 : 18);
+        return setIntakeArmPosCmd(rots.rots); // rots == IntakeArmPosition.RETRACTED ? 36 : 18
     }
 
-    public Command setIntakeArmPosCmd(Angle rots, double RPSPS) {
-        return runOnce(() -> setIntakeArmPos(rots, RPSPS));
+    public Command setIntakeArmPosCmd(Angle rots) {
+        return runOnce(() -> setIntakeArmPos(rots));
     }
 
-    public void setIntakeArmPos(Angle rots, double RPSPS) {
-        m_intakeArm.setControl(m_MMVReq.withPosition(rots).withAcceleration(RPSPS));
+    public void setIntakeArmPos(Angle rots) {
+        m_intakeArm.setControl(m_MMVReq.withPosition(rots));
     }
 
     public boolean isIntakeArmAtDest() {
-       return sig_intakeArmMMAtTarget.getValue();
-    }
-
-    public Command shimmy() {
-        BooleanSupplier intakeArmAtDest = () -> isIntakeArmAtDest();
-
-        setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED);
-        Commands.waitUntil(intakeArmAtDest);
-
-        return Commands.repeatingSequence(
-            stopIntakeRollers(),
-            setIntakeArmPosCmd(IntakeArmPosition.RETRACTED),
-            Commands.waitUntil(intakeArmAtDest),
-            setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
-            startIntakeRollers(),
-            Commands.waitUntil(intakeArmAtDest)
-        ).finallyDo(() -> {
-            setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED);
-            setIntakeRollersVelocityCmd(0);
-        });
+       return m_shimmyVeloIsNearZero.getAsBoolean();
     }
 
      public void setIntakeArmNeutralMode(NeutralModeValue value) {
         m_intakeArm.setNeutralMode(value);
     }
 
-    public Command startIntakeRollers() {
-        return setIntakeRollersVelocityCmd(10);
+    public Command startIntakeRollers(double volts) {
+        return setIntakeRollersVelocityCmd(volts);
     }
 
     public Command stopIntakeRollers() {

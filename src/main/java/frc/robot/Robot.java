@@ -6,6 +6,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.Constants.IntakeK.kIntakeRollersIntakeVolts;
 import static frc.robot.Constants.RobotK.*;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
@@ -241,10 +242,6 @@ public class Robot extends TimedRobot {
         trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   
         trg_unlimitFps.onTrue(WaltCamera.setFpsLimitCmd(false));
 
-        trg_turretInShootRange.whileFalse(Commands.run(() -> m_driver.setRumble(RumbleType.kBothRumble, 0.3))
-            .finallyDo(() -> m_driver.setRumble(RumbleType.kBothRumble, 0))
-        );
-
         /* BUTTON BIDNDS */
         m_driver.leftBumper().and(trg_driverOverride).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));    // Reset the field-centric heading on left bumper press.
 
@@ -261,11 +258,11 @@ public class Robot extends TimedRobot {
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
 
         trg_intake.and(trg_shoot).and(trg_emergencyBarf.negate()).whileTrue(
-            m_superstructure.intake(() -> true)
+            m_superstructure.intake(() -> true, () -> false)
         );
 
         trg_intake.and(trg_shoot.negate()).and(trg_emergencyBarf.negate()).whileTrue(
-            m_superstructure.intake(() -> false)
+            m_superstructure.intake(() -> false, () -> false)
         );
 
         trg_retractIntake.onTrue(m_superstructure.retractIntake());
@@ -300,6 +297,9 @@ public class Robot extends TimedRobot {
         // );
 
         // m_drivetrain.registerTelemetry(logger::telemeterize);    //UNUSED - runs at 250hz which is burning CPU
+      
+        // trg_turretInShootRange.whileFalse(Commands.run(() -> m_driver.setRumble(RumbleType.kBothRumble, 0.3))
+        //     .finallyDo(() -> m_driver.setRumble(RumbleType.kBothRumble, 0))
     }
 
     private void configureTestBindings() {
