@@ -660,7 +660,8 @@ public class Constants {
             Meters.of(5.437880039215088), new Rotation2d(0));
 
         public static final double kIntakeTimeout = 7.5;
-        public static final double kReshootShootingTimeout = 5.5; //12
+        public static final double kShootingTimeout = 4.5; //12
+        public static final double kSOTMTimeout = 100; //12
         public static final double kSweepShootingTimeout = 20;
 
         /* OLD PATHS */

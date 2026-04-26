@@ -88,74 +88,74 @@ public class AutonChooser {
             new AdaptableAutonInfo(AutonK.kLeftTwoSweep, AutonK.kSweepShootingTimeout, true ,0));
 
         addMultiAuton(kLeftShootAndPass,
-            new AdaptableAutonInfo(AutonK.kLeftOneJab, AutonK.kReshootShootingTimeout, false, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoPassing, AutonK.kReshootShootingTimeout, true, 0));
+            new AdaptableAutonInfo(AutonK.kLeftOneJab, AutonK.kShootingTimeout, false, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoPassing, AutonK.kShootingTimeout, true, 0));
 
         addMultiAuton(kLeftTwoCycle,
-            new AdaptableAutonInfo(AutonK.kLeftOneJab, AutonK.kReshootShootingTimeout, false, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kReshootShootingTimeout, false, 0));
+            new AdaptableAutonInfo(AutonK.kLeftOneJab, AutonK.kShootingTimeout, false, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kShootingTimeout, false, 0));
 
         addMultiAuton(kRightShootAndSweep,
             new AdaptableAutonInfo(AutonK.kRightOneJab, AutonK.kSweepShootingTimeout, false, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoSweep, AutonK.kSweepShootingTimeout, false, 0));
 
         addMultiAuton(kRightTwoCycle,
-            new AdaptableAutonInfo(AutonK.kRightOneJab, AutonK.kReshootShootingTimeout, false, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kReshootShootingTimeout, false, 0));
+            new AdaptableAutonInfo(AutonK.kRightOneJab, AutonK.kShootingTimeout, false, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kShootingTimeout, false, 0));
 
         //---TRENCH ASSIST AUTONS
         addMultiAuton(kLeftTrenchASSISTTwoCycle,
-            new AdaptableAutonInfo(AutonK.kLeftOneTrench, AutonK.kReshootShootingTimeout, false, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kReshootShootingTimeout, false, 0));
+            new AdaptableAutonInfo(AutonK.kLeftOneTrench, AutonK.kShootingTimeout, false, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kShootingTimeout, false, 0));
 
         addMultiAuton(kRightTrenchASSISTTwoCycle,
-            new AdaptableAutonInfo(AutonK.kRightOneTrench, AutonK.kReshootShootingTimeout, false, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kReshootShootingTimeout, false, 0));
+            new AdaptableAutonInfo(AutonK.kRightOneTrench, AutonK.kShootingTimeout, false, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kShootingTimeout, false, 0));
 
         addMultiAuton(kRightShootAndPass,
-            new AdaptableAutonInfo(AutonK.kRightOneJab, AutonK.kReshootShootingTimeout, false, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoPassing, AutonK.kReshootShootingTimeout, true, 0));
+            new AdaptableAutonInfo(AutonK.kRightOneJab, AutonK.kShootingTimeout, false, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoPassing, AutonK.kShootingTimeout, true, 0));
 
         //---DEFENSE AUTONS
         addMultiAuton(kLeftDefenseOneCycle,
-            new AdaptableAutonInfo(AutonK.kLeftOneDefense, AutonK.kReshootShootingTimeout, false, 0));
+            new AdaptableAutonInfo(AutonK.kLeftOneDefense, AutonK.kShootingTimeout, false, 0));
 
         addMultiAuton(kRightDefenseOneCycle,
-            new AdaptableAutonInfo(AutonK.kRightOneDefense, AutonK.kReshootShootingTimeout, false, 0));
+            new AdaptableAutonInfo(AutonK.kRightOneDefense, AutonK.kShootingTimeout, false, 0));
 
         //---DEPOT AUTONS
         addMultiAuton(kLeftShootAndDepot,
-            new AdaptableAutonInfo(AutonK.kLeftOneJab, AutonK.kReshootShootingTimeout, false, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoDepot, AutonK.kReshootShootingTimeout, false, 0));
+            new AdaptableAutonInfo(AutonK.kLeftOneJab, AutonK.kShootingTimeout, false, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoDepot, AutonK.kShootingTimeout, false, 0));
 
         addMultiAuton(kRightShootAndDepot,
-            new AdaptableAutonInfo(AutonK.kRightOneJab, AutonK.kReshootShootingTimeout, false, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoDepot, AutonK.kReshootShootingTimeout, false, 0));
+            new AdaptableAutonInfo(AutonK.kRightOneJab, AutonK.kShootingTimeout, false, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoDepot, AutonK.kShootingTimeout, false, 0));
 
         //---MISC
         addMultiAuton(kRightHubCircle,
-            new AdaptableAutonInfo(AutonK.kRightOneCircle, AutonK.kReshootShootingTimeout, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoSweep, AutonK.kReshootShootingTimeout, true, 0));
+            new AdaptableAutonInfo(AutonK.kRightOneCircle, AutonK.kShootingTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoSweep, AutonK.kShootingTimeout, true, 0));
 
         addMultiAuton(kLeftSweepAndDepot,
-            new AdaptableAutonInfo(AutonK.kLeftOneSweepAndDepot, AutonK.kReshootShootingTimeout, true, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kReshootShootingTimeout, true, 0));
+            new AdaptableAutonInfo(AutonK.kLeftOneSweepAndDepot, AutonK.kShootingTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kShootingTimeout, true, 0));
 
         addMultiAuton(kLeftTwoCycleReverse,
-            new AdaptableAutonInfo(AutonK.kLeftOneReverse, AutonK.kReshootShootingTimeout, false, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoReverse, AutonK.kReshootShootingTimeout, false, 0));
+            new AdaptableAutonInfo(AutonK.kLeftOneReverse, AutonK.kShootingTimeout, false, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoReverse, AutonK.kShootingTimeout, false, 0));
 
         addMultiAuton(kRightTwoCycleReverse,
-            new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kReshootShootingTimeout, false, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoReverse, AutonK.kReshootShootingTimeout, false, 0));
+            new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kShootingTimeout, false, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoReverse, AutonK.kShootingTimeout, false, 0));
 
         addMultiAuton(kLeftTwoCycleReverseAndJab,
-            new AdaptableAutonInfo(AutonK.kLeftOneReverse, AutonK.kReshootShootingTimeout, false, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kReshootShootingTimeout, false, 0));
+            new AdaptableAutonInfo(AutonK.kLeftOneReverse, AutonK.kShootingTimeout, false, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoJab, AutonK.kShootingTimeout, false, 0));
 
         addMultiAuton(kRightTwoCycleReverseAndJab,
-            new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kReshootShootingTimeout, false, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kReshootShootingTimeout, false, 0));
+            new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kShootingTimeout, false, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kShootingTimeout, false, 0));
 
         // addAuton(kRightStressTestLong, new AdaptableAutonInfo(AutonK.kRightStressTestLong, 100, true, 0));
         
@@ -176,56 +176,56 @@ public class AutonChooser {
         /* NEW AUTON OPTIONS */
         //---2 CYCLES
         addMultiAuton(kRightTrenchTwoCycleBumpReturn,
-            new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoBumpReturn, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoGoOut, 100, true, 0));
+            new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoBumpReturn, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoGoOut, AutonK.kSOTMTimeout, true, 0));
 
         addMultiAuton(kLeftTrenchTwoCycleBumpReturn,
-            new AdaptableAutonInfo(AutonK.kLeftOneBumpReturn, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoBumpReturn, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoGoOut, 100, true, 0));
+            new AdaptableAutonInfo(AutonK.kLeftOneBumpReturn, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoBumpReturn, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoGoOut, AutonK.kSOTMTimeout, true, 0));
 
         addMultiAuton(kRightTrechTwoCycleTrenchReturn,
-            new AdaptableAutonInfo(AutonK.kRightOneTrenchReturn, AutonK.kReshootShootingTimeout, false, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoTrenchReturn, 100, false, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoGoOut, 100, false, 0));
+            new AdaptableAutonInfo(AutonK.kRightOneTrenchReturn, AutonK.kShootingTimeout, false, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoTrenchReturn, AutonK.kShootingTimeout, false, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoGoOut, AutonK.kSOTMTimeout, false, 0));
 
         addMultiAuton(kLeftTrenchTwoCycleTrenchReturn,
-            new AdaptableAutonInfo(AutonK.kLeftOneTrenchReturn, AutonK.kReshootShootingTimeout, false, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoTrenchReturn, 100, false, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoGoOut, 100, false, 0));
+            new AdaptableAutonInfo(AutonK.kLeftOneTrenchReturn, AutonK.kShootingTimeout, false, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoTrenchReturn, AutonK.kShootingTimeout, false, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoGoOut, AutonK.kSOTMTimeout, false, 0));
 
         //---2 CYCLES PLUS OUTPOST
         addMultiAuton(kRightTrenchTwoCycleBumpReturnOutpost,
-            new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoBumpToOutpost, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoOutpostToTrench, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoBumpReturn, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0));
+            new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoBumpToOutpost, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoOutpostToTrench, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoBumpReturn, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, AutonK.kSOTMTimeout, true, 0));
 
         addMultiAuton(kRightTrenchTwoCycleTrenchReturnOutpost,
-            new AdaptableAutonInfo(AutonK.kRightOneTrenchReturn, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoTrenchToOutpost, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoOutpostToTrench, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoTrenchReturn, 100, false, 0));
+            new AdaptableAutonInfo(AutonK.kRightOneTrenchReturn, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoTrenchToOutpost, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoOutpostToTrench, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoTrenchReturn, AutonK.kSOTMTimeout, false, 0));
 
         //---2 CYCLES PLUS DEPOT
         addMultiAuton(kLeftTrenchTwoCycleBumpReturnDepot,
-            new AdaptableAutonInfo(AutonK.kLeftOneBumpReturn, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoBumpToDepot, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoDepotToTrench, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoBumpReturn, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, 100, true, 0));
+            new AdaptableAutonInfo(AutonK.kLeftOneBumpReturn, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoBumpToDepot, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoDepotToTrench, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoBumpReturn, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, AutonK.kSOTMTimeout, true, 0));
 
         addMultiAuton(kLeftTrenchTwoCycleTrenchReturnDepot,
-            new AdaptableAutonInfo(AutonK.kLeftOneTrenchReturn, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoTrenchToDepot, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoDepotToTrench, 100, true, 0),
-            new AdaptableAutonInfo(AutonK.kLeftTwoTrenchReturn, 100, false, 0));
+            new AdaptableAutonInfo(AutonK.kLeftOneTrenchReturn, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoTrenchToDepot, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoDepotToTrench, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoTrenchReturn, AutonK.kSOTMTimeout, false, 0));
 
         //---MISC
         addAuton(kRightTrenchSelfPass, new AdaptableAutonInfo(AutonK.kRightOneSelfPass, 100, true, 0));

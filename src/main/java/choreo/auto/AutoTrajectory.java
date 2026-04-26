@@ -178,13 +178,13 @@ public class AutoTrajectory {
       return;
     }
     var sample = sampleOpt.get();
-    if (poseSupplier.get().getTranslation().getDistance(sample.getPose().getTranslation()) > 0.2) {
-        activeTimer.stop();
-        outOfBounds.set(true);
-    } else if (poseSupplier.get().getTranslation().getDistance(sample.getPose().getTranslation()) < 0.05) {
-      activeTimer.start();
-      outOfBounds.set(false);
-    }
+    // if (poseSupplier.get().getTranslation().getDistance(sample.getPose().getTranslation()) > 0.2) {
+    //     activeTimer.stop();
+    //     outOfBounds.set(true);
+    // } else if (poseSupplier.get().getTranslation().getDistance(sample.getPose().getTranslation()) < 0.05) {
+    //   activeTimer.start();
+    //   outOfBounds.set(false);
+    // }
     if (sample instanceof SwerveSample swerveSample) {
       var swerveController = (Consumer<SwerveSample>) this.controller;
       swerveController.accept(swerveSample);

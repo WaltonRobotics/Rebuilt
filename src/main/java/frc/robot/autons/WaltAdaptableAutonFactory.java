@@ -84,7 +84,7 @@ public class WaltAdaptableAutonFactory {
 
     public AutoRoutine preheater() {
         System.out.println("PREHEAT MADE");
-        return adaptableAuton("PreHeat", new AdaptableAutonInfo("PreHeat", AutonK.kReshootShootingTimeout, false, 0));
+        return adaptableAuton("PreHeat", new AdaptableAutonInfo("PreHeat", AutonK.kShootingTimeout, false, 0));
     }
 
     /**
