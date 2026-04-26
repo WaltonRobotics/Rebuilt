@@ -266,14 +266,14 @@ public class Robot extends TimedRobot {
                 // ? slowRotRps * -m_driver.getRightX()
                 // : kMaxAngularRps * -m_driver.getRightX();
             
-            if (notStandingStill) {
+            // if (notStandingStill) {
                 return drive
                     .withVelocityX(driverXVelo) // Drive forward with Y (forward)
                     .withVelocityY(driverYVelo) // Drive left with X (left)
                     .withRotationalRate(driverYawRate); // Drive counterclockwise with negative X (left)
-            } else {
-                return brake;
-            }
+            // } else {
+            //     return brake;
+            // }
         });
     } 
 
