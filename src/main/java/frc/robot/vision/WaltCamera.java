@@ -145,7 +145,8 @@ public class WaltCamera extends PhotonCamera {
             if (!change.hasTargets()) { continue; }
             visionEst = m_estimator.estimateCoprocMultiTagPose(change);
             if (visionEst.isEmpty()) {
-                visionEst = m_estimator.estimateLowestAmbiguityPose(change);
+                visionEst = m_estimator.estimateClosestToCameraHeightPose(change);
+                // visionEst = m_estimator.estimateLowestAmbiguityPose(change);
             }
             updateEstimationStdDevs(visionEst, change.getTargets());
             log_stdDevs.accept(m_curStdDevs.getData());
