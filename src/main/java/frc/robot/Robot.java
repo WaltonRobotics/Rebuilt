@@ -25,6 +25,7 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -93,6 +94,10 @@ public class Robot extends TimedRobot {
 
     // private final Telemetry logger = new Telemetry(kMaxTranslationSpeed.in(MetersPerSecond));
 
+    private final SlewRateLimiter limit_driverX = new SlewRateLimiter(0.30);
+    private final SlewRateLimiter limit_driverY = new SlewRateLimiter(0.30);
+    private final SlewRateLimiter limit_driverYawRate = new SlewRateLimiter(0.30);
+
     //---CONTROLLERS
     private final CommandXboxController m_driver = new CommandXboxController(0);
     private final CommandXboxController m_manipulator = new CommandXboxController(1);
@@ -154,7 +159,6 @@ public class Robot extends TimedRobot {
     private final DoubleLogger log_pdhCurrentTotal = WaltLogger.logDouble(kLogTab, "PDHCurrTotal");
     private final BooleanLogger log_isDSAttatched = WaltLogger.logBoolean(kLogTab, "isDSAttatched");
     private final Pose2dLogger log_robotPose = WaltLogger.logPose2d("Drive", "Pose");
-    private final BooleanLogger log_isBeached = WaltLogger.logBoolean("Drive", "isBeached");
 
     private final DoubleLogger log_autonTime = WaltLogger.logDouble("Auton", "autonTime");
 
@@ -257,27 +261,23 @@ public class Robot extends TimedRobot {
         final double slowMps = kMaxTranslationMps * speedMult;
         final double slowRotRps = kMaxAngularRps * rotationMult;
         return m_drivetrain.applyRequest(() -> {
-            boolean notStandingStill = (m_driver.getLeftY() > 0.005 || m_driver.getLeftX() > 0.005) || (m_driver.getRightX() > 0.005 || m_driver.getRightY() > 0.005);
-
-            double translationMps = m_driver.leftTrigger().getAsBoolean() ? slowMps : kMaxTranslationMps;
-            double rotationalMps = m_driver.leftTrigger().getAsBoolean() ? slowRotRps : kMaxAngularRps;
+            boolean slowButton = m_driver.leftTrigger().getAsBoolean();
+            double translationMps = slowButton ? slowMps : kMaxTranslationMps;
+            double rotationalMps = slowButton ? slowRotRps : kMaxAngularRps;
 
             double driverXVelo = translationMps * -m_driver.getLeftY();
             double driverYVelo = translationMps * -m_driver.getLeftX();
             double driverYawRate = rotationalMps * -m_driver.getRightX(); //m_driver.leftBumper().getAsBoolean()
                 // ? slowRotRps * -m_driver.getRightX()
                 // : kMaxAngularRps * -m_driver.getRightX();
-            
-            // if (notStandingStill) {
-                return drive
-                    .withVelocityX(driverXVelo) // Drive forward with Y (forward)
-                    .withVelocityY(driverYVelo) // Drive left with X (left)
-                    .withRotationalRate(driverYawRate); // Drive counterclockwise with negative X (left)
-            // } else {
-            //     return brake;
-            // }
-        });
-    } 
+
+            return drive
+                .withVelocityX(slowButton ? limit_driverX.calculate(driverXVelo) : driverXVelo) // Drive forward with Y (forward)
+                .withVelocityY(slowButton ? limit_driverY.calculate(driverYVelo) : driverYVelo) // Drive left with X (left)
+                .withRotationalRate(slowButton ? limit_driverYawRate.calculate(driverYawRate) : driverYawRate); // Drive counterclockwise with negative X (left)
+            }
+        );
+    }
 
     // private void setBothRumble(RumbleType type, double intensity) {
     //     m_driver.setRumble(type, intensity);
@@ -454,7 +454,6 @@ public class Robot extends TimedRobot {
         log_rioBrownout.accept(RobotController.isBrownedOut());
         log_pdhCurrentTotal.accept(m_PDH.getTotalCurrent());
         log_isDSAttatched.accept(DriverStation.isDSAttached());
-        log_isBeached.accept(m_drivetrain.isBeached());
 
         // log_currentShift.accept(HubShiftUtil.getOfficialShiftInfo().currentShift().toString());
         // log_currentFudgedShift.accept(HubShiftUtil.getShiftedShiftInfo().currentShift().toString());
