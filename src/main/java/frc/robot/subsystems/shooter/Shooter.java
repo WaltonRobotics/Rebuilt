@@ -269,7 +269,7 @@ public class Shooter extends SubsystemBase {
     }
 
     private boolean detectShot() {
-        boolean accelDrop = m_latestFlywheelAccelerationRotPerSec <= -20.0;
+        boolean accelDrop = m_latestFlywheelAccelerationRotPerSec <= -3.0;
         return accelDrop;
     }
 

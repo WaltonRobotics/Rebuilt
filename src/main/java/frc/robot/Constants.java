@@ -742,5 +742,9 @@ public class Constants {
         public static final String kLeftOneSelfPass = "LEFT_one_selfPass";
         public static final String kRightTwoGoOut = "RIGHT_two_goOut";
         public static final String kLeftTwoGoOut = "LEFT_two_goOut";
+        public static final String kRightBumpPreload = "RIGHT_one_bumpPreload";
+        public static final String kLeftBumpPreload = "LEFT_one_bumpPreload";
+        public static final String kRightTrenchPreload = "RIGHT_one_trenchPreload";
+        public static final String kLeftTrenchPreload = "LEFT_one_trenchPreload";
     }
 }

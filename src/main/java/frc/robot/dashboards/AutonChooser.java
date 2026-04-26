@@ -75,6 +75,7 @@ public class AutonChooser {
     //--MISC
     private final static String kRightTrenchSelfPass = "RIGHT Orbit";
     private final static String kLeftTrenchSelfPass = "LEFT Orbit";
+    private final static String kRightDelayTest = "DELAY TEST - NOT FOR ACTUAL USE";
 
     public static void initialize(WaltAdaptableAutonFactory adaptableAutonFactory) {
         m_adaptableAutonFactory = adaptableAutonFactory;
@@ -228,9 +229,12 @@ public class AutonChooser {
             new AdaptableAutonInfo(AutonK.kLeftTwoTrenchReturn, AutonK.kSOTMTimeout, false, 0));
 
         //---MISC
-        addAuton(kRightTrenchSelfPass, new AdaptableAutonInfo(AutonK.kRightOneSelfPass, 100, true, 0));
+        addAuton(kRightTrenchSelfPass, new AdaptableAutonInfo(AutonK.kRightOneSelfPass, AutonK.kSOTMTimeout, true, 0));
+        addAuton(kLeftTrenchSelfPass, new AdaptableAutonInfo(AutonK.kLeftOneSelfPass, AutonK.kSOTMTimeout, true, 0));
 
-        addMultiAuton(kLeftTrenchSelfPass, new AdaptableAutonInfo(AutonK.kLeftOneSelfPass, 100, true, 0));
+        addMultiAuton(kRightDelayTest, 
+            new AdaptableAutonInfo(AutonK.kRightBumpPreload, AutonK.kShootingTimeout, false, 5),
+            new AdaptableAutonInfo(AutonK.kRightOneTrench, AutonK.kShootingTimeout, false, 5));
         
         //Load AutonChooser
         SmartDashboard.putData("AutoChooser", m_chooser);

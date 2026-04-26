@@ -196,7 +196,13 @@ public class WaltAdaptableAutonFactory {
             AutoTrajectory thisTraj = autonTrajs[i];
             var thisInfo = autonInfos[i];
             System.out.println("traj idx " + i + " (" + thisInfo.autonName + ") .done().onTrue() built");
-            thisTraj.done().onTrue(
+            // thisTraj.active().whileTrue(
+            //     Commands.run(() -> {
+            //         var sample = thisTraj.getRawTrajectory().sampleAt(i, m_isAtStopIntake);
+            //     }))
+            // )
+            if (autonInfos[i + 1].delay() == 0) {
+                thisTraj.done().onTrue(
                 thisInfo.SOTM ? Commands.sequence(
                     Commands.waitSeconds(autonInfos[i + 1].delay()),
                     autonTrajs[i + 1].cmd()) : 
@@ -210,8 +216,20 @@ public class WaltAdaptableAutonFactory {
                         Commands.waitSeconds(autonInfos[i + 1].delay()),
                         tp("TRAJ " + (i + 1) + " STARTED"),
                         autonTrajs[i + 1].cmd()
-                    )
-            );
+                    ));
+            } else {
+                thisTraj.done().onTrue(
+                thisInfo.SOTM ? autonTrajs[i + 1].cmd() : 
+                    Commands.sequence(
+                        tp("WAITING FOR SHOOTING DONE"),
+                        Commands.race(
+                            Commands.waitUntil(m_shooter.getBallShotDebounceTrg().or(trg_isAtStopShoot)),
+                            Commands.waitSeconds(thisInfo.shooterTimeout())
+                        ),
+                        tp("TRAJ " + (i + 1) + " STARTED"),
+                        autonTrajs[i + 1].cmd()
+                    ));
+            }
         }
 
         autonTrajs[autonTrajs.length - 1].done().onTrue(
