@@ -308,7 +308,6 @@ public class Shooter extends SubsystemBase {
 
         ShotCalcOutputs calcData = m_shooterCalc.getLatestShotCalcOutputs();
 
-        sig_shooterCLErr.refresh();
         log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
 
         // set turret reference
