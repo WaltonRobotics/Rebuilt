@@ -180,14 +180,18 @@ public class WaltAdaptableAutonFactory {
             setUpTrajTriggers(thisTraj, thisInfo.shooterTimeout(), autonInfos[i].SOTM());
         }
         System.out.println("trajTriggers built");
-
-        routine.active().onTrue(
-            Commands.sequence(
-                Commands.waitSeconds(autonInfos[0].delay()),
+        if (autonInfos[0].delay() != 0) {
+            routine.active().onTrue(
+                Commands.sequence(
+                    Commands.waitSeconds(autonInfos[0].delay()),
+                    autonTrajs[0].cmd().alongWith(homingCmd())
+                )
+            );
+        } else {
+            routine.active().onTrue(
                 autonTrajs[0].cmd().alongWith(homingCmd())
-            )
-        );
-
+            );
+        }
         System.out.println("routine active built");
 
 
