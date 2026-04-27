@@ -51,12 +51,11 @@ public final class SignalManager {
     }
 
     public static void refreshAll() {
+        // register() always populates m_busLoggers in lockstep with m_signalsByBus,
+        // so a single pass over the signals map reaches every logger.
         for (var entry : m_signalsByBus.entrySet()) {
             entry.getValue().refreshAll();
-        }
-
-        for (var entry : m_busLoggers.entrySet()) {
-            entry.getValue().log(entry.getKey().getStatus());
+            m_busLoggers.get(entry.getKey()).log(entry.getKey().getStatus());
         }
     }
 }

@@ -102,6 +102,9 @@ public class Robot extends TimedRobot {
     private final CommandXboxController m_driver = new CommandXboxController(0);
     private final CommandXboxController m_manipulator = new CommandXboxController(1);
 
+    // Cached so the drive default-command lambda doesn't allocate a Trigger every tick.
+    private final Trigger trg_driverSlow = m_driver.leftTrigger();
+
     //---INIT SUBSYSTEMS
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
 
@@ -261,7 +264,7 @@ public class Robot extends TimedRobot {
         final double slowMps = kMaxTranslationMps * speedMult;
         final double slowRotRps = kMaxAngularRps * rotationMult;
         return m_drivetrain.applyRequest(() -> {
-            boolean slowButton = m_driver.leftTrigger().getAsBoolean();
+            boolean slowButton = trg_driverSlow.getAsBoolean();
             double translationMps = slowButton ? slowMps : kMaxTranslationMps;
             double rotationalMps = slowButton ? slowRotRps : kMaxAngularRps;
 
@@ -434,22 +437,21 @@ public class Robot extends TimedRobot {
         log_robotPose.accept(driveState.Pose);
 
         var headingNow = driveState.Pose.getRotation();
-        double headingTimestamp = Utils.getCurrentTimeSeconds();
+        double nowSec = Utils.getCurrentTimeSeconds();
         for (var camera : WaltCamera.AllCameras) {
-            camera.m_estimator.addHeadingData(headingTimestamp, headingNow);
+            camera.m_estimator.addHeadingData(nowSec, headingNow);
             Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
             if (estimatedPoseOptional.isPresent()) {
                 EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
                 Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
-                var ctreTime = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
                 m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
-                m_visionSeenLastSec = ctreTime;
+                m_visionSeenLastSec = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
                 // System.out.println("AddMeasurementFrom: " + camera.getName());
             }
         }
         // m_periodicTracer.addEpoch("VisionUpdate");
 
-        log_visionSeenPastSecond.accept((Utils.getCurrentTimeSeconds() - m_visionSeenLastSec) < 1.0);
+        log_visionSeenPastSecond.accept((nowSec - m_visionSeenLastSec) < 1.0);
         // log_isDisabled.accept(trg_limitFPS);
         // m_periodicTracer.addEpoch("Logging");
 

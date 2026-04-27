@@ -25,6 +25,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.util.VisionUtil;
 import frc.util.WaltLogger;
@@ -88,10 +89,13 @@ public class WaltCamera extends PhotonCamera {
     private final SimCameraProperties m_simCameraProps = VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0);
     
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.0, 1.0, .3); //1.5, 1.5, 6.24
-    public static final Matrix<N3, N1> kSingleTagTrigStdDevs = VecBuilder.fill(0.7, 0.7, 0.15);
+    // Trig-solve rotation is just the buffered gyro reading; feeding it back as a measurement
+    // double-counts and induces rotation jitter. Theta MAX_VALUE → translation-only correction.
+    public static final Matrix<N3, N1> kSingleTagTrigStdDevs = VecBuilder.fill(0.7, 0.7, Double.MAX_VALUE);
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.25, 0.25, 0.75);  //0.5, 0.5, 5.24
 
     private static final double kSingleTagAmbiguityCutoff = 0.2;
+    private static final Pose3d[] kEmptyPose3dArr = new Pose3d[0];
 
     private final Pose2dLogger log_camPose;
     private final Pose3dLogger log_camTransform;
@@ -190,51 +194,63 @@ public class WaltCamera extends PhotonCamera {
      */
     private void updateEstimationStdDevs(
             Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets) {
-        List<Pose3d> camToTagLines = new ArrayList<>();
         if (estimatedPose.isEmpty()) {
             // No pose input. Default to single-tag std devs
             m_curStdDevs = kSingleTagStdDevs;
-        } else {
-            // Pose present. Start running Heuristic
-            var estStdDevs = kSingleTagStdDevs;
-            int numTags = 0;
-            double avgDist = 0;
-
-            // Precalculation - see how many tags we found, and calculate an average-distance metric
-            for (var tgt : targets) {
-                var tagPose = m_estimator.getFieldTags().getTagPose(tgt.getFiducialId());
-                if (tagPose.isEmpty()) continue;
-                numTags++;
-                avgDist +=
-                        tagPose
-                                .get()
-                                .toPose2d()
-                                .getTranslation()
-                                .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
-                camToTagLines.add(estimatedPose.get().estimatedPose.plus(m_robotToCam));
-                camToTagLines.add(tagPose.get());
+            if (Constants.kDebugLoggingEnabled) {
+                log_camPoseAndTag.set(kEmptyPose3dArr);
             }
+            return;
+        }
 
-            if (numTags == 0) {
-                // No tags visible. Default to single-tag std devs
-                m_curStdDevs = kSingleTagStdDevs;
-            } else {
-                // One or more tags visible, run the full heuristic.
-                avgDist /= numTags;
-                if (numTags > 1) {
-                    estStdDevs = kMultiTagStdDevs;
-                } else {
-                    if (estimatedPose.get().strategy == PoseStrategy.PNP_DISTANCE_TRIG_SOLVE) {
-                        // Heading is gyro-anchored; translation grows with bearing-arc width.
-                        estStdDevs = kSingleTagTrigStdDevs;
-                    }
-                    // Single-tag: scale with distance (no MAX_VALUE cliff — trig-solve stays usable far out).
-                    estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
-                }
-                m_curStdDevs = estStdDevs;
+        // Pose present. Start running Heuristic. Hoist invariants out of the per-target loop.
+        var estPose = estimatedPose.get();
+        var fieldTags = m_estimator.getFieldTags();
+        var estTranslation = estPose.estimatedPose.toPose2d().getTranslation();
+        var estStdDevs = kSingleTagStdDevs;
+        int numTags = 0;
+        double avgDist = 0;
+
+        // Camera-frame line endpoints (debug only). We allocate lazily and reuse
+        // a single Pose3d for the camera origin since it's identical for every tag.
+        List<Pose3d> camToTagLines = Constants.kDebugLoggingEnabled ? new ArrayList<>(targets.size() * 2) : null;
+        Pose3d camOrigin = Constants.kDebugLoggingEnabled ? estPose.estimatedPose.plus(m_robotToCam) : null;
+
+        // Precalculation - see how many tags we found, and calculate an average-distance metric
+        for (var tgt : targets) {
+            var tagPose = fieldTags.getTagPose(tgt.getFiducialId());
+            if (tagPose.isEmpty()) continue;
+            numTags++;
+            var tagPose3d = tagPose.get();
+            avgDist += tagPose3d.toPose2d().getTranslation().getDistance(estTranslation);
+            if (Constants.kDebugLoggingEnabled) {
+                camToTagLines.add(camOrigin);
+                camToTagLines.add(tagPose3d);
             }
         }
-        log_camPoseAndTag.set(camToTagLines.toArray(new Pose3d[0]));
+
+        if (numTags == 0) {
+            // No tags visible. Default to single-tag std devs
+            m_curStdDevs = kSingleTagStdDevs;
+        } else {
+            // One or more tags visible, run the full heuristic.
+            avgDist /= numTags;
+            if (numTags > 1) {
+                estStdDevs = kMultiTagStdDevs;
+            } else {
+                if (estPose.strategy == PoseStrategy.PNP_DISTANCE_TRIG_SOLVE) {
+                    // Heading is gyro-anchored; translation grows with bearing-arc width.
+                    estStdDevs = kSingleTagTrigStdDevs;
+                }
+                // Single-tag: scale with distance (no MAX_VALUE cliff — trig-solve stays usable far out).
+                estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
+            }
+            m_curStdDevs = estStdDevs;
+        }
+
+        if (Constants.kDebugLoggingEnabled) {
+            log_camPoseAndTag.set(camToTagLines.toArray(Pose3d[]::new));
+        }
     }
 
     /**

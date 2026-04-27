@@ -297,7 +297,7 @@ public class Shooter extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        m_turret.periodic();
+        // m_turret.periodic() is invoked by the CommandScheduler since Turret extends SubsystemBase.
         // m_periodicTracer.addEpoch("Entry (Unused Time)");
 
         // Cache all signals at the top so every consumer in this loop sees the same values
