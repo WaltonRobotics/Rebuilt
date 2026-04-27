@@ -150,11 +150,6 @@ public class Intake extends SubsystemBase {
         m_intakeArm.setNeutralMode(value);
     }
 
-    //for TestingDashboard
-    public Command setIntakeArmPos(DoubleSubscriber sub_rots) {
-        return run(() -> m_intakeArm.setControl(m_MMVReq.withPosition(Rotations.of(sub_rots.get()))));
-    }
-
     public Command startIntakeRollers(double volts) {
         return setIntakeRollersVelocityCmd(volts);
     }

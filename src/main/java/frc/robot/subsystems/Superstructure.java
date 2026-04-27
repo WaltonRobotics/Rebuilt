@@ -165,7 +165,7 @@ public class Superstructure extends SubsystemBase {
     /**
      * @return the emergency barf command
      */
-    public Command emergencyBarfNOSHOOT() {
+    public Command emergencyBarfOnlyIntake() {
         return Commands.startEnd(
             () -> {
                 m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
