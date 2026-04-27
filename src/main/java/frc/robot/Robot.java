@@ -430,9 +430,13 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().run();
         // m_periodicTracer.addEpoch("CommandScheduler");
 
-        log_robotPose.accept(m_drivetrain.getState().Pose);
+        SwerveDriveState driveState = m_drivetrain.getState();
+        log_robotPose.accept(driveState.Pose);
 
+        var headingNow = driveState.Pose.getRotation();
+        double headingTimestamp = Utils.getCurrentTimeSeconds();
         for (var camera : WaltCamera.AllCameras) {
+            camera.m_estimator.addHeadingData(headingTimestamp, headingNow);
             Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
             if (estimatedPoseOptional.isPresent()) {
                 EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();

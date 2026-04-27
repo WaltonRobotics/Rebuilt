@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -87,7 +88,10 @@ public class WaltCamera extends PhotonCamera {
     private final SimCameraProperties m_simCameraProps = VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0);
     
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.0, 1.0, .3); //1.5, 1.5, 6.24
+    public static final Matrix<N3, N1> kSingleTagTrigStdDevs = VecBuilder.fill(0.7, 0.7, 0.15);
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.25, 0.25, 0.75);  //0.5, 0.5, 5.24
+
+    private static final double kSingleTagAmbiguityCutoff = 0.2;
 
     private final Pose2dLogger log_camPose;
     private final Pose3dLogger log_camTransform;
@@ -145,8 +149,10 @@ public class WaltCamera extends PhotonCamera {
             if (!change.hasTargets()) { continue; }
             visionEst = m_estimator.estimateCoprocMultiTagPose(change);
             if (visionEst.isEmpty()) {
-                visionEst = m_estimator.estimateClosestToCameraHeightPose(change);
-                // visionEst = m_estimator.estimateLowestAmbiguityPose(change);
+                visionEst = m_estimator.estimatePnpDistanceTrigSolvePose(change);
+                if (visionEst.isPresent() && !isTrigSolveAcceptable(visionEst.get(), change)) {
+                    visionEst = Optional.empty();
+                }
             }
             updateEstimationStdDevs(visionEst, change.getTargets());
             log_stdDevs.accept(m_curStdDevs.getData());
@@ -157,6 +163,22 @@ public class WaltCamera extends PhotonCamera {
         }
 
         return visionEst;
+    }
+
+    /**
+     * Quick guards on a trig-solve fallback estimate: drop high-ambiguity single-tag frames
+     * and any pose that lands outside the field rectangle.
+     */
+    private boolean isTrigSolveAcceptable(EstimatedRobotPose est, PhotonPipelineResult result) {
+        var best = result.getBestTarget();
+        if (best != null && best.getPoseAmbiguity() > kSingleTagAmbiguityCutoff) {
+            return false;
+        }
+        var translation = est.estimatedPose.getTranslation();
+        var layout = m_estimator.getFieldTags();
+        double x = translation.getX();
+        double y = translation.getY();
+        return x >= 0 && x <= layout.getFieldLength() && y >= 0 && y <= layout.getFieldWidth();
     }
 
     /**
@@ -199,12 +221,16 @@ public class WaltCamera extends PhotonCamera {
             } else {
                 // One or more tags visible, run the full heuristic.
                 avgDist /= numTags;
-                // Decrease std devs if multiple targets are visible
-                if (numTags > 1) estStdDevs = kMultiTagStdDevs;
-                // Increase std devs based on (average) distance
-                else if (numTags == 1 && avgDist > 4)
-                    estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
-                else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
+                if (numTags > 1) {
+                    estStdDevs = kMultiTagStdDevs;
+                } else {
+                    if (estimatedPose.get().strategy == PoseStrategy.PNP_DISTANCE_TRIG_SOLVE) {
+                        // Heading is gyro-anchored; translation grows with bearing-arc width.
+                        estStdDevs = kSingleTagTrigStdDevs;
+                    }
+                    // Single-tag: scale with distance (no MAX_VALUE cliff — trig-solve stays usable far out).
+                    estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
+                }
                 m_curStdDevs = estStdDevs;
             }
         }
