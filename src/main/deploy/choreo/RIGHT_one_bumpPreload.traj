@@ -79,5 +79,5 @@
   "splits":[0]
  },
  "events":[
-   {"name":"shoot", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"shoot"}}}]
+   {"name":"shoot", "from":{"target":1, "targetTimestamp":1.05851, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"shoot"}}}]
 }

@@ -176,6 +176,6 @@
   "splits":[0]
  },
  "events":[
-   {"name":"shootg", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"shoot"}}},
-   {"name":"stopShootg", "from":{"target":2, "targetTimestamp":5.73543, "offset":{"exp":"-0.1 s", "val":-0.1}}, "event":{"type":"named", "data":{"name":"stopShootg"}}}]
+   {"name":"shoot", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"shoot"}}},
+   {"name":"stopShoot", "from":{"target":2, "targetTimestamp":5.73543, "offset":{"exp":"-0.1 s", "val":-0.1}}, "event":{"type":"named", "data":{"name":"stopShoot"}}}]
 }
