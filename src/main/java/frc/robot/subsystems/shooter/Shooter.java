@@ -22,6 +22,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -51,6 +52,8 @@ public class Shooter extends SubsystemBase {
     private static final WaltTunable kHoodRotsOverride =
         new WaltTunable("/Shooter/hoodRotsOverride", 0.0);
     private static final double kHoodLockedPosRots = Rotations.of(0.33).magnitude();
+
+    private final Tracer m_periodicTracer = new Tracer();
     /* VARIABLES */
     // boolean m_useShotCalculator = true;
 
@@ -297,8 +300,7 @@ public class Shooter extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        // m_turret.periodic() is invoked by the CommandScheduler since Turret extends SubsystemBase.
-        // m_periodicTracer.addEpoch("Entry (Unused Time)");
+        m_periodicTracer.addEpoch("Entry (Unused Time)");
 
         // Cache all signals at the top so every consumer in this loop sees the same values
         // THIS IS USED SNEAKILY BY SHOTCALC DO NOT MOVE THIS
@@ -308,6 +310,7 @@ public class Shooter extends SubsystemBase {
 
         ShotCalcOutputs calcData = m_shooterCalc.getLatestShotCalcOutputs();
 
+        m_periodicTracer.addEpoch("Stashing ShotCalc data");
         log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
 
         // set turret reference
@@ -352,7 +355,11 @@ public class Shooter extends SubsystemBase {
             }
         }
 
+        m_periodicTracer.addEpoch("Setting Hood & Turret References");
+
         refreshShooterSpunUp();
+
+        m_periodicTracer.addEpoch("Refresh shooterSpunUp");
 
         log_turretPositionRobotRelativeRots.accept(kDriverRPSIncreaseD);
         log_ballsShot.accept(m_ballsShot);
@@ -367,7 +374,7 @@ public class Shooter extends SubsystemBase {
 
         // m_periodicTracer.addEpoch("Logging");
 
-        // m_periodicTracer.printEpochs();
+        m_periodicTracer.printEpochs();
     }
 
     @Override

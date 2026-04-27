@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -161,7 +162,7 @@ public class Robot extends TimedRobot {
     private final BooleanLogger log_rioBrownout = WaltLogger.logBoolean(kLogTab, "RioBrownout");
     private final DoubleLogger log_pdhCurrentTotal = WaltLogger.logDouble(kLogTab, "PDHCurrTotal");
     private final BooleanLogger log_isDSAttatched = WaltLogger.logBoolean(kLogTab, "isDSAttatched");
-    private final Pose2dLogger log_robotPose = WaltLogger.logPose2d("Drive", "Pose");
+    private final Pose2dLogger log_robotPose = WaltLogger.logPose2d("Drive", "Pose", true);
 
     private final DoubleLogger log_autonTime = WaltLogger.logDouble("Auton", "autonTime");
 
@@ -178,7 +179,7 @@ public class Robot extends TimedRobot {
     // private final DoubleLogger log_remainingFudgedTime = WaltLogger.logDouble("Util/Shift", "currentFudgedTime");
     // private final BooleanLogger log_isActiveFudged = WaltLogger.logBoolean("Util/Shift", "isActiveFudged");
 
-    // private final Tracer m_periodicTracer = new Tracer();
+    private final Tracer m_periodicTracer = new Tracer();
     private final PerformanceMonitor m_perfMonitor = new PerformanceMonitor(false);
     private final Command m_preheaterCommand;
 
@@ -428,10 +429,10 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         m_perfMonitor.loopStart();
-        // m_periodicTracer.addEpoch("Entry (Unused Time)");
+        m_periodicTracer.addEpoch("Entry (Unused Time)");
         SignalManager.refreshAll();
         CommandScheduler.getInstance().run();
-        // m_periodicTracer.addEpoch("CommandScheduler");
+        m_periodicTracer.addEpoch("CommandScheduler");
 
         SwerveDriveState driveState = m_drivetrain.getState();
         log_robotPose.accept(driveState.Pose);
@@ -449,11 +450,11 @@ public class Robot extends TimedRobot {
                 // System.out.println("AddMeasurementFrom: " + camera.getName());
             }
         }
-        // m_periodicTracer.addEpoch("VisionUpdate");
+        m_periodicTracer.addEpoch("VisionUpdate");
 
         log_visionSeenPastSecond.accept((nowSec - m_visionSeenLastSec) < 1.0);
         // log_isDisabled.accept(trg_limitFPS);
-        // m_periodicTracer.addEpoch("Logging");
+        m_periodicTracer.addEpoch("Logging");
 
         log_miniPCCurrent.accept(m_PDH.getCurrent(kMiniPCChannel));
         log_rioBusVoltage.accept(RobotController.getBatteryVoltage());
@@ -486,9 +487,8 @@ public class Robot extends TimedRobot {
         //     )
         // );
 
-        /* for the mechanism2D in 3D, drag all 3 mechanisms2ds onto the robot pose
-        and also log the shooter position pose */ 
-        // m_periodicTracer.printEpochs();
+
+        m_periodicTracer.printEpochs();
         m_perfMonitor.loopEnd();
     }
 

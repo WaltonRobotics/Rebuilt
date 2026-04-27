@@ -60,9 +60,15 @@ public class WaltLogger {
     public static final class Pose2dLogger implements Consumer<Pose2d> {
         public final StructPublisher<Pose2d> ntPub;
         public final StructLogEntry<Pose2d> logEntry;
+        private final boolean alwaysPubNt;
 
         public Pose2dLogger(String subTable, String name, PubSubOption... options) {
+            this(subTable, name, false, options);
+        }
+
+        public Pose2dLogger(String subTable, String name, boolean alwaysPubNt, PubSubOption... options) {
             StructTopic<Pose2d> topic = logTable.getSubTable(subTable).getStructTopic(name, new Pose2dStruct());
+            this.alwaysPubNt = alwaysPubNt;
             ntPub = topic.publish(options);
             logEntry = StructLogEntry.create(DataLogManager.getLog(), "Robot/" + subTable + "/" + name, new Pose2dStruct());
         }
@@ -72,6 +78,9 @@ public class WaltLogger {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
+                if (alwaysPubNt) {
+                    ntPub.set(value);
+                }
                 logEntry.append(value);
             }
         }
@@ -85,8 +94,8 @@ public class WaltLogger {
         }
     }
 
-    public static Pose2dLogger logPose2d(String table, String name, PubSubOption... options) {
-        return new Pose2dLogger(table, name, options);
+    public static Pose2dLogger logPose2d(String table, String name, boolean alwaysPubNt, PubSubOption... options) {
+        return new Pose2dLogger(table, name, alwaysPubNt, options);
     }
 
     public static final class Pose2dArrayLogger implements Consumer<Pose2d[]> {
