@@ -59,6 +59,7 @@ import frc.util.VisionUtil;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = false;
+    public static final boolean kDataLoggingEnabled = true;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
     public static final CANBus kRioBus = CANBus.roboRIO();

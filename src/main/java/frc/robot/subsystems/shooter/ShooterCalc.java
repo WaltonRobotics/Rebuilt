@@ -47,9 +47,6 @@ public class ShooterCalc {
     private final DoubleSupplier m_turretPosRotsSup;
     private final SwerveDriveKinematics m_swerveKinematics = new SwerveDriveKinematics(TunerConstants.moduleTranslations);
 
-    private final BooleanTopic bt_canTurretShoot = new BooleanTopic(NetworkTableInstance.getDefault().getTopic(("ShooterCalc/isTurretAngry")));
-    private final BooleanPublisher pub_canTurretShoot;
-
     private final Pose3dLogger log_globalShotTarget = WaltLogger.logPose3d(kLogTab, "globalTarget");
     // private final Pose3dLogger log_calculatedShotTarget = WaltLogger.logPose3d(kLogTab, "shotCalcTarget");
     private final DoubleLogger log_rawDesiredTurretRot = WaltLogger.logDouble(kLogTab, "rawDesiredTurretRots");
@@ -116,7 +113,6 @@ public class ShooterCalc {
         m_threadsafeSwerveDriveStateSup = threadsafeSwerveDriveStateSup;
         m_turretPosRotsSup = turretPosSup;
 
-        pub_canTurretShoot = bt_canTurretShoot.publish();
         m_notifier.setName("ShooterCalc");
         m_notifier.startPeriodic(Hertz.of(75)); // 2x slower than robot loop
     }
@@ -182,7 +178,6 @@ public class ShooterCalc {
         refreshCanTurretShoot();
 
         // Logging
-        pub_canTurretShoot.accept(canTurretShoot());
         log_globalShotTarget.accept(m_aimTarget);
 
         var details = m_shotCalcOutputs.turretCalcDetails();
