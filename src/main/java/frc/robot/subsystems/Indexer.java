@@ -177,11 +177,6 @@ public class Indexer extends SubsystemBase {
         return runOnce(() -> setSpindexerVelocity(RPS.in(RotationsPerSecond)));
     }
 
-    //for TestingDashboard
-    public Command setSpindexerVelocityCmd(DoubleSubscriber sub_RPS) {
-        return run(() -> setSpindexerVelocity(sub_RPS.get()));
-    }
-
     //---TUNNEL
     public void setTunnelVelocity(double RPS) {
         if (RPS == 0) {
@@ -196,11 +191,6 @@ public class Indexer extends SubsystemBase {
 
     public Command setTunnelVelocityCmd(AngularVelocity RPS) {
         return runOnce(() -> setTunnelVelocity(RPS.in(RotationsPerSecond)));
-    }
-
-    //for TestingDashboard
-    public Command setTunnelVelocityCmd(DoubleSubscriber sub_RPS) {
-        return run(() -> setTunnelVelocity(sub_RPS.get()));
     }
 
     //STATICS for conversions
