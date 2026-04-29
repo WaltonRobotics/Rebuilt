@@ -75,7 +75,7 @@ public class AutonChooser {
     //--MISC
     private final static String kRightTrenchSelfPass = "RIGHT Orbit";
     private final static String kLeftTrenchSelfPass = "LEFT Orbit";
-    private final static String kRightDelayTest = "DELAY TEST - NOT FOR ACTUAL USE";
+    // private final static String kRightDelayTest = "DELAY TEST - NOT FOR ACTUAL USE";
 
     public static void initialize(WaltAdaptableAutonFactory adaptableAutonFactory) {
         m_adaptableAutonFactory = adaptableAutonFactory;
@@ -158,22 +158,6 @@ public class AutonChooser {
             new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kShootingTimeout, false, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kShootingTimeout, false, 0));
 
-        // addAuton(kRightStressTestLong, new AdaptableAutonInfo(AutonK.kRightStressTestLong, 100, true, 0));
-        
-        // addAuton(kRightStressTestOverlap, new AdaptableAutonInfo(AutonK.kRightStressTestOverlap, 100, true, 0));
-
-        // addMultiAuton(kRightStressTestTenTimes,
-        //     new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
-        //     new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
-        //     new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
-        //     new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
-        //     new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
-        //     new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
-        //     new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
-        //     new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
-        //     new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
-        //     new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0));
-
         /* NEW AUTON OPTIONS */
         //---2 CYCLES
         addMultiAuton(kRightTrenchTwoCycleBumpReturn,
@@ -232,9 +216,24 @@ public class AutonChooser {
         addAuton(kRightTrenchSelfPass, new AdaptableAutonInfo(AutonK.kRightOneSelfPass, AutonK.kSOTMTimeout, true, 0));
         addAuton(kLeftTrenchSelfPass, new AdaptableAutonInfo(AutonK.kLeftOneSelfPass, AutonK.kSOTMTimeout, true, 0));
 
-        addMultiAuton(kRightDelayTest, 
-            new AdaptableAutonInfo(AutonK.kRightBumpPreload, AutonK.kShootingTimeout, false, 5),
-            new AdaptableAutonInfo(AutonK.kRightOneTrench, AutonK.kShootingTimeout, false, 5));
+        // addMultiAuton(kRightDelayTest, 
+        //     new AdaptableAutonInfo(AutonK.kRightBumpPreload, AutonK.kShootingTimeout, false, 5),
+        //     new AdaptableAutonInfo(AutonK.kRightOneTrench, AutonK.kShootingTimeout, false, 5));
+
+        // addAuton(kRightStressTestLong, new AdaptableAutonInfo(AutonK.kRightStressTestLong, 100, true, 0));
+        // addAuton(kRightStressTestOverlap, new AdaptableAutonInfo(AutonK.kRightStressTestOverlap, 100, true, 0));
+
+        // addMultiAuton(kRightStressTestTenTimes,
+        //     new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, 100, true, 0),
+        //     new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, 100, true, 0));
         
         //Load AutonChooser
         SmartDashboard.putData("AutoChooser", m_chooser);
