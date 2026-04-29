@@ -712,6 +712,7 @@ public class Constants {
         public static final String kRightOneBumpReturn = "RIGHT_one_bumpReturn";
         public static final String kRightOneBumpReturnFollow = "RIGHT_one_bumpReturnFollow";
         public static final String kLeftOneBumpReturn = "LEFT_one_bumpReturn";
+        public static final String kLeftOneBumpReturnFollow = "LEFT_one_bumpReturnFollow";
         public static final String kRightTwoBumpReturn = "RIGHT_two_bumpReturn";
         public static final String kLeftTwoBumpReturn = "LEFT_two_bumpReturn";
         public static final String kRightTwoBumpToTrench = "RIGHT_two_bumpToTrench";

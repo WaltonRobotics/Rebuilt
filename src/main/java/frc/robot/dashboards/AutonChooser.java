@@ -62,6 +62,7 @@ public class AutonChooser {
     private final static String kRightTrenchTwoCycleBumpReturn = "RIGHT Trench 2 Cycle Bump Return";
     private final static String kRightTrenchTwoCycleBumpReturnFollow = "RIGHT Trench 2 Cycle Bump Return FOLLOW";
     private final static String kLeftTrenchTwoCycleBumpReturn = "LEFT Trench 2 Cycle Bump Return";
+    private final static String kLeftTrenchTwoCycleBumpReturnFollow = "LEFT Trench 2 Cycle Bump Return FOLLOW";
     private final static String kRightTrechTwoCycleTrenchReturn = "RIGHT Trench 2 Cycle Trench Return";
     private final static String kLeftTrenchTwoCycleTrenchReturn = "LEFT Trench 2 Cycle Trench Return";
 
@@ -177,6 +178,13 @@ public class AutonChooser {
 
         addMultiAuton(kLeftTrenchTwoCycleBumpReturn,
             new AdaptableAutonInfo(AutonK.kLeftOneBumpReturn, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoBumpReturn, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kLeftTwoGoOut, AutonK.kSOTMTimeout, true, 0));
+
+        addMultiAuton(kLeftTrenchTwoCycleBumpReturnFollow,
+            new AdaptableAutonInfo(AutonK.kLeftOneBumpReturnFollow, AutonK.kSOTMTimeout, true, 2),
             new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, AutonK.kSOTMTimeout, true, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoBumpReturn, AutonK.kSOTMTimeout, true, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, AutonK.kSOTMTimeout, true, 0),
