@@ -1,5 +1,7 @@
 package frc.util;
 
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
@@ -13,6 +15,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.geometry.struct.*;
 import edu.wpi.first.networktables.*;
+import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.util.datalog.*;
 import edu.wpi.first.util.function.BooleanConsumer;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -41,6 +44,136 @@ public class WaltLogger {
 
     private static boolean dataLoggingEnabled() {
         return Constants.kDataLoggingEnabled;
+    }
+
+    /** Global toggle: true → enqueue to worker, false → publish synchronously on caller. */
+    private static boolean shouldEnqueueAsync() {
+        return Constants.kAsyncLoggingEnabled;
+    }
+
+    // ===== Async backend =====
+    //
+    // accept() on the caller thread captures the value + timestamp into a tiny
+    // LogEvent lambda and offers it to a bounded queue. A single daemon worker
+    // thread drains the queue and performs the actual ntPub.set / logEntry.append
+    // calls. If the queue is ever full (worker stalled, sustained burst, GC),
+    // accept() falls back to publishing inline so we never lose data.
+    //
+    // Timestamps are captured at accept() time via WPIUtilJNI.now() (microseconds,
+    // same epoch as NT/DataLog) and passed through to the timestamped overloads
+    // of set() / append(), so the published series reflects when each value was
+    // actually produced — not when the worker happened to drain it.
+    @FunctionalInterface
+    private interface LogEvent { void publish(); }
+
+    private static final int QUEUE_CAPACITY = 8192;
+    private static final LinkedBlockingQueue<LogEvent> m_queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
+    private static final Thread m_worker;
+    private static volatile boolean m_shuttingDown = false;
+
+    // Cross-thread accept-time accounting. Every *Logger.accept(...) records its own
+    // enqueue duration here; PerformanceMonitor drains this once per tick.
+    // pub.set / logEntry.append paths going through StructPublishers outside this
+    // class (e.g. WaltCamera.log_camPoseAndTag, ShooterCalc.pub_canTurretShoot) are
+    // NOT tracked — only WaltLogger sinks are.
+    private static final AtomicLong m_acceptNanosTotal = new AtomicLong();
+    private static final AtomicLong m_acceptCallsTotal = new AtomicLong();
+
+    // Worker-side accounting. Time and call count for the actual publish work.
+    private static final AtomicLong m_publishNanosTotal = new AtomicLong();
+    private static final AtomicLong m_publishCallsTotal = new AtomicLong();
+    // Counts accept() calls that fell back to synchronous publish because the queue was full.
+    private static final AtomicLong m_syncFallbackCalls = new AtomicLong();
+
+    static {
+        m_worker = new Thread(WaltLogger::workerLoop, "WaltLogger-Worker");
+        m_worker.setDaemon(true);
+        m_worker.start();
+        Runtime.getRuntime().addShutdownHook(new Thread(WaltLogger::shutdown, "WaltLogger-Shutdown"));
+    }
+
+    private static void note(long startNanos) {
+        m_acceptNanosTotal.addAndGet(System.nanoTime() - startNanos);
+        m_acceptCallsTotal.incrementAndGet();
+    }
+
+    private static void enqueue(LogEvent ev) {
+        if (!shouldEnqueueAsync()) {
+            // Global toggle off: publish inline on the caller, bypass queue entirely.
+            safePublish(ev);
+            return;
+        }
+        if (!m_queue.offer(ev)) {
+            // Backpressure fallback: publish inline. Counted so it shows up in stats.
+            m_syncFallbackCalls.incrementAndGet();
+            safePublish(ev);
+        }
+    }
+
+    private static void safePublish(LogEvent ev) {
+        long s = System.nanoTime();
+        try {
+            ev.publish();
+        } catch (Throwable t) {
+            // Never kill the worker (or fail the caller in fallback path) on a single bad publish.
+        }
+        m_publishNanosTotal.addAndGet(System.nanoTime() - s);
+        m_publishCallsTotal.incrementAndGet();
+    }
+
+    private static void workerLoop() {
+        while (true) {
+            LogEvent ev;
+            try {
+                ev = m_queue.take();
+            } catch (InterruptedException e) {
+                // Shutdown signal: drain whatever's left and exit.
+                int drained = 0;
+                while ((ev = m_queue.poll()) != null) {
+                    safePublish(ev);
+                    drained++;
+                }
+                System.out.println("[WaltLogger] drained " + drained + " event(s) on shutdown");
+                return;
+            }
+            safePublish(ev);
+        }
+    }
+
+    /** Signal the worker to drain and exit. Idempotent; called from a JVM shutdown hook. */
+    public static void shutdown() {
+        if (m_shuttingDown) return;
+        m_shuttingDown = true;
+        m_worker.interrupt();
+        try {
+            m_worker.join(2000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public record AcceptStats(long totalNanos, long calls) {
+        public double totalMs() { return totalNanos * 1e-6; }
+    }
+
+    public record PublishStats(long totalNanos, long calls, long syncFallbackCalls, int queueDepth) {
+        public double totalMs() { return totalNanos * 1e-6; }
+    }
+
+    /** Read and reset the caller-side accept (enqueue) counters. Call once per tick. */
+    public static AcceptStats drainAcceptStats() {
+        return new AcceptStats(
+            m_acceptNanosTotal.getAndSet(0L),
+            m_acceptCallsTotal.getAndSet(0L));
+    }
+
+    /** Read and reset the worker-side publish counters; queueDepth is sampled instantaneously. */
+    public static PublishStats drainPublishStats() {
+        return new PublishStats(
+            m_publishNanosTotal.getAndSet(0L),
+            m_publishCallsTotal.getAndSet(0L),
+            m_syncFallbackCalls.getAndSet(0L),
+            m_queue.size());
     }
 
     public static BooleanEntry booleanItem(String table, String name, PubSubOption... options) {
@@ -79,16 +212,17 @@ public class WaltLogger {
 
         @Override
         public void accept(Pose2d value) {
-            if (shouldPublishNt()) {
-                ntPub.set(value);
-            } else {
-                if (alwaysPubNt) {
-                    ntPub.set(value);
+            long s = System.nanoTime();
+            final long ts = WPIUtilJNI.now();
+            enqueue(() -> {
+                if (shouldPublishNt()) {
+                    ntPub.set(value, ts);
+                } else {
+                    if (alwaysPubNt) ntPub.set(value, ts);
+                    if (dataLoggingEnabled()) logEntry.append(value, ts);
                 }
-                if (dataLoggingEnabled()) {
-                    logEntry.append(value);
-                }
-            }
+            });
+            note(s);
         }
 
         public void accept(Translation2d value) {
@@ -116,13 +250,16 @@ public class WaltLogger {
 
         @Override
         public void accept(Pose2d[] value) {
-            if (shouldPublishNt()) {
-                ntPub.set(value);
-            } else {
-                if (dataLoggingEnabled()) {
-                    logEntry.append(value);
-                }
-            }
+            long s = System.nanoTime();
+            final long ts = WPIUtilJNI.now();
+            // Defensive shallow copy: caller may mutate `value` before the worker drains it.
+            // Pose2d itself is immutable, so a shallow clone is sufficient.
+            final Pose2d[] copy = value.clone();
+            enqueue(() -> {
+                if (shouldPublishNt()) ntPub.set(copy, ts);
+                else if (dataLoggingEnabled()) logEntry.append(copy, ts);
+            });
+            note(s);
         }
 
         public void accept(Translation2d[] translations) {
@@ -158,13 +295,13 @@ public class WaltLogger {
 
         @Override
         public void accept(Pose3d value) {
-            if (shouldPublishNt()) {
-                ntPub.set(value);
-            } else {
-                if (dataLoggingEnabled()) {
-                    logEntry.append(value);
-                }
-            }
+            long s = System.nanoTime();
+            final long ts = WPIUtilJNI.now();
+            enqueue(() -> {
+                if (shouldPublishNt()) ntPub.set(value, ts);
+                else if (dataLoggingEnabled()) logEntry.append(value, ts);
+            });
+            note(s);
         }
 
         public void accept(Translation3d value) {
@@ -192,11 +329,14 @@ public class WaltLogger {
 
         @Override
         public void accept(Translation3d[] value) {
-            if (shouldPublishNt()) {
-                ntPub.set(value);
-            } else {
-                logEntry.append(value);
-            }
+            long s = System.nanoTime();
+            final long ts = WPIUtilJNI.now();
+            final Translation3d[] copy = value.clone();
+            enqueue(() -> {
+                if (shouldPublishNt()) ntPub.set(copy, ts);
+                else if (dataLoggingEnabled()) logEntry.append(copy, ts);
+            });
+            note(s);
         }
     }
 
@@ -239,13 +379,14 @@ public class WaltLogger {
 
         @Override
         public void accept(int value) {
-            if (shouldPublishNt()) {
-                ntPub.set(value);
-            } else {
-                if (dataLoggingEnabled()) {
-                    logEntry.append(value);
-                }
-            }
+            long s = System.nanoTime();
+            final long ts = WPIUtilJNI.now();
+            final long v = value;
+            enqueue(() -> {
+                if (shouldPublishNt()) ntPub.set(v, ts);
+                else if (dataLoggingEnabled()) logEntry.append(v, ts);
+            });
+            note(s);
         }
     }
 
@@ -260,13 +401,13 @@ public class WaltLogger {
 
         @Override
         public void accept(double value) {
-            if (shouldPublishNt()) {
-                ntPub.set(value);
-            } else {
-                if (dataLoggingEnabled()) {
-                    logEntry.append(value);
-                }
-            }
+            long s = System.nanoTime();
+            final long ts = WPIUtilJNI.now();
+            enqueue(() -> {
+                if (shouldPublishNt()) ntPub.set(value, ts);
+                else if (dataLoggingEnabled()) logEntry.append(value, ts);
+            });
+            note(s);
         }
     }
 
@@ -285,13 +426,13 @@ public class WaltLogger {
 
         @Override
         public void accept(boolean value) {
-            if (shouldPublishNt()) {
-                ntPub.set(value);
-            } else {
-                if (dataLoggingEnabled()) {
-                    logEntry.append(value);
-                }
-            }
+            long s = System.nanoTime();
+            final long ts = WPIUtilJNI.now();
+            enqueue(() -> {
+                if (shouldPublishNt()) ntPub.set(value, ts);
+                else if (dataLoggingEnabled()) logEntry.append(value, ts);
+            });
+            note(s);
         }
 
         public void accept(BooleanSupplier valueSup) {
@@ -314,13 +455,14 @@ public class WaltLogger {
 
         @Override
         public void accept(double[] value) {
-            if (shouldPublishNt()) {
-                ntPub.set(value);
-            } else {
-                if (dataLoggingEnabled()) {
-                    logEntry.append(value);
-                }
-            }
+            long s = System.nanoTime();
+            final long ts = WPIUtilJNI.now();
+            final double[] copy = value.clone();
+            enqueue(() -> {
+                if (shouldPublishNt()) ntPub.set(copy, ts);
+                else if (dataLoggingEnabled()) logEntry.append(copy, ts);
+            });
+            note(s);
         }
     }
 
@@ -339,13 +481,13 @@ public class WaltLogger {
 
         @Override
         public void accept(String value) {
-            if (shouldPublishNt()) {
-                ntPub.set(value);
-            } else {
-                if (dataLoggingEnabled()) {
-                    logEntry.append(value);
-                }
-            }
+            long s = System.nanoTime();
+            final long ts = WPIUtilJNI.now();
+            enqueue(() -> {
+                if (shouldPublishNt()) ntPub.set(value, ts);
+                else if (dataLoggingEnabled()) logEntry.append(value, ts);
+            });
+            note(s);
         }
     }
 
@@ -364,13 +506,14 @@ public class WaltLogger {
 
         @Override
         public void accept(String[] value) {
-            if (shouldPublishNt()) {
-                ntPub.set(value);
-            } else {
-                if (dataLoggingEnabled()) {
-                    logEntry.append(value);
-                }
-            }
+            long s = System.nanoTime();
+            final long ts = WPIUtilJNI.now();
+            final String[] copy = value.clone();
+            enqueue(() -> {
+                if (shouldPublishNt()) ntPub.set(copy, ts);
+                else if (dataLoggingEnabled()) logEntry.append(copy, ts);
+            });
+            note(s);
         }
     }
 

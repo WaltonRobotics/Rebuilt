@@ -60,6 +60,8 @@ import frc.util.VisionUtil;
 public class Constants {
     public static final boolean kDebugLoggingEnabled = false;
     public static final boolean kDataLoggingEnabled = true;
+    /** When true, WaltLogger.*Logger.accept(...) hands off to a worker thread; when false, publishes synchronously on the caller. */
+    public static final boolean kAsyncLoggingEnabled = true;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
     public static final CANBus kRioBus = CANBus.roboRIO();
