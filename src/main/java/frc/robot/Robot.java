@@ -311,14 +311,6 @@ public class Robot extends TimedRobot {
         trg_shoot
             .and(trg_snappingBack)
             .whileTrue(m_superstructure.hoodAndFlywheelShotCalc());
-        // m_manipulator.rightTrigger().and(trg_manipOverride).whileTrue(Commands.run(() -> m_intake.setIntakeRollersVelocity(kIntakeRollersBarfVolts)).finallyDo(() -> m_intake.setIntakeRollersVelocity(0)));
-
-        // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));
-        // m_driver.a().onTrue(m_shooter.driverRPSAlter(false));
-
-        // m_driver.x().onTrue(m_shooter.driverResetRPSAlter());
-
-        // m_driver.leftBumper().whileTrue(m_shooter.driverRPSIncreaseWhileHeldCmd());
 
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
@@ -334,7 +326,6 @@ public class Robot extends TimedRobot {
         trg_retractIntake.onTrue(m_superstructure.retractIntake());
         trg_intakeShimmy.whileTrue(m_superstructure.intakeShimmy(() -> false));
         trg_intakeShimmy.and(trg_shoot).whileTrue(m_superstructure.intakeShimmy(() -> true));
-
 
         trg_emergencyBarf.whileTrue(m_superstructure.emergencyBarf());
         trg_emergencyIntakeOnlyBarf.whileTrue(m_superstructure.emergencyBarfOnlyIntake());
@@ -372,6 +363,7 @@ public class Robot extends TimedRobot {
 
         // m_drivetrain.registerTelemetry(logger::telemeterize);    //UNUSED - runs at 250hz which is burning CPU
       
+        //-used when the shooter couldn't shoot while aiming close to the hopper wall
         // trg_turretInShootRange.whileFalse(Commands.run(() -> m_driver.setRumble(RumbleType.kBothRumble, 0.3))
         //     .finallyDo(() -> m_driver.setRumble(RumbleType.kBothRumble, 0))
     }
