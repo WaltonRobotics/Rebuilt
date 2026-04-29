@@ -710,6 +710,7 @@ public class Constants {
         /* NEW PATHS */
         //---BUMP RETURN PATHS
         public static final String kRightOneBumpReturn = "RIGHT_one_bumpReturn";
+        public static final String kRightOneBumpReturnFollow = "RIGHT_one_bumpReturnFollow";
         public static final String kLeftOneBumpReturn = "LEFT_one_bumpReturn";
         public static final String kRightTwoBumpReturn = "RIGHT_two_bumpReturn";
         public static final String kLeftTwoBumpReturn = "LEFT_two_bumpReturn";
