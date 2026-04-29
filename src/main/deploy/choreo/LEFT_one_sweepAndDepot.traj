@@ -506,5 +506,6 @@
    {"name":"stopIntake", "from":{"target":14, "targetTimestamp":13.9874, "offset":{"exp":"-0.1 s", "val":-0.1}}, "event":{"type":"named", "data":{"name":"stopIntake"}}},
    {"name":"intake", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0.25 s", "val":0.25}}, "event":{"type":"named", "data":{"name":"intake"}}},
    {"name":"stopShoot", "from":{"target":9, "targetTimestamp":8.78113, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"stopShoot"}}},
-   {"name":"shoot", "from":{"target":13, "targetTimestamp":11.77082, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"shoot"}}}]
+   {"name":"shoot", "from":{"target":13, "targetTimestamp":11.77082, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"shoot"}}},
+   {"name":"stopShoot", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"stopShoot"}}}]
 }
