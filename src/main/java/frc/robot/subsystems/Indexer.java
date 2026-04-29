@@ -87,6 +87,8 @@ public class Indexer extends SubsystemBase {
 
     private boolean m_isTunnelSpunUp = false;
     private double m_tunnelVelocityRotPerSec = 0.0;
+    private double m_desiredTunnelRPS = 0.0;
+    private double m_desiredSpindexerRPS = 0.0;
 
     /* CONSTRUCTOR */
     public Indexer() {
@@ -166,6 +168,14 @@ public class Indexer extends SubsystemBase {
         return m_tunnelVelocityRotPerSec;
     }
 
+    public double getDesiredTunnelVelocityRPS() {
+        return m_desiredTunnelRPS;
+    }
+
+    public double getDesiredSpindexerVelocityRPS() {
+        return m_desiredSpindexerRPS;
+    }
+
     //---SPINDEXER
     public void setSpindexerVelocity(double RPS) {
         if (RPS == 0) {
@@ -175,6 +185,7 @@ public class Indexer extends SubsystemBase {
             RPS = kSpindexerRPSOverride.enabled() ? kSpindexerRPSOverride.get() : RPS; 
             m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RPS));
         }
+        m_desiredSpindexerRPS = RPS;
         log_desiredSpindexerRPS.accept(RPS);
     }
 
@@ -191,6 +202,7 @@ public class Indexer extends SubsystemBase {
             RPS = kTunnelRPSOverride.enabled() ? kTunnelRPSOverride.get() : RPS; 
             m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS));
         }
+        m_desiredTunnelRPS = RPS;
         log_desiredTunnelRPS.accept(RPS);
     }
 
