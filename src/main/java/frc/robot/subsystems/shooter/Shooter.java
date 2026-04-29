@@ -374,7 +374,7 @@ public class Shooter extends SubsystemBase {
 
         // m_periodicTracer.addEpoch("Logging");
 
-        m_periodicTracer.printEpochs();
+        // m_periodicTracer.printEpochs();
     }
 
     @Override

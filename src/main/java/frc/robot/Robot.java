@@ -449,7 +449,7 @@ public class Robot extends TimedRobot {
         // );
 
 
-        m_periodicTracer.printEpochs();
+        // m_periodicTracer.printEpochs();
         m_perfMonitor.loopEnd();
     }
 
