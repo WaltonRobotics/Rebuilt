@@ -92,22 +92,18 @@ public class WaltLogger {
         Runtime.getRuntime().addShutdownHook(new Thread(WaltLogger::shutdown, "WaltLogger-Shutdown"));
     }
 
-    private static void note(long startNanos) {
-        m_acceptNanosTotal.addAndGet(System.nanoTime() - startNanos);
-        m_acceptCallsTotal.incrementAndGet();
-    }
-
     private static void enqueue(LogEvent ev) {
+        long s = System.nanoTime();
         if (!shouldEnqueueAsync()) {
             // Global toggle off: publish inline on the caller, bypass queue entirely.
             safePublish(ev);
-            return;
-        }
-        if (!m_queue.offer(ev)) {
+        } else if (!m_queue.offer(ev)) {
             // Backpressure fallback: publish inline. Counted so it shows up in stats.
             m_syncFallbackCalls.incrementAndGet();
             safePublish(ev);
         }
+        m_acceptNanosTotal.addAndGet(System.nanoTime() - s);
+        m_acceptCallsTotal.incrementAndGet();
     }
 
     private static void safePublish(LogEvent ev) {
@@ -212,7 +208,6 @@ public class WaltLogger {
 
         @Override
         public void accept(Pose2d value) {
-            long s = System.nanoTime();
             final long ts = WPIUtilJNI.now();
             enqueue(() -> {
                 if (shouldPublishNt()) {
@@ -222,7 +217,6 @@ public class WaltLogger {
                     if (dataLoggingEnabled()) logEntry.append(value, ts);
                 }
             });
-            note(s);
         }
 
         public void accept(Translation2d value) {
@@ -250,7 +244,6 @@ public class WaltLogger {
 
         @Override
         public void accept(Pose2d[] value) {
-            long s = System.nanoTime();
             final long ts = WPIUtilJNI.now();
             // Defensive shallow copy: caller may mutate `value` before the worker drains it.
             // Pose2d itself is immutable, so a shallow clone is sufficient.
@@ -259,7 +252,6 @@ public class WaltLogger {
                 if (shouldPublishNt()) ntPub.set(copy, ts);
                 else if (dataLoggingEnabled()) logEntry.append(copy, ts);
             });
-            note(s);
         }
 
         public void accept(Translation2d[] translations) {
@@ -295,13 +287,11 @@ public class WaltLogger {
 
         @Override
         public void accept(Pose3d value) {
-            long s = System.nanoTime();
             final long ts = WPIUtilJNI.now();
             enqueue(() -> {
                 if (shouldPublishNt()) ntPub.set(value, ts);
                 else if (dataLoggingEnabled()) logEntry.append(value, ts);
             });
-            note(s);
         }
 
         public void accept(Translation3d value) {
@@ -329,14 +319,12 @@ public class WaltLogger {
 
         @Override
         public void accept(Translation3d[] value) {
-            long s = System.nanoTime();
             final long ts = WPIUtilJNI.now();
             final Translation3d[] copy = value.clone();
             enqueue(() -> {
                 if (shouldPublishNt()) ntPub.set(copy, ts);
                 else if (dataLoggingEnabled()) logEntry.append(copy, ts);
             });
-            note(s);
         }
     }
 
@@ -379,14 +367,12 @@ public class WaltLogger {
 
         @Override
         public void accept(int value) {
-            long s = System.nanoTime();
             final long ts = WPIUtilJNI.now();
             final long v = value;
             enqueue(() -> {
                 if (shouldPublishNt()) ntPub.set(v, ts);
                 else if (dataLoggingEnabled()) logEntry.append(v, ts);
             });
-            note(s);
         }
     }
 
@@ -401,13 +387,11 @@ public class WaltLogger {
 
         @Override
         public void accept(double value) {
-            long s = System.nanoTime();
             final long ts = WPIUtilJNI.now();
             enqueue(() -> {
                 if (shouldPublishNt()) ntPub.set(value, ts);
                 else if (dataLoggingEnabled()) logEntry.append(value, ts);
             });
-            note(s);
         }
     }
 
@@ -426,13 +410,11 @@ public class WaltLogger {
 
         @Override
         public void accept(boolean value) {
-            long s = System.nanoTime();
             final long ts = WPIUtilJNI.now();
             enqueue(() -> {
                 if (shouldPublishNt()) ntPub.set(value, ts);
                 else if (dataLoggingEnabled()) logEntry.append(value, ts);
             });
-            note(s);
         }
 
         public void accept(BooleanSupplier valueSup) {
@@ -455,14 +437,12 @@ public class WaltLogger {
 
         @Override
         public void accept(double[] value) {
-            long s = System.nanoTime();
             final long ts = WPIUtilJNI.now();
             final double[] copy = value.clone();
             enqueue(() -> {
                 if (shouldPublishNt()) ntPub.set(copy, ts);
                 else if (dataLoggingEnabled()) logEntry.append(copy, ts);
             });
-            note(s);
         }
     }
 
@@ -481,13 +461,11 @@ public class WaltLogger {
 
         @Override
         public void accept(String value) {
-            long s = System.nanoTime();
             final long ts = WPIUtilJNI.now();
             enqueue(() -> {
                 if (shouldPublishNt()) ntPub.set(value, ts);
                 else if (dataLoggingEnabled()) logEntry.append(value, ts);
             });
-            note(s);
         }
     }
 
@@ -506,14 +484,12 @@ public class WaltLogger {
 
         @Override
         public void accept(String[] value) {
-            long s = System.nanoTime();
             final long ts = WPIUtilJNI.now();
             final String[] copy = value.clone();
             enqueue(() -> {
                 if (shouldPublishNt()) ntPub.set(copy, ts);
                 else if (dataLoggingEnabled()) logEntry.append(copy, ts);
             });
-            note(s);
         }
     }
 
