@@ -58,7 +58,12 @@ public class Indexer extends SubsystemBase {
     //     ),
     //     DCMotor.getKrakenX60Foc(1)
     // );
+
     
+    /* TUNABLES */
+    private static final WaltTunable kTunnelRatioMultiplier = new WaltTunable("/Indexer/Tunnel/tunnelRatioScalar", 1.1);
+    private static final WaltTunable kSpindexerRatioMultiplier = new WaltTunable("/Indexer/Spindexer/spindexerRatioScalar", 1.1);
+
     /* LOGGERS */
     private final String kTunnelLogTab = "/Tunnel";
     private final String kSpindexerLogTab = "/Spindexer";
@@ -195,11 +200,11 @@ public class Indexer extends SubsystemBase {
 
     //STATICS for conversions
     public static double tunnelRPSFromShooter(double shooterRPS) {
-            return Math.min(shooterRPS * kTunnelFromShooterRatio, kTunnelMaxRPSD);
+            return Math.min(shooterRPS * kTunnelFromShooterRatio * (kTunnelRatioMultiplier.enabled() ? kTunnelRatioMultiplier.get() : 1.1) , kTunnelMaxRPSD);
         }
 
     public static double spindexerRPSFromShooter(double shooterRPS) {
-        return Math.min(shooterRPS * kSpindexerFromShooterRatio, kSpindexerMaxRPSD);
+        return Math.min(shooterRPS * kSpindexerFromShooterRatio * (kSpindexerRatioMultiplier.enabled() ? kSpindexerRatioMultiplier.get() : 1.1), kSpindexerMaxRPSD);
     }
 
     /* PERIODICS */
