@@ -57,6 +57,7 @@ public class ShotCalculator {
     private static final boolean kRPSReductionNeeded = false;
 
     private static double kRPSBoost = 0.75;
+    private static double kLongRangeRPSBoost = 0.35;
     private static final WaltTunable kRPSBoostTuner = new WaltTunable("Shooter/Calculator/RPSBoost", kRPSBoost); 
 
     /**
@@ -149,19 +150,19 @@ public class ShotCalculator {
         passing.add(8.4420, 68.750 + kRPSBoost, 1.15, 1.58, 0.254);
         passing.add(8.7350, 70.250 + kRPSBoost, 1.15, 1.63, 0.254);
         passing.add(8.9970, 71.350 + kRPSBoost, 1.15, 1.71, 0.254);
-        passing.add(10.419, 78.800 + kRPSBoost, 1.16, 1.78, 0.254);
-        passing.add(10.722, 80.300 + kRPSBoost, 1.16, 1.80, 0.254);
-        passing.add(11.076, 82.100 + kRPSBoost, 1.16, 1.79, 0.254);
-        passing.add(11.367, 82.500 + kRPSBoost, 1.16, 1.87, 0.254);
-        passing.add(11.722, 84.400 + kRPSBoost, 1.16, 1.85, 0.254);
-        passing.add(12.060, 86.100 + kRPSBoost, 1.16, 1.87, 0.254);
-        passing.add(12.358, 88.200 + kRPSBoost, 1.16, 1.92, 0.254);
-        passing.add(12.670, 89.350 + kRPSBoost, 1.16, 1.95, 0.254);
-        passing.add(13.048, 91.300 + kRPSBoost, 1.16, 1.92, 0.254);
-        passing.add(13.053, 92.700 + kRPSBoost, 1.16, 2.04, 0.254);
-        passing.add(13.657, 94.760 + kRPSBoost, 1.16, 2.02, 0.254);
-        passing.add(14.020, 101.70 + kRPSBoost, 1.16, 2.00, 0.254);
-        passing.add(14.355, 104.39 + kRPSBoost, 1.16, 2.08, 0.254);
+        passing.add(10.419, 78.800 + kRPSBoost + kLongRangeRPSBoost, 1.16, 1.78, 0.254);
+        passing.add(10.722, 80.300 + kRPSBoost + kLongRangeRPSBoost, 1.16, 1.80, 0.254);
+        passing.add(11.076, 82.100 + kRPSBoost + kLongRangeRPSBoost, 1.16, 1.79, 0.254);
+        passing.add(11.367, 82.500 + kRPSBoost + kLongRangeRPSBoost, 1.16, 1.87, 0.254);
+        passing.add(11.722, 84.400 + kRPSBoost + kLongRangeRPSBoost, 1.16, 1.85, 0.254);
+        passing.add(12.060, 86.100 + kRPSBoost + kLongRangeRPSBoost, 1.16, 1.87, 0.254);
+        passing.add(12.358, 88.200 + kRPSBoost + kLongRangeRPSBoost, 1.16, 1.92, 0.254);
+        passing.add(12.670, 89.350 + kRPSBoost + kLongRangeRPSBoost, 1.16, 1.95, 0.254);
+        passing.add(13.048, 91.300 + kRPSBoost + kLongRangeRPSBoost, 1.16, 1.92, 0.254);
+        passing.add(13.053, 92.700 + kRPSBoost + kLongRangeRPSBoost, 1.16, 2.04, 0.254);
+        passing.add(13.657, 94.760 + kRPSBoost + kLongRangeRPSBoost, 1.16, 2.02, 0.254);
+        passing.add(14.020, 101.70 + kRPSBoost + kLongRangeRPSBoost, 1.16, 2.00, 0.254);
+        passing.add(14.355, 104.39 + kRPSBoost + kLongRangeRPSBoost, 1.16, 2.08, 0.254);
         kPassingTable = passing.build();
     }
     static {
