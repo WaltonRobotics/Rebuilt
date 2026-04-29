@@ -668,6 +668,8 @@ public class Constants {
         public static final double kSOTMTimeout = 100; //12
         public static final double kSweepShootingTimeout = 20;
 
+        public static final double kFollowDelay = 2;
+
         /* OLD PATHS */
         //---RIGHT FIRST CYCLES
         public static final String kRightOneJab = "RIGHT_one_jab";

@@ -170,7 +170,7 @@ public class AutonChooser {
             new AdaptableAutonInfo(AutonK.kRightTwoGoOut, AutonK.kSOTMTimeout, true, 0));
 
         addMultiAuton(kRightTrenchTwoCycleBumpReturnFollow,
-            new AdaptableAutonInfo(AutonK.kRightOneBumpReturnFollow, AutonK.kSOTMTimeout, true, 2),
+            new AdaptableAutonInfo(AutonK.kRightOneBumpReturnFollow, AutonK.kSOTMTimeout, true, AutonK.kFollowDelay),
             new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, AutonK.kSOTMTimeout, true, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoBumpReturn, AutonK.kSOTMTimeout, true, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, AutonK.kSOTMTimeout, true, 0),
@@ -184,7 +184,7 @@ public class AutonChooser {
             new AdaptableAutonInfo(AutonK.kLeftTwoGoOut, AutonK.kSOTMTimeout, true, 0));
 
         addMultiAuton(kLeftTrenchTwoCycleBumpReturnFollow,
-            new AdaptableAutonInfo(AutonK.kLeftOneBumpReturnFollow, AutonK.kSOTMTimeout, true, 2),
+            new AdaptableAutonInfo(AutonK.kLeftOneBumpReturnFollow, AutonK.kSOTMTimeout, true, AutonK.kFollowDelay),
             new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, AutonK.kSOTMTimeout, true, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoBumpReturn, AutonK.kSOTMTimeout, true, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoBumpToTrench, AutonK.kSOTMTimeout, true, 0),
