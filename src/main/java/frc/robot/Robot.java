@@ -51,6 +51,7 @@ import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Indexer;
 import frc.robot.vision.WaltCamera;
 import frc.util.HubShiftUtil;
+import frc.util.LoopProfiler;
 import frc.util.PerformanceMonitor;
 import frc.util.SignalManager;
 // import frc.util.WaltVisualSim;
@@ -179,6 +180,13 @@ public class Robot extends TimedRobot {
 
     private final Tracer m_periodicTracer = new Tracer();
     private final PerformanceMonitor m_perfMonitor = new PerformanceMonitor(false);
+    // Section indices must match the order passed to the constructor.
+    private static final int kSecSignals = 0;
+    private static final int kSecScheduler = 1;
+    private static final int kSecVision = 2;
+    private static final int kSecLogging = 3;
+    private final LoopProfiler m_loopProfiler = new LoopProfiler(
+        "Perf/Loop", "signals", "scheduler", "vision", "logging");
     private final Command m_preheaterCommand;
 
     /* CONSTRUCTOR */
@@ -399,9 +407,14 @@ public class Robot extends TimedRobot {
     public void robotPeriodic() {
         m_perfMonitor.loopStart();
         m_periodicTracer.addEpoch("Entry (Unused Time)");
+        m_loopProfiler.start();
+
         SignalManager.refreshAll();
+        m_loopProfiler.mark(kSecSignals);
+
         CommandScheduler.getInstance().run();
         m_periodicTracer.addEpoch("CommandScheduler");
+        m_loopProfiler.mark(kSecScheduler);
 
         SwerveDriveState driveState = m_drivetrain.getState();
         log_robotPose.accept(driveState.Pose);
@@ -420,6 +433,7 @@ public class Robot extends TimedRobot {
             }
         }
         m_periodicTracer.addEpoch("VisionUpdate");
+        m_loopProfiler.mark(kSecVision);
 
         log_visionSeenPastSecond.accept((nowSec - m_visionSeenLastSec) < 1.0);
         // log_isDisabled.accept(trg_limitFPS);
@@ -458,6 +472,7 @@ public class Robot extends TimedRobot {
 
 
         m_periodicTracer.printEpochs();
+        m_loopProfiler.mark(kSecLogging);
         m_perfMonitor.loopEnd();
     }
 

@@ -27,6 +27,7 @@ import frc.robot.FieldConstants;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotDataLerp;
 import frc.util.AllianceFlipUtil;
 import frc.util.AllianceZoneUtil;
+import frc.util.LoopProfiler;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -104,6 +105,13 @@ public class ShooterCalc {
     private final Notifier m_notifier = new Notifier(this::calcCallback);
     private final Timer m_calcTimer = new Timer();
 
+    // Per-section breakdown of calcCallback. Indices must match constructor order.
+    private static final int kSecInputs = 0;
+    private static final int kSecCalc = 1;
+    private static final int kSecLogging = 2;
+    private final LoopProfiler m_profiler = new LoopProfiler(
+        "Perf/ShotCalc", "inputs", "calc", "logging");
+
     private boolean isRed = WaltDriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
     // private double robotX;
     // private double robotY;
@@ -164,6 +172,8 @@ public class ShooterCalc {
 
     private void calcCallback() {
         m_calcTimer.restart();
+        m_profiler.start();
+
         // getters from outside
         SwerveDriveState swerveState = m_threadsafeSwerveDriveStateSup.get();
         Pose2d robotPose = swerveState.Pose;
@@ -171,11 +181,13 @@ public class ShooterCalc {
             m_swerveKinematics.toChassisSpeeds(swerveState.ModuleStates), robotPose.getRotation());
         double turretPositionRots = m_turretPosRotsSup.getAsDouble();
         Pose3d turretPose = new Pose3d(robotPose).transformBy(kTurretTransform);
+        m_profiler.mark(kSecInputs);
 
         m_underTrench = underTrench(turretPose.toPose2d());
         m_aimTarget = calculateTarget(robotPose);
         m_shotCalcOutputs = calcShot(robotPose, m_useStaticShot, m_aimTarget, turretPositionRots, robotChassisSpeeds);
         refreshCanTurretShoot();
+        m_profiler.mark(kSecCalc);
 
         // Logging
         log_globalShotTarget.accept(m_aimTarget);
@@ -189,6 +201,7 @@ public class ShooterCalc {
         log_timeOfFlight.accept(m_shotCalcOutputs.shotData().tofSec());
 
         log_loopTime.accept(m_calcTimer.get() * 1000.0);
+        m_profiler.mark(kSecLogging);
     }
 
     /**
