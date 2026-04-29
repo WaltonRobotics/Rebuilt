@@ -14,8 +14,6 @@ import javax.management.NotificationListener;
 
 import com.sun.management.GarbageCollectionNotificationInfo;
 import com.sun.management.GcInfo;
-import com.sun.management.OperatingSystemMXBean;
-
 import frc.util.WaltLogger.DoubleLogger;
 
 public class PerformanceMonitor {

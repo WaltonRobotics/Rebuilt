@@ -41,6 +41,8 @@ public class Turret extends SubsystemBase {
     public BooleanSupplier turretHomedSupp = () -> m_isTurretHomed;
     private boolean m_turretAtPos = false;
     public BooleanSupplier turretAtPosSupp = () -> m_turretAtPos;
+    private boolean m_isSnappingBack = false;
+    private final BooleanSupplier supp_isSnappingBack = () -> m_isSnappingBack;
 
     private final CANcoder m_lcmEncA = new CANcoder(19, Constants.kCanivoreBus);
     private final DutyCycleEncoder m_lcmEncB = new DutyCycleEncoder(3);
@@ -84,10 +86,15 @@ public class Turret extends SubsystemBase {
         }
     }
 
-    private void refreshTurretAtPos() {
+    private void refreshTurretCLErr() {
         log_turretClosedLoopError.accept(sig_turretCLErr.getValueAsDouble());
         m_turretAtPos = sig_turretCLErr.isNear(0, kTurretMaxErrD);
+        m_isSnappingBack = sig_turretCLErr.getValueAsDouble() >= kTurretMaxErrDSpin;
         log_atPos.accept(m_turretAtPos);
+    }
+
+    public BooleanSupplier isSnappingBack() {
+        return supp_isSnappingBack;
     }
 
     public boolean atPosition() {
@@ -169,7 +176,7 @@ public class Turret extends SubsystemBase {
         log_lcmEncBFreq.accept(m_lcmEncB.getFrequency());
         log_lcmEncBConn.accept(m_lcmEncB.isConnected());
 
-        refreshTurretAtPos();
+        refreshTurretCLErr();
 
         double turretAngleDeg = calcTurretAngleLCM(encAVal * 360, -(encBVal - kEncBOffset) * 360);
         log_turretLCMPos.accept(turretAngleDeg / 360.0);

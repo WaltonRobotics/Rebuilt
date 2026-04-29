@@ -1,17 +1,15 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -22,6 +20,7 @@ import static frc.robot.Constants.IndexerK.*;
 import frc.robot.Constants;
 import frc.util.SignalManager;
 import frc.util.WaltMotorSim;
+import frc.util.WaltTunable;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -34,6 +33,12 @@ public class Indexer extends SubsystemBase {
 
     private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
     private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
+
+    private static final WaltTunable kTunnelRPSOverride = new WaltTunable("/Indexer/Tunnel/tunnelRPSOverride", kTunnelShootRPSD);
+    private static final WaltTunable kSpindexerRPSOverride = new WaltTunable("/Indexer/Spindexer/spindexerRPSOverride", kSpindexerShootRPSD);
+
+    private final CoastOut m_spindexerMotorIdleReq = new CoastOut();
+    private final CoastOut m_tunnelMotorIdleReq = new CoastOut();
 
     /* SIM OBJECTS */
     // private final DCMotorSim m_spindexerSim = new DCMotorSim(
@@ -55,13 +60,16 @@ public class Indexer extends SubsystemBase {
     // );
     
     /* LOGGERS */
-    private final DoubleLogger log_spindexerRPS = WaltLogger.logDouble(kLogTab, "spindexerRPS");
-    private final DoubleLogger log_tunnelRPS = WaltLogger.logDouble(kLogTab, "tunnelRPS");
+    private final String kTunnelLogTab = "/Tunnel";
+    private final String kSpindexerLogTab = "/Spindexer";
 
-    private final DoubleLogger log_desiredSpindexerRPS = WaltLogger.logDouble(kLogTab, "desiredSpindexerRPS");
-    private final DoubleLogger log_desiredTunnelRPS = WaltLogger.logDouble(kLogTab, "desiredTunnelRPS");
-    private final DoubleLogger log_spindexerStatorCurrent = WaltLogger.logDouble(kLogTab, "spindexerStatorCurrent");
-    private final DoubleLogger log_spindexerSupplyCurrent = WaltLogger.logDouble(kLogTab, "spindexerSupplyCurrent");
+    private final DoubleLogger log_spindexerRPS = WaltLogger.logDouble(kLogTab + kSpindexerLogTab, "spindexerRPS");
+    private final DoubleLogger log_tunnelRPS = WaltLogger.logDouble(kLogTab + kTunnelLogTab, "tunnelRPS");
+
+    private final DoubleLogger log_desiredSpindexerRPS = WaltLogger.logDouble(kLogTab + kSpindexerLogTab, "desiredRPS");
+    private final DoubleLogger log_desiredTunnelRPS = WaltLogger.logDouble(kLogTab + kTunnelLogTab, "desiredRPS");
+    private final DoubleLogger log_spindexerStatorCurrent = WaltLogger.logDouble(kLogTab + kSpindexerLogTab, "statorCurrent");
+    private final DoubleLogger log_spindexerSupplyCurrent = WaltLogger.logDouble(kLogTab + kSpindexerLogTab, "supplyCurrent");
 
     private final StatusSignal<AngularVelocity> sig_spindexerVelo = m_spindexer.getVelocity();
     private final StatusSignal<Current> sig_spindexerStatorCurrent = m_spindexer.getStatorCurrent();
@@ -69,9 +77,8 @@ public class Indexer extends SubsystemBase {
     private final StatusSignal<AngularVelocity> sig_tunnelVelo = m_tunnel.getVelocity();
     private final StatusSignal<Double> sig_tunnelCLErr = m_tunnel.getClosedLoopError();
 
-    private final DoubleLogger log_tunnelClosedLoopError = WaltLogger.logDouble(kLogTab, "tunnelClosedLoopError");
-    private final BooleanLogger log_isTunnelSpunUp = WaltLogger.logBoolean(kLogTab, "isTunnelSpunUp");
-
+    private final DoubleLogger log_tunnelClosedLoopError = WaltLogger.logDouble(kLogTab + kTunnelLogTab, "closedLoopError");
+    private final BooleanLogger log_isTunnelSpunUp = WaltLogger.logBoolean(kLogTab + kTunnelLogTab, "spunUp");
 
     private boolean m_isTunnelSpunUp = false;
     private double m_tunnelVelocityRotPerSec = 0.0;
@@ -117,7 +124,12 @@ public class Indexer extends SubsystemBase {
     }
 
     public void stopSpindexer() {
-        setSpindexerVelocity(RotationsPerSecond.zero());
+        setSpindexerVelocity(0);
+    }
+
+    public void setIndexerFromShooterRPS(double shooterRPS) {
+        setTunnelVelocity(tunnelRPSFromShooter(shooterRPS));
+        setSpindexerVelocity(spindexerRPSFromShooter(shooterRPS));
     }
 
     public Command startTunnelCmd() {
@@ -129,7 +141,7 @@ public class Indexer extends SubsystemBase {
     }
 
     public void stopTunnel() {
-        setTunnelVelocity(RotationsPerSecond.zero());
+        setTunnelVelocity(0);
     }
 
     private void refreshTunnelState() {
@@ -137,7 +149,7 @@ public class Indexer extends SubsystemBase {
         log_tunnelRPS.accept(m_tunnelVelocityRotPerSec);
 
         log_tunnelClosedLoopError.accept(sig_tunnelCLErr.getValueAsDouble());
-        m_isTunnelSpunUp = sig_tunnelCLErr.isNear(0, 30);
+        m_isTunnelSpunUp = sig_tunnelCLErr.isNear(0, 3);
         log_isTunnelSpunUp.accept(m_isTunnelSpunUp);
     }
 
@@ -150,23 +162,44 @@ public class Indexer extends SubsystemBase {
     }
 
     //---SPINDEXER
-    public void setSpindexerVelocity(AngularVelocity RPS) {
-        m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RPS));
-        log_desiredSpindexerRPS.accept(RPS.in(RotationsPerSecond));
+    public void setSpindexerVelocity(double RPS) {
+        if (RPS == 0) {
+            m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(0));
+            m_spindexer.setControl(m_spindexerMotorIdleReq);
+        } else {
+            RPS = kSpindexerRPSOverride.enabled() ? kSpindexerRPSOverride.get() : RPS; 
+            m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RPS));
+        }
+        log_desiredSpindexerRPS.accept(RPS);
     }
 
     public Command setSpindexerVelocityCmd(AngularVelocity RPS) {
-        return runOnce(() -> setSpindexerVelocity(RPS));
+        return runOnce(() -> setSpindexerVelocity(RPS.in(RotationsPerSecond)));
     }
 
     //---TUNNEL
-    public void setTunnelVelocity(AngularVelocity RPS) {
-        m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS));
-        log_desiredTunnelRPS.accept(RPS.in(RotationsPerSecond));
+    public void setTunnelVelocity(double RPS) {
+        if (RPS == 0) {
+            m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(0));
+            m_tunnel.setControl(m_tunnelMotorIdleReq);
+        } else {
+            RPS = kTunnelRPSOverride.enabled() ? kTunnelRPSOverride.get() : RPS; 
+            m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS));
+        }
+        log_desiredTunnelRPS.accept(RPS);
     }
 
     public Command setTunnelVelocityCmd(AngularVelocity RPS) {
-        return runOnce(() -> setTunnelVelocity(RPS));
+        return runOnce(() -> setTunnelVelocity(RPS.in(RotationsPerSecond)));
+    }
+
+    //STATICS for conversions
+    public static double tunnelRPSFromShooter(double shooterRPS) {
+            return Math.min(shooterRPS * kTunnelFromShooterRatio, kTunnelMaxRPSD);
+        }
+
+    public static double spindexerRPSFromShooter(double shooterRPS) {
+        return Math.min(shooterRPS * kSpindexerFromShooterRatio, kSpindexerMaxRPSD);
     }
 
     /* PERIODICS */

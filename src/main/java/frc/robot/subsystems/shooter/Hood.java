@@ -28,36 +28,42 @@ import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
 public class Hood extends SubsystemBase {
+    private static final String kLogTab = "Shooter/Hood";
     private static final double kAbsoluteToPhysicalAngleRatio =
         (kPhysicalHoodMaxPosition_double - kPhysicalHoodMinPosition_double) / (360.0 * (kHoodMaxRots_double - kHoodMinRots_double));
     private final TalonFXS m_hood = new TalonFXS(kHoodCANID, kShooterBus);
     private final PositionVoltage m_hoodPVRequest = new PositionVoltage(0).withEnableFOC(false);
     private final VoltageOut m_hoodZeroReq = new VoltageOut(0);
 
-    private final BooleanLogger log_hoodHomed = WaltLogger.logBoolean("Shooter/Hood", "Homed");
-    private final DoubleLogger log_hoodControlPos = WaltLogger.logDouble("Shooter/Hood", "hoodControlPos");
-    private final DoubleLogger log_hoodCurrentPos = WaltLogger.logDouble("Shooter/Hood", "hoodCurrentPos");
-    private final DoubleLogger log_hoodPositionDeg = WaltLogger.logDouble("Shooter/Hood", "hoodPositionDeg"); //for debugging purposes
+    private final BooleanLogger log_hoodHomed = WaltLogger.logBoolean(kLogTab, "Homed");
+    private final DoubleLogger log_hoodControlPos = WaltLogger.logDouble(kLogTab, "controlPos");
+    private final DoubleLogger log_hoodCurrentPos = WaltLogger.logDouble(kLogTab, "currentPos");
+    private final DoubleLogger log_hoodPositionDeg = WaltLogger.logDouble(kLogTab, "positionDeg"); //for debugging purposes
+    private final DoubleLogger log_hoodCLErr = WaltLogger.logDouble(kLogTab, "closedLoopErr");
+    private final BooleanLogger log_hoodAtPos = WaltLogger.logBoolean(kLogTab, "hoodAtPos");
 
     private Debouncer m_currentDebouncer = new Debouncer(0.125, DebounceType.kRising);
 
     private final StatusSignal<Current> sig_hoodStatorCurrent = m_hood.getStatorCurrent();
     private final StatusSignal<Angle> sig_hoodPos = m_hood.getPosition();
+    private final StatusSignal<Double> sig_hoodCLErr = m_hood.getClosedLoopError();
 
     private BooleanSupplier m_currentSpike = () -> sig_hoodStatorCurrent.getValueAsDouble() > 5.0;
 
     private final StaticBrake m_BrakeReq = new StaticBrake();
 
     private boolean m_isHoodHomed = false;
+    private boolean m_hoodAtPos = false;
 
     public Hood() {
         m_hood.getConfigurator().apply(kHoodTalonFXSConfiguration);
 
-        SignalManager.register(kShooterBus, sig_hoodStatorCurrent, sig_hoodPos);
+        SignalManager.register(kShooterBus, sig_hoodStatorCurrent, sig_hoodPos, sig_hoodCLErr);
 
         m_hood.setPosition(0);
         m_isHoodHomed = true;
         log_hoodHomed.accept(m_isHoodHomed);
+        setHoodPos(0.05); //really really low position to see that this is working
 
         // setDefaultCommand(hoodCurrentSenseHomingCmd());
     }
@@ -78,6 +84,16 @@ public class Hood extends SubsystemBase {
 
     public boolean isHoodHomed() {
         return m_isHoodHomed;
+    }
+
+    private void refreshHoodAtPos() {
+        log_hoodCLErr.accept(sig_hoodCLErr.getValueAsDouble());
+        m_hoodAtPos = sig_hoodPos.isNear(0, kHoodMaxErrD);
+        log_hoodAtPos.accept(m_hoodAtPos);
+    }
+
+    public boolean atPosition() {
+        return m_hoodAtPos;
     }
 
     public Command hoodCurrentSenseHomingCmd(){
@@ -117,6 +133,7 @@ public class Hood extends SubsystemBase {
     @Override
     public void periodic() {
         double posRots = sig_hoodPos.getValueAsDouble();
+        refreshHoodAtPos();
         log_hoodCurrentPos.accept(getHoodAngleDeg(posRots));
         log_hoodPositionDeg.accept(posRots * 360.0);
     }

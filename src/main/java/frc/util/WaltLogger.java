@@ -39,6 +39,10 @@ public class WaltLogger {
         return Constants.kDebugLoggingEnabled;
     }
 
+    private static boolean dataLoggingEnabled() {
+        return Constants.kDataLoggingEnabled;
+    }
+
     public static BooleanEntry booleanItem(String table, String name, PubSubOption... options) {
 
         var topic = new BooleanTopic(NetworkTableInstance.getDefault().getTopic("Robot/" + table + "/" + name));
@@ -60,9 +64,15 @@ public class WaltLogger {
     public static final class Pose2dLogger implements Consumer<Pose2d> {
         public final StructPublisher<Pose2d> ntPub;
         public final StructLogEntry<Pose2d> logEntry;
+        private final boolean alwaysPubNt;
 
         public Pose2dLogger(String subTable, String name, PubSubOption... options) {
+            this(subTable, name, false, options);
+        }
+
+        public Pose2dLogger(String subTable, String name, boolean alwaysPubNt, PubSubOption... options) {
             StructTopic<Pose2d> topic = logTable.getSubTable(subTable).getStructTopic(name, new Pose2dStruct());
+            this.alwaysPubNt = alwaysPubNt;
             ntPub = topic.publish(options);
             logEntry = StructLogEntry.create(DataLogManager.getLog(), "Robot/" + subTable + "/" + name, new Pose2dStruct());
         }
@@ -72,7 +82,12 @@ public class WaltLogger {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
-                logEntry.append(value);
+                if (alwaysPubNt) {
+                    ntPub.set(value);
+                }
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
 
@@ -85,8 +100,8 @@ public class WaltLogger {
         }
     }
 
-    public static Pose2dLogger logPose2d(String table, String name, PubSubOption... options) {
-        return new Pose2dLogger(table, name, options);
+    public static Pose2dLogger logPose2d(String table, String name, boolean alwaysPubNt, PubSubOption... options) {
+        return new Pose2dLogger(table, name, alwaysPubNt, options);
     }
 
     public static final class Pose2dArrayLogger implements Consumer<Pose2d[]> {
@@ -104,7 +119,9 @@ public class WaltLogger {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
-                logEntry.append(value);
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
 
@@ -144,7 +161,9 @@ public class WaltLogger {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
-                logEntry.append(value);
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
 
@@ -223,7 +242,9 @@ public class WaltLogger {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
-                logEntry.append(value);
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
     }
@@ -242,7 +263,9 @@ public class WaltLogger {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
-                logEntry.append(value);
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
     }
@@ -265,7 +288,9 @@ public class WaltLogger {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
-                logEntry.append(value);
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
 
@@ -290,9 +315,11 @@ public class WaltLogger {
         @Override
         public void accept(double[] value) {
             if (shouldPublishNt()) {
-                ntPub.accept(value);
+                ntPub.set(value);
             } else {
-                logEntry.append(value);
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
     }
@@ -315,7 +342,9 @@ public class WaltLogger {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
-                logEntry.append(value);
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
     }
@@ -338,7 +367,9 @@ public class WaltLogger {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
-                logEntry.append(value);
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
     }

@@ -507,8 +507,4 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             desiredRotation
         );
     }
-
-    public boolean isBeached() {
-        return sig_gyroRoll.refresh().isNear(0, 3) && sig_gyroYaw.refresh().isNear(0, 3);
-    }
 }
