@@ -39,6 +39,10 @@ public class WaltLogger {
         return Constants.kDebugLoggingEnabled;
     }
 
+    private static boolean dataLoggingEnabled() {
+        return Constants.kDataLoggingEnabled;
+    }
+
     public static BooleanEntry booleanItem(String table, String name, PubSubOption... options) {
 
         var topic = new BooleanTopic(NetworkTableInstance.getDefault().getTopic("Robot/" + table + "/" + name));
@@ -81,7 +85,9 @@ public class WaltLogger {
                 if (alwaysPubNt) {
                     ntPub.set(value);
                 }
-                logEntry.append(value);
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
 
@@ -113,7 +119,9 @@ public class WaltLogger {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
-                logEntry.append(value);
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
 
@@ -153,7 +161,9 @@ public class WaltLogger {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
-                logEntry.append(value);
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
 
@@ -232,7 +242,9 @@ public class WaltLogger {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
-                logEntry.append(value);
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
     }
@@ -251,7 +263,9 @@ public class WaltLogger {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
-                logEntry.append(value);
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
     }
@@ -274,7 +288,9 @@ public class WaltLogger {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
-                logEntry.append(value);
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
 
@@ -299,9 +315,11 @@ public class WaltLogger {
         @Override
         public void accept(double[] value) {
             if (shouldPublishNt()) {
-                ntPub.accept(value);
+                ntPub.set(value);
             } else {
-                logEntry.append(value);
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
     }
@@ -324,7 +342,9 @@ public class WaltLogger {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
-                logEntry.append(value);
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
     }
@@ -347,7 +367,9 @@ public class WaltLogger {
             if (shouldPublishNt()) {
                 ntPub.set(value);
             } else {
-                logEntry.append(value);
+                if (dataLoggingEnabled()) {
+                    logEntry.append(value);
+                }
             }
         }
     }

@@ -248,7 +248,6 @@ public class ShotCalculator {
         double dx = turretX - targetX;
         double dy = turretY - targetY;
         double dist = Math.sqrt(dx * dx + dy * dy);
-        log_distToTargetMeters.accept(dist);
         return dist;
     }
 
@@ -261,7 +260,6 @@ public class ShotCalculator {
         double dist = getDistanceToTargetM(
             turretPose.getX(), turretPose.getY(), turretPose.getRotation().getAngle(),
             target.getX(), target.getY());
-        log_distToTargetMeters.accept(dist);
         return Meters.of(dist);
     }
 
@@ -318,9 +316,7 @@ public class ShotCalculator {
     /** Returns drag-compensated drift time: (1 - e^(-c*t)) / c, or t if drag is disabled. */
     private static double dragCompensatedTOF(double tof, double dragCoeff) {
         // if (!kDragCoeffTuner.enabled()) return tof;
-        double c = dragCoeff;
-        // double c = kDragCoeffTuner.get();
-        log_dragCoefficient.accept(c);
+        double c = kDragCoeffTuner.enabled() ? kDragCoeffTuner.get() : dragCoeff;
         if (c < 1e-6) return tof;
         return (1.0 - Math.exp(-c * tof)) / c;
     }
@@ -475,7 +471,6 @@ public class ShotCalculator {
         double distance = getDistanceToTargetM(robotX, robotY, headingRad, targetX, targetY);
         boolean passing = ShooterCalc.isPassing().getAsBoolean();
         // boolean canTurretShoot = ShooterCalc.canTurretShoot();
-        log_isPassingLerp.accept(passing);
 
         // ShotLerpTable shotTable = passing ? (canTurretShoot ? kPassingTable : kAngryTurretTable) : kShotTable;
         ShotLerpTable shotTable = passing ? kPassingTable : kShotTable;
@@ -535,6 +530,8 @@ public class ShotCalculator {
                 break;
             }
         }
+        log_distToTargetMeters.accept(distance);
+        log_isPassingLerp.accept(passing);
         log_calcConvergedBreakout.accept(converged);
         log_lerpIterationCount.accept(iterCount);
         ShotDataLerp data = new ShotDataLerp(exitVel, hoodAngle, new Translation3d(predX, predY, targetZ), tofSec);

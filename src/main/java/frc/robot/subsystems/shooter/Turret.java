@@ -147,11 +147,6 @@ public class Turret extends SubsystemBase {
         m_turret.setNeutralMode(value);
     }
 
-    // for TestingDashboard
-    public Command setTurretPositionCmd(DoubleSubscriber sub_rots) {
-        return run(() -> setTurretPos(sub_rots.get(), 0.0));
-    }
-
     public double getCurrTurretPos() {
         return sig_turretPos.getValueAsDouble();
     }
