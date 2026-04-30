@@ -214,7 +214,7 @@ public class Indexer extends SubsystemBase {
 
     //STATICS for conversions
     public static DoubleSupplier tunnelRPSFromShooter(DoubleSupplier shooterRPS) {
-        return () -> Math.min(shooterRPS.getAsDouble() * kTunnelFromShooterRatio * (kTunnelRatioMultiplier.enabled() ? kTunnelRatioMultiplier.get() : 1.0) , kTunnelMaxRPSD);
+        return () -> Math.min(shooterRPS.getAsDouble() * kTunnelFromShooterRatio * (kTunnelRatioMultiplier.enabled() ? kTunnelRatioMultiplier.get() : 1.0), kTunnelMaxRPSD);
     }
 
     public static DoubleSupplier spindexerRPSFromShooter(DoubleSupplier shooterRPS) {

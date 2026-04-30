@@ -70,12 +70,12 @@ public class Constants {
         public static final double kX60MaxRadPerSec = DCMotor.getKrakenX60(1).freeSpeedRadPerSec;
         public static final AngularVelocity kX60MaxVelocity = RadiansPerSecond.of(kX60MaxRadPerSec);
         public static final double kX60FOCMaxRadPerSec = DCMotor.getKrakenX60Foc(1).freeSpeedRadPerSec;
-        public static final AngularVelocity kX60FOCMaxVelocity = RadiansPerSecond.of(kX60MaxRadPerSec);
+        public static final AngularVelocity kX60FOCMaxVelocity = RadiansPerSecond.of(kX60FOCMaxRadPerSec);
 
         public static final double kX44MaxRadPerSec = DCMotor.getKrakenX44(1).freeSpeedRadPerSec;
         public static final AngularVelocity kX44MaxVelocity = RadiansPerSecond.of(kX44MaxRadPerSec);
         public static final double kX44FOCMaxRadPerSec = DCMotor.getKrakenX44Foc(1).freeSpeedRadPerSec;
-        public static final AngularVelocity kX44FOCMaxVelocity = RadiansPerSecond.of(kX44MaxRadPerSec);
+        public static final AngularVelocity kX44FOCMaxVelocity = RadiansPerSecond.of(kX44FOCMaxRadPerSec);
     }
     public static class WpiK {
         public static final ChassisSpeeds kZeroChassisSpeeds = new ChassisSpeeds(0, 0, 0);
@@ -549,7 +549,7 @@ public class Constants {
         public static final int kTunnelCANID = 11;
 
         public static final double kSpindexerGearing = 5.0 ; //5
-        public static final double kTunnelGearing = 20.0/30.0;
+        public static final double kTunnelGearing = 20.0/18.0;
 
         public static final double kSpindexerMOI = 0.00166190059;
         public static final double kTunnelMOI = 0.000215968064;
@@ -612,7 +612,7 @@ public class Constants {
 
         private static final Slot0Configs kTunnelSlot0Configs = new Slot0Configs()
             .withKS(0.2)
-            .withKV(0.086)
+            .withKV(0.1337)
             .withKA(0)
             .withKP(0.37)
             .withKI(0)
