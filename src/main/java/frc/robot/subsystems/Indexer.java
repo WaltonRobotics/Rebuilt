@@ -17,6 +17,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IndexerK.*;
 
+import java.util.function.DoubleSupplier;
+
 import frc.robot.Constants;
 import frc.util.SignalManager;
 import frc.util.WaltMotorSim;
@@ -61,8 +63,8 @@ public class Indexer extends SubsystemBase {
 
     
     /* TUNABLES */
-    private static final WaltTunable kTunnelRatioMultiplier = new WaltTunable("/Indexer/Tunnel/tunnelRatioScalar", 1.1);
-    private static final WaltTunable kSpindexerRatioMultiplier = new WaltTunable("/Indexer/Spindexer/spindexerRatioScalar", 1.1);
+    private static final WaltTunable kTunnelRatioMultiplier = new WaltTunable("/Indexer/Tunnel/tunnelRatioScalar", 1.0);
+    private static final WaltTunable kSpindexerRatioMultiplier = new WaltTunable("/Indexer/Spindexer/spindexerRatioScalar", 1.0);
 
     /* LOGGERS */
     private final String kTunnelLogTab = "/Tunnel";
@@ -134,7 +136,7 @@ public class Indexer extends SubsystemBase {
         setSpindexerVelocity(0);
     }
 
-    public void setIndexerFromShooterRPS(double shooterRPS) {
+    public void setIndexerFromShooterRPS(DoubleSupplier shooterRPS) {
         setTunnelVelocity(tunnelRPSFromShooter(shooterRPS));
         setSpindexerVelocity(spindexerRPSFromShooter(shooterRPS));
     }
@@ -211,12 +213,12 @@ public class Indexer extends SubsystemBase {
     }
 
     //STATICS for conversions
-    public static double tunnelRPSFromShooter(double shooterRPS) {
-            return Math.min(shooterRPS * kTunnelFromShooterRatio * (kTunnelRatioMultiplier.enabled() ? kTunnelRatioMultiplier.get() : 1.1) , kTunnelMaxRPSD);
-        }
+    public static double tunnelRPSFromShooter(DoubleSupplier shooterRPS) {
+        return Math.min(shooterRPS.getAsDouble() * kTunnelFromShooterRatio * (kTunnelRatioMultiplier.enabled() ? kTunnelRatioMultiplier.get() : 1.0) , kTunnelMaxRPSD);
+    }
 
-    public static double spindexerRPSFromShooter(double shooterRPS) {
-        return Math.min(shooterRPS * kSpindexerFromShooterRatio * (kSpindexerRatioMultiplier.enabled() ? kSpindexerRatioMultiplier.get() : 1.1), kSpindexerMaxRPSD);
+    public static double spindexerRPSFromShooter(DoubleSupplier shooterRPS) {
+        return Math.min(shooterRPS.getAsDouble() * kSpindexerFromShooterRatio * (kSpindexerRatioMultiplier.enabled() ? kSpindexerRatioMultiplier.get() : 1.0), kSpindexerMaxRPSD);
     }
 
     /* PERIODICS */

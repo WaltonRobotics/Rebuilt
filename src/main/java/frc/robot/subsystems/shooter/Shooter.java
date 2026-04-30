@@ -34,6 +34,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import frc.robot.Constants;
@@ -249,6 +250,10 @@ public class Shooter extends SubsystemBase {
 
     public double getShooterDesiredRotPerSec() {
         return m_calcFlywheelVelocityRotPerSec;
+    }
+
+    public DoubleSupplier getShooterDesiredRotPerSecSupp() {
+        return () -> m_calcFlywheelVelocityRotPerSec;
     }
 
     /* SIMULATION */

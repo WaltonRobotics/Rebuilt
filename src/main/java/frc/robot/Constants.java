@@ -179,8 +179,7 @@ public class Constants {
         public static final double kHoodRotsHalfwayD = kHoodAbsoluteMaxRots.magnitude() * 0.75;
         public static final double kHoodEmergencyRotsD = Rotations.of(0.371338).magnitude();
         public static final double kHoodMaxErrD = Rotations.of(0.01).in(Rotations);
-
-
+        public static final double kHoodAtPosTimeout = 0.1;
 
         //double versions
         public static final double kHoodMinRots_double = 0.0;
