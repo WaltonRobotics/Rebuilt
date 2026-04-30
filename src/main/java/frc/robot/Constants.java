@@ -724,6 +724,8 @@ public class Constants {
         public static final String kLeftOneTrenchReturn = "LEFT_one_trenchReturn";
         public static final String kRightTwoTrenchReturn = "RIGHT_two_trenchReturn";
         public static final String kLeftTwoTrenchReturn = "LEFT_two_trenchReturn";
+        public static final String kRightOneBumpTrenchReturn = "RIGHT_one_bumpReverseToTrench";
+        public static final String kLeftOneBumpTrenchReturn = "LEFT_one_bumpReverseToTrench";
         
         //---OUTPOST PATHS
         public static final String kRightOneTrenchToOutpost = "RIGHT_one_trenchToOutpost";
