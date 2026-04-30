@@ -555,7 +555,7 @@ public class Constants {
         public static final double kTunnelMOI = 0.000215968064;
       
         public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60FOCMaxVelocity.div(kSpindexerGearing);
-        public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
+        public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.10);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.85);
         public static final double kSpindexerMaxRPSD = kSpindexerMaxRPS.in(RotationsPerSecond);
         public static final double kSpindexerShootRPSD = kSpindexerShootRPS.in(RotationsPerSecond);
