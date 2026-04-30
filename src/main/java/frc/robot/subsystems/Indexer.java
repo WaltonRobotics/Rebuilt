@@ -137,8 +137,8 @@ public class Indexer extends SubsystemBase {
     }
 
     public void setIndexerFromShooterRPS(DoubleSupplier shooterRPS) {
-        setTunnelVelocity(tunnelRPSFromShooter(shooterRPS));
-        setSpindexerVelocity(spindexerRPSFromShooter(shooterRPS));
+        setTunnelVelocity(tunnelRPSFromShooter(shooterRPS).getAsDouble());
+        setSpindexerVelocity(spindexerRPSFromShooter(shooterRPS).getAsDouble());
     }
 
     public Command startTunnelCmd() {
@@ -201,7 +201,7 @@ public class Indexer extends SubsystemBase {
             m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(0));
             m_tunnel.setControl(m_tunnelMotorIdleReq);
         } else {
-            RPS = kTunnelRPSOverride.enabled() ? kTunnelRPSOverride.get() : RPS; 
+            RPS = kTunnelRPSOverride.enabled() ? kTunnelRPSOverride.get() : RPS;
             m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS));
         }
         m_desiredTunnelRPS = RPS;
@@ -213,12 +213,12 @@ public class Indexer extends SubsystemBase {
     }
 
     //STATICS for conversions
-    public static double tunnelRPSFromShooter(DoubleSupplier shooterRPS) {
-        return Math.min(shooterRPS.getAsDouble() * kTunnelFromShooterRatio * (kTunnelRatioMultiplier.enabled() ? kTunnelRatioMultiplier.get() : 1.0) , kTunnelMaxRPSD);
+    public static DoubleSupplier tunnelRPSFromShooter(DoubleSupplier shooterRPS) {
+        return () -> Math.min(shooterRPS.getAsDouble() * kTunnelFromShooterRatio * (kTunnelRatioMultiplier.enabled() ? kTunnelRatioMultiplier.get() : 1.0) , kTunnelMaxRPSD);
     }
 
-    public static double spindexerRPSFromShooter(DoubleSupplier shooterRPS) {
-        return Math.min(shooterRPS.getAsDouble() * kSpindexerFromShooterRatio * (kSpindexerRatioMultiplier.enabled() ? kSpindexerRatioMultiplier.get() : 1.0), kSpindexerMaxRPSD);
+    public static DoubleSupplier spindexerRPSFromShooter(DoubleSupplier shooterRPS) {
+        return () -> Math.min(shooterRPS.getAsDouble() * kSpindexerFromShooterRatio * (kSpindexerRatioMultiplier.enabled() ? kSpindexerRatioMultiplier.get() : 1.0), kSpindexerMaxRPSD);
     }
 
     /* PERIODICS */
