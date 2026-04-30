@@ -80,6 +80,8 @@ public class AutonChooser {
     //--MISC
     private final static String kRightTrenchSelfPass = "RIGHT Orbit";
     private final static String kLeftTrenchSelfPass = "LEFT Orbit";
+
+    private final static String kCenterPreload = "CENTER Preload";
     // private final static String kRightDelayTest = "DELAY TEST - NOT FOR ACTUAL USE";
 
     public static void initialize(WaltAdaptableAutonFactory adaptableAutonFactory) {
@@ -250,6 +252,10 @@ public class AutonChooser {
             new AdaptableAutonInfo(AutonK.kLeftOneBumpTrenchReturn, AutonK.kShootingTimeout, false, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoTrenchReturn, AutonK.kShootingTimeout, false, 0),
             new AdaptableAutonInfo(AutonK.kLeftTwoGoOut, AutonK.kSOTMTimeout, false, 0)
+        );
+
+        addMultiAuton(kCenterPreload,
+            new AdaptableAutonInfo(AutonK.kCenterPreload, AutonK.kShootingTimeout, false, 0)
         );
 
         // addMultiAuton(kRightDelayTest, 

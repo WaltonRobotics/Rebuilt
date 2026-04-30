@@ -752,5 +752,7 @@ public class Constants {
         public static final String kLeftBumpPreload = "LEFT_one_bumpPreload";
         public static final String kRightTrenchPreload = "RIGHT_one_trenchPreload";
         public static final String kLeftTrenchPreload = "LEFT_one_trenchPreload";
+
+        public static final String kCenterPreload = "CENTER_one_preload";
     }
 }
