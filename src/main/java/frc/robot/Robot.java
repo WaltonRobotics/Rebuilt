@@ -188,6 +188,9 @@ public class Robot extends TimedRobot {
         long tPrev = t0;
         System.out.printf("[INIT PROFILE] field initializers (subsystems, HW): %7.1f ms%n", (t0 - kFieldInitStart) * 1e-6);
 
+        DataLogManager.start("", "", 1.0);
+        DriverStation.startDataLog(DataLogManager.getLog());
+
         configureBindings();
         // configureTestBindings();    //this should be commented out during competition matches
         long tBindings = System.nanoTime();
@@ -230,8 +233,7 @@ public class Robot extends TimedRobot {
         PhotonCamera.setVersionCheckEnabled(false);
         LiveWindow.disableAllTelemetry();
 
-        DataLogManager.start();
-        DriverStation.startDataLog(DataLogManager.getLog());
+        
 
         // MANUAL HOMING IS BEING USED
         // addPeriodic(m_shooter::fastPeriodic, 0.0025);
