@@ -59,7 +59,7 @@ public class ShotCalculator {
     private static double kRPSBoost = 0.75;
     private static double kLongRangeRPSBoost = 0.35;
 
-    private static double kScoringRPSBoost = -0.17;
+    private static double kScoringRPSBoost = -0.2;
     private static final WaltTunable kRPSBoostTuner = new WaltTunable("Shooter/Calculator/RPSBoost", kRPSBoost); 
 
     /**
