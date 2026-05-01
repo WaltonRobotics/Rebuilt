@@ -20,6 +20,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -406,7 +407,13 @@ public class Robot extends TimedRobot {
             if (estimatedPoseOptional.isPresent()) {
                 EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
                 Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
-                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
+                if ((RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())).getAsBoolean()) {
+                    if (!MathUtil.isNear(driveState.Pose.getX(), estimatedRobotPose2d.getX(), 2.3) || !MathUtil.isNear(driveState.Pose.getY(), estimatedRobotPose2d.getY(), 2.3)){} else {
+                        m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
+                    }
+                } else {
+                    m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
+                }
                 m_visionSeenLastSec = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
                 // System.out.println("AddMeasurementFrom: " + camera.getName());
             }
