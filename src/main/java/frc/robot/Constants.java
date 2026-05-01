@@ -153,7 +153,7 @@ public class Constants {
         public static final double kTurretMaxNotAbleToPassRange = 0.23; //sorry for this horrible name i dont know a better one lol
         public static final double kTurretMinNotAbleToPassRange = -0.23; //sorry for this horrible name i dont know a better one lol
 
-        public static final AngularVelocity kShooterMaxRPS = MotorK.kX44FOCMaxVelocity.div(kShooterGearing);
+        public static final AngularVelocity kShooterMaxRPS = MotorK.kX44MaxVelocity.div(kShooterGearing);
         public static final double kShooterMaxRPSd = kShooterMaxRPS.in(RotationsPerSecond);
         public static final AngularVelocity kShooterRPS = kShooterMaxRPS.times(0.65);   //Kraken X44 Max RPM: 7758
         public static final double kShooterRPSd = 42.90 + 1.25;
