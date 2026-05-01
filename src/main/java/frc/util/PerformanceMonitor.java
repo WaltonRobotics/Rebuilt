@@ -1,10 +1,13 @@
 package frc.util;
 
+import java.io.IOException;
 import java.lang.management.ClassLoadingMXBean;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -14,6 +17,7 @@ import javax.management.NotificationListener;
 
 import com.sun.management.GarbageCollectionNotificationInfo;
 import com.sun.management.GcInfo;
+import edu.wpi.first.wpilibj.RobotBase;
 import frc.util.WaltLogger.DoubleLogger;
 
 public class PerformanceMonitor {
@@ -46,6 +50,20 @@ public class PerformanceMonitor {
 
     private static final double BYTES_TO_MB = 1.0 / (1024.0 * 1024.0);
 
+    // Disk I/O via /proc/self/io (Linux only). Track block-device-actual write_bytes,
+    // user-space wchar (covers buffered writes that haven't hit disk yet), and
+    // syscall counts so we can attribute spikes to flush events vs steady traffic.
+    private static final Path kProcSelfIo = Path.of("/proc/self/io");
+    private boolean m_diskIoAvailable = RobotBase.isReal();
+    private long m_prevWriteBytes;
+    private long m_prevWcharBytes;
+    private long m_prevWriteSyscalls;
+    private long m_prevReadBytes;
+    private final DoubleLogger log_diskWriteBytesDelta = WaltLogger.logDouble(kLogTab, "diskWriteBytesDelta");
+    private final DoubleLogger log_diskWcharBytesDelta = WaltLogger.logDouble(kLogTab, "diskWcharBytesDelta");
+    private final DoubleLogger log_diskWriteSyscallsDelta = WaltLogger.logDouble(kLogTab, "diskWriteSyscallsDelta");
+    private final DoubleLogger log_diskReadBytesDelta = WaltLogger.logDouble(kLogTab, "diskReadBytesDelta");
+
     public PerformanceMonitor(boolean trackClassLoading) {
         m_trackClassLoading = trackClassLoading;
         m_memBean = ManagementFactory.getMemoryMXBean();
@@ -73,6 +91,44 @@ public class PerformanceMonitor {
             log_classesLoadedDelta = WaltLogger.logDouble(kLogTab, "classesLoadedDelta");
             log_classesLoadedTotal = WaltLogger.logDouble(kLogTab, "classesLoadedTotal");
             m_prevClassesLoaded = m_classBean.getTotalLoadedClassCount();
+        }
+
+        // Prime baseline counters so the first delta isn't an artifact of startup I/O.
+        if (m_diskIoAvailable) sampleDiskIo(false);
+    }
+
+    /**
+     * Reads /proc/self/io and either primes baselines (logDelta=false) or logs the
+     * delta since the last sample. Sets m_diskIoAvailable=false on first failure.
+     */
+    private void sampleDiskIo(boolean logDelta) {
+        try {
+            long writeBytes = 0, wcharBytes = 0, writeSyscalls = 0, readBytes = 0;
+            for (String line : Files.readAllLines(kProcSelfIo)) {
+                int colon = line.indexOf(':');
+                if (colon < 0) continue;
+                String key = line.substring(0, colon);
+                long value = Long.parseLong(line.substring(colon + 1).trim());
+                switch (key) {
+                    case "write_bytes" -> writeBytes = value;
+                    case "wchar"       -> wcharBytes = value;
+                    case "syscw"       -> writeSyscalls = value;
+                    case "read_bytes"  -> readBytes = value;
+                    default            -> {}
+                }
+            }
+            if (logDelta) {
+                log_diskWriteBytesDelta.accept((double) (writeBytes - m_prevWriteBytes));
+                log_diskWcharBytesDelta.accept((double) (wcharBytes - m_prevWcharBytes));
+                log_diskWriteSyscallsDelta.accept((double) (writeSyscalls - m_prevWriteSyscalls));
+                log_diskReadBytesDelta.accept((double) (readBytes - m_prevReadBytes));
+            }
+            m_prevWriteBytes = writeBytes;
+            m_prevWcharBytes = wcharBytes;
+            m_prevWriteSyscalls = writeSyscalls;
+            m_prevReadBytes = readBytes;
+        } catch (IOException | NumberFormatException e) {
+            m_diskIoAvailable = false;
         }
     }
 
@@ -124,5 +180,7 @@ public class PerformanceMonitor {
             log_classesLoadedTotal.accept((double) totalLoaded);
             m_prevClassesLoaded = totalLoaded;
         }
+
+        if (m_diskIoAvailable) sampleDiskIo(true);
     }
 }
