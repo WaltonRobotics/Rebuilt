@@ -55,6 +55,20 @@
      "val":0.0
     }
    },
+   "leftFollowTrench":{
+    "x":{
+     "exp":"3.4254887104034424 m",
+     "val":3.4254887104034424
+    },
+    "y":{
+     "exp":"leftStartTrench.y",
+     "val":7.397491114139557
+    },
+    "heading":{
+     "exp":"leftStartTrench.heading",
+     "val":-0.7853981633974483
+    }
+   },
    "leftNeutralBump":{
     "x":{
      "exp":"leftStartBump.x + 2 m",
@@ -165,6 +179,20 @@
     "heading":{
      "exp":"0 rad",
      "val":0.0
+    }
+   },
+   "rightFollowTrench":{
+    "x":{
+     "exp":"3.441988229751587 m",
+     "val":3.441988229751587
+    },
+    "y":{
+     "exp":"rightStartTrench.y",
+     "val":0.6025088858604432
+    },
+    "heading":{
+     "exp":"rightStartTrench.heading",
+     "val":0.7853981633974483
     }
    },
    "rightNeutralBump":{

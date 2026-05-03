@@ -67,33 +67,33 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
-    /**
-     * Turns on spinner and exhaust and sets shooter speed to RPS.
-     * <p>
-     * Note: does not move turret or hood.
-     * @param RPS the speed for the shooter
-     */
-    public Command activateOuttake(Supplier<AngularVelocity> RPS) {
-        return Commands.parallel(
-            m_shooter.setShooterVelocityCmdSupp(RPS),
+    // /**
+    //  * Turns on spinner and exhaust and sets shooter speed to RPS.
+    //  * <p>
+    //  * Note: does not move turret or hood.
+    //  * @param RPS the speed for the shooter
+    //  */
+    // public Command activateOuttake(Supplier<AngularVelocity> RPS) {
+    //     return Commands.parallel(
+    //         m_shooter.setShooterVelocityCmdSupp(RPS),
 
-            Commands.sequence(
-                Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocityRotPerSec() >= ShooterK.kShooterSpunUpMinimumD))).withTimeout(ShooterK.kShooterSpunUpTimeout),
-                Commands.runOnce(() -> m_indexer.setTunnelVelocity(Indexer.tunnelRPSFromShooter(RPS.get().in(RotationsPerSecond)))),
-                Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocityRotPerSec() >= IndexerK.kTunnelSpunUpMinimumD)).withTimeout(IndexerK.kTunnelSpunUpTimeout),
-                Commands.runOnce(() -> m_indexer.setSpindexerVelocity(Indexer.spindexerRPSFromShooter(RPS.get().in(RotationsPerSecond)))),
+    //         Commands.sequence(
+    //             Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocityRotPerSec() >= ShooterK.kShooterSpunUpMinimumD))).withTimeout(ShooterK.kShooterSpunUpTimeout),
+    //             Commands.runOnce(() -> m_indexer.setTunnelVelocity(Indexer.tunnelRPSFromShooter(RPS.get().in(RotationsPerSecond)))),
+    //             Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocityRotPerSec() >= IndexerK.kTunnelSpunUpMinimumD)).withTimeout(IndexerK.kTunnelSpunUpTimeout),
+    //             Commands.runOnce(() -> m_indexer.setSpindexerVelocity(Indexer.spindexerRPSFromShooter(RPS.get().in(RotationsPerSecond)))),
 
-                Commands.repeatingSequence(
-                    Commands.none()
-                )
-            )
-        )
-        .finallyDo(
-            () -> {
-                deactivateOuttake();
-            }
-        );
-    }
+    //             Commands.repeatingSequence(
+    //                 Commands.none()
+    //             )
+    //         )
+    //     )
+    //     .finallyDo(
+    //         () -> {
+    //             deactivateOuttake();
+    //         }
+    //     );
+    // }
 
     /**
      * Turns on spinner and exhaust and sets shooter speed to CALCULATE SHOT RPS
@@ -105,14 +105,17 @@ public class Superstructure extends SubsystemBase {
         return Commands.parallel(
             m_shooter.shootFromCalc(),
             m_shooter.hoodFromCalc(),
-            // m_shooter.hoodToHalfway(),
 
             Commands.sequence(
-                Commands.waitUntil(() -> m_shooter.m_hood.atPosition()).withTimeout(0.1),
+                Commands.waitUntil(() -> m_shooter.m_hood.atPosition()).withTimeout(ShooterK.kHoodAtPosTimeout),
                 Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocityRotPerSec() >= ShooterK.kShooterSpunUpMinimumD))).withTimeout(ShooterK.kShooterSpunUpTimeout),
-                Commands.runOnce(() -> m_indexer.setTunnelVelocity(Indexer.tunnelRPSFromShooter(m_shooter.getShooterDesiredRotPerSec()))),
-                Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocityRotPerSec() >= IndexerK.kTunnelSpunUpMinimumD)).withTimeout(IndexerK.kTunnelSpunUpTimeout),
-                Commands.runOnce(() -> m_indexer.setSpindexerVelocity(Indexer.spindexerRPSFromShooter(m_shooter.getShooterDesiredRotPerSec())))
+                Commands.parallel(
+                    Commands.run(() -> m_indexer.setTunnelVelocity(Indexer.tunnelRPSFromShooter(m_shooter.getShooterDesiredRotPerSecSupp()).getAsDouble())),
+                    Commands.sequence(
+                        Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocityRotPerSec() >= IndexerK.kTunnelSpunUpMinimumD)).withTimeout(IndexerK.kTunnelSpunUpTimeout),
+                        Commands.run(() -> m_indexer.setSpindexerVelocity(Indexer.spindexerRPSFromShooter(m_shooter.getShooterDesiredRotPerSecSupp()).getAsDouble()))
+                    )
+                )
             )
         )
         .finallyDo(() -> {

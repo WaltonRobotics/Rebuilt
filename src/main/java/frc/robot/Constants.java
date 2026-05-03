@@ -70,12 +70,12 @@ public class Constants {
         public static final double kX60MaxRadPerSec = DCMotor.getKrakenX60(1).freeSpeedRadPerSec;
         public static final AngularVelocity kX60MaxVelocity = RadiansPerSecond.of(kX60MaxRadPerSec);
         public static final double kX60FOCMaxRadPerSec = DCMotor.getKrakenX60Foc(1).freeSpeedRadPerSec;
-        public static final AngularVelocity kX60FOCMaxVelocity = RadiansPerSecond.of(kX60MaxRadPerSec);
+        public static final AngularVelocity kX60FOCMaxVelocity = RadiansPerSecond.of(kX60FOCMaxRadPerSec);
 
         public static final double kX44MaxRadPerSec = DCMotor.getKrakenX44(1).freeSpeedRadPerSec;
         public static final AngularVelocity kX44MaxVelocity = RadiansPerSecond.of(kX44MaxRadPerSec);
         public static final double kX44FOCMaxRadPerSec = DCMotor.getKrakenX44Foc(1).freeSpeedRadPerSec;
-        public static final AngularVelocity kX44FOCMaxVelocity = RadiansPerSecond.of(kX44MaxRadPerSec);
+        public static final AngularVelocity kX44FOCMaxVelocity = RadiansPerSecond.of(kX44FOCMaxRadPerSec);
     }
     public static class WpiK {
         public static final ChassisSpeeds kZeroChassisSpeeds = new ChassisSpeeds(0, 0, 0);
@@ -179,8 +179,7 @@ public class Constants {
         public static final double kHoodRotsHalfwayD = kHoodAbsoluteMaxRots.magnitude() * 0.75;
         public static final double kHoodEmergencyRotsD = Rotations.of(0.371338).magnitude();
         public static final double kHoodMaxErrD = Rotations.of(0.01).in(Rotations);
-
-
+        public static final double kHoodAtPosTimeout = 0.1;
 
         //double versions
         public static final double kHoodMinRots_double = 0.0;
@@ -550,15 +549,15 @@ public class Constants {
         public static final int kTunnelCANID = 11;
 
         public static final double kSpindexerGearing = 5.0 ; //5
-        public static final double kTunnelGearing = 20.0/30.0;
+        public static final double kTunnelGearing = 20.0/18.0;
 
         public static final double kSpindexerMOI = 0.00166190059;
         public static final double kTunnelMOI = 0.000215968064;
       
         public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60MaxVelocity.div(kSpindexerGearing);
-        public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
+        public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.10);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.85);
-        public static final double kSpindexerMaxRPSD    = kSpindexerMaxRPS.in(RotationsPerSecond);
+        public static final double kSpindexerMaxRPSD = kSpindexerMaxRPS.in(RotationsPerSecond);
         public static final double kSpindexerShootRPSD = kSpindexerShootRPS.in(RotationsPerSecond);
         public static final double kSpindexerIntakeRPSD = kSpindexerIntakeRPS.in(RotationsPerSecond);
 
@@ -613,7 +612,7 @@ public class Constants {
 
         private static final Slot0Configs kTunnelSlot0Configs = new Slot0Configs()
             .withKS(0.2)
-            .withKV(0.086)
+            .withKV(0.1337)
             .withKA(0)
             .withKP(0.37)
             .withKI(0)
@@ -668,6 +667,8 @@ public class Constants {
         public static final double kSOTMTimeout = 100; //12
         public static final double kSweepShootingTimeout = 20;
 
+        public static final double kFollowDelay = 2;
+
         /* OLD PATHS */
         //---RIGHT FIRST CYCLES
         public static final String kRightOneJab = "RIGHT_one_jab";
@@ -710,7 +711,9 @@ public class Constants {
         /* NEW PATHS */
         //---BUMP RETURN PATHS
         public static final String kRightOneBumpReturn = "RIGHT_one_bumpReturn";
+        public static final String kRightOneBumpReturnFollow = "RIGHT_one_bumpReturnFollow";
         public static final String kLeftOneBumpReturn = "LEFT_one_bumpReturn";
+        public static final String kLeftOneBumpReturnFollow = "LEFT_one_bumpReturnFollow";
         public static final String kRightTwoBumpReturn = "RIGHT_two_bumpReturn";
         public static final String kLeftTwoBumpReturn = "LEFT_two_bumpReturn";
         public static final String kRightTwoBumpToTrench = "RIGHT_two_bumpToTrench";
@@ -721,6 +724,8 @@ public class Constants {
         public static final String kLeftOneTrenchReturn = "LEFT_one_trenchReturn";
         public static final String kRightTwoTrenchReturn = "RIGHT_two_trenchReturn";
         public static final String kLeftTwoTrenchReturn = "LEFT_two_trenchReturn";
+        public static final String kRightOneBumpTrenchReturn = "RIGHT_one_bumpReverseToTrench";
+        public static final String kLeftOneBumpTrenchReturn = "LEFT_one_bumpReverseToTrench";
         
         //---OUTPOST PATHS
         public static final String kRightOneTrenchToOutpost = "RIGHT_one_trenchToOutpost";
@@ -747,5 +752,7 @@ public class Constants {
         public static final String kLeftBumpPreload = "LEFT_one_bumpPreload";
         public static final String kRightTrenchPreload = "RIGHT_one_trenchPreload";
         public static final String kLeftTrenchPreload = "LEFT_one_trenchPreload";
+
+        public static final String kCenterPreload = "CENTER_one_preload";
     }
 }

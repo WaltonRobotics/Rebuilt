@@ -34,6 +34,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import frc.robot.Constants;
@@ -251,6 +252,10 @@ public class Shooter extends SubsystemBase {
         return m_calcFlywheelVelocityRotPerSec;
     }
 
+    public DoubleSupplier getShooterDesiredRotPerSecSupp() {
+        return () -> m_calcFlywheelVelocityRotPerSec;
+    }
+
     /* SIMULATION */
     public boolean simAbleToIntake() {
         return canIntake();
@@ -323,6 +328,7 @@ public class Shooter extends SubsystemBase {
                 m_turret.setTurretPos(m_turret.getTurretLockAngleRots(), 0.0);
                 m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
             } else {
+                // NOT LOCKED
                 if (m_turret.getHoldTurretAtIntake()) {
                     // m_turret.setTurretPos(Rotations.of(-0.250));
                 } else {
@@ -374,7 +380,7 @@ public class Shooter extends SubsystemBase {
 
         // m_periodicTracer.addEpoch("Logging");
 
-        m_periodicTracer.printEpochs();
+        // m_periodicTracer.printEpochs();
     }
 
     @Override

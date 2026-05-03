@@ -20,6 +20,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -187,6 +188,9 @@ public class Robot extends TimedRobot {
         long tPrev = t0;
         System.out.printf("[INIT PROFILE] field initializers (subsystems, HW): %7.1f ms%n", (t0 - kFieldInitStart) * 1e-6);
 
+        DataLogManager.start("", "", 1.0);
+        DriverStation.startDataLog(DataLogManager.getLog());
+
         configureBindings();
         // configureTestBindings();    //this should be commented out during competition matches
         long tBindings = System.nanoTime();
@@ -229,8 +233,7 @@ public class Robot extends TimedRobot {
         PhotonCamera.setVersionCheckEnabled(false);
         LiveWindow.disableAllTelemetry();
 
-        DataLogManager.start();
-        DriverStation.startDataLog(DataLogManager.getLog());
+        
 
         // MANUAL HOMING IS BEING USED
         // addPeriodic(m_shooter::fastPeriodic, 0.0025);
@@ -311,14 +314,6 @@ public class Robot extends TimedRobot {
         trg_shoot
             .and(trg_snappingBack)
             .whileTrue(m_superstructure.hoodAndFlywheelShotCalc());
-        // m_manipulator.rightTrigger().and(trg_manipOverride).whileTrue(Commands.run(() -> m_intake.setIntakeRollersVelocity(kIntakeRollersBarfVolts)).finallyDo(() -> m_intake.setIntakeRollersVelocity(0)));
-
-        // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));
-        // m_driver.a().onTrue(m_shooter.driverRPSAlter(false));
-
-        // m_driver.x().onTrue(m_shooter.driverResetRPSAlter());
-
-        // m_driver.leftBumper().whileTrue(m_shooter.driverRPSIncreaseWhileHeldCmd());
 
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
@@ -334,7 +329,6 @@ public class Robot extends TimedRobot {
         trg_retractIntake.onTrue(m_superstructure.retractIntake());
         trg_intakeShimmy.whileTrue(m_superstructure.intakeShimmy(() -> false));
         trg_intakeShimmy.and(trg_shoot).whileTrue(m_superstructure.intakeShimmy(() -> true));
-
 
         trg_emergencyBarf.whileTrue(m_superstructure.emergencyBarf());
         trg_emergencyIntakeOnlyBarf.whileTrue(m_superstructure.emergencyBarfOnlyIntake());
@@ -372,6 +366,7 @@ public class Robot extends TimedRobot {
 
         // m_drivetrain.registerTelemetry(logger::telemeterize);    //UNUSED - runs at 250hz which is burning CPU
       
+        //-used when the shooter couldn't shoot while aiming close to the hopper wall
         // trg_turretInShootRange.whileFalse(Commands.run(() -> m_driver.setRumble(RumbleType.kBothRumble, 0.3))
         //     .finallyDo(() -> m_driver.setRumble(RumbleType.kBothRumble, 0))
     }
@@ -414,7 +409,13 @@ public class Robot extends TimedRobot {
             if (estimatedPoseOptional.isPresent()) {
                 EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
                 Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
+                // if ((RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())).getAsBoolean()) {
+                //     if (!MathUtil.isNear(driveState.Pose.getX(), estimatedRobotPose2d.getX(), 2.3) || !MathUtil.isNear(driveState.Pose.getY(), estimatedRobotPose2d.getY(), 2.3)){} else {
+                //         m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
+                //     }
+                // } else {
                 m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
+                // }
                 m_visionSeenLastSec = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
                 // System.out.println("AddMeasurementFrom: " + camera.getName());
             }
@@ -457,7 +458,7 @@ public class Robot extends TimedRobot {
         // );
 
 
-        m_periodicTracer.printEpochs();
+        // m_periodicTracer.printEpochs();
         m_perfMonitor.loopEnd();
     }
 

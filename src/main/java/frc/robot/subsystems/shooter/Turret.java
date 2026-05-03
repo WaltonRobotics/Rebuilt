@@ -59,6 +59,8 @@ public class Turret extends SubsystemBase {
     private final BooleanLogger log_turretLocked = WaltLogger.logBoolean(kLogTab, "turretLocked");
     private final Pose3dLogger log_turretTransform = WaltLogger.logPose3d(kLogTab, "turretTransform");
 
+    private final BooleanLogger log_isTurretSnappingBack = WaltLogger.logBoolean(kLogTab, "snappingBack");
+
     private final StatusSignal<Double> sig_turretCLErr = m_turret.getClosedLoopError();
     private final StatusSignal<Angle> sig_turretPos = m_turret.getPosition();
     private final StatusSignal<Angle> sig_lcmEncAAbsPos = m_lcmEncA.getAbsolutePosition();
@@ -91,6 +93,7 @@ public class Turret extends SubsystemBase {
         m_turretAtPos = sig_turretCLErr.isNear(0, kTurretMaxErrD);
         m_isSnappingBack = sig_turretCLErr.getValueAsDouble() >= kTurretMaxErrDSpin;
         log_atPos.accept(m_turretAtPos);
+        log_isTurretSnappingBack.accept(m_isSnappingBack);
     }
 
     public BooleanSupplier isSnappingBack() {
@@ -166,7 +169,6 @@ public class Turret extends SubsystemBase {
     public boolean isTurretHomed() {
         return m_isTurretHomed;
     }
-
 
     public void periodic() {
         double encAVal = sig_lcmEncAAbsPos.getValueAsDouble();
