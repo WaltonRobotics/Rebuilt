@@ -7,19 +7,19 @@
 
 package choreo.auto;
 
-import static edu.wpi.first.wpilibj.Alert.AlertType.kWarning;
+import static org.wpilib.util.Alert.AlertType.kWarning;
 
 import choreo.auto.AutoFactory.AllianceContext;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
 import choreo.util.ChoreoAlert;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.event.EventLoop;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import org.wpilib.driverstation.DriverStation;
+import org.wpilib.system.Timer;
+import org.wpilib.event.EventLoop;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.CommandScheduler;
+import org.wpilib.command2.Commands;
+import org.wpilib.command2.button.Trigger;
 import java.util.function.BooleanSupplier;
 
 /**

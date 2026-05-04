@@ -7,10 +7,10 @@
 
 package choreo.trajectory;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.interpolation.Interpolatable;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.util.struct.StructSerializable;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.interpolation.Interpolatable;
+import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.util.struct.StructSerializable;
 
 /**
  * The generic interface for a sample in a trajectory.

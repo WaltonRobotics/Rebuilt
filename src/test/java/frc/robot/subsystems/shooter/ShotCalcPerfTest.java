@@ -1,16 +1,16 @@
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.*;
+import static org.wpilib.units.Units.*;
 
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.units.measure.*;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.math.util.MathUtil;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.units.measure.*;
 
 import frc.robot.Constants.ShooterK;
 import frc.robot.FieldConstants;
@@ -35,11 +35,11 @@ class ShotCalcPerfTest {
     private static final ChassisSpeeds MOVING_SPEEDS = new ChassisSpeeds(1.5, -0.5, 0.3);
 
     // Precomputed constants as raw doubles (mirrors Constants.ShooterK)
-    private static final double kTurretOffsetX_m = edu.wpi.first.math.util.Units.inchesToMeters(-4.744);
-    private static final double kTurretOffsetY_m = edu.wpi.first.math.util.Units.inchesToMeters(-4.239);
-    private static final double kTurretOffsetZ_m = edu.wpi.first.math.util.Units.inchesToMeters(17.260);
+    private static final double kTurretOffsetX_m = org.wpilib.math.util.Units.inchesToMeters(-4.744);
+    private static final double kTurretOffsetY_m = org.wpilib.math.util.Units.inchesToMeters(-4.239);
+    private static final double kTurretOffsetZ_m = org.wpilib.math.util.Units.inchesToMeters(17.260);
     private static final double kTurretAngleOffsetRad = Math.toRadians(-135);
-    private static final double kFlywheelRadiusM = edu.wpi.first.math.util.Units.inchesToMeters(1.5);
+    private static final double kFlywheelRadiusM = org.wpilib.math.util.Units.inchesToMeters(1.5);
     private static final double kGravityInPerSec2 = 9.81 * 39.3701; // m/s^2 -> in/s^2
     private static final double kTurretMinRotsD = -0.75;
     private static final double kTurretMaxRotsD = 0.75;

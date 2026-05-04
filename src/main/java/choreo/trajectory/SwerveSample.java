@@ -9,11 +9,11 @@ package choreo.trajectory;
 
 import choreo.util.ChoreoAllianceFlipUtil;
 import choreo.util.ChoreoArrayUtil;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.util.struct.Struct;
+import org.wpilib.math.util.MathUtil;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.util.struct.Struct;
 import java.nio.ByteBuffer;
 
 /** A single swerve robot sample in a Trajectory. */

@@ -7,8 +7,8 @@
 
 package choreo;
 
-import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
-import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
+import static org.wpilib.util.ErrorMessages.requireNonNullParam;
+import static org.wpilib.util.Alert.AlertType.kError;
 
 import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.EventMarker;
@@ -22,10 +22,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import edu.wpi.first.hal.FRCNetComm.tResourceType;
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Filesystem;
+import org.wpilib.hardware.hal.FRCNetComm.tResourceType;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.driverstation.DriverStation;
+import org.wpilib.system.Filesystem;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;

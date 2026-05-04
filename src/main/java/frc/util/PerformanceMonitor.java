@@ -17,7 +17,7 @@ import javax.management.NotificationListener;
 
 import com.sun.management.GarbageCollectionNotificationInfo;
 import com.sun.management.GcInfo;
-import edu.wpi.first.wpilibj.RobotBase;
+import org.wpilib.framework.RobotBase;
 import frc.util.WaltLogger.DoubleLogger;
 
 public class PerformanceMonitor {

@@ -4,11 +4,11 @@
 
 package frc.util;
 
-import edu.wpi.first.hal.FRCNetComm.tResourceType;
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.util.sendable.SendableRegistry;
-import edu.wpi.first.wpilibj.PWM;
+import org.wpilib.hardware.hal.FRCNetComm.tResourceType;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.util.sendable.SendableBuilder;
+import org.wpilib.util.sendable.SendableRegistry;
+import org.wpilib.hardware.discrete.PWM;
 
 /**
  * Standard hobby style servo.

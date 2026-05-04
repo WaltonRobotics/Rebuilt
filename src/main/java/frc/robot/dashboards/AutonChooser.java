@@ -5,11 +5,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import choreo.auto.AutoChooser;
-import edu.wpi.first.hal.simulation.AddressableLEDDataJNI;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import org.wpilib.hardware.hal.simulation.AddressableLEDDataJNI;
+import org.wpilib.driverstation.DriverStation;
+import org.wpilib.smartdashboard.SmartDashboard;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
 import frc.robot.Constants.AutonK;
 import frc.robot.autons.WaltAdaptableAutonFactory;
 import frc.robot.autons.WaltAdaptableAutonFactory.AdaptableAutonInfo;

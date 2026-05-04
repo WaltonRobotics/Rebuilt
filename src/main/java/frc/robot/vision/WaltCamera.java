@@ -14,16 +14,16 @@ import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import org.wpilib.math.linalg.Matrix;
+import org.wpilib.math.linalg.VecBuilder;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.numbers.N1;
+import org.wpilib.math.numbers.N3;
+import org.wpilib.networktables.NetworkTableInstance;
+import org.wpilib.networktables.StructArrayPublisher;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
 import frc.robot.Robot;
 import frc.util.VisionUtil;
 import frc.util.WaltLogger;
@@ -213,7 +213,7 @@ public class WaltCamera extends PhotonCamera {
     /**
      * Returns the latest standard deviations of the estimated pose from {@link
      * #getEstimatedGlobalPose()}, for use with {@link
-     * edu.wpi.first.math.estimator.SwerveDrivePoseEstimator SwerveDrivePoseEstimator}. This should
+     * org.wpilib.math.estimator.SwerveDrivePoseEstimator SwerveDrivePoseEstimator}. This should
      * only be used when there are targets visible.
      */
     public Matrix<N3, N1> getEstimationStdDevs() {

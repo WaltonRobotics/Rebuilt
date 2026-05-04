@@ -2,10 +2,10 @@ package frc.util;
 
 import org.photonvision.simulation.SimCameraProperties;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.util.Units;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.util.Units;
 
 public class VisionUtil {
 

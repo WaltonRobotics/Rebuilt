@@ -6,14 +6,14 @@
 // the root directory of this project.
 package frc.util;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Twist2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Transform2d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.geometry.Translation2d;
+import org.wpilib.math.geometry.Twist2d;
+import org.wpilib.math.kinematics.ChassisSpeeds;
 
 /** Geometry utilities for working with translations, rotations, transforms, and poses. */
 public class GeomUtil {

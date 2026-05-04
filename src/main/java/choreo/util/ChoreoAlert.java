@@ -7,8 +7,8 @@
 
 package choreo.util;
 
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
+import org.wpilib.util.Alert;
+import org.wpilib.util.Alert.AlertType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;

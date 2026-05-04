@@ -3,22 +3,22 @@ package frc.util;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.networktables.DoubleArrayPublisher;
-import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StringPublisher;
-import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.math.kinematics.SwerveModulePosition;
+import org.wpilib.math.kinematics.SwerveModuleState;
+import org.wpilib.networktables.DoubleArrayPublisher;
+import org.wpilib.networktables.DoublePublisher;
+import org.wpilib.networktables.NetworkTable;
+import org.wpilib.networktables.NetworkTableInstance;
+import org.wpilib.networktables.StringPublisher;
+import org.wpilib.networktables.StructArrayPublisher;
+import org.wpilib.networktables.StructPublisher;
+import org.wpilib.smartdashboard.Mechanism2d;
+import org.wpilib.smartdashboard.MechanismLigament2d;
+import org.wpilib.smartdashboard.SmartDashboard;
+import org.wpilib.util.Color;
+import org.wpilib.util.Color8Bit;
 
 public class Telemetry {
     private final double MaxSpeed;

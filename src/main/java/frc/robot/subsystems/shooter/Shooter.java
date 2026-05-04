@@ -7,31 +7,31 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 
-import edu.wpi.first.units.measure.AngularAcceleration;
-import edu.wpi.first.units.measure.AngularVelocity;
+import org.wpilib.units.measure.AngularAcceleration;
+import org.wpilib.units.measure.AngularVelocity;
 import com.ctre.phoenix6.signals.ControlModeValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
+import org.wpilib.math.util.MathUtil;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.math.system.plant.DCMotor;
+import org.wpilib.math.system.plant.LinearSystemId;
 
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.Tracer;
-import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import org.wpilib.system.Timer;
+import org.wpilib.system.Tracer;
+import org.wpilib.simulation.FlywheelSim;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
+import org.wpilib.command2.SubsystemBase;
+import org.wpilib.command2.button.Trigger;
 
-import static edu.wpi.first.units.Units.Hertz;
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static org.wpilib.units.Units.Hertz;
+import static org.wpilib.units.Units.Rotations;
+import static org.wpilib.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
 
 import java.util.function.DoubleSupplier;

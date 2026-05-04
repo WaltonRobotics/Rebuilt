@@ -1,14 +1,14 @@
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.*;
+import static org.wpilib.units.Units.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.units.measure.*;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.units.measure.*;
 
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotDataLerp;

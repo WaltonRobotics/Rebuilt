@@ -8,17 +8,17 @@
 package choreo.trajectory;
 
 import choreo.util.ChoreoAllianceFlipUtil;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.numbers.N6;
-import edu.wpi.first.math.system.NumericalIntegration;
-import edu.wpi.first.util.struct.Struct;
+import org.wpilib.math.util.MathUtil;
+import org.wpilib.math.linalg.Matrix;
+import org.wpilib.math.linalg.VecBuilder;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.math.numbers.N1;
+import org.wpilib.math.numbers.N3;
+import org.wpilib.math.numbers.N6;
+import org.wpilib.math.system.NumericalIntegration;
+import org.wpilib.util.struct.Struct;
 import java.nio.ByteBuffer;
 import java.util.function.BiFunction;
 
@@ -117,7 +117,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
    * Returns the field-relative chassis speeds of this sample.
    *
    * @return the field-relative chassis speeds of this sample.
-   * @see edu.wpi.first.math.kinematics.DifferentialDriveKinematics#toChassisSpeeds
+   * @see org.wpilib.math.kinematics.DifferentialDriveKinematics#toChassisSpeeds
    */
   @Override
   public ChassisSpeeds getChassisSpeeds() {

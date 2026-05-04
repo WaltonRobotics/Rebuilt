@@ -6,19 +6,19 @@ import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.networktables.BooleanPublisher;
-import edu.wpi.first.networktables.BooleanTopic;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import org.wpilib.math.util.MathUtil;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.math.kinematics.SwerveDriveKinematics;
+import org.wpilib.networktables.BooleanPublisher;
+import org.wpilib.networktables.BooleanTopic;
+import org.wpilib.networktables.NetworkTableInstance;
+import org.wpilib.system.Notifier;
+import org.wpilib.system.Timer;
+import org.wpilib.driverstation.DriverStation.Alliance;
 import frc.util.WaltDriverStation;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.WpiK;
@@ -33,7 +33,7 @@ import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.Pose3dLogger;
 import frc.util.WaltLogger.Translation3dArrayLogger;
 
-import static edu.wpi.first.units.Units.*;
+import static org.wpilib.units.Units.*;
 import static frc.robot.Constants.ShooterK.*;
 
 import frc.util.WaltTunable;

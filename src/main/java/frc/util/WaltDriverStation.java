@@ -1,10 +1,10 @@
 package frc.util;
 
 import java.util.Optional;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import org.wpilib.driverstation.DriverStation;
+import org.wpilib.driverstation.DriverStation.Alliance;
+import org.wpilib.command2.Commands;
+import org.wpilib.command2.button.RobotModeTriggers;
 
 public final class WaltDriverStation {
     private static Optional<Alliance> m_cachedAlliance = Optional.empty();

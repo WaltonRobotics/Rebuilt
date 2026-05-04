@@ -4,17 +4,17 @@
 
 // package frc.robot.subsystems.shooter;
 
-// import static edu.wpi.first.units.Units.Degrees;
-// import static edu.wpi.first.units.Units.MetersPerSecond;
-// import static edu.wpi.first.units.Units.Radians;
+// import static org.wpilib.units.Units.Degrees;
+// import static org.wpilib.units.Units.MetersPerSecond;
+// import static org.wpilib.units.Units.Radians;
 // import static frc.robot.Constants.ShooterK.*;
 
-// import edu.wpi.first.math.geometry.Pose3d;
-// import edu.wpi.first.math.geometry.Rotation3d;
-// import edu.wpi.first.math.geometry.Translation3d;
-// import edu.wpi.first.math.kinematics.ChassisSpeeds;
-// import edu.wpi.first.units.measure.Angle;
-// import edu.wpi.first.units.measure.LinearVelocity;
+// import org.wpilib.math.geometry.Pose3d;
+// import org.wpilib.math.geometry.Rotation3d;
+// import org.wpilib.math.geometry.Translation3d;
+// import org.wpilib.math.kinematics.ChassisSpeeds;
+// import org.wpilib.units.measure.Angle;
+// import org.wpilib.units.measure.LinearVelocity;
 // import frc.util.WaltLogger.Pose3dLogger;
 // import frc.util.WaltLogger.Translation3dArrayLogger;
 

@@ -6,15 +6,15 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.networktables.DoubleSubscriber;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.wpilib.networktables.DoubleSubscriber;
+import org.wpilib.units.measure.Angle;
+import org.wpilib.units.measure.AngularVelocity;
+import org.wpilib.hardware.rotation.DutyCycleEncoder;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.SubsystemBase;
 import frc.robot.Constants;
 
-import static edu.wpi.first.units.Units.*;
+import static org.wpilib.units.Units.*;
 import static frc.robot.Constants.ShooterK.*;
 import static frc.robot.Constants.TurretK.kLogTab;
 import static frc.robot.Constants.TurretK.*;

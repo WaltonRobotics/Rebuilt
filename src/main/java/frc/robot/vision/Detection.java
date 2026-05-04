@@ -8,8 +8,8 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform2d;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Transform2d;
 import frc.robot.Robot;
 
 

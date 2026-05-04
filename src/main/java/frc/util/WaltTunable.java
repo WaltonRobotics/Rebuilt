@@ -1,9 +1,9 @@
 package frc.util;
 
-import edu.wpi.first.networktables.BooleanEntry;
-import edu.wpi.first.networktables.DoubleEntry;
-import edu.wpi.first.networktables.NetworkTableEvent;
-import edu.wpi.first.networktables.NetworkTableInstance;
+import org.wpilib.networktables.BooleanEntry;
+import org.wpilib.networktables.DoubleEntry;
+import org.wpilib.networktables.NetworkTableEvent;
+import org.wpilib.networktables.NetworkTableInstance;
 
 import java.util.EnumSet;
 import java.util.List;

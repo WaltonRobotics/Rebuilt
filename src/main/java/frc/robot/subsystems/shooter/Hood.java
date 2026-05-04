@@ -13,14 +13,14 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import org.wpilib.math.filter.Debouncer;
+import org.wpilib.math.filter.Debouncer.DebounceType;
 
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.wpilib.units.measure.Angle;
+import org.wpilib.units.measure.Current;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.FunctionalCommand;
+import org.wpilib.command2.SubsystemBase;
 import frc.robot.Constants.ShooterK;
 import frc.util.SignalManager;
 import frc.util.WaltLogger;

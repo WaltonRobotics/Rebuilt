@@ -7,9 +7,9 @@
 
 package frc.util;
 
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.Timer;
+import org.wpilib.driverstation.DriverStation;
+import org.wpilib.driverstation.DriverStation.Alliance;
+import org.wpilib.system.Timer;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;

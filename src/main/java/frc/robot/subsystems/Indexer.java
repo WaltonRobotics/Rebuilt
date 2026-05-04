@@ -7,14 +7,14 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 
-import edu.wpi.first.networktables.DoubleSubscriber;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.wpilib.networktables.DoubleSubscriber;
+import org.wpilib.units.measure.AngularVelocity;
+import org.wpilib.units.measure.Current;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
+import org.wpilib.command2.SubsystemBase;
 
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static org.wpilib.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IndexerK.*;
 
 import java.util.function.DoubleSupplier;

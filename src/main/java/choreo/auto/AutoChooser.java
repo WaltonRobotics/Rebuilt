@@ -7,17 +7,17 @@
 
 package choreo.auto;
 
-import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
+import static org.wpilib.util.Alert.AlertType.kError;
 
 import choreo.util.ChoreoAlert;
-import edu.wpi.first.util.sendable.Sendable;
-import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import org.wpilib.util.sendable.Sendable;
+import org.wpilib.util.sendable.SendableBuilder;
+import org.wpilib.util.Alert;
+import org.wpilib.driverstation.DriverStation;
+import org.wpilib.driverstation.DriverStation.Alliance;
+import org.wpilib.framework.RobotBase;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -35,7 +35,7 @@ import java.util.function.Supplier;
  * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using {@link
  * #addRoutine} or add {@link Command}s to it using {@link #addCmd}. Similar to {@code
  * SendableChooser} this chooser can be added to the {@link
- * edu.wpi.first.wpilibj.smartdashboard.SmartDashboard} using {@code
+ * org.wpilib.smartdashboard.SmartDashboard} using {@code
  * SmartDashboard.putData(Sendable)}.
  *
  * <p>You can set the Robot's autonomous command to the chooser's chosen auto routine via <code>

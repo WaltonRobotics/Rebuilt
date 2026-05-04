@@ -4,9 +4,9 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import org.wpilib.system.RobotController;
+import org.wpilib.simulation.DCMotorSim;
+import org.wpilib.simulation.FlywheelSim;
 import frc.robot.Constants;
 
 /** Motor simulation methods */

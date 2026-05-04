@@ -1,7 +1,7 @@
 package frc.util;
 
-import edu.wpi.first.networktables.*;
-import edu.wpi.first.wpilibj.TimedRobot;
+import org.wpilib.networktables.*;
+import org.wpilib.framework.TimedRobot;
 
 public final class NTPublisherFactory {
     private static final NetworkTableInstance inst = NetworkTableInstance.getDefault();
