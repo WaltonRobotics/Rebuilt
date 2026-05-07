@@ -1,5 +1,5 @@
 ## Autonomous Paths
-This folder is where all the paths that we made for autonomous pathing exist. Such paths were made using **CHOREO** , a path making software. Choreo is how we make all of our autonomous paths, and this year, we opted to make seperate paths, and chain them together for our routines.
+This folder is where all the paths that we made for autonomous pathing exist. Such paths were made using [Choreo](https://choreo.autos/), a path making software. Choreo is how we make all of our autonomous paths, and this year, we opted to make seperate paths, and chain them together for our routines.
 ![Choreo Logo](images/choreoLogo.png)
 
 ### Example of one of our autons
