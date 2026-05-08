@@ -9,9 +9,9 @@
         "containers": [
           {
             "title": "AutoChooser",
-            "x": 500.0,
-            "y": 125.0,
-            "width": 500.0,
+            "x": 125.0,
+            "y": 250.0,
+            "width": 625.0,
             "height": 250.0,
             "type": "ComboBox Chooser",
             "properties": {
@@ -19,42 +19,164 @@
               "period": 0.06,
               "sort_options": false
             }
+          },
+          {
+            "title": "BL_HAT Status",
+            "x": 875.0,
+            "y": 375.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/CameraPublisher/BL_HAT-processed/connected",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "BR_HAT Status",
+            "x": 1125.0,
+            "y": 375.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/CameraPublisher/BR_HAT-processed/connected",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "FL_HAT Status",
+            "x": 875.0,
+            "y": 125.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/CameraPublisher/FL_HAT-processed/connected",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "FR_HAT Status",
+            "x": 1125.0,
+            "y": 125.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/CameraPublisher/FR_HAT-processed/connected",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
           }
         ]
       }
     },
     {
-      "name": "TestingDashboard",
+      "name": "LerpingDashboard",
       "grid_layout": {
-        "layouts": [],
-        "containers": [
+        "layouts": [
           {
-            "title": "hoodPositionDegs",
-            "x": 125.0,
-            "y": 125.0,
-            "width": 250.0,
-            "height": 125.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/TestingDashboard/hoodPositionDegs",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "letHoodPositionDegsChange",
+            "title": "hoodRotsOverride",
             "x": 1125.0,
             "y": 125.0,
             "width": 250.0,
-            "height": 125.0,
-            "type": "Toggle Switch",
+            "height": 250.0,
+            "type": "List Layout",
             "properties": {
-              "topic": "/TestingDashboard/letHoodPositionDegsChange",
-              "period": 0.06,
-              "data_type": "boolean"
-            }
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "enabled",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 250.0,
+                "height": 250.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/Shooter/hoodRotsOverride/enabled",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "value",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 250.0,
+                "height": 250.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/Shooter/hoodRotsOverride/value",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              }
+            ]
           },
+          {
+            "title": "shooterRPSOverride",
+            "x": 1125.0,
+            "y": 375.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "enabled",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 250.0,
+                "height": 250.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/Shooter/shooterRPSOverride/enabled",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "value",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 250.0,
+                "height": 250.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/Shooter/shooterRPSOverride/value",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              }
+            ]
+          }
+        ],
+        "containers": [
           {
             "title": "hoodPositionDegs",
             "x": 375.0,
@@ -73,67 +195,6 @@
             }
           },
           {
-            "title": "letShooterVelocityRPSChange",
-            "x": 1125.0,
-            "y": 375.0,
-            "width": 250.0,
-            "height": 125.0,
-            "type": "Toggle Switch",
-            "properties": {
-              "topic": "/TestingDashboard/letShooterVelocityRPSChange",
-              "period": 0.06,
-              "data_type": "boolean"
-            }
-          },
-          {
-            "title": "letHoodPositionDegsChange",
-            "x": 1125.0,
-            "y": 250.0,
-            "width": 250.0,
-            "height": 125.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/TestingDashboard/letHoodPositionDegsChange",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "letShooterVelocityRPSChange",
-            "x": 1125.0,
-            "y": 500.0,
-            "width": 250.0,
-            "height": 125.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/TestingDashboard/letShooterVelocityRPSChange",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "shooterVelocityRPS",
-            "x": 125.0,
-            "y": 375.0,
-            "width": 250.0,
-            "height": 125.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/TestingDashboard/shooterVelocityRPS",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": false
-            }
-          },
-          {
             "title": "shooterVelocityRPS",
             "x": 375.0,
             "y": 375.0,
@@ -149,8 +210,210 @@
               "divisions": 5,
               "update_continuously": false
             }
+          },
+          {
+            "title": "hoodOverrideStatus",
+            "x": 125.0,
+            "y": 125.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/Shooter/hoodRotsOverride/enabled",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "shooterOverrideStatus",
+            "x": 125.0,
+            "y": 375.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/Shooter/shooterRPSOverride/enabled",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
           }
         ]
+      }
+    },
+    {
+      "name": "SOTMControls",
+      "grid_layout": {
+        "layouts": [
+          {
+            "title": "RPSBoost",
+            "x": 500.0,
+            "y": 125.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "enabled",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 250.0,
+                "height": 250.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "Shooter/Calculator/RPSBoost/enabled",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "value",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 250.0,
+                "height": 250.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Shooter/Calculator/RPSBoost/value",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              }
+            ]
+          },
+          {
+            "title": "hoodRotsOverride",
+            "x": 750.0,
+            "y": 125.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "enabled",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 250.0,
+                "height": 250.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/Shooter/hoodRotsOverride/enabled",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "value",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 250.0,
+                "height": 250.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/Shooter/hoodRotsOverride/value",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              }
+            ]
+          },
+          {
+            "title": "shooterRPSOverride",
+            "x": 750.0,
+            "y": 375.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "enabled",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 250.0,
+                "height": 250.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/Shooter/shooterRPSOverride/enabled",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "value",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 250.0,
+                "height": 250.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/Shooter/shooterRPSOverride/value",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              }
+            ]
+          },
+          {
+            "title": "lateralBiasGainRots",
+            "x": 500.0,
+            "y": 375.0,
+            "width": 250.0,
+            "height": 250.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "enabled",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 250.0,
+                "height": 250.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/ShotCalc/lateralBiasGainRots/enabled",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "value",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 250.0,
+                "height": 250.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/ShotCalc/lateralBiasGainRots/value",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              }
+            ]
+          }
+        ],
+        "containers": []
       }
     }
   ]
