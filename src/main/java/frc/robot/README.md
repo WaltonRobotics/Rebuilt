@@ -2,7 +2,7 @@
 
 This is the main codebase for Team 2974 (Walton Robotics) for the ReBuilt Season. Typically, everything here is all you'll need, as everything here controls how the robot behaves during a match, from driving around to shooting game pieces at targets.
 
-If you're new to the team, welcome! Hopefully this will help you figure out where things live so you're not completely lost staring at the file tree, like I was ~~two years ago~~all those years ago.
+If you're new to the team, welcome! Hopefully this will help you figure out where things live so you're not completely lost staring at the file tree, like I was ~~two years ago~~ all those years ago.
 
 ---
 
@@ -21,7 +21,8 @@ The code is split into folders by responsibility. Each folder handles one aspect
 
 ### [autons/](autons/) — Autonomous routines
 
-Defines what the robot does during the 15-second autonomous period at the start of a match, where no driver input is allowed. <small>this is where we start praying we work</small>
+Defines what the robot does during the 15-second autonomous period at the start of a match, where no driver input is allowed.
+#### this is where we start praying
 
 - `WaltAdaptableAutonFactory.java` — Builds auto routines by chaining Choreo trajectory segments together.
 
