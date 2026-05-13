@@ -1,6 +1,6 @@
-# Robot Code
+# /robot
 
-This is the main codebase for Team 2974 (Walton Robotics) for the ReBuilt Season. Typically, everything here is all you'll need, as everything here controls how the robot behaves during a match, from driving around to shooting game pieces at targets.
+This is the main area for the ReBuilt Season. Typically, everything here is all you'll need, as everything here controls how the robot behaves during a match, from driving around to shooting game pieces at targets.
 
 If you're new to the team, welcome! Hopefully this will help you figure out where things live so you're not completely lost staring at the file tree, like I was ~~two years ago~~ all those years ago.
 
@@ -14,7 +14,7 @@ The code is split into folders by responsibility. Each folder handles one aspect
 
 ## Top-level files
 
-- `Robot.java` — Main robot class. Subsystems, commands, and bindings all get wired up here. Start here for the big picture.
+- `Robot.java` — Main robot class. Subsystems, commands, and bindings all get wired up here. This will have almost every concept that you would need to understand how to program in FRC! :wink:
 - `Main.java` — Program entry point. You ~~probably~~ never need to touch this.
 - `Constants.java` — Robot-wide constants (motor ports, PID values, speed limits, etc.). If you're looking for a magic number, it's probably here. NO MAGIC NUMBERS OUTSIDE OF HERE!!!!
 - `FieldConstants.java` — Field dimensions and target positions. All thanks to our goats, Mechanical Advantage (6328)
@@ -22,7 +22,7 @@ The code is split into folders by responsibility. Each folder handles one aspect
 ### [autons/](autons/) — Autonomous routines
 
 Defines what the robot does during the 15-second autonomous period at the start of a match, where no driver input is allowed.
-#### this is where we start praying
+#### this is where we start praying :pray:
 
 - `WaltAdaptableAutonFactory.java` — Builds auto routines by chaining Choreo trajectory segments together.
 
@@ -60,7 +60,7 @@ The fun part. I had SO much fun on this part :D
 
 ##### [subsystems/shooter/calc](subsystems/shooter/calc) — Shot calculations
 
-this is where it hit the fan D:
+this is where it hit the fan :scream: :scream: :scream:
 
 - `ShooterCalc.java` — Shot math and distance-based calculations on its own thread.
 - `ShotCalculator.java` — Other shot math and distance-based calculations.
