@@ -10,10 +10,12 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.*;
 
-import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
-import frc.robot.subsystems.shooter.ShotCalculator.ShotDataLerp;
-import frc.robot.subsystems.shooter.ShooterCalc.AzimuthCalcDetails;
-import frc.robot.subsystems.shooter.ShooterCalc.ShotCalcOutputs;
+import frc.robot.subsystems.shooter.calc.ShotCalculator.ShotData;
+import frc.robot.subsystems.shooter.calc.ShotCalculator.ShotDataLerp;
+import frc.robot.subsystems.shooter.calc.ShooterCalc;
+import frc.robot.subsystems.shooter.calc.ShooterCalc.AzimuthCalcDetails;
+import frc.robot.subsystems.shooter.calc.ShooterCalc.ShotCalcOutputs;
+import frc.robot.subsystems.shooter.calc.ShotCalculator;
 
 import org.junit.jupiter.api.*;
 

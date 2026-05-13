@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter;
+package frc.robot.subsystems.shooter.calc;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -24,7 +24,7 @@ import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.WpiK;
 import frc.robot.generated.TunerConstants;
 import frc.robot.FieldConstants;
-import frc.robot.subsystems.shooter.ShotCalculator.ShotDataLerp;
+import frc.robot.subsystems.shooter.calc.ShotCalculator.ShotDataLerp;
 import frc.util.AllianceFlipUtil;
 import frc.util.AllianceZoneUtil;
 import frc.util.WaltLogger;

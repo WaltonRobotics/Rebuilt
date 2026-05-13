@@ -14,8 +14,9 @@ import edu.wpi.first.units.measure.*;
 
 import frc.robot.Constants.ShooterK;
 import frc.robot.FieldConstants;
-import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
-import frc.robot.subsystems.shooter.ShotCalculator.ShotDataLerp;
+import frc.robot.subsystems.shooter.calc.ShotCalculator;
+import frc.robot.subsystems.shooter.calc.ShotCalculator.ShotData;
+import frc.robot.subsystems.shooter.calc.ShotCalculator.ShotDataLerp;
 
 import org.junit.jupiter.api.*;
 

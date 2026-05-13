@@ -38,7 +38,8 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import frc.robot.Constants;
-import frc.robot.subsystems.shooter.ShooterCalc.ShotCalcOutputs;
+import frc.robot.subsystems.shooter.calc.ShooterCalc;
+import frc.robot.subsystems.shooter.calc.ShooterCalc.ShotCalcOutputs;
 import frc.util.SignalManager;
 import frc.util.WaltMotorSim;
 import frc.util.WaltTunable;

@@ -1,5 +1,5 @@
 
-package frc.robot.subsystems.shooter;
+package frc.robot.subsystems.shooter.calc;
 
 import static edu.wpi.first.units.Units.InchesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
