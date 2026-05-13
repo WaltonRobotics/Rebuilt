@@ -301,7 +301,7 @@ public class WaltAdaptableAutonFactory {
     /**
      * NEW TERMINOLOGY: COAST OUT -- Coasting out means to let the motors keep their momentum when they stop, instead of 
      * simply going to zero (stopping abruptly).
-    */
+     */
     // Something to think about is to coast out the swerve at the end of auto, to cover more ground to get closer to
     // fuel to pick up faster?
     // EX: See Citrus's (1678) autos
