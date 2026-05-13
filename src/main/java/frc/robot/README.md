@@ -1,6 +1,6 @@
 # Robot Code
 
-This is the main codebase for Team 2974 (Walton Robotics). Everything here controls how the robot behaves during a match, from driving around to shooting game pieces at targets.
+This is the main codebase for Team 2974 (Walton Robotics) for the ReBuilt Season. Typically, everything here is all you'll need, as everything here controls how the robot behaves during a match, from driving around to shooting game pieces at targets.
 
 If you're new to the team, welcome! Hopefully this will help you figure out where things live so you're not completely lost staring at the file tree, like I was ~~two years ago~~all those years ago.
 
@@ -8,7 +8,7 @@ If you're new to the team, welcome! Hopefully this will help you figure out wher
 
 ## How the code is organized
 
-The code is split into folders by responsibility. Each folder handles one aspect of the robot. If something breaks, you'll know exactly where to look (and who to blame).
+The code is split into folders by responsibility. Each folder handles one aspect of the robot. If something breaks, you'll know exactly where to look (and who to blame(thank you gitblame)).
 
 ---
 
