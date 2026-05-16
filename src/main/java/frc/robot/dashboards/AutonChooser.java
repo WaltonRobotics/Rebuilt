@@ -5,7 +5,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import choreo.auto.AutoChooser;
-import edu.wpi.first.hal.simulation.AddressableLEDDataJNI;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -56,9 +55,9 @@ public class AutonChooser {
     private final static String kLeftSweepAndDepot = "LEFT Bump Sweep and Depot";
 
     //---STRESS TEST
-    private final static String kRightStressTestLong = "RIGHT Long Stress Test";
-    private final static String kRightStressTestOverlap = "RIGHT Overlap Stress Test";
-    private final static String kRightStressTestTenTimes = "RIGHT Five Times Stress Test";
+    // private final static String kRightStressTestLong = "RIGHT Long Stress Test";
+    // private final static String kRightStressTestOverlap = "RIGHT Overlap Stress Test";
+    // private final static String kRightStressTestTenTimes = "RIGHT Five Times Stress Test";
 
     // =============================================================
     // NEW AUTON NAMES
