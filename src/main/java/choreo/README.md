@@ -22,26 +22,26 @@ We duplicated Choreo's library classes locally so we could experiment with **pos
 ### auto/
 Handles autonomous routine selection and execution.
 
-- `AutoChooser.java` - lets drivers select an auto routine from the dashboard
-- `AutoFactory.java` - constructs auto routines by chaining trajectory segments together
-- `AutoRoutine.java` - represents a full autonomous routine made up of multiple trajectories
-- `AutoTrajectory.java` - wraps a single Choreo trajectory for command-based execution
+- `AutoChooser.java`: lets drivers select an auto routine from the dashboard
+- `AutoFactory.java`: constructs auto routines by chaining trajectory segments together
+- `AutoRoutine.java`: represents a full autonomous routine made up of multiple trajectories
+- `AutoTrajectory.java`: wraps a single Choreo trajectory for command-based execution
 
 ### trajectory/
 Core trajectory representation and sampling logic.
 
-- `Trajectory.java` - the main trajectory class, holds a list of samples and handles time-based lookups
-- `TrajectorySample.java` - a single sampled state along a trajectory (pose, velocity, etc.)
-- `SwerveSample.java` - trajectory sample specific to swerve drivetrains
-- `DifferentialSample.java` - trajectory sample specific to differential drivetrains
-- `EventMarker.java` - represents a timed event trigger within a trajectory
+- `Trajectory.java`: the main trajectory class, holds a list of samples and handles time-based lookups
+- `TrajectorySample.java`: a single sampled state along a trajectory (pose, velocity, etc.)
+- `SwerveSample.java`: trajectory sample specific to swerve drivetrains
+- `DifferentialSample.java`: trajectory sample specific to differential drivetrains
+- `EventMarker.java`: represents a timed event trigger within a trajectory
 
 ### util/
 Utility and configuration classes.
 
-- `Choreo.java` - main entry point for loading trajectories from deploy files
-- `ChoreoAlert.java` - handles driver station alerts related to Choreo
-- `ChoreoAllianceFlipUtil.java` - flips trajectories for red/blue alliance mirroring
-- `ChoreoArrayUtil.java` - array helper methods used internally
-- `FieldDimensions.java` - field size constants used for alliance flipping
-- `TrajSchemaVersion.java` - version tracking for the trajectory file format
+- `Choreo.java`: main entry point for loading trajectories from deploy files
+- `ChoreoAlert.java`: handles driver station alerts related to Choreo
+- `ChoreoAllianceFlipUtil.java`: flips trajectories for red/blue alliance mirroring
+- `ChoreoArrayUtil.java`: array helper methods used internally
+- `FieldDimensions.java`: field size constants used for alliance flipping
+- `TrajSchemaVersion.java`: version tracking for the trajectory file format
