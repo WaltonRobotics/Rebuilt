@@ -13,6 +13,29 @@ import frc.robot.Constants.AutonK;
 import frc.robot.autons.WaltAdaptableAutonFactory;
 import frc.robot.autons.WaltAdaptableAutonFactory.AdaptableAutonInfo;
 
+/**
+ * AutonChooser
+ *
+ * This class is responsible for deciding which autons we want to run,
+ * and in what order do those paths go in.
+ * 
+ * FORMATTING:
+ *  We like to keep things the same around here so nobody can get confused
+ *  on the field and pick the wrong auton ;). We follow a format with how
+ *  these autons are named, and thats in the following format:
+ *      STARTING POSITION: Left or Right, or maybe even center.
+ *                         Are we starting in the Trench, on
+ *                         the bump, hell maybe even on the hub?!
+ *                         Knowing this prior to the match starting allows for the people
+ *                         setting the robot on the field know where they need to align it to.
+ *
+ *      NUMBER OF CYCLES: One cycle, Two Cycle, or even Three.
+ * 
+ *      RETURN POSITION: Are we coming back over the bump? Or under the trench?
+ * 
+ *      MODIFIERS: Things such as a follow auto, delayed auto, going to the depot,
+ *                 etc.
+ */
 public class AutonChooser {
     private static final String kPreheatTrajectory = "PreHeat";
 
@@ -25,6 +48,10 @@ public class AutonChooser {
     private static final List<AutonEntry> s_autons = new ArrayList<>();
     private record MultiAutonEntry(String name, AdaptableAutonInfo[] infos) {}
     private static final List<MultiAutonEntry> s_multiAutons = new ArrayList<>();
+
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // AUTON NAMES
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     // =============================================================
     // OLD AUTON NAMES
@@ -69,7 +96,7 @@ public class AutonChooser {
     private final static String kLeftTrenchTwoCycleBumpReturn = "LEFT Trench 2 Cycle Bump Return";
     private final static String kLeftTrenchTwoCycleBumpReturnFollow = "LEFT Trench 2 Cycle Bump Return FOLLOW";
     private final static String kRightTrechTwoCycleTrenchReturn = "RIGHT Trench 2 Cycle Trench Return";
-    private final static String kRightTrechTwoCycleTrenchReturnDelay = "RIGHT Trench 2 Cycle Trench Return 5sec DELAY";
+    private final static String kRightTrenchTwoCycleTrenchReturnDelay = "RIGHT Trench 2 Cycle Trench Return 5sec DELAY";
     private final static String kLeftTrenchTwoCycleTrenchReturn = "LEFT Trench 2 Cycle Trench Return";
     private final static String kRightBumpTwoCycleReverseToTrenchPlusTrenchOnly = "RIGHT Bump 2 Cycle Reverse to Trench + Trench ONLY";
     private final static String kLeftBumpTwoCycleReverseToTrenchPlusTrenchOnly = "LEFT Bump 2 Cycle Reverse to Trench + Trench ONLY";
@@ -88,7 +115,11 @@ public class AutonChooser {
 
     private final static String kCenterPreload = "CENTER Preload";
     // private final static String kRightDelayTest = "DELAY TEST - NOT FOR ACTUAL USE";
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    // ============================================================================
+    // -- UTILITY METHODS
+    // ============================================================================
     public static void initialize(WaltAdaptableAutonFactory adaptableAutonFactory) {
         m_adaptableAutonFactory = adaptableAutonFactory;
         m_chooser = new AutoChooser();
@@ -210,7 +241,7 @@ public class AutonChooser {
             new AdaptableAutonInfo(AutonK.kRightTwoTrenchReturn, AutonK.kShootingTimeout, false, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoGoOut, AutonK.kSOTMTimeout, false, 0));
 
-        addMultiAuton(kRightTrechTwoCycleTrenchReturnDelay,
+        addMultiAuton(kRightTrenchTwoCycleTrenchReturnDelay,
             new AdaptableAutonInfo(AutonK.kRightOneTrenchReturn, AutonK.kShootingTimeout, false, 5),
             new AdaptableAutonInfo(AutonK.kRightTwoTrenchReturn, AutonK.kShootingTimeout, false, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoGoOut, AutonK.kSOTMTimeout, false, 0));
