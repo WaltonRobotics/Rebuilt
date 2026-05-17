@@ -274,7 +274,7 @@ public class WaltAdaptableAutonFactory {
     // before a match. Ensures we dont stall for like 0.4 seconds at the start of auton
     public AutoRoutine preheater() {
         System.out.println("PREHEAT MADE");
-        return adaptableAuton("PreHeat", new AdaptableAutonInfo("PreHeat", AutonK.kShootingTimeout, false, 0));
+        return adaptableAuton("PreHeat", new AdaptableAutonInfo("MISC/PreHeat", AutonK.kShootingTimeout, false, 0));
     }
 
     // Builds a single-segment auton: follow one trajectory and fire waypoint
