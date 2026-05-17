@@ -43,19 +43,20 @@ Gate: motor must actually be in velocity control mode
 When a detection fires, a timer starts. The shot is "confirmed" after:
 - The ball detection clears (acceleration recovers)
 - 1.2 seconds have elapsed on the timer
-- The motor is still in shoot mode
+- We're still controlling to shoot
 
 This debounced trigger (`getBallShotDebounceTrg()`) is what tells the rest of the robot a ball has left, so it can advance the indexer or track shot count. Pretty neat for something with no sensor.
 
 ### Driver RPS Tweaks
 
-Drivers can trim the computed flywheel speed without breaking anything:
+Drivers can trim the computed flywheel speed without breaking anything
 
 - **Dynamic**: ±5% of the calculated RPS
 - **Static**: ±`kDriverRPSIncreaseD` per button press
 - **Reset**: back to 0 on release
 
 All tweaks are clamped to `[0, kShooterMaxRPSd]`. Gated behind `kAllowDriverRPSTweak` if you want to turn it off.
+It's not being used rn but if we need to cope harder this is what we do :sunglasses:
 
 ### What periodic() Does
 
@@ -68,7 +69,7 @@ Every loop:
 6. Refreshes the spun-up check.
 7. Logs everything.
 
-A `Tracer` is wired up for epoch timing diagnostics if you're hunting loop overruns.
+A `Tracer` is wired up for epoch timing diagnostics if you're hunting loop overruns. (hopefully syscore doesn't fail us)
 
 ### NT Tunable Overrides
 
@@ -81,7 +82,7 @@ Useful when building LERP tables. Leave them disabled during actual matches.
 
 ## Turret.java
 
-The turret rotates on a Kraken X44 (FOC, on the Canivor bus) using `PositionVoltage` control. It also carries two absolute encoders, not for redundancy, but because one encoder alone can't tell you absolute position if the turret has more than one full rotation of range.
+The turret rotates on a Kraken X44 (FOC, on the Canivore bus) using `PositionVoltage` control. It also carries two absolute encoders, not for redundancy, but because one encoder alone can't tell you absolute position if the turret has more than one full rotation of range.
 
 ### Dual-Encoder Absolute Position Recovery
 
@@ -90,14 +91,14 @@ Two encoders are geared at different ratios:
 - **Encoder A** (CANcoder): 10-tooth driving a 100-tooth output, so one full encoder reading every 36° of turret travel
 - **Encoder B** (DutyCycleEncoder, DIO 3): 19-tooth driving a 100-tooth output, so one full encoder reading every ~18.95° of turret travel
 
-Because these periods are incommensurate, at any given absolute turret angle, only one combination of (Encoder A reading, Encoder B reading) is possible. `calcTurretAngleLCM()` exploits this:
+Because these periods are incommensurate, at any given absolute turret angle, only one combination of (Encoder A reading, Encoder B reading) is possible. `calcTurretAngleLCM()` exploits this through Least Common Modulus:
 
 1. Use Encoder A's reading to generate every candidate absolute angle within the turret's range (one per integer multiple of the 36° period).
 2. For each candidate, predict what Encoder B *should* read at that angle.
 3. Compare predicted vs actual Encoder B, wrapping the difference to ±180° to handle rollover.
 4. Return the candidate with the smallest error.
 
-This runs on construction (`homeTurret(true)`) and also every loop for logging. If both encoders agree, you can trust the position even after a power cycle.
+This runs on construction (`homeTurret(true)`) and also every loop for logging. If both encoders agree, you can trust the position even after a power cycle. It also exists as an override button on the manipulator so that incase something goes wrong with that homing, we wont get screwed over :pray:
 
 ### Snapback Logic
 
@@ -128,7 +129,7 @@ The hood homes by driving slowly into its physical lower limit and waiting for t
 
 There's a 5-second timeout in case something goes wrong. If it times out or gets interrupted, the hood brakes and logs a warning.
 
-> Note: In the current build, the homing command is not set as a default command. The hood is initialized with `setPosition(0)` directly in the constructor and immediately considered homed. `hoodCurrentSenseHomingCmd()` is still available if you want to actually run the homing routine.
+> Note: In the current build, the homing command is not set as a default command. The hood is initialized with `setPosition(0)` directly in the constructor and immediately considered homed. `hoodCurrentSenseHomingCmd()` is still available if you want to actually run the homing routine, and still exists as an override button.
 
 ### Key Methods
 

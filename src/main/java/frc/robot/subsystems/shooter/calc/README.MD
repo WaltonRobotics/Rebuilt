@@ -1,6 +1,6 @@
 # /calc
 
-This is where it all hit the fan :D (:sob: :sob: :sob:)
+This is where it all hit the fan :sob: :sob: :sob:
 
 This folder handles all of the math that turns "robot is at this position going this fast" into "set flywheel to X RPS, hood to Y rotations, turret to Z degrees." It runs on a **background thread** at 75 Hz so none of this touches the main robot loop. Two classes: `ShooterCalc` coordinates everything and manages the thread, and `ShotCalculator` contains the actual ballistics: tables, physics, iterative moving-shot convergence, the whole deal.
 
@@ -50,8 +50,8 @@ The robot shoots at different targets depending on where it is on the field:
 Robot on own side of the hub -> SHOOTING MODE
   Target: enemy hub center (alliance-flipped appropriately)
 
-Robot past the hub into opponent territory -> PASSING MODE
-  Target: a point near the sideline (~2m in from the wall)
+Robot past the hub into neutral zone -> PASSING MODE
+  Target: right by/on the bump
     - Robot left of field center -> left passing point
     - Robot right of field center -> right passing point
 ```
@@ -59,6 +59,7 @@ Robot past the hub into opponent territory -> PASSING MODE
 `m_isPassingFlag` is set/cleared here and read by `ShotCalculator` to select the right LERP table.
 
 There's also a "no-passing zone" check (`robotInNoPassingZone`) that detects when the robot is near the opponent hub, where some passing angles may not be safe. The check uses field X/Y bounds and alliance color.
+>We are not using this as of right now, as it somewhat screws with targeting
 
 ### Turret Azimuth: `calcAzimuth()`
 
@@ -139,11 +140,9 @@ There are two active tables:
 - Hood: ~0.70 to 1.16 rad
 - TOF: 0.254s at all distances
 
-~~**`kAngryTurretTable`**~~: flat-trajectory passing shots for when the hood physically can't go up. Commented out (32 points were in there). Preserved in case it's ever needed again.
-
 ### Iterative Moving-Shot: `iterativeMovingShotFromInterpolationMap()`
 
-This is the core of on-the-move shooting. It converges on shot parameters that account for the robot moving during ball flight. Up to 8 iterations:
+This is the core of shoot on the move. It converges on shot parameters that account for the robot moving during ball flight. Up to 8 iterations:
 
 ```
 Start: table lookup at current distance to target
@@ -165,7 +164,7 @@ Each iteration:
 
 `vxLaunch` and `vyLaunch` are the actual velocity of the turret pivot point, accounting for both robot linear velocity and rotational velocity (the turret pivot is offset from the robot center, so rotation contributes a tangential component).
 
-The drag compensation is tunable via `/ShotCalc/sotmDragCoeff`. Setting it to 0 disables drag compensation entirely. The default 0.5 was empirically determined. There's a comment in the code that says `2974 IS OUR LUCKY NUMBER` and another that says `254 RAHHHHHHHHHHHHHHH` - both teams' drag coefficients were apparently considered at some point. We landed on 0.5.
+The drag compensation is tunable via `/ShotCalc/sotmDragCoeff`. Setting it to 0 disables drag compensation entirely.
 
 ### Physics Utilities
 
@@ -203,7 +202,7 @@ Both records have `acceptLogging()` methods that push their fields to NetworkTab
 | NT Key | Default | What It Does |
 |--------|---------|-------------|
 | `/ShotCalc/sotmDragCoeff` | 0.5 | Drag coefficient for SOTM lateral compensation |
-| `/ShotCalc/lateralBiasGainRots` | `kTurretLateralBiasGainRots` | Sinusoidal lateral bias correction gain |
+| `/ShotCalc/lateralBiasGainRots` | `kTurretLateralBiasGainRots` | Sinusoidal lateral bias correction gain for the turret|
 | `Shooter/Calculator/RPSBoost` | 0.75 | Boost applied to passing table RPS |
 
 All tunable via `WaltTunable`, enable in NT and set a value. Changes apply to the next calc cycle.
@@ -211,15 +210,28 @@ All tunable via `WaltTunable`, enable in NT and set a value. Changes apply to th
 ---
 
 ## Quick Data Flow
+```mermaid
+graph TD
+    Hz[calcCallback @ 75 Hz] --> P1
 
-```
-calcCallback() @ 75 Hz
-  calculateTarget()       -> m_aimTarget (volatile)
-  iterativeMovingShotFromInterpolationMap()
-    ShotLerpTable lookup + convergence loop
-    dragCompensatedTOF()
-    -> ShotDataLerp (flywheel vel, hood angle, predicted target, TOF)
-  calcAzimuth()
-    -> AzimuthCalcDetails (turret setpoint, velocity FF)
-  -> ShotCalcOutputs (volatile) -> read by Shooter.periodic()
+    subgraph Calculation Thread
+        P1[calculateTarget] --> O1["m_aimTarget (volatile)"]
+        O1 --> P2
+
+        subgraph P2 [iterativeMovingShotFromInt]
+            P2a[ShotLerpTable lookup] --> P2b[convergence loop]
+            P2b --> P2c[dragCompensatedTOF]
+        end
+
+        P2 --> O2["ShotDataLerp
+        flywheel vel | hood angle
+        predicted target | TOF"]
+
+        O2 --> P3[calcAzimuth]
+        P3 --> O3["AzimuthCalcDetails
+        turret setpoint | velocity FF"]
+    end
+
+    O3 --> O4["ShotCalcOutputs (volatile)"]
+    O4 --> P4["Shooter.periodic()"]
 ```
