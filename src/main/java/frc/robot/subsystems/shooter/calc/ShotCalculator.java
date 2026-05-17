@@ -28,23 +28,42 @@ import edu.wpi.first.units.measure.Time;
 import java.util.DoubleSummaryStatistics;
 import java.util.TreeMap;
 
+/*
+ * ShotCalculator - pure ballistics, no threads, no state.
+ *
+ * Everything here is static methods or records. The two main entry points:
+ *   - iterativeMovingShotFromInterpolationMap: the SOTM workhorse - converges on params that account for robot velocity during ball flight
+ *   - calculateShotFromFunnelClearance: 2D closed-form solver for clearing a funnel above the robot
+ *
+ * ShotLerpTable is the zero-allocation sorted-array replacement for InterpolatingDoubleTreeMap.
+ * Tables store SI units internally (rad/s, radians, seconds). You put in rot/s and rotations via the Builder.
+ *
+ * Vocab:
+ *   SOTM - Shoot On The Move. iterative convergence that adjusts for robot velocity during ball flight.
+ *   TOF - Time of Flight. how long the ball is in the air.
+ *   drift - lateral ball displacement during flight. drag-compensated via (1 - e^(-c*t)) / c.
+ *   passing - shooting at the passing target instead of the hub. selects kPassingTable.
+ */
 public class ShotCalculator {
+    // ---- LOGGERS ----
     private static final DoubleLogger log_distToTargetMeters = new DoubleLogger("Shooter/Calculator", "distTargetToMeters");
     private static final BooleanLogger log_isPassingLerp = new BooleanLogger("Shooter/Calculator", "isPassingLERP");
-    private static final DoubleLogger log_dragCoefficient = new DoubleLogger("Shooter/Calculator", "dragCoefficient");
     private static final IntLogger log_lerpIterationCount = new IntLogger("Shooter/Calculator", "lerpIterationCount");
     private static final BooleanLogger log_calcConvergedBreakout = new BooleanLogger("Shooter/Calculator", "calcConvergedBreakout");
 
+    // ---- TUNING ----
     private static final double kMetersToInches = 1.0 / 0.0254;
-    // Horizontal drag damping: actual drift = v * (1 - e^(-c*t)) / c < v*t
-    // c = 0 disables drag compensation. Enable via /ShotCalc/sotmDragCoeff/enabled.
-    //YAYAYAYYAYAYAY 2974 IS OUR LUCKY NUMBER HUZZAH YAY YIPPEE
     private static final WaltTunable kDragCoeffTuner = new WaltTunable("/ShotCalc/sotmDragCoeff", 0.5000, false);
     // private static final Tracer m_iterativeTracer = new Tracer();
 
-    // private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
-    // private static final double kBlueHubCenterX = AllianceZoneUtil.blueHubCenter.getX();
 
+    private static final double kRPSBoost = 0.75;
+    private static final double kLongRangeRPSBoost = 0.35;
+    private static final double kScoringRPSBoost = -0.2;
+    private static final WaltTunable kRPSBoostTuner = new WaltTunable("Shooter/Calculator/RPSBoostDelta", 0.0);
+
+    // ---- TABLE CONSTANTS ----
+    // kReductionDistances/kReductionAmount feed the linear regression in calcRPSReduction - currently unused (kRPSReductionNeeded = false)
     private static final double[] kReductionDistances = {1.48, 2.31, 4.12};
     private static final double[] kReductionAmount = {0, 2, 4};
 
@@ -56,12 +75,7 @@ public class ShotCalculator {
 
     private static final boolean kRPSReductionNeeded = false;
 
-    private static double kRPSBoost = 0.75;
-    private static double kLongRangeRPSBoost = 0.35;
-
-    private static double kScoringRPSBoost = -0.2;
-    private static final WaltTunable kRPSBoostTuner = new WaltTunable("Shooter/Calculator/RPSBoost", kRPSBoost); 
-
+    // ---- LERP TABLES ----
     /**
      * Zero-allocation sorted-array interpolation tables replacing InterpolatingTreeMap.
      * All values stored in SI units (rad/s, radians, seconds).
@@ -76,33 +90,17 @@ public class ShotCalculator {
         kNewFuelAdjTable.put(distance, calcRPSReduction(distance));
     }
 
+    // =============================================================
+    // TABLE INITIALIZATION
+    // =============================================================
+
     static {
         //TODO: find the actual minDistance and maxDistance for shooting
-        minDistance = 1.168;
-        maxDistance = 5.672;
-
-        kRPSBoost = kRPSBoostTuner.enabled() ? kRPSBoostTuner.get() : kRPSBoost;
-
+        minDistance = 0.985;
+        maxDistance = 8.627;
 
         ShotLerpTable.Builder shot = new ShotLerpTable.Builder();
 
-        // normal table
-        // shot.add(8.627, 69.000, 1.160, 1.65, 0.500);
-        // shot.add(7.801, 64.700, 1.134, 1.37, 0.500);
-        // shot.add(6.973, 62.300, 1.104, 1.33, 0.500);
-        // shot.add(6.126, 58.000, 1.071, 1.33, 0.500);
-        // shot.add(5.577, 57.600, 1.046, 1.19, 0.500);
-        // shot.add(4.555, 54.200, 0.994, 1.12, 0.500);
-        // shot.add(4.231, 54.400, 0.974, 1.09, 0.500);
-        // shot.add(3.798, 51.900, 0.852, 1.08, 0.500);
-        // shot.add(3.267, 47.600, 0.907, 0.95, 0.500);
-        // shot.add(2.826, 46.400, 0.869, 0.93, 0.500);
-        // shot.add(2.212, 42.500, 0.608, 0.98, 0.500);
-        // shot.add(1.929, 41.700, 0.500, 0.87, 0.500);
-        // shot.add(1.093, 43.450, 0.000, 1.02, 0.500);
-        // shot.add(0.985, 40.000, 0.000, 0.97, 0.500);
-
-        //spoof table
         shot.add(8.627, 69.000 + kScoringRPSBoost, 1.160, 1.65, 0.500);
         shot.add(7.801, 65.865 + kScoringRPSBoost, 1.106, 1.37, 0.500); //1.524
         shot.add(6.973, 62.723 + kScoringRPSBoost, 1.046, 1.33, 0.500); //1.411
@@ -167,47 +165,10 @@ public class ShotCalculator {
         passing.add(14.355, 104.39 + kRPSBoost + kLongRangeRPSBoost, 1.16, 2.08, 0.254);
         kPassingTable = passing.build();
     }
-    static {
-        //THIS IS ONLY USED IF THE TURRET IS IN A POSITION THAT IS UNABLE TO SHOOT WITH HOOD UP DURING PASSING
-        //NO ANGRY PASSING IN OPPOSING ALLIANCE ZONE
-        // ShotLerpTable.Builder angry = new ShotLerpTable.Builder();
-        // angry.add(7.574, 92.5, 0.08, 2.08);
-        // angry.add(7.135, 86, 0.08, 2.06);
-        // angry.add(6.653, 81, 0.08, 2.04);
-        // angry.add(6.254, 78, 0.08, 2.02);
-        // //note that the points above have spoofed tofs
-        // angry.add(5.672, 82.50 - kRPSReduction, 0.08, 2.11);
-        // angry.add(5.321, 81.00 - kRPSReduction, 0.08, 1.94);
-        // angry.add(5.223, 75.75 - kRPSReduction, 0.08, 1.79);
-        // angry.add(5.167, 79.50 - kRPSReduction, 0.08, 2.03);
-        // angry.add(4.996, 78.00 - kRPSReduction, 0.08, 1.97);
-        // angry.add(4.869, 76.50 - kRPSReduction, 0.08, 1.80);
-        // angry.add(4.696, 75.00 - kRPSReduction, 0.08, 1.33);
-        // angry.add(4.546, 73.50 - kRPSReduction, 0.08, 1.83);
-        // angry.add(4.402, 72.50 - kRPSReduction, 0.08, 1.85);
-        // angry.add(4.258, 71.00 - kRPSReduction, 0.08, 1.64);
-        // angry.add(4.098, 69.00 - kRPSReduction, 0.08, 1.58);
-        // angry.add(3.932, 68.00 - kRPSReduction, 0.08, 1.71);
-        // angry.add(3.785, 66.90 - kRPSReduction, 0.08, 1.56);
-        // angry.add(3.611, 65.40 - kRPSReduction, 0.08, 1.56);
-        // angry.add(3.464, 63.90 - kRPSReduction, 0.08, 1.50);
-        // angry.add(3.293, 62.40 - kRPSReduction, 0.08, 1.50);
-        // angry.add(3.134, 60.90 - kRPSReduction, 0.08, 1.51);
-        // angry.add(2.995, 59.40 - kRPSReduction, 0.08, 1.37);
-        // angry.add(2.855, 57.90 - kRPSReduction, 0.08, 1.35);
-        // angry.add(2.704, 56.40 - kRPSReduction, 0.08, 1.38);
-        // angry.add(2.586, 54.90 - kRPSReduction, 0.08, 1.28);
-        // angry.add(2.395, 53.50 - kRPSReduction, 0.08, 1.29);
-        // angry.add(2.221, 52.00 - kRPSReduction, 0.08, 1.25);
-        // angry.add(2.083, 50.50 - kRPSReduction, 0.08, 1.14);
-        // angry.add(1.912, 49.00 - kRPSReduction, 0.08, 1.19);
-        // angry.add(1.691, 47.50 - kRPSReduction, 0.08, 0.98);
-        // angry.add(1.575, 47.50 - kRPSReduction, 0.08, 1.18);
-        // angry.add(1.528, 46.00 - kRPSReduction, 0.08, 1.20);
-        // angry.add(1.307, 44.50 - kRPSReduction, 0.08, 1.13);
-        // angry.add(1.168, 44.50 - kRPSReduction, 0.08, 1.16);
-        // kAngryTurretTable = angry.build();
-    }
+
+    // =============================================================
+    // DISTANCE + VELOCITY UTILITIES
+    // =============================================================
 
     /**
      * @param distance
@@ -231,7 +192,7 @@ public class ShotCalculator {
         }
 
         r /= (kReductionAmount.length - 1);
-        
+
         double slope = r * (reductionSTDev/distanceSTDev);
         double intercept = reductionSummaryStats.getAverage() - slope * distanceSummaryStats.getAverage();
 
@@ -256,7 +217,7 @@ public class ShotCalculator {
 
     /**
      * Gets the Distance from current robot position to desired target.
-     * Allocates Pose3d/Distance — use {@link #getDistanceToTargetM} on hot paths.
+     * Allocates Pose3d/Distance - use {@link #getDistanceToTargetM} on hot paths.
      */
     public static Distance getDistanceToTarget(Pose2d robot, Translation3d target) {
         Pose3d turretPose = new Pose3d(robot).transformBy(kTurretTransform);
@@ -265,6 +226,28 @@ public class ShotCalculator {
             target.getX(), target.getY());
         return Meters.of(dist);
     }
+
+    public static AngularVelocity linearToAngularVelocity(LinearVelocity vel, Distance radius) {
+        return RadiansPerSecond.of(vel.in(MetersPerSecond) / radius.in(Meters));
+    }
+
+    public static LinearVelocity angularToLinearVelocity(AngularVelocity vel, Distance radius) {
+        return MetersPerSecond.of(vel.in(RadiansPerSecond) * radius.in(Meters));
+    }
+
+    /** Raw double: rad/s from m/s and radius in meters. */
+    public static double linearToAngularVelocityRadPerSec(double mps, double radiusM) {
+        return mps / radiusM;
+    }
+
+    /** Raw double: m/s from rad/s and radius in meters. */
+    public static double angularToLinearVelocityMps(double radPerSec, double radiusM) {
+        return radPerSec * radiusM;
+    }
+
+    // =============================================================
+    // TRAJECTORY PHYSICS
+    // =============================================================
 
     // see https://www.desmos.com/geometry/l4edywkmha
     public static Angle calculateAngleFromVelocity(Pose2d robot, LinearVelocity velocity,
@@ -298,24 +281,6 @@ public class ShotCalculator {
         return tofSec;
     }
 
-    public static AngularVelocity linearToAngularVelocity(LinearVelocity vel, Distance radius) {
-        return RadiansPerSecond.of(vel.in(MetersPerSecond) / radius.in(Meters));
-    }
-
-    public static LinearVelocity angularToLinearVelocity(AngularVelocity vel, Distance radius) {
-        return MetersPerSecond.of(vel.in(RadiansPerSecond) * radius.in(Meters));
-    }
-
-    /** Raw double: rad/s from m/s and radius in meters. */
-    public static double linearToAngularVelocityRadPerSec(double mps, double radiusM) {
-        return mps / radiusM;
-    }
-
-    /** Raw double: m/s from rad/s and radius in meters. */
-    public static double angularToLinearVelocityMps(double radPerSec, double radiusM) {
-        return radPerSec * radiusM;
-    }
-
     /** Returns drag-compensated drift time: (1 - e^(-c*t)) / c, or t if drag is disabled. */
     private static double dragCompensatedTOF(double tof, double dragCoeff) {
         // if (!kDragCoeffTuner.enabled()) return tof;
@@ -331,6 +296,10 @@ public class ShotCalculator {
     public static double getMaxTimeOfFlight() {
         return kShotTable.tof(maxDistance);
     }
+
+    // =============================================================
+    // SHOOT ON THE MOVE
+    // =============================================================
 
     /**
      * Move a target a set time in the future along a velocity defined by
@@ -362,7 +331,7 @@ public class ShotCalculator {
                 predictedTarget.getX(), predictedTarget.getY(), predictedTarget.getZ());
     }
 
-    /** Raw-double overload — zero allocation in the hot loop. */
+    /** Raw-double overload - zero allocation in the hot loop. */
     static ShotData calculateShotFromFunnelClearance(Pose2d robot,
             double actualTargetX, double actualTargetY,
             double predX, double predY, double predZ) {
@@ -397,7 +366,7 @@ public class ShotCalculator {
             theta = 0;
         }
 
-        // v0 is in inches/sec — convert to rad/s via flywheel radius in inches
+        // v0 is in inches/sec - convert to rad/s via flywheel radius in inches
         double exitVelRadPerSec = v0 / kFlywheelRadiusIn;
         return new ShotData(exitVelRadPerSec, Math.PI / 2 - theta, new Translation3d(predX, predY, predZ));
     }
@@ -496,10 +465,10 @@ public class ShotCalculator {
             double prevPredX = predX;
             double prevPredY = predY;
 
-            // Inline predictTargetPos — no Translation3d/Time allocation
+            // Inline predictTargetPos - no Translation3d/Time allocation
             double coeffDrag = 0.5000; //used for SOTM movement SIDE TO SIDE
             // double coeffDrag = shotTable.drag(distance);
-            //2974 RAHHHHHHHHHHHHHHH – correction: more like 254 RAHHHHHHHHHHHHHHH
+            //2974 RAHHHHHHHHHHHHHHH - correction: more like 254 RAHHHHHHHHHHHHHHH
             // if ( (Math.abs(vx) <= 0.05) || (Math.abs(vy) <= 0.05) ) { //NOTE: not sure if these numbers are right
             //     coeffDrag = 0.2974; //used during static shot (or when the robot is low speed and should be static shooting)
             // }
@@ -519,6 +488,10 @@ public class ShotCalculator {
             exitVel = shotTable.exitVelocity(distance);
             hoodAngle = shotTable.hoodAngle(distance);
             tofSec = passing ? kPassingTable.tof(distance) : kShotTable.tof(distance);
+
+            if (kRPSBoostTuner.enabled()) {
+                exitVel += (kRPSBoostTuner.get() * (2.0 * Math.PI));
+            }
 
             double dExitVel = prevExitVel - exitVel;
             double dHood = prevHoodAngle - hoodAngle;
@@ -541,6 +514,10 @@ public class ShotCalculator {
         data.acceptLogging(data);
         return data;
     }
+
+    // =============================================================
+    // DATA RECORDS
+    // =============================================================
 
     public record ShotData (double exitVelocity, double hoodAngle, Translation3d target) {
         public ShotData(AngularVelocity exitVelocity, Angle hoodAngle, Translation3d target) {
@@ -612,6 +589,10 @@ public class ShotCalculator {
         public double getTofSec() { return tofSec; }
     }
 
+    // =============================================================
+    // LERP TABLE
+    // =============================================================
+
     /**
      * Zero-allocation sorted-array interpolation table.
      * Replaces InterpolatingTreeMap / InterpolatingDoubleTreeMap on hot paths.
@@ -661,8 +642,8 @@ public class ShotCalculator {
             /** dist: meters, rps: rot/s (shooter), hoodRots: rotations, tof: seconds */
             public void add(double dist, double rps, double hoodRots, double tof, double drag) {
                 entries.put(dist, new double[]{
-                    rps * (2.0 * Math.PI),        // rot/s → rad/s
-                    hoodRots * (2.0 * Math.PI),   // rotations → radians
+                    rps * (2.0 * Math.PI),        // rot/s -> rad/s
+                    hoodRots * (2.0 * Math.PI),   // rotations -> radians
                     tof,
                     drag
                 });
