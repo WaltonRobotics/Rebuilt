@@ -37,7 +37,7 @@ import frc.robot.autons.WaltAdaptableAutonFactory.AdaptableAutonInfo;
  *                 etc.
  */
 public class AutonChooser {
-    private static final String kPreheatTrajectory = "MISC/PreHeat";
+    private static final String kPreheatTrajectory = "PreHeat";
 
     public static AutoChooser m_chooser;
     public static WaltAdaptableAutonFactory m_adaptableAutonFactory;

@@ -672,88 +672,88 @@ public class Constants {
 
         /* OLD PATHS */
         //---RIGHT FIRST CYCLES
-        public static final String kRightOneJab = "RIGHT/RIGHT_one_jab";
-        public static final String kRightOneTrench = "RIGHT/RIGHT_one_trench";
-        public static final String kRightOneDefense = "RIGHT/RIGHT_one_defense";
-        public static final String kRightOneReverse = "RIGHT/RIGHT_one_reverse";
+        public static final String kRightOneJab = "RIGHT_one_jab";
+        public static final String kRightOneTrench = "RIGHT_one_trench";
+        public static final String kRightOneDefense = "RIGHT_one_defense";
+        public static final String kRightOneReverse = "RIGHT_one_reverse";
 
         //---RIGHT SECOND CYCLES
-        public static final String kRightTwoSotmDepot = "RIGHT/RIGHT_two_sotmDepot";
-        public static final String kRightTwoDepot = "RIGHT/RIGHT_two_depot";
-        public static final String kRightTwoSweep = "RIGHT/RIGHT_two_sweep";
-        public static final String kRightTwoPassing = "RIGHT/RIGHT_two_passing";
-        public static final String kRightTwoJab = "RIGHT/RIGHT_two_jab";
-        public static final String kRightTwoReverse = "RIGHT/RIGHT_two_reverse";
+        public static final String kRightTwoSotmDepot = "RIGHT_two_sotmDepot";
+        public static final String kRightTwoDepot = "RIGHT_two_depot";
+        public static final String kRightTwoSweep = "RIGHT_two_sweep";
+        public static final String kRightTwoPassing = "RIGHT_two_passing";
+        public static final String kRightTwoJab = "RIGHT_two_jab";
+        public static final String kRightTwoReverse = "RIGHT_two_reverse";
 
         //---LEFT FIRST CYCLES
-        public static final String kLeftOneJab = "LEFT/LEFT_one_jab";
-        public static final String kLeftOneTrench = "LEFT/LEFT_one_trench";
-        public static final String kLeftOneDefense = "LEFT/LEFT_one_defense";
-        public static final String kLeftOneReverse = "LEFT/LEFT_one_reverse";
+        public static final String kLeftOneJab = "LEFT_one_jab";
+        public static final String kLeftOneTrench = "LEFT_one_trench";
+        public static final String kLeftOneDefense = "LEFT_one_defense";
+        public static final String kLeftOneReverse = "LEFT_one_reverse";
 
         //---LEFT SECOND CYCLES
-        public static final String kLeftTwoSotmDepot = "LEFT/LEFT_two_sotmDepot";
-        public static final String kLeftTwoDepot = "LEFT/LEFT_two_depot";
-        public static final String kLeftTwoSweep = "LEFT/LEFT_two_sweep";
-        public static final String kLeftTwoPassing = "LEFT/LEFT_two_passing";
-        public static final String kLeftTwoJab = "LEFT/LEFT_two_jab";
-        public static final String kLeftTwoReverse = "LEFT/LEFT_two_reverse";
+        public static final String kLeftTwoSotmDepot = "LEFT_two_sotmDepot";
+        public static final String kLeftTwoDepot = "LEFT_two_depot";
+        public static final String kLeftTwoSweep = "LEFT_two_sweep";
+        public static final String kLeftTwoPassing = "LEFT_two_passing";
+        public static final String kLeftTwoJab = "LEFT_two_jab";
+        public static final String kLeftTwoReverse = "LEFT_two_reverse";
 
         //---MISC
-        public static final String kRightOneCircle = "RIGHT/RIGHT_one_circle";
-        public static final String kLeftOneSweepAndDepot = "LEFT/LEFT_one_sweepAndDepot";
-        public static final String kLeftThreeDepotToBump = "LEFT/LEFT_three_depotToBump";
-        public static final String kRightThreeDepotToBump = "RIGHT/RIGHT_three_depotToBump";
+        public static final String kRightOneCircle = "RIGHT_one_circle";
+        public static final String kLeftOneSweepAndDepot = "LEFT_one_sweepAndDepot";
+        public static final String kLeftThreeDepotToBump = "LEFT_three_depotToBump";
+        public static final String kRightThreeDepotToBump = "RIGHT_three_depotToBump";
 
         //---STRESS TEST
-        public static final String kRightStressTestLong = "RIGHT/RIGHT_stress_test_long";
-        public static final String kRightStressTestOverlap = "RIGHT/RIGHT_stress_test_overlap";
-
+        public static final String kRightStressTestLong = "RIGHT_stress_test_long";
+        public static final String kRightStressTestOverlap = "RIGHT_stress_test_overlap";
+      
         /* NEW PATHS */
         //---BUMP RETURN PATHS
-        public static final String kRightOneBumpReturn = "RIGHT/RIGHT_one_bumpReturn";
-        public static final String kRightOneBumpReturnFollow = "RIGHT/RIGHT_one_bumpReturnFollow";
-        public static final String kLeftOneBumpReturn = "LEFT/LEFT_one_bumpReturn";
-        public static final String kLeftOneBumpReturnFollow = "LEFT/LEFT_one_bumpReturnFollow";
-        public static final String kRightTwoBumpReturn = "RIGHT/RIGHT_two_bumpReturn";
-        public static final String kLeftTwoBumpReturn = "LEFT/LEFT_two_bumpReturn";
-        public static final String kRightTwoBumpToTrench = "RIGHT/RIGHT_two_bumpToTrench";
-        public static final String kLeftTwoBumpToTrench = "LEFT/LEFT_two_bumpToTrench";
+        public static final String kRightOneBumpReturn = "RIGHT_one_bumpReturn";
+        public static final String kRightOneBumpReturnFollow = "RIGHT_one_bumpReturnFollow";
+        public static final String kLeftOneBumpReturn = "LEFT_one_bumpReturn";
+        public static final String kLeftOneBumpReturnFollow = "LEFT_one_bumpReturnFollow";
+        public static final String kRightTwoBumpReturn = "RIGHT_two_bumpReturn";
+        public static final String kLeftTwoBumpReturn = "LEFT_two_bumpReturn";
+        public static final String kRightTwoBumpToTrench = "RIGHT_two_bumpToTrench";
+        public static final String kLeftTwoBumpToTrench = "LEFT_two_bumpToTrench";
 
         //---TRENCH RETURN PATHS
-        public static final String kRightOneTrenchReturn = "RIGHT/RIGHT_one_trenchReturn";
-        public static final String kLeftOneTrenchReturn = "LEFT/LEFT_one_trenchReturn";
-        public static final String kRightTwoTrenchReturn = "RIGHT/RIGHT_two_trenchReturn";
-        public static final String kLeftTwoTrenchReturn = "LEFT/LEFT_two_trenchReturn";
-        public static final String kRightOneBumpTrenchReturn = "RIGHT/RIGHT_one_bumpReverseToTrench";
-        public static final String kLeftOneBumpTrenchReturn = "LEFT/LEFT_one_bumpReverseToTrench";
-
+        public static final String kRightOneTrenchReturn = "RIGHT_one_trenchReturn";
+        public static final String kLeftOneTrenchReturn = "LEFT_one_trenchReturn";
+        public static final String kRightTwoTrenchReturn = "RIGHT_two_trenchReturn";
+        public static final String kLeftTwoTrenchReturn = "LEFT_two_trenchReturn";
+        public static final String kRightOneBumpTrenchReturn = "RIGHT_one_bumpReverseToTrench";
+        public static final String kLeftOneBumpTrenchReturn = "LEFT_one_bumpReverseToTrench";
+        
         //---OUTPOST PATHS
-        public static final String kRightOneTrenchToOutpost = "RIGHT/RIGHT_one_trenchToOutpost";
-        public static final String kRightTwoTrenchToOutpost = "RIGHT/RIGHT_two_trenchToOutpost";
-        public static final String kRightTwoOutpostToTrench = "RIGHT/RIGHT_two_outpostToTrench";
-        public static final String kRightOneBumpToOutpost = "RIGHT/RIGHT_one_bumpToOutpost";
-        public static final String kRightTwoBumpToOutpost = "RIGHT/RIGHT_two_bumpToOutpost";
-        public static final String kRightTwoOutpostToBump = "RIGHT/RIGHT_two_outpostToBump";
+        public static final String kRightOneTrenchToOutpost = "RIGHT_one_trenchToOutpost";
+        public static final String kRightTwoTrenchToOutpost = "RIGHT_two_trenchToOutpost";
+        public static final String kRightTwoOutpostToTrench = "RIGHT_two_outpostToTrench";
+        public static final String kRightOneBumpToOutpost = "RIGHT_one_bumpToOutpost";
+        public static final String kRightTwoBumpToOutpost = "RIGHT_two_bumpToOutpost";
+        public static final String kRightTwoOutpostToBump = "RIGHT_two_outpostToBump";
 
         //---DEPOT PATHS
-        public static final String kLeftOneTrenchToDepot = "LEFT/LEFT_one_trenchToDepot";
-        public static final String kLeftTwoTrenchToDepot = "LEFT/LEFT_two_trenchToDepot";
-        public static final String kLeftTwoDepotToTrench = "LEFT/LEFT_two_depotToTrench";
-        public static final String kLeftOneBumpToDepot = "LEFT/LEFT_one_bumpToDepot";
-        public static final String kLeftTwoBumpToDepot = "LEFT/LEFT_two_bumpToDepot";
-        public static final String kLeftTwoDepotToBump = "LEFT/LEFT_two_depotToBump";
+        public static final String kLeftOneTrenchToDepot = "LEFT_one_trenchToDepot";
+        public static final String kLeftTwoTrenchToDepot = "LEFT_two_trenchToDepot";
+        public static final String kLeftTwoDepotToTrench = "LEFT_two_depotToTrench";
+        public static final String kLeftOneBumpToDepot = "LEFT_one_bumpToDepot";
+        public static final String kLeftTwoBumpToDepot = "LEFT_two_bumpToDepot";
+        public static final String kLeftTwoDepotToBump = "LEFT_two_depotToBump";
 
         //---MISC
-        public static final String kRightOneSelfPass = "RIGHT/RIGHT_one_selfPass";
-        public static final String kLeftOneSelfPass = "LEFT/LEFT_one_selfPass";
-        public static final String kRightTwoGoOut = "RIGHT/RIGHT_two_goOut";
-        public static final String kLeftTwoGoOut = "LEFT/LEFT_two_goOut";
-        public static final String kRightBumpPreload = "RIGHT/RIGHT_one_bumpPreload";
-        public static final String kLeftBumpPreload = "LEFT/LEFT_one_bumpPreload";
-        public static final String kRightTrenchPreload = "RIGHT/RIGHT_one_trenchPreload";
-        public static final String kLeftTrenchPreload = "LEFT/LEFT_one_trenchPreload";
+        public static final String kRightOneSelfPass = "RIGHT_one_selfPass";
+        public static final String kLeftOneSelfPass = "LEFT_one_selfPass";
+        public static final String kRightTwoGoOut = "RIGHT_two_goOut";
+        public static final String kLeftTwoGoOut = "LEFT_two_goOut";
+        public static final String kRightBumpPreload = "RIGHT_one_bumpPreload";
+        public static final String kLeftBumpPreload = "LEFT_one_bumpPreload";
+        public static final String kRightTrenchPreload = "RIGHT_one_trenchPreload";
+        public static final String kLeftTrenchPreload = "LEFT_one_trenchPreload";
 
-        public static final String kCenterPreload = "MISC/CENTER_one_preload";
+        public static final String kCenterPreload = "CENTER_one_preload";
     }
 }
