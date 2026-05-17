@@ -63,8 +63,8 @@ public class Indexer extends SubsystemBase {
 
     
     /* TUNABLES */
-    private static final WaltTunable kTunnelRatioMultiplier = new WaltTunable("/Indexer/Tunnel/tunnelRatioScalar", 1.0);
-    private static final WaltTunable kSpindexerRatioMultiplier = new WaltTunable("/Indexer/Spindexer/spindexerRatioScalar", 1.0);
+    private static final WaltTunable kTunnelRatioScalarTuner = new WaltTunable("/Indexer/Tunnel/tunnelRatioScalar", 1.0);
+    private static final WaltTunable kSpindexerRatioScalarTuner = new WaltTunable("/Indexer/Spindexer/spindexerRatioScalar", 1.0);
 
     /* LOGGERS */
     private final String kTunnelLogTab = "/Tunnel";
@@ -188,7 +188,7 @@ public class Indexer extends SubsystemBase {
             m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(0));
             m_spindexer.setControl(m_spindexerMotorIdleReq);
         } else {
-            RPS = kSpindexerRPSOverride.enabled() ? kSpindexerRPSOverride.get() : RPS; 
+            RPS = kSpindexerRPSOverride.getOr(RPS); 
             m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RPS));
         }
         m_desiredSpindexerRPS = RPS;
@@ -205,7 +205,7 @@ public class Indexer extends SubsystemBase {
             m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(0));
             m_tunnel.setControl(m_tunnelMotorIdleReq);
         } else {
-            RPS = kTunnelRPSOverride.enabled() ? kTunnelRPSOverride.get() : RPS;
+            RPS = kTunnelRPSOverride.getOr(RPS);
             m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS));
         }
         m_desiredTunnelRPS = RPS;
@@ -218,11 +218,11 @@ public class Indexer extends SubsystemBase {
 
     //STATICS for conversions
     public static DoubleSupplier tunnelRPSFromShooter(DoubleSupplier shooterRPS) {
-        return () -> Math.min(shooterRPS.getAsDouble() * kTunnelFromShooterRatio * (kTunnelRatioMultiplier.enabled() ? kTunnelRatioMultiplier.get() : 1.0), kTunnelMaxRPSD);
+        return () -> Math.min(shooterRPS.getAsDouble() * kTunnelFromShooterRatio * (kTunnelRatioScalarTuner.getOr(1.0)), kTunnelMaxRPSD);
     }
 
     public static DoubleSupplier spindexerRPSFromShooter(DoubleSupplier shooterRPS) {
-        return () -> Math.min(shooterRPS.getAsDouble() * kSpindexerFromShooterRatio * (kSpindexerRatioMultiplier.enabled() ? kSpindexerRatioMultiplier.get() : 1.0), kSpindexerMaxRPSD);
+        return () -> Math.min(shooterRPS.getAsDouble() * kSpindexerFromShooterRatio * (kSpindexerRatioScalarTuner.getOr(1.0)), kSpindexerMaxRPSD);
     }
 
     /* PERIODICS */

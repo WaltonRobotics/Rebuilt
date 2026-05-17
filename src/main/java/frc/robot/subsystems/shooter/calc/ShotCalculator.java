@@ -60,7 +60,8 @@ public class ShotCalculator {
     private static final double kRPSBoost = 0.75;
     private static final double kLongRangeRPSBoost = 0.35;
     private static final double kScoringRPSBoost = -0.2;
-    private static final WaltTunable kRPSBoostTuner = new WaltTunable("Shooter/Calculator/RPSBoostDelta", 0.0);
+    //NOTE THAT THIS IS NOT TUNING THE VALUES IN THE TABLE -- IT IS ON TOP OF THE REST OF THE ADDITIONS
+    private static final WaltTunable kRPSOverallBoostTuner = new WaltTunable("Shooter/Calculator/RPSBoostDelta", 0.0);
 
     // ---- TABLE CONSTANTS ----
     // kReductionDistances/kReductionAmount feed the linear regression in calcRPSReduction - currently unused (kRPSReductionNeeded = false)
@@ -283,8 +284,7 @@ public class ShotCalculator {
 
     /** Returns drag-compensated drift time: (1 - e^(-c*t)) / c, or t if drag is disabled. */
     private static double dragCompensatedTOF(double tof, double dragCoeff) {
-        // if (!kDragCoeffTuner.enabled()) return tof;
-        double c = kDragCoeffTuner.enabled() ? kDragCoeffTuner.get() : dragCoeff;
+        double c = dragCoeff;
         if (c < 1e-6) return tof;
         return (1.0 - Math.exp(-c * tof)) / c;
     }
@@ -476,7 +476,7 @@ public class ShotCalculator {
             //     coeffDrag = 0.53;   //0.7
             // }
 
-            coeffDrag = kDragCoeffTuner.enabled() ? kDragCoeffTuner.get(): coeffDrag;
+            coeffDrag = kDragCoeffTuner.getOr(coeffDrag);
             double driftT = dragCompensatedTOF(tofSec, coeffDrag);
             predX = targetX - vxLaunch * driftT;
             predY = targetY - vyLaunch * driftT;
@@ -489,8 +489,8 @@ public class ShotCalculator {
             hoodAngle = shotTable.hoodAngle(distance);
             tofSec = passing ? kPassingTable.tof(distance) : kShotTable.tof(distance);
 
-            if (kRPSBoostTuner.enabled()) {
-                exitVel += (kRPSBoostTuner.get() * (2.0 * Math.PI));
+            if (kRPSOverallBoostTuner.enabled()) {
+                exitVel += (kRPSOverallBoostTuner.get() * (2.0 * Math.PI));
             }
 
             double dExitVel = prevExitVel - exitVel;

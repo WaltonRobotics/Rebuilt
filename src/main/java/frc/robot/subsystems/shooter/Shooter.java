@@ -53,6 +53,8 @@ public class Shooter extends SubsystemBase {
         new WaltTunable("/Shooter/shooterRPSOverride", kShooterRPSd);
     private static final WaltTunable kHoodRotsOverride =
         new WaltTunable("/Shooter/hoodRotsOverride", 0.0);
+    private static final WaltTunable kBallDetectionTuner = 
+        new WaltTunable("Shooter/ballDetectionTuner", 0);
     private static final double kHoodLockedPosRots = Rotations.of(0.33).magnitude();
 
     private final Tracer m_periodicTracer = new Tracer();
@@ -278,8 +280,8 @@ public class Shooter extends SubsystemBase {
     }
 
     private boolean detectShot() {
-        boolean accelDrop = m_latestFlywheelAccelerationRotPerSec <= -3.0;
-        return accelDrop;
+        double detectionThreshold = kBallDetectionTuner.getOr(-3.0);
+        return m_latestFlywheelAccelerationRotPerSec <= detectionThreshold;
     }
 
     // /**
@@ -325,6 +327,7 @@ public class Shooter extends SubsystemBase {
 
             // set outputs
             var turretVelocityFF = calcData.turretCalcDetails().turretVelocityFF();
+            double flywheelReference = calcData.shooterReferenceRps();
             if (m_turret.getTurretLocked()) {
                 m_turret.setTurretPos(m_turret.getTurretLockAngleRots(), 0.0);
                 m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
@@ -334,9 +337,7 @@ public class Shooter extends SubsystemBase {
                     // m_turret.setTurretPos(Rotations.of(-0.250));
                 } else {
                     m_turret.setTurretPos(turretReference, turretVelocityFF);
-                    m_calcFlywheelVelocityRotPerSec = kShooterRPSOverride.enabled()
-                        ? kShooterRPSOverride.get()
-                        : calcData.shooterReferenceRps();
+                    m_calcFlywheelVelocityRotPerSec = kShooterRPSOverride.getOr(flywheelReference);
                     if (kAllowDriverRPSTweak) { // ENABLE THIS TO ALLOW DRIVER RPS TWEAK
                         m_calcFlywheelVelocityRotPerSec += m_driverRPSTweak;
                         m_calcFlywheelVelocityRotPerSec = MathUtil.clamp(m_calcFlywheelVelocityRotPerSec, 0, kShooterMaxRPSd);    //clamp here or clamp only when setShooterVel is called?
@@ -352,9 +353,7 @@ public class Shooter extends SubsystemBase {
                 // m_hood.setHoodPos(kHoodLockedPosRots);
             } else {
                 if (!m_turret.getHoldTurretAtIntake()) {
-                m_calcHoodRots = kHoodRotsOverride.enabled()
-                    ? kHoodRotsOverride.get()
-                    : hoodReference;
+                m_calcHoodRots = kHoodRotsOverride.getOr(hoodReference);
                     // m_hood.setHoodPos(kHoodRotsOverride.enabled()
                     // ? kHoodRotsOverride.get()
                     // : hoodReference);
