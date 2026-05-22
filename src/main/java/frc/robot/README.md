@@ -21,9 +21,6 @@ The code is split into folders by responsibility. Each folder handles one aspect
 
 ### [autons/](autons/): Autonomous routines
 
-Defines what the robot does during the 15-second autonomous period at the start of a match, where no driver input is allowed.
-#### this is where we start praying :pray:
-
 - `WaltAdaptableAutonFactory.java`: Builds auto routines by chaining Choreo trajectory segments together.
 
 ---
@@ -46,7 +43,7 @@ Created by external tools, not written by hand. Don't edit these directly unless
 
 ### [subsystems/](subsystems/): Robot mechanisms
 
-Each file represents a physical mechanism on the robot and the code that controls it. This is where most of the action happens.
+Each file represents a physical mechanism on the robot(for the most part) and the code that controls it. This is where most of the action happens.
 
 #### [subsystems/shooter/](subsystems/shooter/): Shooting mechanism
 
@@ -76,7 +73,7 @@ this is where it hit the fan :scream: :scream: :scream:
 
 ### [vision/](vision/): Target tracking
 
-Uses cameras to detect and track field targets for automatic aiming. The robot can see better than most of us at this point.
+Uses cameras to localize where we are on the field.
 
 - `WaltCamera.java`: Camera wrapper.
 - `Detection.java`: Detects game pieces.

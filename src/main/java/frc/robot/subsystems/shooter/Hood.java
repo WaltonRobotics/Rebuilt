@@ -27,14 +27,33 @@ import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
+/*
+ * Hood - TalonFXS-driven hood angle control.
+ * Zero is set at the hardstop via current-sense homing. Position is in rotations.
+ *
+ * Vocab:
+ *   homing - drives to the hardstop at low voltage, detects stall via stator current spike through a Debouncer
+ *   atPos - closed-loop error is within kHoodMaxErrD of the setpoint
+ */
 public class Hood extends SubsystemBase {
+    // ---- CONSTANTS ----
     private static final String kLogTab = "Shooter/Hood";
+    // converts encoder rotations to physical hood angle degrees for logging
     private static final double kAbsoluteToPhysicalAngleRatio =
         (kPhysicalHoodMaxPosition_double - kPhysicalHoodMinPosition_double) / (360.0 * (kHoodMaxRots_double - kHoodMinRots_double));
+
+    // ---- MOTOR + CONTROLS ----
     private final TalonFXS m_hood = new TalonFXS(kHoodCANID, kShooterBus);
     private final PositionVoltage m_hoodPVRequest = new PositionVoltage(0).withEnableFOC(false);
     private final VoltageOut m_hoodZeroReq = new VoltageOut(0);
+    private final StaticBrake m_BrakeReq = new StaticBrake();
 
+    // ---- SIGNALS ----
+    private final StatusSignal<Current> sig_hoodStatorCurrent = m_hood.getStatorCurrent();
+    private final StatusSignal<Angle> sig_hoodPos = m_hood.getPosition();
+    private final StatusSignal<Double> sig_hoodCLErr = m_hood.getClosedLoopError();
+
+    // ---- LOGGERS ----
     private final BooleanLogger log_hoodHomed = WaltLogger.logBoolean(kLogTab, "Homed");
     private final DoubleLogger log_hoodControlPos = WaltLogger.logDouble(kLogTab, "controlPos");
     private final DoubleLogger log_hoodCurrentPos = WaltLogger.logDouble(kLogTab, "currentPos");
@@ -42,18 +61,15 @@ public class Hood extends SubsystemBase {
     private final DoubleLogger log_hoodCLErr = WaltLogger.logDouble(kLogTab, "closedLoopErr");
     private final BooleanLogger log_hoodAtPos = WaltLogger.logBoolean(kLogTab, "hoodAtPos");
 
+    // ---- STATE ----
     private Debouncer m_currentDebouncer = new Debouncer(0.125, DebounceType.kRising);
-
-    private final StatusSignal<Current> sig_hoodStatorCurrent = m_hood.getStatorCurrent();
-    private final StatusSignal<Angle> sig_hoodPos = m_hood.getPosition();
-    private final StatusSignal<Double> sig_hoodCLErr = m_hood.getClosedLoopError();
-
     private BooleanSupplier m_currentSpike = () -> sig_hoodStatorCurrent.getValueAsDouble() > 5.0;
-
-    private final StaticBrake m_BrakeReq = new StaticBrake();
-
     private boolean m_isHoodHomed = false;
     private boolean m_hoodAtPos = false;
+
+    // =============================================================
+    // CONSTRUCTOR
+    // =============================================================
 
     public Hood() {
         m_hood.getConfigurator().apply(kHoodTalonFXSConfiguration);
@@ -68,7 +84,10 @@ public class Hood extends SubsystemBase {
         // setDefaultCommand(hoodCurrentSenseHomingCmd());
     }
 
-    // ---HOOD
+    // =============================================================
+    // CONTROL
+    // =============================================================
+
     public void setHoodPos(double rots) {
         m_hood.setControl(m_hoodPVRequest.withPosition(rots));
         log_hoodControlPos.accept(rots);
@@ -78,9 +97,18 @@ public class Hood extends SubsystemBase {
         return runOnce(() -> setHoodPos(rots));
     }
 
+    // converts encoder rotations to physical degrees - only used for logging
     private static double getHoodAngleDeg(double posRots) {
         return kPhysicalHoodMinPosition_double + (posRots * 360.0 - kHoodMinRots_double * 360.0) * kAbsoluteToPhysicalAngleRatio;
     }
+
+    public void setHoodNeutralMode(NeutralModeValue value) {
+        m_hood.setNeutralMode(value);
+    }
+
+    // =============================================================
+    // STATE
+    // =============================================================
 
     public boolean isHoodHomed() {
         return m_isHoodHomed;
@@ -95,6 +123,10 @@ public class Hood extends SubsystemBase {
     public boolean atPosition() {
         return m_hoodAtPos;
     }
+
+    // =============================================================
+    // HOMING
+    // =============================================================
 
     public Command hoodCurrentSenseHomingCmd(){
         Runnable init = () -> {
@@ -120,15 +152,15 @@ public class Hood extends SubsystemBase {
             log_hoodHomed.accept(m_isHoodHomed);
         };
 
-        BooleanSupplier isFinished = () -> 
+        BooleanSupplier isFinished = () ->
             m_currentDebouncer.calculate(m_currentSpike.getAsBoolean());
 
         return new FunctionalCommand(init, () -> {}, end, isFinished, this).withTimeout(5);
     }
 
-    public void setHoodNeutralMode(NeutralModeValue value) {
-        m_hood.setNeutralMode(value);
-    }
+    // =============================================================
+    // PERIODIC
+    // =============================================================
 
     @Override
     public void periodic() {
