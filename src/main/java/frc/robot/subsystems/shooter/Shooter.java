@@ -180,7 +180,7 @@ public class Shooter extends SubsystemBase {
     }
 
     // =============================================================
-    // FLYWHEEL CONTROL
+    // FLYWHEEL CONTROL and other misc
     // =============================================================
 
     public Command setShooterVelocityCmd(AngularVelocity RPS) {

@@ -1,7 +1,6 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -15,22 +14,27 @@ import static frc.robot.Constants.IntakeK.kIntakeRollersIntakeVolts;
 import static frc.robot.Constants.IntakeK.kIntakeRollersShimmyVolts;
 
 import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 
 public class Superstructure extends SubsystemBase {
-    /* SUBSYSTEMS */
+    // --- SUBSYSTEM REFERENCES ---
     private final Intake m_intake;
     private final Indexer m_indexer;
     private final Shooter m_shooter;
     
-    /* CONSTRUCTOR */
+    // ======================================================================
+    // CONSTRUCTOR
+    // ======================================================================
     public Superstructure(Intake intake, Indexer indexer, Shooter shooter) {
         m_intake = intake;
         m_indexer = indexer;
         m_shooter = shooter;
     }
 
-    /* BUTTON BIND SEQUENCES */
+    // ======================================================================
+    // SEQUENCES
+    // ======================================================================
+
+    // --- INTAKE ---
     /**
      * @param isShooting is if the robot is shooting
      * @return the intake Command
@@ -67,6 +71,9 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
+    // ~~~~~~~~~~~~~~~~~
+    // OUTTAKE
+    // ~~~~~~~~~~~~~~~~~
     // /**
     //  * Turns on spinner and exhaust and sets shooter speed to RPS.
     //  * <p>
@@ -124,6 +131,7 @@ public class Superstructure extends SubsystemBase {
         });
     }
 
+    // --- HOOD ---
     public Command activateHoodShotCalc() {
         return m_shooter.hoodFromCalc()
         .finallyDo(() -> {
@@ -131,6 +139,7 @@ public class Superstructure extends SubsystemBase {
         });
     }
 
+    // --- FLYWHEEL ---
     public Command spinUpFlywheel() {
         return m_shooter.shootFromCalc()
         .finallyDo(() -> {
@@ -138,6 +147,7 @@ public class Superstructure extends SubsystemBase {
         });
     }
 
+    // --- HOOD && FLYWHEEL ---
     public Command hoodAndFlywheelShotCalc() {
         return Commands.parallel(
             m_shooter.hoodFromCalc(),
@@ -150,7 +160,7 @@ public class Superstructure extends SubsystemBase {
     }
 
     /**
-     * deactivates the outtake
+     * Stops the tunnel, spindexer, and the shooter.
      */
     public void deactivateOuttake() {
         m_indexer.stopSpindexer();
@@ -158,16 +168,26 @@ public class Superstructure extends SubsystemBase {
         m_shooter.setShooterVelocity(ShooterK.kShooterZeroRPS);
     }
 
+    // --- FLYWHEEL ---
+    /**
+     * Sets the Flywheel to a speed of 0 which will CoastOut
+     */
     public void turnOffFlywheel() {
         m_shooter.setShooterVelocity(ShooterK.kShooterZeroRPS);
     }
 
+    // --- HOOD ---
+    /**
+     * Sets the Hood back to a position that is able to go underneath the trench
+     */
     public void hoodBackToSafe() {
         m_shooter.m_hood.setHoodPos(ShooterK.kHoodEmergencyRotsD);
     }
 
     /**
-     * @return the emergency barf command
+     * Command to get all balls out of the hopper, one way or another.
+     * This reverses the intake rollers, and shoots out all the balls at a set LOCKED turret pose.
+     * @return Command above
      */
     public Command emergencyBarf() {
         return Commands.startEnd(
@@ -191,7 +211,7 @@ public class Superstructure extends SubsystemBase {
 
 
     /**
-     * @return the emergency barf command
+     * @return Command that reverses only the intake rollers
      */
     public Command emergencyBarfOnlyIntake() {
         return Commands.startEnd(
@@ -205,6 +225,11 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
+    /**
+     * Shimmies the intake up and down while running the intake rollers at a slower speed
+     * @param isShooting is the robot in a shooting state
+     * @return the shimmy command
+     */
     public Command intakeShimmy(BooleanSupplier isShooting) {
        return Commands.repeatingSequence(
             intake(isShooting, () -> true).withTimeout(0.5),
@@ -217,6 +242,8 @@ public class Superstructure extends SubsystemBase {
     }
 
     /**
+     * Runs the indexer in reverse, and if the robot is shooting, then the shooter flywheel WONT reverse, 
+     * otherwise flywheel will reverse
      * @param isShooting is if the robot is currently shooting
      * @return the unjam Command
      */
