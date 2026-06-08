@@ -10,10 +10,12 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.*;
 
-import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
-import frc.robot.subsystems.shooter.ShotCalculator.ShotDataLerp;
-import frc.robot.subsystems.shooter.ShooterCalc.AzimuthCalcDetails;
-import frc.robot.subsystems.shooter.ShooterCalc.ShotCalcOutputs;
+import frc.robot.subsystems.shooter.calc.ShotCalculator.ShotData;
+import frc.robot.subsystems.shooter.calc.ShotCalculator.ShotDataLerp;
+import frc.robot.subsystems.shooter.calc.ShotCalcMath;
+import frc.robot.subsystems.shooter.calc.ShotCalcMath.AzimuthCalcDetails;
+import frc.robot.subsystems.shooter.calc.ShotCalcMath.ShotCalcOutputs;
+import frc.robot.subsystems.shooter.calc.ShotCalculator;
 
 import org.junit.jupiter.api.*;
 
@@ -302,7 +304,7 @@ class ShotCalcTest {
         void moreIterations_convergesToSameResult() {
             // The iterative solver exhibits damped oscillation (alternating over/undershoot)
             // with a ~1/3 contraction ratio per step. At vx=2.0, vy=1.0 m/s it needs ~7
-            // iterations to fully converge. Production uses 5 (ShooterCalc.calcShot),
+            // iterations to fully converge. Production uses 5 (ShotCalcMath.calcShot),
             // so we verify that 5 iterations lands close to the fully-converged answer.
             ShotDataLerp shot5 = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 MID_POSE, TRANSLATING_SPEEDS, HUB_TARGET, 5);
@@ -519,44 +521,44 @@ class ShotCalcTest {
     }
 
     // ================================================================
-    //  ShooterCalc.calcAzimuth (static method)
+    //  ShotCalcMath.calcAzimuth (static method)
     // ================================================================
 
     @Nested
     class CalcAzimuth {
         @Test
         void turretAtZero_closeTarget_returnsValidAzimuth() {
-            AzimuthCalcDetails details = ShooterCalc.calcAzimuth(
+            AzimuthCalcDetails details = ShotCalcMath.calcAzimuth(
                 HUB_TARGET, CLOSE_POSE, 0.0, ZERO_SPEEDS);
             assertAzimuthValid(details);
         }
 
         @Test
         void turretAtZero_midTarget_returnsValidAzimuth() {
-            AzimuthCalcDetails details = ShooterCalc.calcAzimuth(
+            AzimuthCalcDetails details = ShotCalcMath.calcAzimuth(
                 HUB_TARGET, MID_POSE, 0.0, ZERO_SPEEDS);
             assertAzimuthValid(details);
         }
 
         @Test
         void turretAtPositiveQuarter_returnsValidAzimuth() {
-            AzimuthCalcDetails details = ShooterCalc.calcAzimuth(
+            AzimuthCalcDetails details = ShotCalcMath.calcAzimuth(
                 HUB_TARGET, MID_POSE, 0.25, ZERO_SPEEDS);
             assertAzimuthValid(details);
         }
 
         @Test
         void turretAtNegativeQuarter_returnsValidAzimuth() {
-            AzimuthCalcDetails details = ShooterCalc.calcAzimuth(
+            AzimuthCalcDetails details = ShotCalcMath.calcAzimuth(
                 HUB_TARGET, MID_POSE, -0.25, ZERO_SPEEDS);
             assertAzimuthValid(details);
         }
 
         @Test
         void movingRobot_producesVelocityFF() {
-            AzimuthCalcDetails stationary = ShooterCalc.calcAzimuth(
+            AzimuthCalcDetails stationary = ShotCalcMath.calcAzimuth(
                 HUB_TARGET, MID_POSE, 0.0, ZERO_SPEEDS);
-            AzimuthCalcDetails moving = ShooterCalc.calcAzimuth(
+            AzimuthCalcDetails moving = ShotCalcMath.calcAzimuth(
                 HUB_TARGET, MID_POSE, 0.0, TRANSLATING_SPEEDS);
             // Moving robot should produce nonzero velocity feedforward
             assertNotEquals(0.0, moving.turretVelocityFF(), 1e-6,
@@ -565,7 +567,7 @@ class ShotCalcTest {
 
         @Test
         void stationaryRobot_zeroVelocityFF() {
-            AzimuthCalcDetails details = ShooterCalc.calcAzimuth(
+            AzimuthCalcDetails details = ShotCalcMath.calcAzimuth(
                 HUB_TARGET, MID_POSE, 0.0, ZERO_SPEEDS);
             assertEquals(0.0, details.turretVelocityFF(), 1e-6,
                 "Stationary robot should have zero velocity FF (omega=0, v=0)");
@@ -578,7 +580,7 @@ class ShotCalcTest {
             double[] turretRots = {-0.5, -0.25, 0, 0.25, 0.5};
             for (Pose2d pose : poses) {
                 for (double rot : turretRots) {
-                    AzimuthCalcDetails d = ShooterCalc.calcAzimuth(
+                    AzimuthCalcDetails d = ShotCalcMath.calcAzimuth(
                         HUB_TARGET, pose, rot, ZERO_SPEEDS);
                     double refRots = d.turretReferenceRots();
                     assertTrue(refRots >= -0.76 && refRots <= 0.76,
@@ -590,58 +592,58 @@ class ShotCalcTest {
     }
 
     // ================================================================
-    //  ShooterCalc.calcShot (static method, full pipeline)
+    //  ShotCalcMath.calcShot (static method, full pipeline)
     // ================================================================
 
     @Nested
     class CalcShot {
         @Test
         void staticShot_close_returnsValidOutputs() {
-            ShotCalcOutputs out = ShooterCalc.calcShot(
+            ShotCalcOutputs out = ShotCalcMath.calcShot(
                 CLOSE_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void staticShot_mid_returnsValidOutputs() {
-            ShotCalcOutputs out = ShooterCalc.calcShot(
+            ShotCalcOutputs out = ShotCalcMath.calcShot(
                 MID_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void staticShot_far_returnsValidOutputs() {
-            ShotCalcOutputs out = ShooterCalc.calcShot(
+            ShotCalcOutputs out = ShotCalcMath.calcShot(
                 FAR_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void dynamicShot_translating_returnsValidOutputs() {
-            ShotCalcOutputs out = ShooterCalc.calcShot(
+            ShotCalcOutputs out = ShotCalcMath.calcShot(
                 MID_POSE, false, HUB_TARGET, 0.0, TRANSLATING_SPEEDS);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void dynamicShot_rotating_returnsValidOutputs() {
-            ShotCalcOutputs out = ShooterCalc.calcShot(
+            ShotCalcOutputs out = ShotCalcMath.calcShot(
                 MID_POSE, false, HUB_TARGET, 0.0, ROTATING_SPEEDS);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void dynamicShot_combined_returnsValidOutputs() {
-            ShotCalcOutputs out = ShooterCalc.calcShot(
+            ShotCalcOutputs out = ShotCalcMath.calcShot(
                 MID_POSE, false, HUB_TARGET, 0.1, COMBINED_SPEEDS);
             assertShotCalcOutputsValid(out);
         }
 
         @Test
         void staticVsDynamic_sameWhenStationary() {
-            ShotCalcOutputs staticOut = ShooterCalc.calcShot(
+            ShotCalcOutputs staticOut = ShotCalcMath.calcShot(
                 MID_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
-            ShotCalcOutputs dynamicOut = ShooterCalc.calcShot(
+            ShotCalcOutputs dynamicOut = ShotCalcMath.calcShot(
                 MID_POSE, false, HUB_TARGET, 0.0, ZERO_SPEEDS);
             // With zero chassis speeds, static and dynamic should produce identical results
             assertEquals(
@@ -660,9 +662,9 @@ class ShotCalcTest {
 
         @Test
         void farShot_higherVelocityThanClose() {
-            ShotCalcOutputs closeOut = ShooterCalc.calcShot(
+            ShotCalcOutputs closeOut = ShotCalcMath.calcShot(
                 CLOSE_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
-            ShotCalcOutputs farOut = ShooterCalc.calcShot(
+            ShotCalcOutputs farOut = ShotCalcMath.calcShot(
                 FAR_POSE, true, HUB_TARGET, 0.0, ZERO_SPEEDS);
             assertTrue(
                 farOut.shooterReferenceRps() >

@@ -14,8 +14,9 @@ import edu.wpi.first.units.measure.*;
 
 import frc.robot.Constants.ShooterK;
 import frc.robot.FieldConstants;
-import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
-import frc.robot.subsystems.shooter.ShotCalculator.ShotDataLerp;
+import frc.robot.subsystems.shooter.calc.ShotCalculator;
+import frc.robot.subsystems.shooter.calc.ShotCalculator.ShotData;
+import frc.robot.subsystems.shooter.calc.ShotCalculator.ShotDataLerp;
 
 import org.junit.jupiter.api.*;
 
@@ -379,8 +380,8 @@ class ShotCalcPerfTest {
         System.out.println("  Raw Doubles:      1 object (the double[] result array)");
         System.out.println();
 
-        // Print at 25Hz (the ShooterCalc Notifier rate)
-        System.out.println("At 25Hz ShooterCalc rate:");
+        // Print at 25Hz (the ShotCalcMath Notifier rate)
+        System.out.println("At 25Hz ShotCalcMath rate:");
         System.out.printf("  Immutable Units: %.1f us/cycle (%.1f%% of 40ms budget)%n",
             immutableUs, immutableUs / 40000.0 * 100);
         System.out.printf("  Mutable Units:   %.1f us/cycle (%.1f%% of 40ms budget)%n",

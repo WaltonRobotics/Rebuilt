@@ -10,6 +10,7 @@ package choreo.auto;
 import static choreo.util.ChoreoAlert.allianceNotReady;
 import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
 import static edu.wpi.first.wpilibj.Alert.AlertType.kWarning;
+import static frc.robot.Constants.*;
 
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory.AllianceContext;
@@ -178,13 +179,19 @@ public class AutoTrajectory {
       return;
     }
     var sample = sampleOpt.get();
-    // if (poseSupplier.get().getTranslation().getDistance(sample.getPose().getTranslation()) > 0.2) {
-    //     activeTimer.stop();
-    //     outOfBounds.set(true);
-    // } else if (poseSupplier.get().getTranslation().getDistance(sample.getPose().getTranslation()) < 0.05) {
-    //   activeTimer.start();
-    //   outOfBounds.set(false);
-    // }
+    /*
+     * The entire idea of this block is to see that if we are outside of a certain range (0.2 meters in this case), we would pause the autonomous timer - * the timer just tells the robot where it should be, its nothing to 
+     * do with pose based, as choreo is time based * - until the robot reaches the pose (0.05 meters within tolerance in this case).
+     */
+    if(kUsePoseCorrection) {
+      if (poseSupplier.get().getTranslation().getDistance(sample.getPose().getTranslation()) > 0.2) {
+          activeTimer.stop();
+          outOfBounds.set(true);
+      } else if (poseSupplier.get().getTranslation().getDistance(sample.getPose().getTranslation()) < 0.05) {
+        activeTimer.start();
+        outOfBounds.set(false);
+      }
+    }
     if (sample instanceof SwerveSample swerveSample) {
       var swerveController = (Consumer<SwerveSample>) this.controller;
       swerveController.accept(swerveSample);

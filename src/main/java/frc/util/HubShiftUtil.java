@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj.Timer;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
-import frc.robot.subsystems.shooter.ShotCalculator;
+import frc.robot.subsystems.shooter.calc.ShotCalculator;
 
 public class HubShiftUtil {
   public enum ShiftEnum {

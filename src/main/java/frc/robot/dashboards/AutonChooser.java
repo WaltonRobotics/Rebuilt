@@ -5,7 +5,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import choreo.auto.AutoChooser;
-import edu.wpi.first.hal.simulation.AddressableLEDDataJNI;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -14,6 +13,29 @@ import frc.robot.Constants.AutonK;
 import frc.robot.autons.WaltAdaptableAutonFactory;
 import frc.robot.autons.WaltAdaptableAutonFactory.AdaptableAutonInfo;
 
+/**
+ * AutonChooser
+ *
+ * This class is responsible for deciding which autons we want to run,
+ * and in what order do those paths go in.
+ * 
+ * FORMATTING:
+ *  We like to keep things the same around here so nobody can get confused
+ *  on the field and pick the wrong auton ;). We follow a format with how
+ *  these autons are named, and thats in the following format:
+ *      STARTING POSITION: Left or Right, or maybe even center.
+ *                         Are we starting in the Trench, on
+ *                         the bump, hell maybe even on the hub?!
+ *                         Knowing this prior to the match starting allows for the people
+ *                         setting the robot on the field know where they need to align it to.
+ *
+ *      NUMBER OF CYCLES: One cycle, Two Cycle, or even Three.
+ * 
+ *      RETURN POSITION: Are we coming back over the bump? Or under the trench?
+ * 
+ *      MODIFIERS: Things such as a follow auto, delayed auto, going to the depot,
+ *                 etc.
+ */
 public class AutonChooser {
     private static final String kPreheatTrajectory = "PreHeat";
 
@@ -27,7 +49,14 @@ public class AutonChooser {
     private record MultiAutonEntry(String name, AdaptableAutonInfo[] infos) {}
     private static final List<MultiAutonEntry> s_multiAutons = new ArrayList<>();
 
-    /* OLD AUTON NAMES */
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // AUTON NAMES
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    // =============================================================
+    // OLD AUTON NAMES
+    // =============================================================
+
     //---1.5 CYCLES
     private final static String kLeftShootAndSweep = "LEFT Sweep 1.5 Cycle";
     private final static String kRightShootAndSweep = "RIGHT Sweep 1.5 Cycle";
@@ -53,18 +82,21 @@ public class AutonChooser {
     private final static String kLeftSweepAndDepot = "LEFT Bump Sweep and Depot";
 
     //---STRESS TEST
-    private final static String kRightStressTestLong = "RIGHT Long Stress Test";
-    private final static String kRightStressTestOverlap = "RIGHT Overlap Stress Test";
-    private final static String kRightStressTestTenTimes = "RIGHT Five Times Stress Test";
+    // private final static String kRightStressTestLong = "RIGHT Long Stress Test";
+    // private final static String kRightStressTestOverlap = "RIGHT Overlap Stress Test";
+    // private final static String kRightStressTestTenTimes = "RIGHT Five Times Stress Test";
 
-    /* NEW AUTON NAMES */
+    // =============================================================
+    // NEW AUTON NAMES
+    // =============================================================
+
     //---2 CYCLES
     private final static String kRightTrenchTwoCycleBumpReturn = "RIGHT Trench 2 Cycle Bump Return";
     private final static String kRightTrenchTwoCycleBumpReturnFollow = "RIGHT Trench 2 Cycle Bump Return FOLLOW";
     private final static String kLeftTrenchTwoCycleBumpReturn = "LEFT Trench 2 Cycle Bump Return";
     private final static String kLeftTrenchTwoCycleBumpReturnFollow = "LEFT Trench 2 Cycle Bump Return FOLLOW";
     private final static String kRightTrechTwoCycleTrenchReturn = "RIGHT Trench 2 Cycle Trench Return";
-    private final static String kRightTrechTwoCycleTrenchReturnDelay = "RIGHT Trench 2 Cycle Trench Return 5sec DELAY";
+    private final static String kRightTrenchTwoCycleTrenchReturnDelay = "RIGHT Trench 2 Cycle Trench Return 5sec DELAY";
     private final static String kLeftTrenchTwoCycleTrenchReturn = "LEFT Trench 2 Cycle Trench Return";
     private final static String kRightBumpTwoCycleReverseToTrenchPlusTrenchOnly = "RIGHT Bump 2 Cycle Reverse to Trench + Trench ONLY";
     private final static String kLeftBumpTwoCycleReverseToTrenchPlusTrenchOnly = "LEFT Bump 2 Cycle Reverse to Trench + Trench ONLY";
@@ -83,13 +115,20 @@ public class AutonChooser {
 
     private final static String kCenterPreload = "CENTER Preload";
     // private final static String kRightDelayTest = "DELAY TEST - NOT FOR ACTUAL USE";
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    // ============================================================================
+    // -- UTILITY METHODS
+    // ============================================================================
     public static void initialize(WaltAdaptableAutonFactory adaptableAutonFactory) {
         m_adaptableAutonFactory = adaptableAutonFactory;
         m_chooser = new AutoChooser();
         s_multiAutons.clear();
     
-        /* OLD AUTON OPTIONS */
+        // =============================================================
+        // OLD AUTON OPTIONS
+        // old being relative -- from when we were still bump bot
+        // =============================================================
         //---MAIN AUTONS
         addMultiAuton(kLeftShootAndSweep,
             new AdaptableAutonInfo(AutonK.kLeftOneJab, AutonK.kSweepShootingTimeout, false, 0),
@@ -165,7 +204,9 @@ public class AutonChooser {
             new AdaptableAutonInfo(AutonK.kRightOneReverse, AutonK.kShootingTimeout, false, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoJab, AutonK.kShootingTimeout, false, 0));
 
-        /* NEW AUTON OPTIONS */
+        // =============================================================
+        // NEW AUTON OPTIONS
+        // =============================================================
         //---2 CYCLES
         addMultiAuton(kRightTrenchTwoCycleBumpReturn,
             new AdaptableAutonInfo(AutonK.kRightOneBumpReturn, AutonK.kSOTMTimeout, true, 0),
@@ -200,7 +241,7 @@ public class AutonChooser {
             new AdaptableAutonInfo(AutonK.kRightTwoTrenchReturn, AutonK.kShootingTimeout, false, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoGoOut, AutonK.kSOTMTimeout, false, 0));
 
-        addMultiAuton(kRightTrechTwoCycleTrenchReturnDelay,
+        addMultiAuton(kRightTrenchTwoCycleTrenchReturnDelay,
             new AdaptableAutonInfo(AutonK.kRightOneTrenchReturn, AutonK.kShootingTimeout, false, 5),
             new AdaptableAutonInfo(AutonK.kRightTwoTrenchReturn, AutonK.kShootingTimeout, false, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoGoOut, AutonK.kSOTMTimeout, false, 0));
