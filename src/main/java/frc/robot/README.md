@@ -59,7 +59,7 @@ The fun part. I had SO much fun on this part :D
 
 this is where it hit the fan :scream: :scream: :scream:
 
-- `ShooterCalc.java`: Shot math and distance-based calculations on its own thread.
+- `ShotCalcMath.java`: Shot math and distance-based calculations on its own thread.
 - `ShotCalculator.java`: Other shot math and distance-based calculations.
 
 #### Other subsystems

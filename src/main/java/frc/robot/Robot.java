@@ -259,8 +259,8 @@ public class Robot extends TimedRobot {
     // =============================================================
 
     /**
-     *
      * @param speedMult how much you want to limit speed as a decimal percentage of kMaxTranslation. 1 does nothing
+     * @param rotationMult how much you want to limit rotational-speed as a decimal percentage of kMaxAngularRPS. 1 does nothing.
      * @return swerve drive command
      */
     private Command driveCommand(double speedMult, double rotationMult) {

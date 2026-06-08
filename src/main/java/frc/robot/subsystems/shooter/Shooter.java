@@ -34,8 +34,8 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import frc.robot.Constants;
-import frc.robot.subsystems.shooter.calc.ShooterCalc;
-import frc.robot.subsystems.shooter.calc.ShooterCalc.ShotCalcOutputs;
+import frc.robot.subsystems.shooter.calc.ShotCalcMath;
+import frc.robot.subsystems.shooter.calc.ShotCalcMath.ShotCalcOutputs;
 import frc.util.SignalManager;
 import frc.util.WaltMotorSim;
 import frc.util.WaltTunable;
@@ -45,7 +45,7 @@ import frc.util.WaltLogger.DoubleLogger;
 
 /*
  * Shooter - flywheel velocity control + Hood + Turret coordination.
- * Owns ShooterCalc (background 75 Hz thread) and pushes its outputs to each subsystem every periodic.
+ * Owns ShotCalcMath (background 75 Hz thread) and pushes its outputs to each subsystem every periodic.
  * Ball detection works by watching flywheel acceleration drop while in VelocityTorqueCurrentFOC mode.
  *
  * Vocab:
@@ -76,7 +76,7 @@ public class Shooter extends SubsystemBase {
     private final Supplier<SwerveDriveState> m_threadsafeSwerveSup;
     public final Hood m_hood;
     public final Turret m_turret;
-    private final ShooterCalc m_shooterCalc;
+    private final ShotCalcMath m_ShotCalcMath;
 
     // ---- RUNTIME STATE ----
     private final Tracer m_periodicTracer = new Tracer();
@@ -92,7 +92,7 @@ public class Shooter extends SubsystemBase {
     // private final FuelSim m_fuelSim;
 
     // ---- CALC STATE ----
-    // read by ShooterCalc background thread - volatile so reads don't go stale
+    // read by ShotCalcMath background thread - volatile so reads don't go stale
     // thread co(p)de so that we don't overrun (syscore save us all please)
     private volatile double m_latestTurretPositionRots = 0.0;
     private double m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
@@ -148,9 +148,9 @@ public class Shooter extends SubsystemBase {
         m_hood = new Hood();
         m_turret = new Turret();
         m_threadsafeSwerveSup = threadsafeSwerveStateSup;
-        m_shooterCalc = new ShooterCalc(m_threadsafeSwerveSup, () -> m_latestTurretPositionRots);
+        m_ShotCalcMath = new ShotCalcMath(m_threadsafeSwerveSup, () -> m_latestTurretPositionRots);
 
-        m_shooterCalc.shouldUseStaticShot(kUseStaticShot);
+        m_ShotCalcMath.shouldUseStaticShot(kUseStaticShot);
 
         m_shooterA.getConfigurator().apply(kShooterATalonFXConfiguration);
         m_shooterB.getConfigurator().apply(kShooterBTalonFXConfiguration);
@@ -338,7 +338,7 @@ public class Shooter extends SubsystemBase {
         m_currentFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
         m_latestFlywheelAccelerationRotPerSec = sig_shooterAAccel.getValueAsDouble();
 
-        ShotCalcOutputs calcData = m_shooterCalc.getLatestShotCalcOutputs();
+        ShotCalcOutputs calcData = m_ShotCalcMath.getLatestShotCalcOutputs();
 
         m_periodicTracer.addEpoch("Stashing ShotCalc data");
         log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());

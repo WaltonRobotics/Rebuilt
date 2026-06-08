@@ -441,8 +441,8 @@ public class ShotCalculator {
         double vyLaunch = vy + (turretX - robotX) * omega;
 
         double distance = getDistanceToTargetM(robotX, robotY, headingRad, targetX, targetY);
-        boolean passing = ShooterCalc.isPassing().getAsBoolean();
-        // boolean canTurretShoot = ShooterCalc.canTurretShoot();
+        boolean passing = ShotCalcMath.isPassing().getAsBoolean();
+        // boolean canTurretShoot = ShotCalcMath.canTurretShoot();
 
         // ShotLerpTable shotTable = passing ? (canTurretShoot ? kPassingTable : kAngryTurretTable) : kShotTable;
         ShotLerpTable shotTable = passing ? kPassingTable : kShotTable;
@@ -482,7 +482,7 @@ public class ShotCalculator {
             predY = targetY - vyLaunch * driftT;
 
             distance = getDistanceToTargetM(robotX, robotY, headingRad, predX, predY);
-            passing = ShooterCalc.isPassing().getAsBoolean();
+            passing = ShotCalcMath.isPassing().getAsBoolean();
             // shotTable = passing ? (canTurretShoot ? kPassingTable : kAngryTurretTable) : kShotTable;
             shotTable = passing ? kPassingTable : kShotTable;
             exitVel = shotTable.exitVelocity(distance);

@@ -2,22 +2,22 @@
 
 This is where it all hit the fan :sob: :sob: :sob:
 
-This folder handles all of the math that turns "robot is at this position going this fast" into "set flywheel to X RPS, hood to Y rotations, turret to Z degrees." It runs on a **background thread** at 75 Hz so none of this touches the main robot loop. Two classes: `ShooterCalc` coordinates everything and manages the thread, and `ShotCalculator` contains the actual ballistics: tables, physics, iterative moving-shot convergence, the whole deal.
+This folder handles all of the math that turns "robot is at this position going this fast" into "set flywheel to X RPS, hood to Y rotations, turret to Z degrees." It runs on a **background thread** at 75 Hz so none of this touches the main robot loop. Two classes: `ShotCalcMath` coordinates everything and manages the thread, and `ShotCalculator` contains the actual ballistics: tables, physics, iterative moving-shot convergence, the whole deal.
 
 ---
 
 ## Files
 
-- `ShooterCalc.java`: The orchestrator. Runs the background Notifier, determines which target to aim at, calls into `ShotCalculator` for shot parameters, computes turret azimuth, and stores results in volatile fields for `Shooter.periodic()` to read.
+- `ShotCalcMath.java`: The orchestrator. Runs the background Notifier, determines which target to aim at, calls into `ShotCalculator` for shot parameters, computes turret azimuth, and stores results in volatile fields for `Shooter.periodic()` to read.
 - `ShotCalculator.java`: Pure ballistics utility. Contains the interpolation tables, physics equations, and the iterative moving-shot algorithm. No state of its own (mostly static methods and final records).
 
 ---
 
-## ShooterCalc.java
+## ShotCalcMath.java
 
 ### Threading
 
-`ShooterCalc` uses a WPILib `Notifier` to run `calcCallback()` at 75 Hz on a background thread:
+`ShotCalcMath` uses a WPILib `Notifier` to run `calcCallback()` at 75 Hz on a background thread:
 
 ```java
 m_notifier.startPeriodic(Hertz.of(75)); // runs calcCallback() in a loop
@@ -31,7 +31,7 @@ private static volatile Translation3d m_aimTarget;
 private static volatile boolean m_isPassingFlag;
 ```
 
-`Shooter.periodic()` caches the turret position into a `volatile double` at the top of every loop, and ShooterCalc reads this from its thread. This is intentional and noted in the code: do not move that cache line.
+`Shooter.periodic()` caches the turret position into a `volatile double` at the top of every loop, and ShotCalcMath reads this from its thread. This is intentional and noted in the code: do not move that cache line.
 
 ### What calcCallback() Does Every Cycle
 

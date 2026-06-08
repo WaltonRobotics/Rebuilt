@@ -18,7 +18,7 @@ All of the actual shot math lives in [`calc/`](calc/), which runs on a backgroun
 
 ## Shooter.java
 
-The main subsystem. Two Kraken X44s spin a flywheel, with Motor B following Motor A in `Opposed` mode (they spin opposite directions but push the ball the same way). `Shooter` then drives `Hood` and `Turret` with setpoints received from `ShooterCalc`, which runs at 75 Hz on its own thread.
+The main subsystem. Two Kraken X44s spin a flywheel, with Motor B following Motor A in `Opposed` mode (they spin opposite directions but push the ball the same way). `Shooter` then drives `Hood` and `Turret` with setpoints received from `ShotCalcMath`, which runs at 75 Hz on its own thread.
 
 ### Flywheel Control
 
@@ -61,7 +61,7 @@ It's not being used rn but if we need to cope harder this is what we do :sunglas
 ### What periodic() Does
 
 Every loop:
-1. Caches turret position into a volatile field (ShooterCalc reads this from its thread).
+1. Caches turret position into a volatile field (ShotCalcMath reads this from its thread).
 2. Fetches the latest `ShotCalcOutputs` from the background thread.
 3. Sends turret position + velocity feedforward to `Turret`.
 4. Sends hood reference to `Hood` (if homed).
@@ -102,7 +102,7 @@ This runs on construction (`homeTurret(true)`) and also every loop for logging. 
 
 ### Snapback Logic
 
-The turret has soft limits but also a physical range. If the turret is commanded near one limit (e.g., it's at +0.4 rot heading toward +0.5 rot max) and the target wraps around the other side, `calcAzimuth` (in ShooterCalc) adds ±1 full rotation to the setpoint so the turret goes the short way around instead of slamming into a hardstop. `m_isSnappingBack` flags when the error is large enough that this is actively happening.
+The turret has soft limits but also a physical range. If the turret is commanded near one limit (e.g., it's at +0.4 rot heading toward +0.5 rot max) and the target wraps around the other side, `calcAzimuth` (in ShotCalcMath) adds ±1 full rotation to the setpoint so the turret goes the short way around instead of slamming into a hardstop. `m_isSnappingBack` flags when the error is large enough that this is actively happening.
 
 ### Key Methods
 
@@ -145,7 +145,7 @@ boolean atPosition()                   // within kHoodMaxErrD of setpoint
 ## How It All Fits Together
 
 ```
-75 Hz Thread (ShooterCalc)
+75 Hz Thread (ShotCalcMath)
   reads: swerve state, volatile turret position
   writes: volatile ShotCalcOutputs
 

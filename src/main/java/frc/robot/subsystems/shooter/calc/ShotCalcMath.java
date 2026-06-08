@@ -36,7 +36,7 @@ import static frc.robot.Constants.ShooterK.*;
 import frc.util.WaltTunable;
 
 /*
- * ShooterCalc
+ * ShotCalcMath
  *
  * All the shot math runs here, on a background thread via WPILib's Notifier,
  * so it never eats into the main 50 Hz robot loop. The thread runs at 75 Hz
@@ -54,10 +54,10 @@ import frc.util.WaltTunable;
  *        the short way around instead of slamming into the limit.
  *
  * One important rule: Shooter.periodic() caches the turret position into a
- * volatile double at the top of every loop. ShooterCalc reads it from the
+ * volatile double at the top of every loop. ShotCalcMath reads it from the
  * background thread. Don't move that line or the thread safety breaks.
  */
-public class ShooterCalc {
+public class ShotCalcMath {
     private static final String kLogTab = "ShotCalc";
 
     // Tunable lateral bias correction. Balls curve left/right depending on which way
@@ -144,7 +144,7 @@ public class ShooterCalc {
     // CONSTRUCTOR
     // =============================================================
 
-    public ShooterCalc(Supplier<SwerveDriveState> threadsafeSwerveDriveStateSup, DoubleSupplier turretPosSup) {
+    public ShotCalcMath(Supplier<SwerveDriveState> threadsafeSwerveDriveStateSup, DoubleSupplier turretPosSup) {
         m_threadsafeSwerveDriveStateSup = threadsafeSwerveDriveStateSup;
         m_turretPosRotsSup = turretPosSup;
 
@@ -153,7 +153,7 @@ public class ShooterCalc {
         AzimuthCalcDetails emptyAzimuth = new AzimuthCalcDetails(0, 0, 0, 0, 0, 0, 0);
         m_shotCalcOutputs = new ShotCalcOutputs(emptyAzimuth, emptyShotData, 0, 0, 0);
 
-        m_notifier.setName("ShooterCalc");
+        m_notifier.setName("ShotCalcMath");
         m_notifier.startPeriodic(Hertz.of(75)); // 2x slower than robot loop
     }
 
