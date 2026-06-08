@@ -133,12 +133,15 @@ There are two active tables:
 **`kShotTable`**: normal hub shots, 14 distance points from 0.985m to 8.627m
 - Flywheel: ~39.8 to 68.8 RPS (raw values have a `kScoringRPSBoost` of -0.2 applied)
 - Hood: 0 to 1.65 rad
-- TOF: 0.5s at all distances (used for drag compensation math, not actual flight time)
+- TOF: 0.97 to 1.65s
+- Drag: 0.500 at all distances  (used for drag compensation math)
+
 
 **`kPassingTable`**: passing to alliance partners, 29 distance points from 4.008m to 14.355m
 - Flywheel: ~48.75 to 105.14 RPS (`kRPSBoost` = +0.75 applied; `kLongRangeRPSBoost` = +0.35 for distances >= ~10.4m)
 - Hood: ~0.70 to 1.16 rad
-- TOF: 0.254s at all distances
+- TOF: 1.35 to 2.08s
+- Drag: 0.254 at all distances  (used for drag compensation math)
 
 ### Iterative Moving-Shot: `iterativeMovingShotFromInterpolationMap()`
 
