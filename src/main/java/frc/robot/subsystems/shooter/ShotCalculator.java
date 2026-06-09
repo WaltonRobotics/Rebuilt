@@ -13,6 +13,7 @@ import static frc.robot.Constants.ShooterK.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -343,8 +344,9 @@ public class ShotCalculator {
      * @param timeOfFlight timeOfFlight from calculations or LERP table
      * @return where we will need to shoot to account for us moving.
      */
-    public static Translation3d predictTargetPos(Translation3d target, ChassisSpeeds fieldSpeeds,
-            Time timeOfFlight) {
+    public static Translation3d predictTargetPos(Translation3d target, ChassisSpeeds speeds, Pose2d pose, Time timeOfFlight) {
+        ChassisSpeeds fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(speeds, pose.getRotation());
+
         double predictedX = target.getX()
                 - fieldSpeeds.vxMetersPerSecond * timeOfFlight.in(Seconds); //need time of flight b/c that tells you how close/far you can shoot to the target according to speeds.
         double predictedY = target.getY()

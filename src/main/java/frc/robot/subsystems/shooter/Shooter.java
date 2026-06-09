@@ -18,6 +18,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 
@@ -32,12 +33,14 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import static edu.wpi.first.units.Units.Hertz;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 import static frc.robot.Constants.ShooterK.*;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import frc.robot.Constants;
+import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.shooter.ShooterCalc.ShotCalcOutputs;
 import frc.util.SignalManager;
 import frc.util.WaltMotorSim;
@@ -45,6 +48,7 @@ import frc.util.WaltTunable;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.Pose3dLogger;
 
 public class Shooter extends SubsystemBase {
     // NT-tunable overrides for LERP table building (default off)
@@ -77,7 +81,9 @@ public class Shooter extends SubsystemBase {
     private final VelocityTorqueCurrentFOC m_veloTQFOCReq = new VelocityTorqueCurrentFOC(0).withSlot(1);
     private final CoastOut m_motorIdleReq = new CoastOut();
 
-    private final Supplier<SwerveDriveState> m_threadsafeSwerveSup;
+    private final Supplier<SwerveDriveState> supp_threadsafeSwerveState;
+    private final Supplier<ChassisSpeeds> supp_fieldSpeeds;
+    private final Supplier<Pose2d> supp_pose;
 
     public final Hood m_hood;
     public final Turret m_turret;
@@ -135,12 +141,16 @@ public class Shooter extends SubsystemBase {
     private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
     private final DoubleLogger log_driverAddedRPS = WaltLogger.logDouble(kLogTab, "driverAddedRPS");
 
+    private final Pose3dLogger log_predictedTarget = WaltLogger.logPose3d(kLogTab, "predictedTarget");
+
     /* CONSTRUCTOR */
-    public Shooter(Supplier<Pose2d> poseSupplier, Supplier<SwerveDriveState> threadsafeSwerveStateSup, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
+    public Shooter(Supplier<Pose2d> poseSup, Supplier<SwerveDriveState> threadsafeSwerveStateSupp, Supplier<ChassisSpeeds> fieldSpeedsSupp) {
         m_hood = new Hood();
         m_turret = new Turret();
-        m_threadsafeSwerveSup = threadsafeSwerveStateSup;
-        m_shooterCalc = new ShooterCalc(m_threadsafeSwerveSup, () -> m_latestTurretPositionRots);
+        supp_threadsafeSwerveState = threadsafeSwerveStateSupp;
+        supp_fieldSpeeds = fieldSpeedsSupp;
+        supp_pose = poseSup;
+        m_shooterCalc = new ShooterCalc(supp_threadsafeSwerveState, () -> m_latestTurretPositionRots);
 
         m_shooterCalc.shouldUseStaticShot(kUseStaticShot);
 
@@ -376,6 +386,8 @@ public class Shooter extends SubsystemBase {
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocityRotPerSec);
         log_ballDetected.accept(trg_ballDetected.getAsBoolean());
         log_ballShotDebounce.accept(trg_ballShotDebounced.getAsBoolean());
+
+        log_predictedTarget.accept(ShotCalculator.predictTargetPos(ShooterCalc.getLatestAimTarget(), supp_fieldSpeeds.get(), supp_pose.get(), Seconds.of(calcData.shotData().tofSec())));
 
 
         // m_periodicTracer.addEpoch("Logging");
