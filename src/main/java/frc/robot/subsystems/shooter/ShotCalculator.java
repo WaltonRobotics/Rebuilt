@@ -22,6 +22,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.FieldConstants;
+import frc.util.FieldCentricTurretSpeeds;
 import frc.util.WaltTunable;
 import frc.util.WaltLogger.*;
 import edu.wpi.first.units.measure.Time;
@@ -345,7 +346,7 @@ public class ShotCalculator {
      * @return where we will need to shoot to account for us moving.
      */
     public static Translation3d predictTargetPos(Translation3d target, ChassisSpeeds speeds, Pose2d pose, Time timeOfFlight) {
-        ChassisSpeeds fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(speeds, pose.getRotation());
+        ChassisSpeeds fieldSpeeds = FieldCentricTurretSpeeds.fromRobotRelativeSpeeds(speeds, pose.getRotation());
 
         double predictedX = target.getX()
                 - fieldSpeeds.vxMetersPerSecond * timeOfFlight.in(Seconds); //need time of flight b/c that tells you how close/far you can shoot to the target according to speeds.

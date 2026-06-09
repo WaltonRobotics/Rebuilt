@@ -58,7 +58,7 @@ import frc.util.AllianceFlipUtil;
 import frc.util.VisionUtil;
 
 public class Constants {
-    public static final boolean kDebugLoggingEnabled = false;
+    public static final boolean kDebugLoggingEnabled = true;
     public static final boolean kDataLoggingEnabled = true;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
@@ -103,6 +103,8 @@ public class Constants {
         // Precomputed doubles for hot-path shot calc (avoid measure allocations)
         public static final double kTurretOffsetX_m = kTurretTransform.getTranslation().getX();
         public static final double kTurretOffsetY_m = kTurretTransform.getTranslation().getY();
+        public static final double kTurretOffset_m = Math.hypot(kTurretOffsetX_m, kTurretOffsetY_m);
+        public static final double kTurretAngleFromCenterDeg = Math.tan(kTurretOffsetX_m / kTurretOffsetX_m);
         public static final double kTurretAngleOffsetRad = kTurretAngleOffset.getRadians();
         public static final double kFlywheelRadiusM = kFlywheelRadius.in(Meters);
         public static final double kFlywheelRadiusIn = kFlywheelRadius.in(Inches);

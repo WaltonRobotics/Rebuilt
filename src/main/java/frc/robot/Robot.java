@@ -25,6 +25,7 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -167,6 +168,7 @@ public class Robot extends TimedRobot {
     private final Pose2dLogger log_robotPose = WaltLogger.logPose2d("Drive", "Pose", true);
 
     private final DoubleLogger log_autonTime = WaltLogger.logDouble("Auton", "autonTime");
+    private final DoubleLogger log_degreeConstant = WaltLogger.logDouble(kLogTab, "degreeConstant");
 
     //NOT DISPLAYING
     // private final StringLogger log_currentShift = WaltLogger.logString("Util/Shift", "currentShift");
@@ -587,5 +589,7 @@ public class Robot extends TimedRobot {
         m_shooter.simulationPeriodic();
         m_intake.simulationPeriodic();
         m_indexer.simulationPeriodic();
+
+        log_degreeConstant.accept(ShooterK.kTurretAngleFromCenterDeg);
     }
 }
