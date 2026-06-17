@@ -1,8 +1,8 @@
 package frc.util;
 
 import java.util.Optional;
-import org.wpilib.driverstation.DriverStation;
-import org.wpilib.driverstation.DriverStation.Alliance;
+import org.wpilib.driverstation.MatchState;
+import org.wpilib.driverstation.Alliance;
 import org.wpilib.command2.Commands;
 import org.wpilib.command2.button.RobotModeTriggers;
 
@@ -17,7 +17,7 @@ public final class WaltDriverStation {
     private WaltDriverStation() {}
 
     static void cacheAlliance() {
-        DriverStation.getAlliance().ifPresent(alliance -> m_cachedAlliance = Optional.of(alliance));
+        MatchState.getAlliance().ifPresent(alliance -> m_cachedAlliance = Optional.of(alliance));
     }
 
     /** Returns the alliance cached at the start of the current/last autonomous or teleop period. */

@@ -19,7 +19,6 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
-import choreo.auto.AutoFactory;
 import org.wpilib.math.util.MathUtil;
 import org.wpilib.math.filter.SlewRateLimiter;
 import org.wpilib.math.geometry.Pose2d;
@@ -27,24 +26,26 @@ import org.wpilib.units.measure.AngularVelocity;
 import org.wpilib.units.measure.LinearVelocity;
 import org.wpilib.system.DataLogManager;
 import org.wpilib.driverstation.DriverStation;
+import org.wpilib.driverstation.RobotState;
+import org.wpilib.driverstation.internal.DriverStationBackend;
+
 import org.wpilib.hardware.power.PowerDistribution;
 import org.wpilib.system.RobotController;
-import org.wpilib.livewindow.LiveWindow;
 import org.wpilib.framework.TimedRobot;
 import org.wpilib.system.Timer;
 import org.wpilib.system.Tracer;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.CommandScheduler;
 import org.wpilib.command2.Commands;
-import org.wpilib.command2.button.CommandXboxController;
+import org.wpilib.command2.button.CommandNiDsXboxController;
 import org.wpilib.command2.button.RobotModeTriggers;
 import org.wpilib.command2.button.Trigger;
 
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
-import frc.robot.dashboards.AutonChooser;
-import frc.robot.autons.WaltAdaptableAutonFactory;
+// import frc.robot.dashboards.AutonChooser;
+// import frc.robot.autons.WaltAdaptableAutonFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
@@ -95,8 +96,8 @@ public class Robot extends TimedRobot {
     private final SlewRateLimiter limit_driverYawRate = new SlewRateLimiter(0.30);
 
     //---CONTROLLERS
-    private final CommandXboxController m_driver = new CommandXboxController(0);
-    private final CommandXboxController m_manipulator = new CommandXboxController(1);
+    private final CommandNiDsXboxController m_driver = new CommandNiDsXboxController(0);
+    private final CommandNiDsXboxController m_manipulator = new CommandNiDsXboxController(1);
 
     // Cached so the drive default-command lambda doesn't allocate a Trigger every tick.
     private final Trigger trg_driverSlow = m_driver.leftTrigger();
@@ -107,7 +108,7 @@ public class Robot extends TimedRobot {
     private final Shooter m_shooter = new Shooter(
         () -> m_drivetrain.getState().Pose, 
         () -> m_drivetrain.getStateCopy(),
-        () -> m_drivetrain.getChassisSpeeds());
+        () -> m_drivetrain.getChassisVelocities());
 
     private final Intake m_intake = new Intake();
     private final Indexer m_indexer = new Indexer();
@@ -116,11 +117,12 @@ public class Robot extends TimedRobot {
     private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
 
     //---AUTONS
-    private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
-    private final WaltAdaptableAutonFactory m_adpatableAutonFactory = new WaltAdaptableAutonFactory(m_superstructure, m_autoFactory, m_intake, m_shooter, m_drivetrain);
+    // private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
+    // private final WaltAdaptableAutonFactory m_adpatableAutonFactory = new WaltAdaptableAutonFactory(m_superstructure, m_autoFactory, m_intake, m_shooter, m_drivetrain);
     //---VISION
 
-    private PowerDistribution m_PDH = new PowerDistribution();
+    // 2027-TODO: CANBusMap!!
+    private PowerDistribution m_PDH = new PowerDistribution(0);
     // private final NetworkPinger m_radioPinger = new NetworkPinger("Radio", "10.29.74.1", 0.2, 10);
     // private final NetworkPinger m_coprocessorPinger = new NetworkPinger("Coprocessor", "10.29.74.11", 0.2, 10);
     // private final VisionSim m_visionSim = new VisionSim();
@@ -180,7 +182,9 @@ public class Robot extends TimedRobot {
 
     private final Tracer m_periodicTracer = new Tracer();
     private final PerformanceMonitor m_perfMonitor = new PerformanceMonitor(false);
-    private final Command m_preheaterCommand;
+
+    // 2027-TODO: figure out auton/choreo!!!
+    // private final Command m_preheaterCommand;
 
     /* CONSTRUCTOR */
     public Robot() {
@@ -199,7 +203,8 @@ public class Robot extends TimedRobot {
 
         lastGotTagMsmtTimer.start();
 
-        AutonChooser.initialize(m_adpatableAutonFactory);
+        // 2027-TODO: figure out auton/choreo!!!
+        // AutonChooser.initialize(m_adpatableAutonFactory);
         long tChooserInit = System.nanoTime();
         System.out.printf("[INIT PROFILE] AutonChooser.initialize:  %7.1f ms%n", (tChooserInit - tPrev) * 1e-6);
         tPrev = tChooserInit;
@@ -207,7 +212,9 @@ public class Robot extends TimedRobot {
         // Choreo warmup. Runs synchronously on the main thread during robotInit so
         // class-loading, trajectory JSON parsing, and routine/trigger composition all
         // happen up-front instead of on the first autonomousInit tick.
-        AutonChooser.forceLoadChoreoClasses();
+        
+        // 2027-TODO: figure out auton/choreo!!!
+        // AutonChooser.forceLoadChoreoClasses();
         long tClassLoad = System.nanoTime();
         System.out.printf("[INIT PROFILE] forceLoadChoreoClasses:   %7.1f ms%n", (tClassLoad - tPrev) * 1e-6);
         tPrev = tClassLoad;
@@ -222,18 +229,17 @@ public class Robot extends TimedRobot {
         // System.out.printf("[INIT PROFILE] preheatAllRoutines:       %7.1f ms%n", (tPreheat - tPrev) * 1e-6);
         // tPrev = tPreheat;
 
+        // 2027-TODO: Fix auton/choreo stuff!!!
         RobotModeTriggers.autonomous().whileTrue(
-            AutonChooser.m_chooser.selectedCommandScheduler().withTimeout(20.3)
+            Commands.none()
+            // AutonChooser.m_chooser.selectedCommandScheduler().withTimeout(20.3)
         );
 
         // set FPS limit on boot
         WaltCamera.setFpsLimit(true);
 
-        DriverStation.silenceJoystickConnectionWarning(true);
+        DriverStationBackend.silenceJoystickConnectionWarning(true);
         PhotonCamera.setVersionCheckEnabled(false);
-        LiveWindow.disableAllTelemetry();
-
-        
 
         // MANUAL HOMING IS BEING USED
         // addPeriodic(m_shooter::fastPeriodic, 0.0025);
@@ -242,8 +248,10 @@ public class Robot extends TimedRobot {
         System.out.printf("[INIT PROFILE] misc (cameras/logging):   %7.1f ms%n", (tMisc - tPrev) * 1e-6);
         tPrev = tMisc;
 
-        m_preheaterCommand = AutonChooser.getPreheater();
-        CommandScheduler.getInstance().schedule(m_preheaterCommand);
+        // m_preheaterCommand = AutonChooser.getPreheater();
+
+        // 2027-TODO: figure out auton/choreo!!!
+        // CommandScheduler.getInstance().schedule(m_preheaterCommand);
         // m_preheaterCommand = AutonChooser.m_chooser.selectedCommandScheduler();
         // CommandScheduler.getInstance().schedule(m_preheaterCommand);
 
@@ -416,7 +424,11 @@ public class Robot extends TimedRobot {
                 // } else {
                 m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
                 // }
-                m_visionSeenLastSec = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
+
+                // 2027-TODO: find new correct method!!!
+                m_visionSeenLastSec = estimatedRobotPose.timestampSeconds;
+                // m_visionSeenLastSec = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
+
                 // System.out.println("AddMeasurementFrom: " + camera.getName());
             }
         }
@@ -430,7 +442,7 @@ public class Robot extends TimedRobot {
         log_rioBusVoltage.accept(RobotController.getBatteryVoltage());
         log_rioBrownout.accept(RobotController.isBrownedOut());
         log_pdhCurrentTotal.accept(m_PDH.getTotalCurrent());
-        log_isDSAttatched.accept(DriverStation.isDSAttached());
+        log_isDSAttatched.accept(RobotState.isDSAttached());
 
         // log_currentShift.accept(HubShiftUtil.getOfficialShiftInfo().currentShift().toString());
         // log_currentFudgedShift.accept(HubShiftUtil.getShiftedShiftInfo().currentShift().toString());
@@ -499,13 +511,14 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        m_adpatableAutonFactory.startAutonTimer();
+        // 2027-TODO: fix auton/choreo stuff!!!
+        // m_adpatableAutonFactory.startAutonTimer();
     }
 
     @Override
     public void autonomousPeriodic() {
         // m_adpatableAutonFactory.logTimer("Auton", () -> m_adpatableAutonFactory.autonTimer);
-        log_autonTime.accept(m_adpatableAutonFactory.autonTimer.get());
+        // log_autonTime.accept(m_adpatableAutonFactory.autonTimer.get());
     }
 
     @Override
@@ -522,7 +535,7 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopExit() {}
 
-    @Override
+    // 2027-TODO - convert to opmode!
     public void testInit() {
         CommandScheduler.getInstance().cancelAll();
         
@@ -562,13 +575,6 @@ public class Robot extends TimedRobot {
             )
         );
     }
-
-    @Override
-    public void testPeriodic() {}
-
-    @Override
-    public void testExit() {}
-
     @Override
     public void simulationInit() {
         // FuelSim.getInstance().start();

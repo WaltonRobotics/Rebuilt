@@ -15,7 +15,7 @@ import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Translation3d;
 import org.wpilib.math.interpolation.InterpolatingDoubleTreeMap;
-import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.math.kinematics.ChassisVelocities;
 import org.wpilib.units.measure.Angle;
 import org.wpilib.units.measure.AngularVelocity;
 import org.wpilib.units.measure.Distance;
@@ -343,12 +343,10 @@ public class ShotCalculator {
      * @param timeOfFlight timeOfFlight from calculations or LERP table
      * @return where we will need to shoot to account for us moving.
      */
-    public static Translation3d predictTargetPos(Translation3d target, ChassisSpeeds fieldSpeeds,
-            Time timeOfFlight) {
-        double predictedX = target.getX()
-                - fieldSpeeds.vxMetersPerSecond * timeOfFlight.in(Seconds); //need time of flight b/c that tells you how close/far you can shoot to the target according to speeds.
-        double predictedY = target.getY()
-                - fieldSpeeds.vyMetersPerSecond * timeOfFlight.in(Seconds);
+    public static Translation3d predictTargetPos(Translation3d target, ChassisVelocities fieldSpeeds, Time timeOfFlight) {
+        //need time of flight b/c that tells you how close/far you can shoot to the target according to speeds.
+        double predictedX = target.getX() - fieldSpeeds.vx * timeOfFlight.in(Seconds); 
+        double predictedY = target.getY() - fieldSpeeds.vy * timeOfFlight.in(Seconds);
 
         return new Translation3d(predictedX, predictedY, target.getZ());
     }
@@ -404,15 +402,15 @@ public class ShotCalculator {
 
     // use an iterative lookahead approach to determine shot parameters for a moving robot
     public static ShotData iterativeMovingShotFromFunnelClearance(Pose2d robot,
-            ChassisSpeeds fieldSpeeds, Translation3d target, int iterations) {
+            ChassisVelocities fieldSpeeds, Translation3d target, int iterations) {
         double robotX = robot.getX();
         double robotY = robot.getY();
         double headingRad = robot.getRotation().getRadians();
         double targetX = target.getX();
         double targetY = target.getY();
         double targetZ = target.getZ();
-        double vx = fieldSpeeds.vxMetersPerSecond;
-        double vy = fieldSpeeds.vyMetersPerSecond;
+        double vx = fieldSpeeds.vx;
+        double vy = fieldSpeeds.vy;
 
         // Initial estimation (assuming unmoving robot)
         ShotData shot = calculateShotFromFunnelClearance(robot, target, target);
@@ -450,7 +448,7 @@ public class ShotCalculator {
      * @return parameters to shoot a FUEL to the target accurately.
      */
     public static ShotDataLerp iterativeMovingShotFromInterpolationMap(Pose2d robot,
-            ChassisSpeeds fieldSpeeds, Translation3d target, int iterations) {
+            ChassisVelocities fieldSpeeds, Translation3d target, int iterations) {
 
         // Extract raw doubles once at entry
         double robotX = robot.getX();
@@ -459,9 +457,9 @@ public class ShotCalculator {
         double targetX = target.getX();
         double targetY = target.getY();
         double targetZ = target.getZ();
-        double vx = fieldSpeeds.vxMetersPerSecond;
-        double vy = fieldSpeeds.vyMetersPerSecond;
-        double omega = fieldSpeeds.omegaRadiansPerSecond;
+        double vx = fieldSpeeds.vx;
+        double vy = fieldSpeeds.vy;
+        double omega = fieldSpeeds.omega;
         double cosH = Math.cos(headingRad);
         double sinH = Math.sin(headingRad);
         double turretX = robotX + kTurretOffsetX_m * cosH - kTurretOffsetY_m * sinH;
@@ -582,8 +580,8 @@ public class ShotCalculator {
 
         public static ShotData interpolate(ShotData start, ShotData end, double t) {
             return new ShotData(
-                    MathUtil.interpolate(start.exitVelocity, end.exitVelocity, t),
-                    MathUtil.interpolate(start.hoodAngle, end.hoodAngle, t),
+                    MathUtil.lerp(start.exitVelocity, end.exitVelocity, t),
+                    MathUtil.lerp(start.hoodAngle, end.hoodAngle, t),
                     end.target);
         }
     }

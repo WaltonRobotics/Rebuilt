@@ -11,14 +11,14 @@ import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Rotation3d;
 import org.wpilib.math.geometry.Translation3d;
-import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.math.kinematics.ChassisVelocities;
 import org.wpilib.math.kinematics.SwerveDriveKinematics;
 import org.wpilib.networktables.BooleanPublisher;
 import org.wpilib.networktables.BooleanTopic;
 import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.system.Notifier;
 import org.wpilib.system.Timer;
-import org.wpilib.driverstation.DriverStation.Alliance;
+import org.wpilib.driverstation.Alliance;
 import frc.util.WaltDriverStation;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.WpiK;
@@ -104,7 +104,7 @@ public class ShooterCalc {
     private final Notifier m_notifier = new Notifier(this::calcCallback);
     private final Timer m_calcTimer = new Timer();
 
-    private boolean isRed = WaltDriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+    private boolean isRed = WaltDriverStation.getAlliance().orElse(Alliance.BLUE) == Alliance.RED;
     // private double robotX;
     // private double robotY;
     private boolean robotInNoPassingZone;
@@ -167,14 +167,15 @@ public class ShooterCalc {
         // getters from outside
         SwerveDriveState swerveState = m_threadsafeSwerveDriveStateSup.get();
         Pose2d robotPose = swerveState.Pose;
-        ChassisSpeeds robotChassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
-            m_swerveKinematics.toChassisSpeeds(swerveState.ModuleStates), robotPose.getRotation());
+        ChassisVelocities robotChassisVelocities =  m_swerveKinematics
+            .toChassisVelocities(swerveState.ModuleVelocities)
+            .toFieldRelative(robotPose.getRotation());
         double turretPositionRots = m_turretPosRotsSup.getAsDouble();
         Pose3d turretPose = new Pose3d(robotPose).transformBy(kTurretTransform);
 
         m_underTrench = underTrench(turretPose.toPose2d());
         m_aimTarget = calculateTarget(robotPose);
-        m_shotCalcOutputs = calcShot(robotPose, m_useStaticShot, m_aimTarget, turretPositionRots, robotChassisSpeeds);
+        m_shotCalcOutputs = calcShot(robotPose, m_useStaticShot, m_aimTarget, turretPositionRots, robotChassisVelocities);
         refreshCanTurretShoot();
 
         // Logging
@@ -201,7 +202,7 @@ public class ShooterCalc {
      */
     private Translation3d calculateTarget(Pose2d robotPose) {
         // m_currentTarget = AllianceFlipUtil.apply(target);
-        isRed = WaltDriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+        isRed = WaltDriverStation.getAlliance().orElse(Alliance.BLUE) == Alliance.RED;
         Translation3d theTarget = FieldConstants.Hub.blueInnerCenterPoint;
 
         double robotX = robotPose.getX();
@@ -231,7 +232,7 @@ public class ShooterCalc {
     }
 
     private boolean underTrench(Pose2d turretPose) {
-        isRed = WaltDriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+        isRed = WaltDriverStation.getAlliance().orElse(Alliance.BLUE) == Alliance.RED;
 
         double robotX = turretPose.getX();
         double robotY = turretPose.getY();
@@ -303,7 +304,7 @@ public class ShooterCalc {
     // private static final Rotation3d kTurretRealPoseRotation =
     //     new Rotation3d(0, 0, -(kTurretAngleOffset.plus(Rotation2d.kPi)).getRadians());
 
-    public static AzimuthCalcDetails calcAzimuth(Translation3d target, Pose2d robotPose, double turretHeading, ChassisSpeeds fieldSpeeds) {
+    public static AzimuthCalcDetails calcAzimuth(Translation3d target, Pose2d robotPose, double turretHeading, ChassisVelocities fieldSpeeds) {
         // Compute turret pivot position and zero direction with raw doubles
         // (eliminates Pose3d(robotPose).transformBy() + Rotation2d allocations)
         double headingRad = robotPose.getRotation().getRadians();
@@ -323,8 +324,8 @@ public class ShooterCalc {
         double fieldYawRad = Math.atan2(toTargetY, toTargetX);
 
         //vx | vy is turret pivot not absolute field position
-        double vx = fieldSpeeds.vxMetersPerSecond - (turretY - robotY) * fieldSpeeds.omegaRadiansPerSecond; //-ry * omega
-        double vy = fieldSpeeds.vyMetersPerSecond + (turretX - robotX) * fieldSpeeds.omegaRadiansPerSecond; //+rx * omega
+        double vx = fieldSpeeds.vx - (turretY - robotY) * fieldSpeeds.omega; //-ry * omega
+        double vy = fieldSpeeds.vy + (turretX - robotX) * fieldSpeeds.omega; //+rx * omega
 
         // Direction in rotations: normalize to [-0.5, 0.5] first (matches Rotation2d.minus behavior),
         // then clamp to turret range
@@ -368,7 +369,7 @@ public class ShooterCalc {
         double tangentialVel = (toTargetX * vx - toTargetY * vy) / distance;
         double turretFFRadPerSec = tangentialVel / distance;
 
-        turretFFRadPerSec -= fieldSpeeds.omegaRadiansPerSecond;
+        turretFFRadPerSec -= fieldSpeeds.omega;
 
         AzimuthCalcDetails calcDetails = new AzimuthCalcDetails(
             turretReferenceRots, turretFFRadPerSec,
@@ -410,11 +411,11 @@ public class ShooterCalc {
         boolean staticShot,
         Translation3d target,
         double turretPositionRots,
-        ChassisSpeeds chassisSpeeds
+        ChassisVelocities ChassisVelocities
     ) {
         // How fast the robot is currently going, (CURRENT ROBOT VELOCITY)
-        // double speedMps = Math.hypot(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond);
-        ChassisSpeeds fieldSpeeds = (staticShot /*|| speedMps < 0.1*/) ? WpiK.kZeroChassisSpeeds : chassisSpeeds;
+        // double speedMps = Math.hypot(ChassisVelocities.vxMetersPerSecond, ChassisVelocities.vyMetersPerSecond);
+        ChassisVelocities fieldSpeeds = (staticShot /*|| speedMps < 0.1*/) ? WpiK.kZeroChassisVelocities : ChassisVelocities;
         // The Calculated shot itself, according to the current robotPose, robotSpeeds,
         // and the currentTarget
         ShotDataLerp calculatedShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(

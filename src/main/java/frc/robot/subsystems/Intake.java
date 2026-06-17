@@ -24,8 +24,8 @@ import com.ctre.phoenix6.controls.VoltageOut;
 
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
-import org.wpilib.math.system.plant.DCMotor;
-import org.wpilib.math.system.plant.LinearSystemId;
+import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.LinearSystem;
 import org.wpilib.networktables.DoubleSubscriber;
 import org.wpilib.units.measure.Angle;
 import org.wpilib.units.measure.AngularVelocity;
@@ -45,10 +45,10 @@ import frc.util.WaltLogger;
 public class Intake extends SubsystemBase {
     /* CLASS VARIABLES */
     //---MOTORS + CONTROL REQUESTS
-    private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID); //x60Foc
+    private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID, kRioBus); //x60Foc
 
-    private final TalonFX m_intakeRollersA = new TalonFX(kIntakeRollersA_CANID); //x60Foc
-    private final TalonFX m_intakeRollersB = new TalonFX(kIntakeRollersB_CANID); //x60Foc
+    private final TalonFX m_intakeRollersA = new TalonFX(kIntakeRollersA_CANID, kRioBus); //x60Foc
+    private final TalonFX m_intakeRollersB = new TalonFX(kIntakeRollersB_CANID, kRioBus); //x60Foc
 
     private MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0).withEnableFOC(true);
     private VelocityVoltage m_VelVoltReq = new VelocityVoltage(0).withEnableFOC(true);
@@ -74,23 +74,24 @@ public class Intake extends SubsystemBase {
     public final BooleanSupplier intakeHomedSupp = () -> m_isIntakeArmHomed;
 
     /* SIM OBJECTS */
-    private final DCMotorSim m_intakeArmSim = new DCMotorSim(
-        LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX60Foc(1),
-            kIntakeArmMOI,
-            kIntakeArmGearing
-        ),
-        DCMotor.getKrakenX60Foc(1)
-    );
+    // 2027-TODO: figure out new LinearSystem generator!!!
+    // private final DCMotorSim m_intakeArmSim = new DCMotorSim(
+    //     LinearSystem.createDCMotorSystem(
+    //         DCMotor.getKrakenX60Foc(1),
+    //         kIntakeArmMOI,
+    //         kIntakeArmGearing
+    //     ),
+    //     DCMotor.getKrakenX60Foc(1)
+    // );
 
-    private final DCMotorSim m_intakeRollersSim = new DCMotorSim(
-        LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX60Foc(2),
-            kIntakeRollersMOI,
-            kIntakeRollersGearing
-        ),
-        DCMotor.getKrakenX60Foc(2) // returns gearbox
-    );
+    // private final DCMotorSim m_intakeRollersSim = new DCMotorSim(
+    //     LinearSystem.createDCMotorSystem(
+    //         DCMotor.getKrakenX60Foc(2),
+    //         kIntakeRollersMOI,
+    //         kIntakeRollersGearing
+    //     ),
+    //     DCMotor.getKrakenX60Foc(2) // returns gearbox
+    // );
 
     /* LOGGERS */
     private final DoubleLogger log_intakeArmRots = WaltLogger.logDouble(kLogTab, "intakeArmRots");
@@ -147,7 +148,7 @@ public class Intake extends SubsystemBase {
     }
 
      public void setIntakeArmNeutralMode(NeutralModeValue value) {
-        m_intakeArm.setNeutralMode(value);
+        // m_intakeArm.setNeutralMode(value);
     }
 
     public Command startIntakeRollers(double volts) {
@@ -195,7 +196,7 @@ public class Intake extends SubsystemBase {
             m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(0));
             m_intakeArm.setPosition(0);
             removeDefaultCommand();
-            setIntakeArmPosCmd(IntakeArmPosition.RETRACTED);
+            setIntakeArmPos(IntakeArmPosition.RETRACTED);
             m_isIntakeArmHomed = true;
             log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
         };
@@ -218,8 +219,9 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        WaltMotorSim.updateSimFX(m_intakeArm, m_intakeArmSim);
-        WaltMotorSim.updateSimFX(m_intakeRollersA, m_intakeRollersSim);
+        // 2027-TODO: figure out new LinearSystem generator!!!
+        // WaltMotorSim.updateSimFX(m_intakeArm, m_intakeArmSim);
+        // WaltMotorSim.updateSimFX(m_intakeRollersA, m_intakeRollersSim);
     }
 
     /* ENUMS */

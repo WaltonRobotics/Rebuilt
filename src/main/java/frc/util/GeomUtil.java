@@ -13,7 +13,7 @@ import org.wpilib.math.geometry.Transform2d;
 import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.math.geometry.Twist2d;
-import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.math.kinematics.ChassisVelocities;
 
 /** Geometry utilities for working with translations, rotations, transforms, and poses. */
 public class GeomUtil {
@@ -139,14 +139,14 @@ public class GeomUtil {
   }
 
   /**
-   * Converts a ChassisSpeeds to a Twist2d by extracting two dimensions (Y and Z). chain
+   * Converts a ChassisVelocities to a Twist2d by extracting two dimensions (Y and Z). chain
    *
    * @param speeds The original translation
    * @return The resulting translation
    */
-  public static Twist2d toTwist2d(ChassisSpeeds speeds) {
+  public static Twist2d toTwist2d(ChassisVelocities speeds) {
     return new Twist2d(
-        speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond);
+        speeds.vx, speeds.vy, speeds.omega);
   }
 
   /**

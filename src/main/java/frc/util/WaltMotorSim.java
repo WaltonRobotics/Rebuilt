@@ -28,15 +28,16 @@ public class WaltMotorSim {
      * @param motor is the CTRE motor
      * @param motorSim is the corresponding DCMotorSim object for the CTRE motor
      */
+    // 2027-TODO: fix this!!!
     public static void updateSimFX(TalonFX motor, DCMotorSim motorSim) {
-        var motorFXSimState = motor.getSimState();
+    //     var motorFXSimState = motor.getSimState();
 
-        motorSim.setInputVoltage(motorFXSimState.getMotorVoltage());
-        motorSim.update(Constants.kSimPeriodicUpdateInterval);
+    //     motorSim.setInputVoltage(motorFXSimState.getMotorVoltage());
+    //     motorSim.update(Constants.kSimPeriodicUpdateInterval);
 
-        motorFXSimState.setRawRotorPosition(motorSim.getAngularPositionRotations() * motorSim.getGearing());
-        motorFXSimState.setRotorVelocity(motorSim.getAngularVelocity().times(motorSim.getGearing()));
-        motorFXSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+    //     motorFXSimState.setRawRotorPosition(motorSim.getAngularPositionRotations() * motorSim.getGearing());
+    //     motorFXSimState.setRotorVelocity(motorSim.getAngularVelocity().times(motorSim.getGearing()));
+    //     motorFXSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
     }
 
     /**
@@ -44,30 +45,16 @@ public class WaltMotorSim {
      * @param motor is the CTRE motor
      * @param motorSim is the corresponding FlywheelSim object for the CTRE motor
      */
+    // 2027-TODO: fix!!!
+    //// error: double cannot be dereferenced
+    //// motorFXSimState.setRotorVelocity(motorSim.getAngularVelocity().times(motorSim.getGearing()));
     public static void updateSimFX(TalonFX motor, FlywheelSim motorSim) {
         var motorFXSimState = motor.getSimState();
 
         motorSim.setInputVoltage(motorFXSimState.getMotorVoltage());
         motorSim.update(Constants.kSimPeriodicUpdateInterval);
 
-        motorFXSimState.setRotorVelocity(motorSim.getAngularVelocity().times(motorSim.getGearing()));
+        // motorFXSimState.setRotorVelocity(motorSim.getAngularVelocity().times(motorSim.getGearing()));
         motorFXSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
-    }
-
-    /**
-     * Update the DCMotorSim for a servo
-     * 
-     * Designed for the hood servo, but can be used by other servos
-     * @param servo must act like a DCMotor for this to work
-     * @param motorSim is the corresponding DCMotorSim object for the DCMotor-like servo
-     */
-    public static void updateSimServo(GobildaServoContinuous servo, DCMotorSim motorSim) {
-        double volts = servo.get();
-        volts -= 0.5; // sets the range from [0, 1] to be [-0.5, 0.5]
-        volts *= 2; // sets the range from [-0.5, 0.5] to be [-1, 1]
-        volts *= motorSim.getGearbox().nominalVoltageVolts; // applies the volts sent to the servo on a [-6, 6] range
-
-        motorSim.setInputVoltage(volts);
-        motorSim.update(Constants.kSimPeriodicUpdateInterval);
     }
 }

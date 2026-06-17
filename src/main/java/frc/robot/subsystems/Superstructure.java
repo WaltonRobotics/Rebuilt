@@ -210,10 +210,11 @@ public class Superstructure extends SubsystemBase {
             intake(isShooting, () -> true).withTimeout(0.5),
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED),
             Commands.waitSeconds(0.5)
-       )
-       .finallyDo(() -> {
-            m_intake.stopIntakeRollers();
-       });
+       );
+       // 2027-todo FIX!!!
+    //    .finallyDo(() -> {
+            // m_intake.stopIntakeRollers();
+    //    });
     }
 
     /**

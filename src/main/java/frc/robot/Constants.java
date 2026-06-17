@@ -18,6 +18,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import org.wpilib.hardware.hal.CANBusMap;
+
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CommutationConfigs;
@@ -46,8 +48,8 @@ import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Rotation3d;
 import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.geometry.Translation3d;
-import org.wpilib.math.kinematics.ChassisSpeeds;
-import org.wpilib.math.system.plant.DCMotor;
+import org.wpilib.math.kinematics.ChassisVelocities;
+import org.wpilib.math.system.DCMotor;
 import org.wpilib.math.util.Units;
 import org.wpilib.units.measure.Angle;
 import org.wpilib.units.measure.AngularVelocity;
@@ -62,23 +64,23 @@ public class Constants {
     public static final boolean kDataLoggingEnabled = true;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
-    public static final CANBus kRioBus = CANBus.roboRIO();
+    public static final CANBus kRioBus = new CANBus("s0");
     public static final CANBus kCanivoreBus = new CANBus("fd");
     public static final CANBus kShooterBus = new CANBus("shooter");
 
     public static final class MotorK {
-        public static final double kX60MaxRadPerSec = DCMotor.getKrakenX60(1).freeSpeedRadPerSec;
+        public static final double kX60MaxRadPerSec = DCMotor.getKrakenX60(1).freeSpeed;
         public static final AngularVelocity kX60MaxVelocity = RadiansPerSecond.of(kX60MaxRadPerSec);
-        public static final double kX60FOCMaxRadPerSec = DCMotor.getKrakenX60Foc(1).freeSpeedRadPerSec;
+        public static final double kX60FOCMaxRadPerSec = DCMotor.getKrakenX60Foc(1).freeSpeed;
         public static final AngularVelocity kX60FOCMaxVelocity = RadiansPerSecond.of(kX60FOCMaxRadPerSec);
 
-        public static final double kX44MaxRadPerSec = DCMotor.getKrakenX44(1).freeSpeedRadPerSec;
+        public static final double kX44MaxRadPerSec = DCMotor.getKrakenX44(1).freeSpeed;
         public static final AngularVelocity kX44MaxVelocity = RadiansPerSecond.of(kX44MaxRadPerSec);
-        public static final double kX44FOCMaxRadPerSec = DCMotor.getKrakenX44Foc(1).freeSpeedRadPerSec;
+        public static final double kX44FOCMaxRadPerSec = DCMotor.getKrakenX44Foc(1).freeSpeed;
         public static final AngularVelocity kX44FOCMaxVelocity = RadiansPerSecond.of(kX44FOCMaxRadPerSec);
     }
     public static class WpiK {
-        public static final ChassisSpeeds kZeroChassisSpeeds = new ChassisSpeeds(0, 0, 0);
+        public static final ChassisVelocities kZeroChassisVelocities = new ChassisVelocities(0, 0, 0);
     }
     public static class ShooterK {
         public static final String kLogTab = "Shooter";

@@ -26,7 +26,7 @@ public final class NTPublisherFactory {
     }
 
     public static DoublePublisher makeDoublePub(String name) {
-        return makeDoublePub(traceTable, name, PubSubOption.periodic(TimedRobot.kDefaultPeriod));
+        return makeDoublePub(traceTable, name, PubSubOption.periodic(TimedRobot.DEFAULT_PERIOD));
     }
 
     public static DoubleArrayPublisher makeDoubleArrPub(NetworkTable table, String name, PubSubOption... options) {
@@ -39,7 +39,7 @@ public final class NTPublisherFactory {
     }
 
     public static DoubleArrayPublisher makeDoubleArrTracePub(String name) {
-        return makeDoubleArrPub(traceTable, name, PubSubOption.periodic(TimedRobot.kDefaultPeriod));
+        return makeDoubleArrPub(traceTable, name, PubSubOption.periodic(TimedRobot.DEFAULT_PERIOD));
     }
 
     public static BooleanPublisher makeBoolPub(NetworkTable table, String name, PubSubOption... options) {
@@ -52,7 +52,7 @@ public final class NTPublisherFactory {
     }
 
     public static BooleanPublisher makeBoolTracePub(String name) {
-        return makeBoolPub(traceTable, name, PubSubOption.periodic(TimedRobot.kDefaultPeriod));
+        return makeBoolPub(traceTable, name, PubSubOption.periodic(TimedRobot.DEFAULT_PERIOD));
     }
 
     public static StringPublisher makeStringPub(NetworkTable table, String name, PubSubOption... options) {
@@ -65,7 +65,7 @@ public final class NTPublisherFactory {
     }
 
     public static StringPublisher makeStringTracePub(String name) {
-        return makeStringPub(traceTable, name, PubSubOption.periodic(TimedRobot.kDefaultPeriod));
+        return makeStringPub(traceTable, name, PubSubOption.periodic(TimedRobot.DEFAULT_PERIOD));
     }
 
     public static StringArrayPublisher makeStringArrPub(NetworkTable table, String name, PubSubOption... options) {
@@ -78,6 +78,6 @@ public final class NTPublisherFactory {
     }
 
     public static StringArrayPublisher makeStringArrTracePub(String name) {
-        return makeStringArrPub(traceTable, name, PubSubOption.periodic(TimedRobot.kDefaultPeriod));
+        return makeStringArrPub(traceTable, name, PubSubOption.periodic(TimedRobot.DEFAULT_PERIOD));
     }
 }

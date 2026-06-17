@@ -13,7 +13,7 @@ import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.math.geometry.Translation3d;
 import org.wpilib.math.geometry.struct.*;
 import org.wpilib.networktables.*;
-import org.wpilib.util.datalog.*;
+import org.wpilib.datalog.*;
 import org.wpilib.util.function.BooleanConsumer;
 import org.wpilib.system.DataLogManager;
 import org.wpilib.system.Timer;
@@ -27,7 +27,7 @@ public class WaltLogger {
     private static final NetworkTable logTable = inst.getTable("Robot");
 
     public static void timedPrint(String label) {
-        System.out.println("[" + Timer.getFPGATimestamp() + "] " + label);
+        System.out.println("[" + Timer.getMonotonicTimestamp() + "] " + label);
     }
 
     public static Command timedPrintCmd(String label) {

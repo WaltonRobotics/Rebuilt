@@ -49,7 +49,7 @@ public class Turret extends SubsystemBase {
 
     private final DoubleLogger log_lcmEncAPos = WaltLogger.logDouble(kLogTab, "EncA/Pos");
     private final DoubleLogger log_lcmEncBPos = WaltLogger.logDouble(kLogTab, "EncB/Pos");
-    private final IntLogger log_lcmEncBFreq = WaltLogger.logInt(kLogTab, "EncB/Freq");
+    private final DoubleLogger log_lcmEncBFreq = WaltLogger.logDouble(kLogTab, "EncB/Freq");
     private final BooleanLogger log_lcmEncBConn = WaltLogger.logBoolean(kLogTab, "EncB/Conn");
 
     private final DoubleLogger log_turretControlPos = WaltLogger.logDouble(kLogTab, "turretControlPos");
@@ -147,7 +147,7 @@ public class Turret extends SubsystemBase {
     }
 
     public void setTurretNeutralMode(NeutralModeValue value) {
-        m_turret.setNeutralMode(value);
+        // m_turret.setNeutralMode(value);
     }
 
     public double getCurrTurretPos() {
@@ -175,7 +175,7 @@ public class Turret extends SubsystemBase {
         double encBVal = m_lcmEncB.get();
         log_lcmEncAPos.accept(encAVal);
         log_lcmEncBPos.accept(encBVal);
-        log_lcmEncBFreq.accept(m_lcmEncB.getFrequency());
+        // log_lcmEncBFreq.accept(m_lcmEncB.getFrequency());
         log_lcmEncBConn.accept(m_lcmEncB.isConnected());
 
         refreshTurretCLErr();

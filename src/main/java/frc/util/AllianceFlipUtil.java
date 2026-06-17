@@ -15,7 +15,7 @@ import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Rotation3d;
 import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.math.geometry.Translation3d;
-import org.wpilib.driverstation.DriverStation.Alliance;
+import org.wpilib.driverstation.Alliance;
 import frc.robot.FieldConstants;
 
 /** Utility functions for flipping from the blue to red alliance. */
@@ -64,7 +64,7 @@ public class AllianceFlipUtil {
   //kept this method, since I don't know what disableHAL is... until that point this shall stay :D
   public static boolean shouldFlip() {
     Optional<Alliance> alliance = WaltDriverStation.getAlliance();
-    return alliance.isPresent() && alliance.get() == Alliance.Red;
+    return alliance.isPresent() && alliance.get() == Alliance.RED;
     // return true;
   }
 }

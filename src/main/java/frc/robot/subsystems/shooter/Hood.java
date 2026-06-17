@@ -127,7 +127,7 @@ public class Hood extends SubsystemBase {
     }
 
     public void setHoodNeutralMode(NeutralModeValue value) {
-        m_hood.setNeutralMode(value);
+        // m_hood.setNeutralMode(value);
     }
 
     @Override

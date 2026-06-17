@@ -13,6 +13,7 @@ import org.wpilib.units.measure.Current;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.Commands;
 import org.wpilib.command2.SubsystemBase;
+import org.wpilib.simulation.DCMotorSim;
 
 import static org.wpilib.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IndexerK.*;
@@ -43,8 +44,9 @@ public class Indexer extends SubsystemBase {
     private final CoastOut m_tunnelMotorIdleReq = new CoastOut();
 
     /* SIM OBJECTS */
+    // 2027-TODO: figure out new LinearSystem generator!!!
     // private final DCMotorSim m_spindexerSim = new DCMotorSim(
-    //     LinearSystemId.createDCMotorSystem(
+    //     LinearSystem.createDCMotorSystem(
     //         DCMotor.getKrakenX60Foc(1),
     //         kSpindexerMOI,
     //         kSpindexerGearing
@@ -53,7 +55,7 @@ public class Indexer extends SubsystemBase {
     // );
 
     // private final DCMotorSim m_tunnelSim = new DCMotorSim(
-    //     LinearSystemId.createDCMotorSystem(
+    //     LinearSystem.createDCMotorSystem(
     //         DCMotor.getKrakenX60Foc(1),
     //         kTunnelMOI,
     //         kTunnelGearing

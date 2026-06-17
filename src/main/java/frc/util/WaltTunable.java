@@ -48,7 +48,7 @@ public class WaltTunable {
         m_enabled = defaultEnabled;
 
         var inst = NetworkTableInstance.getDefault();
-        var kinds = EnumSet.of(NetworkTableEvent.Kind.kValueRemote);
+        var kinds = EnumSet.of(NetworkTableEvent.Kind.VALUE_REMOTE);
 
         m_valueEntry = inst.getDoubleTopic(key + "/value").getEntry(defaultValue);
         m_valueEntry.setDefault(defaultValue);

@@ -9,7 +9,7 @@ import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Rotation3d;
 import org.wpilib.math.geometry.Translation3d;
-import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.math.kinematics.ChassisVelocities;
 import org.wpilib.units.measure.*;
 
 import frc.robot.Constants.ShooterK;
@@ -32,7 +32,7 @@ class ShotCalcPerfTest {
 
     private static Translation3d HUB_TARGET;
     private static Pose2d MID_POSE;
-    private static final ChassisSpeeds MOVING_SPEEDS = new ChassisSpeeds(1.5, -0.5, 0.3);
+    private static final ChassisVelocities MOVING_SPEEDS = new ChassisVelocities(1.5, -0.5, 0.3);
 
     // Precomputed constants as raw doubles (mirrors Constants.ShooterK)
     private static final double kTurretOffsetX_m = org.wpilib.math.util.Units.inchesToMeters(-4.744);
@@ -82,70 +82,8 @@ class ShotCalcPerfTest {
     //  Approach 1: Immutable Units (current implementation)
     // ================================================================
 
-    private static ShotDataLerp immutableCalcShot(Pose2d robot, ChassisSpeeds fieldSpeeds, Translation3d target) {
+    private static ShotDataLerp immutableCalcShot(Pose2d robot, ChassisVelocities fieldSpeeds, Translation3d target) {
         return ShotCalculator.iterativeMovingShotFromInterpolationMap(robot, fieldSpeeds, target, 3);
-    }
-
-    // ================================================================
-    //  Approach 2: Mutable Units
-    //  Reuses MutDistance, MutTime, etc. to avoid allocations in the loop.
-    // ================================================================
-
-    // Preallocated mutable measures for the mutable approach
-    private static final MutDistance mut_dist = Meters.of(0).mutableCopy();
-    private static final MutTime mut_tof = Seconds.of(0).mutableCopy();
-    private static final MutLinearVelocity mut_exitVel = MetersPerSecond.of(0).mutableCopy();
-    private static final MutAngle mut_hoodAngle = Radians.of(0).mutableCopy();
-
-    private static double mutableGetDistanceToTarget(Pose2d robot, Translation3d target) {
-        Pose3d turretPose = new Pose3d(robot).transformBy(ShooterK.kTurretTransform);
-        double dist = turretPose.getTranslation().toTranslation2d().getDistance(target.toTranslation2d());
-        mut_dist.mut_replace(dist, Meters);
-        return dist;
-    }
-
-    private static ShotData mutableIterativeMovingShot(Pose2d robot, ChassisSpeeds fieldSpeeds, Translation3d target) {
-        double distance = mutableGetDistanceToTarget(robot, target);
-        ShotData shot = new ShotData(
-            ShotCalculator.kShotTable.exitVelocity(distance),
-            ShotCalculator.kShotTable.hoodAngle(distance),
-            target);
-
-        // Use the mutable TOF instead of allocating
-        double tofSec = ShotCalculator.kShotTable.tof(distance);
-        mut_tof.mut_replace(tofSec, Seconds);
-
-        Translation3d predictedTarget = target;
-
-        for (int i = 0; i < 3; i++) {
-            ShotData prevShot = shot;
-            double prevTOF = tofSec;
-            Translation3d prevPredTarget = predictedTarget;
-
-            // predictTargetPos inline using mutable TOF
-            double predX = target.getX() - fieldSpeeds.vxMetersPerSecond * tofSec;
-            double predY = target.getY() - fieldSpeeds.vyMetersPerSecond * tofSec;
-            predictedTarget = new Translation3d(predX, predY, target.getZ());
-
-            distance = mutableGetDistanceToTarget(robot, predictedTarget);
-            shot = new ShotData(
-                ShotCalculator.kShotTable.exitVelocity(distance),
-                ShotCalculator.kShotTable.hoodAngle(distance),
-                predictedTarget);
-            tofSec = ShotCalculator.kShotTable.tof(distance);
-            mut_tof.mut_replace(tofSec, Seconds);
-
-            ShotData shotDiff = shot.minus(prevShot);
-            double tofDiff = prevTOF - tofSec;
-
-            if (shotDiff.hoodAngle() < .05 && shotDiff.exitVelocity() < .05
-                    && prevShot.target().getDistance(shot.getTarget()) < .05
-                    && Math.abs(tofDiff) < .005
-                    && prevPredTarget.getDistance(predictedTarget) < .05) {
-                break;
-            }
-        }
-        return shot;
     }
 
     // ================================================================
@@ -325,9 +263,9 @@ class ShotCalcPerfTest {
         double robotY = MID_POSE.getY();
         double robotHeadingRad = MID_POSE.getRotation().getRadians();
         double turretPosRots = 0.0;
-        double vx = MOVING_SPEEDS.vxMetersPerSecond;
-        double vy = MOVING_SPEEDS.vyMetersPerSecond;
-        double omega = MOVING_SPEEDS.omegaRadiansPerSecond;
+        double vx = MOVING_SPEEDS.vx;
+        double vy = MOVING_SPEEDS.vy;
+        double omega = MOVING_SPEEDS.omega;
         double tX = HUB_TARGET.getX();
         double tY = HUB_TARGET.getY();
         double tZ = HUB_TARGET.getZ();
@@ -335,9 +273,6 @@ class ShotCalcPerfTest {
         // --- Warmup all three approaches ---
         for (int i = 0; i < WARMUP_ITERS; i++) {
             immutableCalcShot(MID_POSE, MOVING_SPEEDS, HUB_TARGET);
-        }
-        for (int i = 0; i < WARMUP_ITERS; i++) {
-            mutableIterativeMovingShot(MID_POSE, MOVING_SPEEDS, HUB_TARGET);
         }
         for (int i = 0; i < WARMUP_ITERS; i++) {
             rawCalcShot(robotX, robotY, robotHeadingRad, turretPosRots, vx, vy, omega, tX, tY, tZ);
@@ -350,15 +285,7 @@ class ShotCalcPerfTest {
             immutableResult = immutableCalcShot(MID_POSE, MOVING_SPEEDS, HUB_TARGET);
         }
         long immutableNs = System.nanoTime() - t0;
-
-        // --- Benchmark 2: Mutable Units ---
-        long t1 = System.nanoTime();
-        ShotData mutableResult = null;
-        for (int i = 0; i < BENCH_ITERS; i++) {
-            mutableResult = mutableIterativeMovingShot(MID_POSE, MOVING_SPEEDS, HUB_TARGET);
-        }
-        long mutableNs = System.nanoTime() - t1;
-
+        
         // --- Benchmark 3: Raw Doubles ---
         long t2 = System.nanoTime();
         double[] rawResult = null;
@@ -369,13 +296,11 @@ class ShotCalcPerfTest {
 
         // --- Results ---
         double immutableUs = immutableNs / 1000.0 / BENCH_ITERS;
-        double mutableUs = mutableNs / 1000.0 / BENCH_ITERS;
         double rawUs = rawNs / 1000.0 / BENCH_ITERS;
 
         // Print estimated allocations per call
         System.out.println("Estimated heap allocations per call:");
         System.out.println("  Immutable Units: ~30-50 objects (Pose3d, Translation3d, Distance, Time, Angle, ShotData...)");
-        System.out.println("  Mutable Units:   ~20-35 objects (still Pose3d/Translation3d, but reuses Distance/Time)");
         System.out.println("  Raw Doubles:      1 object (the double[] result array)");
         System.out.println();
 
@@ -383,8 +308,6 @@ class ShotCalcPerfTest {
         System.out.println("At 25Hz ShooterCalc rate:");
         System.out.printf("  Immutable Units: %.1f us/cycle (%.1f%% of 40ms budget)%n",
             immutableUs, immutableUs / 40000.0 * 100);
-        System.out.printf("  Mutable Units:   %.1f us/cycle (%.1f%% of 40ms budget)%n",
-            mutableUs, mutableUs / 40000.0 * 100);
         System.out.printf("  Raw Doubles:     %.1f us/cycle (%.1f%% of 40ms budget)%n",
             rawUs, rawUs / 40000.0 * 100);
         System.out.println();

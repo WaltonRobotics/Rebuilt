@@ -17,22 +17,23 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 import com.ctre.phoenix6.swerve.SwerveRequest.SwerveDriveBrake;
 
-import choreo.Choreo.TrajectoryLogger;
-import choreo.auto.AutoFactory;
-import choreo.trajectory.SwerveSample;
+// import choreo.Choreo.TrajectoryLogger;
+// import choreo.auto.AutoFactory;
+// import choreo.trajectory.SwerveSample;
 import org.wpilib.math.util.MathUtil;
 import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.controller.PIDController;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Translation2d;
-import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.math.kinematics.ChassisVelocities;
 import org.wpilib.math.kinematics.SwerveDriveKinematics;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N3;
 import org.wpilib.units.measure.Angle;
+import org.wpilib.driverstation.Alliance;
 import org.wpilib.driverstation.DriverStation;
-import org.wpilib.driverstation.DriverStation.Alliance;
+import org.wpilib.driverstation.RobotState;
 import org.wpilib.system.Notifier;
 import org.wpilib.system.RobotController;
 import org.wpilib.command2.Command;
@@ -77,9 +78,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private final PIDController m_pathXController = new PIDController(4.69, 0, 0);
     private final PIDController m_pathYController = new PIDController(4.69, 0, 0);
     private final PIDController m_pathThetaController = new PIDController(4.68, 0, 0);
-    private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds = new SwerveRequest.ApplyFieldSpeeds()
-        .withDriveRequestType(DriveRequestType.Velocity)
-        .withSteerRequestType(SteerRequestType.Position);
+    // private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds = new SwerveRequest.ApplyFieldSpeeds()
+    //     .withDriveRequestType(DriveRequestType.Velocity)
+    //     .withSteerRequestType(SteerRequestType.Position);
 
     private final Detection detection = new Detection();
 
@@ -274,10 +275,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
          * Otherwise, only check and apply the operator perspective if the DS is disabled.
          * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
          */
-        if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
+        if (!m_hasAppliedOperatorPerspective || RobotState.isDisabled()) {
             WaltDriverStation.getAlliance().ifPresent(allianceColor -> {
                 setOperatorPerspectiveForward(
-                    allianceColor == Alliance.Red
+                    allianceColor == Alliance.RED
                         ? kRedAlliancePerspectiveRotation
                         : kBlueAlliancePerspectiveRotation
                 );
@@ -286,10 +287,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         }
 
         var state = getState();
-        var speeds = m_kinematics.toChassisSpeeds(state.ModuleStates);
-        log_vxMPS.accept(speeds.vxMetersPerSecond);
-        log_vyMPS.accept(speeds.vyMetersPerSecond);
-        log_absoluteRobotSpeed.accept(Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
+        var speeds = m_kinematics.toChassisVelocities(state.ModuleVelocities);
+        log_vxMPS.accept(speeds.vx);
+        log_vyMPS.accept(speeds.vy);
+        log_absoluteRobotSpeed.accept(Math.hypot(speeds.vx, speeds.vy));
     }
 
     private void startSimThread() {
@@ -316,7 +317,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      */
     @Override
     public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
-        super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds));
+        // 2027-TODO: find new correct method (Utils.fpgaToCurrentTime)!!!
+        super.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds);
     }
 
     /**
@@ -338,7 +340,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         double timestampSeconds,
         Matrix<N3, N1> visionMeasurementStdDevs
     ) {
-        super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+        // 2027-TODO: find new correct method (Utils.fpgaToCurrentTime)!!!
+        super.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
     }
 
     /**
@@ -349,37 +352,40 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      */
     @Override
     public Optional<Pose2d> samplePoseAt(double timestampSeconds) {
-        return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
+        // 2027-TODO: find new correct method!!!
+        return super.samplePoseAt(timestampSeconds);
+        // return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
     }
 
-    public ChassisSpeeds getChassisSpeeds() {
-        return m_kinematics.toChassisSpeeds(getState().ModuleStates);
+    public ChassisVelocities getChassisVelocities() {
+        // 2027-TODO: figure out swerveState!!!
+        return m_kinematics.toChassisVelocities(getState().ModuleVelocities);
     }
 
-    private void followPath(SwerveSample sample) {
-        m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
-        var pose = getState().Pose;
-        // var samplePose = sample.getPose();
+    // private void followPath(SwerveSample sample) {
+    //     m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
+    //     var pose = getState().Pose;
+    //     // var samplePose = sample.getPose();
 
-        // var speed = getState().Speeds;
-        var targetSpeeds = sample.getChassisSpeeds();
+    //     // var speed = getState().Speeds;
+    //     var targetSpeeds = sample.getChassisVelocities();
 
-        targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(
-            pose.getX(), sample.x
-        );
-        targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(
-            pose.getY(), sample.y
-        );
-        targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(
-            pose.getRotation().getRadians(), sample.heading
-        );
+    //     targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(
+    //         pose.getX(), sample.x
+    //     );
+    //     targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(
+    //         pose.getY(), sample.y
+    //     );
+    //     targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(
+    //         pose.getRotation().getRadians(), sample.heading
+    //     );
 
-        setControl(
-            m_pathApplyFieldSpeeds.withSpeeds(targetSpeeds)
-                .withWheelForceFeedforwardsX(sample.moduleForcesX())
-                .withWheelForceFeedforwardsY(sample.moduleForcesY())
-        );
-    }
+    //     setControl(
+    //         m_pathApplyFieldSpeeds.withSpeeds(targetSpeeds)
+    //             .withWheelForceFeedforwardsX(sample.moduleForcesX())
+    //             .withWheelForceFeedforwardsY(sample.moduleForcesY())
+    //     );
+    // }
 
     public Command xBrakeCmd() {
         final SwerveRequest.SwerveDriveBrake stopReq = new SwerveDriveBrake();
@@ -392,17 +398,17 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      *
      * @return AutoFactory for this drivetrain
      */
-    public AutoFactory createAutoFactory() {
-        return createAutoFactory((traj, isStart) -> {
-            SwerveSample sample = traj.sampleAt(4.25, false).get();
-            WaltLogger.timedPrint(String.format("TrajLog - isStart: %b", isStart));
-            WaltLogger.timedPrint("Sample at 4.25s (PRE BUMP); X:" + sample.getPose().getX() + " Y:" + traj.sampleAt(4.25, false).get().getPose().getY());
-            log_sampleAt_pose.accept(sample.getPose());
-            log_sampleAt_velocityX.accept(sample.vx);
-            log_sampleAt_velocityY.accept(sample.vy);
-            log_currentAutonTotalTime.accept(traj.getTotalTime());
-        });
-    }
+    // public AutoFactory createAutoFactory() {
+    //     return createAutoFactory((traj, isStart) -> {
+    //         SwerveSample sample = traj.sampleAt(4.25, false).get();
+    //         WaltLogger.timedPrint(String.format("TrajLog - isStart: %b", isStart));
+    //         WaltLogger.timedPrint("Sample at 4.25s (PRE BUMP); X:" + sample.getPose().getX() + " Y:" + traj.sampleAt(4.25, false).get().getPose().getY());
+    //         log_sampleAt_pose.accept(sample.getPose());
+    //         log_sampleAt_velocityX.accept(sample.vx);
+    //         log_sampleAt_velocityY.accept(sample.vy);
+    //         log_currentAutonTotalTime.accept(traj.getTotalTime());
+    //     });
+    // }
 
     /**
      * Creates a new auto factory for this drivetrain with the given
@@ -411,16 +417,16 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      * @param trajLogger Logger for the trajectory
      * @return AutoFactory for this drivetrain
      */
-    public AutoFactory createAutoFactory(TrajectoryLogger<SwerveSample> trajLogger) {
-        return new AutoFactory(
-            () -> getState().Pose,
-            this::resetPose,
-            this::followPath,
-            true,
-            this,
-            trajLogger
-        );
-    }
+    // public AutoFactory createAutoFactory(TrajectoryLogger<SwerveSample> trajLogger) {
+    //     return new AutoFactory(
+    //         () -> getState().Pose,
+    //         this::resetPose,
+    //         this::followPath,
+    //         true,
+    //         this,
+    //         trajLogger
+    //     );
+    // }
 
     /**
      * @param desPose Posd2d to move to

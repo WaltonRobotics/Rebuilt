@@ -8,7 +8,6 @@
 
 package frc.robot;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Translation2d;
@@ -355,7 +354,7 @@ public class FieldConstants {
                     "welded",
                     name + ".json");
               layout = new AprilTagFieldLayout(p);
-              layoutString = new ObjectMapper().writeValueAsString(layout);
+            //   layoutString = new ObjectMapper().writeValueAsString(layout);
             } catch (IOException e) {
               throw new RuntimeException(e);
             }

@@ -17,9 +17,9 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import org.wpilib.math.util.MathUtil;
 import org.wpilib.math.geometry.Pose2d;
-import org.wpilib.math.kinematics.ChassisSpeeds;
-import org.wpilib.math.system.plant.DCMotor;
-import org.wpilib.math.system.plant.LinearSystemId;
+import org.wpilib.math.kinematics.ChassisVelocities;
+import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.LinearSystem;
 
 import org.wpilib.system.Timer;
 import org.wpilib.system.Tracer;
@@ -109,11 +109,13 @@ public class Shooter extends SubsystemBase {
         .and(trg_debounceHit);
 
     /* SIM OBJECTS */
-    private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(
-            DCMotor.getKrakenX44(2), kShooterMoI, kShooterGearing), DCMotor.getKrakenX60Foc(2) // returns gearbox
-    );
 
-    // private final DCMotorSim m_turretSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(
+    // 2027-TODO: figure out new LinearSystem generator!!!
+    // private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystem.createFlywheelSystem(
+            // DCMotor.getKrakenX44(2), kShooterMoI, kShooterGearing), DCMotor.getKrakenX60Foc(2) // returns gearbox
+    // );
+
+    // private final DCMotorSim m_turretSim = new DCMotorSim(LinearSystem.createDCMotorSystem(
     //         DCMotor.getKrakenX44Foc(1), kTurretMoI, kTurretGearing), DCMotor.getKrakenX44Foc(1) // returns gearbox
     // );
 
@@ -136,7 +138,7 @@ public class Shooter extends SubsystemBase {
     private final DoubleLogger log_driverAddedRPS = WaltLogger.logDouble(kLogTab, "driverAddedRPS");
 
     /* CONSTRUCTOR */
-    public Shooter(Supplier<Pose2d> poseSupplier, Supplier<SwerveDriveState> threadsafeSwerveStateSup, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
+    public Shooter(Supplier<Pose2d> poseSupplier, Supplier<SwerveDriveState> threadsafeSwerveStateSup, Supplier<ChassisVelocities> fieldSpeedsSupplier) {
         m_hood = new Hood();
         m_turret = new Turret();
         m_threadsafeSwerveSup = threadsafeSwerveStateSup;
@@ -180,10 +182,6 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> setShooterVelocity(supp_RPS.get()));
     }
 
-    public void setShooterVelocitySupp(Supplier<AngularVelocity> supp_RPS) {
-        run(() -> setShooterVelocity(supp_RPS.get()));
-    }
-
     public Command shootFromCalc() {
         return run(() -> setShooterVelocity(m_calcFlywheelVelocityRotPerSec));
     }
@@ -197,9 +195,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command driverRPSIncreaseWhileHeldCmd() {
-        return Commands.runOnce(() -> {
-            driverRPSAlterStatic(true);
-        }).finallyDo(() -> driverResetRPSAlter());
+        return driverRPSAlterStatic(true).finallyDo(() -> driverResetRPSAlter());
     }
 
     public Command driverRPSAlterDynamic(boolean increase) {
@@ -338,7 +334,7 @@ public class Shooter extends SubsystemBase {
                         : calcData.shooterReferenceRps();
                     if (kAllowDriverRPSTweak) { // ENABLE THIS TO ALLOW DRIVER RPS TWEAK
                         m_calcFlywheelVelocityRotPerSec += m_driverRPSTweak;
-                        m_calcFlywheelVelocityRotPerSec = MathUtil.clamp(m_calcFlywheelVelocityRotPerSec, 0, kShooterMaxRPSd);    //clamp here or clamp only when setShooterVel is called?
+                        m_calcFlywheelVelocityRotPerSec = Math.clamp(m_calcFlywheelVelocityRotPerSec, 0, kShooterMaxRPSd);    //clamp here or clamp only when setShooterVel is called?
                     }
                 }
             }
@@ -385,6 +381,7 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        WaltMotorSim.updateSimFX(m_shooterA, m_shooterSim);
+        // 2027-TODO: figure out new LinearSystem generator!!!
+        // WaltMotorSim.updateSimFX(m_shooterA, m_shooterSim);
     }
 }

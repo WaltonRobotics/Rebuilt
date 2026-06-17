@@ -7,7 +7,7 @@ import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Translation3d;
-import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.math.kinematics.ChassisVelocities;
 import org.wpilib.units.measure.*;
 
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
@@ -33,10 +33,10 @@ class ShotCalcTest {
     private static Pose2d MID_POSE;     // ~3.9m from hub
     private static Pose2d FAR_POSE;     // ~5.7m from hub
 
-    private static final ChassisSpeeds ZERO_SPEEDS = new ChassisSpeeds(0, 0, 0);
-    private static final ChassisSpeeds TRANSLATING_SPEEDS = new ChassisSpeeds(2.0, 1.0, 0);
-    private static final ChassisSpeeds ROTATING_SPEEDS = new ChassisSpeeds(0, 0, 1.0);
-    private static final ChassisSpeeds COMBINED_SPEEDS = new ChassisSpeeds(1.5, -0.5, 0.5);
+    private static final ChassisVelocities ZERO_SPEEDS = new ChassisVelocities(0, 0, 0);
+    private static final ChassisVelocities TRANSLATING_SPEEDS = new ChassisVelocities(2.0, 1.0, 0);
+    private static final ChassisVelocities ROTATING_SPEEDS = new ChassisVelocities(0, 0, 1.0);
+    private static final ChassisVelocities COMBINED_SPEEDS = new ChassisVelocities(1.5, -0.5, 0.5);
 
     @BeforeAll
     static void setup() {
@@ -206,7 +206,7 @@ class ShotCalcTest {
         @Test
         void movingRobot_targetShiftsOppositeToVelocity() {
             Translation3d target = new Translation3d(5, 4, 1.5);
-            ChassisSpeeds speeds = new ChassisSpeeds(2.0, 0, 0); // moving +x at 2 m/s
+            ChassisVelocities speeds = new ChassisVelocities(2.0, 0, 0); // moving +x at 2 m/s
             Translation3d predicted = ShotCalculator.predictTargetPos(
                 target, speeds, Seconds.of(1.0));
 
@@ -228,7 +228,7 @@ class ShotCalcTest {
         @Test
         void movingInY_shiftsY() {
             Translation3d target = new Translation3d(5, 4, 1.5);
-            ChassisSpeeds speeds = new ChassisSpeeds(0, 3.0, 0); // moving +y at 3 m/s
+            ChassisVelocities speeds = new ChassisVelocities(0, 3.0, 0); // moving +y at 3 m/s
             Translation3d predicted = ShotCalculator.predictTargetPos(
                 target, speeds, Seconds.of(0.5));
             assertEquals(5.0, predicted.getX(), 1e-9);
@@ -370,7 +370,7 @@ class ShotCalcTest {
         @Test
         void nearMinDistance_lowSpeed_smallShift() {
             Pose2d pose = poseAtDistance(1.3);
-            ChassisSpeeds slow = new ChassisSpeeds(0.5, 0, 0);
+            ChassisVelocities slow = new ChassisVelocities(0.5, 0, 0);
             ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 pose, slow, HUB_TARGET, 5);
             assertShotDataValid(shot);
@@ -382,7 +382,7 @@ class ShotCalcTest {
         @Test
         void nearMinDistance_highSpeed_largerShift() {
             Pose2d pose = poseAtDistance(1.3);
-            ChassisSpeeds fast = new ChassisSpeeds(3.0, 1.5, 0);
+            ChassisVelocities fast = new ChassisVelocities(3.0, 1.5, 0);
             ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 pose, fast, HUB_TARGET, 5);
             assertShotDataValid(shot);
@@ -397,7 +397,7 @@ class ShotCalcTest {
             double prevShift = 0;
             for (double vx = 0.5; vx <= 4.0; vx += 0.5) {
                 ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
-                    pose, new ChassisSpeeds(vx, 0, 0), HUB_TARGET, 5);
+                    pose, new ChassisVelocities(vx, 0, 0), HUB_TARGET, 5);
                 assertShotDataValid(shot);
                 double shift = predShift(shot);
                 assertTrue(shift >= prevShift - 0.01,
@@ -412,7 +412,7 @@ class ShotCalcTest {
         @Test
         void nearMaxDistance_lowSpeed_smallShift() {
             Pose2d pose = poseAtDistance(7.0);
-            ChassisSpeeds slow = new ChassisSpeeds(0.5, 0, 0);
+            ChassisVelocities slow = new ChassisVelocities(0.5, 0, 0);
             ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 pose, slow, HUB_TARGET, 5);
             assertShotDataValid(shot);
@@ -424,7 +424,7 @@ class ShotCalcTest {
         @Test
         void nearMaxDistance_highSpeed_largerShift() {
             Pose2d pose = poseAtDistance(7.0);
-            ChassisSpeeds fast = new ChassisSpeeds(3.0, 1.5, 0);
+            ChassisVelocities fast = new ChassisVelocities(3.0, 1.5, 0);
             ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 pose, fast, HUB_TARGET, 5);
             assertShotDataValid(shot);
@@ -439,7 +439,7 @@ class ShotCalcTest {
             double prevShift = 0;
             for (double vx = 0.5; vx <= 4.0; vx += 0.5) {
                 ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
-                    pose, new ChassisSpeeds(vx, 0, 0), HUB_TARGET, 5);
+                    pose, new ChassisVelocities(vx, 0, 0), HUB_TARGET, 5);
                 assertShotDataValid(shot);
                 double shift = predShift(shot);
                 assertTrue(shift >= prevShift - 0.01,
@@ -471,7 +471,7 @@ class ShotCalcTest {
 
         @Test
         void farShot_largerShiftThanClose_atSameSpeed() {
-            ChassisSpeeds speed = new ChassisSpeeds(2.0, 0, 0);
+            ChassisVelocities speed = new ChassisVelocities(2.0, 0, 0);
             ShotDataLerp closeShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 poseAtDistance(1.5), speed, HUB_TARGET, 5);
             ShotDataLerp farShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
@@ -489,7 +489,7 @@ class ShotCalcTest {
         void lateralVelocity_shiftsYComponent() {
             Pose2d pose = poseAtDistance(4.0);
             ShotDataLerp shotY = ShotCalculator.iterativeMovingShotFromInterpolationMap(
-                pose, new ChassisSpeeds(0, 2.0, 0), HUB_TARGET, 5);
+                pose, new ChassisVelocities(0, 2.0, 0), HUB_TARGET, 5);
             assertShotDataValid(shotY);
             double dy = Math.abs(shotY.getTarget().getY() - HUB_TARGET.getY());
             assertTrue(dy > 0.1,
