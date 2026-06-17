@@ -104,17 +104,18 @@ public class ShotCalculator {
 
         //spoof table
         shot.add(8.627, 69.000 + kScoringRPSBoost, 1.160, 1.65, 0.500);
-        shot.add(7.801, 65.865 + kScoringRPSBoost, 1.106, 1.37, 0.500); //1.524
-        shot.add(6.973, 62.723 + kScoringRPSBoost, 1.046, 1.33, 0.500); //1.411
-        shot.add(6.126, 59.509 + kScoringRPSBoost, 0.977, 1.33, 0.500); //1.308
-        shot.add(5.577, 57.426 + kScoringRPSBoost, 0.927, 1.19, 0.500); //1.249
-        shot.add(4.555, 53.548 + kScoringRPSBoost, 0.819, 1.12, 0.500); //1.153
-        shot.add(4.231, 52.318 + kScoringRPSBoost, 0.779, 1.09, 0.500); //1.127
-        shot.add(3.798, 50.675 + kScoringRPSBoost, 0.721, 1.08, 0.500); //1.095
-        shot.add(3.267, 48.660 + kScoringRPSBoost, 0.641, 0.95, 0.500); //1.060
-        shot.add(2.826, 46.986 + kScoringRPSBoost, 0.563, 0.93, 0.500); //1.035
-        shot.add(2.212, 44.656 + kScoringRPSBoost, 0.432, 0.98, 0.500); //1.006
-        shot.add(1.929, 43.582 + kScoringRPSBoost, 0.359, 0.87, 0.500); //0.995
+        //shot.add(7.801, 65.865 + kScoringRPSBoost, 1.106, 1.37, 0.500); //1.524
+        //shot.add(6.973, 62.723 + kScoringRPSBoost, 1.046, 1.33, 0.500); //1.411
+        //shot.add(6.126, 59.509 + kScoringRPSBoost, 0.977, 1.33, 0.500); //1.308
+        shot.add(5.577, 57.426 + kScoringRPSBoost, 0.927, 1.4, 0.500); //1.249 // 1.18
+        shot.add(4.979, 55.160 + kScoringRPSBoost, 0.866, 1.36, 0.500); //1.249 // 1.18
+        shot.add(4.555, 53.548 + kScoringRPSBoost, 0.819, 1.33, 0.500); //1.153 // 1.12
+        shot.add(4.231, 52.318 + kScoringRPSBoost, 0.779, 1.30, 0.500); //1.127 // 1.09
+        shot.add(3.798, 51.750 + kScoringRPSBoost, 0.721, 1.29, 0.500); //1.095 // 1.08
+        shot.add(3.267, 48.660 + kScoringRPSBoost, 0.641, 1.25, 0.500); //1.060 // 0.95
+        shot.add(2.826, 46.986 + kScoringRPSBoost, 0.563, 1.22, 0.500); //1.035 // 0.93
+        shot.add(2.212, 44.656 + kScoringRPSBoost, 0.432, 1.23, 0.500); //1.006 // 0.98
+        shot.add(1.929, 43.582 + kScoringRPSBoost, 0.359, 1.14, 0.500); //0.995 // 0.87
         shot.add(1.093, 40.410 + kScoringRPSBoost, 0.056, 1.02, 0.500); //0.972
         shot.add(0.985, 40.000 + kScoringRPSBoost, 0.000, 0.97, 0.500);
 
