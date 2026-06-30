@@ -184,8 +184,17 @@ public class Shooter extends SubsystemBase {
         run(() -> setShooterVelocity(supp_RPS.get()));
     }
 
-    public Command shootFromCalc() {
-        return run(() -> setShooterVelocity(m_calcFlywheelVelocityRotPerSec));
+    public Command shootFromCalc(boolean forceStaySpunUp) {
+        if (forceStaySpunUp) {
+            return run(() -> setShooterVelocity(
+                getShooterVelocityRotPerSec() < 
+                    (m_calcFlywheelVelocityRotPerSec * kForceStaySpinUpRange) ? m_calcFlywheelVelocityRotPerSec * kForceStaySpinUpBooster 
+                                                                          : m_calcFlywheelVelocityRotPerSec
+            ));
+            // return run(() -> setShooterVelocity(Math.min(m_calcFlywheelVelocityRotPerSec + (m_calcFlywheelVelocityRotPerSec - getShooterVelocityRotPerSec()), kShooterMaxRPSd)));
+        } else {
+            return run(() -> setShooterVelocity(m_calcFlywheelVelocityRotPerSec));
+        }
     }
 
     public Command hoodFromCalc() {

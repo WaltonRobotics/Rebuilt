@@ -92,6 +92,7 @@ public class Constants {
 
         public static final boolean kUseStaticShot = false;
         public static final boolean kAllowDriverRPSTweak = false;
+        public static final boolean kForceStaySpunUp = false;
 
         // private static final Pose3dLogger log_turretTransform = WaltLogger.logPose3d(kLogTab, "TurretTransformRaw");
         // static {
@@ -114,6 +115,12 @@ public class Constants {
         // sin(turretRelAngle) = 0 at 0/180°, +1 at 90° (left bias), -1 at 270° (right bias).
         // This gain (in rotations) is subtracted * sin to counter the bias. Tune on robot.
         public static final double kTurretLateralBiasGainRots = 0;//-0.005
+
+        // forces shooter to stay at speed by targeting a higher speed when below a certain speed
+        // kForceStaySpinUpRange: multiplied with calculated speed to determine speed below which to force boost
+        // kForceStaySpinUpBooster: multiplied with calculated speed to determine speed to target during force boosting
+        public static final double kForceStaySpinUpRange = 0.9;
+        public static final double kForceStaySpinUpBooster = 1.1;
 
         public static final int kHopperCapacity = 55; //TODO: find true max
 
