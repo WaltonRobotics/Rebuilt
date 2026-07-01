@@ -429,88 +429,136 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     // }
 
     /**
-     * @param desPose Posd2d to move to
-     * @return a Command that makes the robot move to the desired Pose2d
+     * Drives the robot to a target Pose2d
+     * 
+     * @param target Target Pose2d (translation + heading to face)
+     * @param tolerance Distance tolerance in meters to consider "at point"
+     * @param maxVel Maximum translation speed (m/s)
+     * @param maxRVel Maximum rotational speed (rad/s)
+     * @param robotYComp Center-of-rotation Y offset (meters) for robot-specific compensation
+     * @param isContinuous If true, drive at maxVel without slowing (for waypoint chaining)
+     * @return Command that ends when within tolerance (or runs until interrupted if isContinuous)
      */
-    public Command roboToPose(Pose2d desPose, double tolerance) {
-        return Commands.runOnce(() -> {
-            Pose2d curPose = getState().Pose;
-            double xSpeed = m_pathXController.calculate(curPose.getX(), desPose.getX());
-            double ySpeed = m_pathYController.calculate(curPose.getY(), desPose.getY());
-            double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), desPose.getRotation().getRadians());
-            setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
-        }).andThen(Commands.waitUntil(() -> isNearPose(getState().Pose, desPose, tolerance)))
-          .andThen(() -> setControl(swreq_drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0)));
+    public Command driveToPoint(Pose2d target, double tolerance, double maxVel, double maxRVel, double robotYComp, boolean isContinuous) {
+        m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+        return runEnd(() -> {
+            Pose2d pose = getState().Pose;
+            Translation2d diff = target.getTranslation().minus(pose.getTranslation());
+            double distance = diff.getNorm();
+
+           //isContinuous skips deceleration for waypoint chaining.
+            double translationMag = isContinuous
+                ? maxVel
+                : Math.min(-m_pathXController.calculate(distance, 0.0), maxVel);
+
+            double xVel = distance > 1e-6 ? translationMag * diff.getX() / distance : 0;
+            double yVel = distance > 1e-6 ? translationMag * diff.getY() / distance : 0;
+
+            // Rotation PID with continuous-input heading error, clamped to maxRVel
+            double rVel = MathUtil.clamp(
+                m_pathThetaController.calculate(
+                    pose.getRotation().getRadians(),
+                    target.getRotation().getRadians()
+                ),
+                -maxRVel, maxRVel
+            );
+
+            setControl(swreq_drive
+                .withVelocityX(xVel)
+                .withVelocityY(yVel)
+                .withRotationalRate(rVel)
+                .withCenterOfRotationY(robotYComp));
+        }, () -> setControl(swreq_drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0)))
+        .until(() -> {
+            Translation2d diff = target.getTranslation().minus(getState().Pose.getTranslation());
+            return !isContinuous && diff.getNorm() < tolerance;
+        });
     }
 
-    public boolean isNearPose(Pose2d curPose, Pose2d desPose, double translationTolerance, double rotationTolerance) {
-        return isNearTranslation(curPose.getTranslation(), desPose.getTranslation(), translationTolerance)
-            && isNearRotation(curPose.getRotation(), desPose.getRotation(), rotationTolerance);
-    }
+    // /**
+    //  * @param desPose Posd2d to move to
+    //  * @return a Command that makes the robot move to the desired Pose2d
+    //  */
+    // public Command roboToPose(Pose2d desPose, double tolerance) {
+    //     return Commands.runOnce(() -> {
+    //         Pose2d curPose = getState().Pose;
+    //         double xSpeed = m_pathXController.calculate(curPose.getX(), desPose.getX());
+    //         double ySpeed = m_pathYController.calculate(curPose.getY(), desPose.getY());
+    //         double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), desPose.getRotation().getRadians());
+    //         setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
+    //     }).andThen(Commands.waitUntil(() -> isNearPose(getState().Pose, desPose, tolerance)))
+    //       .andThen(() -> setControl(swreq_drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0)));
+    // }
 
-    public boolean isNearPose(Pose2d curPose, Pose2d desPose, double translationTolerance) {
-        return isNearTranslation(curPose.getTranslation(), desPose.getTranslation(), translationTolerance);
-    }
+    // public boolean isNearPose(Pose2d curPose, Pose2d desPose, double translationTolerance, double rotationTolerance) {
+    //     return isNearTranslation(curPose.getTranslation(), desPose.getTranslation(), translationTolerance)
+    //         && isNearRotation(curPose.getRotation(), desPose.getRotation(), rotationTolerance);
+    // }
 
-    /**
-     * @param desRotation Rotation2d to turn to
-     * @return a Command that makes the robot turn to the desired Rotation2d
-     */
-    public Command roboToRotation(Rotation2d desRotation, double tolerance) {
-        return Commands.runOnce(() -> {
-            Rotation2d curRotation = getState().Pose.getRotation();
-            double thetaSpeed = m_pathThetaController.calculate(curRotation.getRadians(), desRotation.getRadians());
-            setControl(swreq_drive.withRotationalRate(thetaSpeed));
-        }).andThen(Commands.waitUntil(() -> isNearRotation(getState().Pose.getRotation(), desRotation, tolerance)))
-          .andThen(() -> setControl(swreq_drive.withRotationalRate(0)));
-    }
+    // public boolean isNearPose(Pose2d curPose, Pose2d desPose, double translationTolerance) {
+    //     return isNearTranslation(curPose.getTranslation(), desPose.getTranslation(), translationTolerance);
+    // }
 
-    public boolean isNearRotation(Rotation2d curRotation, Rotation2d desRotation, double tolerance) {
-        return Math.abs(MathUtil.angleModulus(curRotation.getRadians() - desRotation.getRadians())) <= tolerance;
-    }
+    // /**
+    //  * @param desRotation Rotation2d to turn to
+    //  * @return a Command that makes the robot turn to the desired Rotation2d
+    //  */
+    // public Command roboToRotation(Rotation2d desRotation, double tolerance) {
+    //     return Commands.runOnce(() -> {
+    //         Rotation2d curRotation = getState().Pose.getRotation();
+    //         double thetaSpeed = m_pathThetaController.calculate(curRotation.getRadians(), desRotation.getRadians());
+    //         setControl(swreq_drive.withRotationalRate(thetaSpeed));
+    //     }).andThen(Commands.waitUntil(() -> isNearRotation(getState().Pose.getRotation(), desRotation, tolerance)))
+    //       .andThen(() -> setControl(swreq_drive.withRotationalRate(0)));
+    // }
 
-    /**
-     * @param desTranslation Translation2d to go to
-     * @return a Command that makes the robot go to the desired Translation2d
-     */
-    public Command roboToTranslation(Translation2d desTranslation, double tolerance) {
-        return Commands.runOnce(() -> {
-            Translation2d curTranslation = getState().Pose.getTranslation();
-            double xSpeed = m_pathXController.calculate(curTranslation.getX(), desTranslation.getX());
-            double ySpeed = m_pathYController.calculate(curTranslation.getY(), desTranslation.getY());
-            setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed));
-        }).andThen(Commands.waitUntil(() -> isNearTranslation(getState().Pose.getTranslation(), desTranslation, tolerance)))
-          .andThen(() -> setControl(swreq_drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0)));
-    }
+    // public boolean isNearRotation(Rotation2d curRotation, Rotation2d desRotation, double tolerance) {
+    //     return Math.abs(MathUtil.angleModulus(curRotation.getRadians() - desRotation.getRadians())) <= tolerance;
+    // }
 
-    public boolean isNearTranslation(Translation2d curTranslation, Translation2d desTranslation, double tolerance) {
-        return Math.hypot(
-            desTranslation.getX() - curTranslation.getX(),
-            desTranslation.getY() - curTranslation.getY()
-        ) <= tolerance;
-    }
+    // /**
+    //  * @param desTranslation Translation2d to go to
+    //  * @return a Command that makes the robot go to the desired Translation2d
+    //  */
+    // public Command roboToTranslation(Translation2d desTranslation, double tolerance) {
+    //     return Commands.runOnce(() -> {
+    //         Translation2d curTranslation = getState().Pose.getTranslation();
+    //         double xSpeed = m_pathXController.calculate(curTranslation.getX(), desTranslation.getX());
+    //         double ySpeed = m_pathYController.calculate(curTranslation.getY(), desTranslation.getY());
+    //         setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed));
+    //     }).andThen(Commands.waitUntil(() -> isNearTranslation(getState().Pose.getTranslation(), desTranslation, tolerance)))
+    //       .andThen(() -> setControl(swreq_drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0)));
+    // }
 
-    /**
-     * robot goes to detected target
-     */
-    public Command swerveToObject() {   
-        PhotonTrackedTarget target = detection.getClosestObject();
-        Pose2d destination = detection.targetToPose(getState().Pose, target);
-        detection.addFuel(destination);
+    // public boolean isNearTranslation(Translation2d curTranslation, Translation2d desTranslation, double tolerance) {
+    //     return Math.hypot(
+    //         desTranslation.getX() - curTranslation.getX(),
+    //         desTranslation.getY() - curTranslation.getY()
+    //     ) <= tolerance;
+    // }
+
+    // /**
+    //  * robot goes to detected target
+    //  */
+    // public Command swerveToObject() {   
+    //     PhotonTrackedTarget target = detection.getClosestObject();
+    //     Pose2d destination = detection.targetToPose(getState().Pose, target);
+    //     detection.addFuel(destination);
         
-        return roboToPose(destination, 0.1);
-    }
+    //     return roboToPose(destination, 0.1);
+    // }
 
-    public static Pose2d faceFuelPose(Pose2d robotPose, Pose2d fuelLocation) {
-        double dx = fuelLocation.getX() - robotPose.getX();
-        double dy = fuelLocation.getY() - robotPose.getY();
+    // public static Pose2d faceFuelPose(Pose2d robotPose, Pose2d fuelLocation) {
+    //     double dx = fuelLocation.getX() - robotPose.getX();
+    //     double dy = fuelLocation.getY() - robotPose.getY();
 
-        Rotation2d desiredRotation = new Rotation2d(Math.atan2(dy, dx)).plus(Rotation2d.fromDegrees(180));
+    //     Rotation2d desiredRotation = new Rotation2d(Math.atan2(dy, dx)).plus(Rotation2d.fromDegrees(180));
 
-        return new Pose2d(
-            fuelLocation.getX(),
-            fuelLocation.getY(),
-            desiredRotation
-        );
-    }
+    //     return new Pose2d(
+    //         fuelLocation.getX(),
+    //         fuelLocation.getY(),
+    //         desiredRotation
+    //     );
+    // }
 }
