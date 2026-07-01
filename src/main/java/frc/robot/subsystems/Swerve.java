@@ -439,42 +439,42 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      * @param isContinuous If true, drive at maxVel without slowing (for waypoint chaining)
      * @return Command that ends when within tolerance (or runs until interrupted if isContinuous)
      */
-    public Command driveToPoint(Pose2d target, double tolerance, double maxVel, double maxRVel, double robotYComp, boolean isContinuous) {
-        m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
+    // public Command driveToPoint(Pose2d target, double tolerance, double maxVel, double maxRVel, double robotYComp, boolean isContinuous) {
+    //     m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
 
-        return runEnd(() -> {
-            Pose2d pose = getState().Pose;
-            Translation2d diff = target.getTranslation().minus(pose.getTranslation());
-            double distance = diff.getNorm();
+    //     return runEnd(() -> {
+    //         Pose2d pose = getState().Pose;
+    //         Translation2d diff = target.getTranslation().minus(pose.getTranslation());
+    //         double distance = diff.getNorm();
 
-           //isContinuous skips deceleration for waypoint chaining.
-            double translationMag = isContinuous
-                ? maxVel
-                : Math.min(-m_pathXController.calculate(distance, 0.0), maxVel);
+    //        //isContinuous skips deceleration for waypoint chaining.
+    //         double translationMag = isContinuous
+    //             ? maxVel
+    //             : Math.min(-m_pathXController.calculate(distance, 0.0), maxVel);
 
-            double xVel = distance > 1e-6 ? translationMag * diff.getX() / distance : 0;
-            double yVel = distance > 1e-6 ? translationMag * diff.getY() / distance : 0;
+    //         double xVel = distance > 1e-6 ? translationMag * diff.getX() / distance : 0;
+    //         double yVel = distance > 1e-6 ? translationMag * diff.getY() / distance : 0;
 
-            // Rotation PID with continuous-input heading error, clamped to maxRVel
-            double rVel = MathUtil.clamp(
-                m_pathThetaController.calculate(
-                    pose.getRotation().getRadians(),
-                    target.getRotation().getRadians()
-                ),
-                -maxRVel, maxRVel
-            );
+    //         // Rotation PID with continuous-input heading error, clamped to maxRVel
+    //         double rVel = MathUtil.clamp(
+    //             m_pathThetaController.calculate(
+    //                 pose.getRotation().getRadians(),
+    //                 target.getRotation().getRadians()
+    //             ),
+    //             -maxRVel, maxRVel
+    //         );
 
-            setControl(swreq_drive
-                .withVelocityX(xVel)
-                .withVelocityY(yVel)
-                .withRotationalRate(rVel)
-                .withCenterOfRotationY(robotYComp));
-        }, () -> setControl(swreq_drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0)))
-        .until(() -> {
-            Translation2d diff = target.getTranslation().minus(getState().Pose.getTranslation());
-            return !isContinuous && diff.getNorm() < tolerance;
-        });
-    }
+    //         setControl(swreq_drive
+    //             .withVelocityX(xVel)
+    //             .withVelocityY(yVel)
+    //             .withRotationalRate(rVel)
+    //             .withCenterOfRotationY(robotYComp));
+    //     }, () -> setControl(swreq_drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0)))
+    //     .until(() -> {
+    //         Translation2d diff = target.getTranslation().minus(getState().Pose.getTranslation());
+    //         return !isContinuous && diff.getNorm() < tolerance;
+    //     });
+    // }
 
     // /**
     //  * @param desPose Posd2d to move to
