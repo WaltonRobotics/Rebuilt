@@ -439,7 +439,14 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      * @param isContinuous If true, drive at maxVel without slowing (for waypoint chaining)
      * @return Command that ends when within tolerance (or runs until interrupted if isContinuous)
      */
-    public Command driveToPoint(Pose2d target, double tolerance, double maxVel, double maxRVel, Translation2d robotCenterComp, boolean isContinuous) {
+    public Command driveToPoint(
+        Pose2d target, 
+        double tolerance, 
+        double maxVel, 
+        double maxRVel, 
+        Translation2d robotCenterComp, 
+        boolean isContinuous
+    ) {
         m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
 
         return runEnd(() -> {

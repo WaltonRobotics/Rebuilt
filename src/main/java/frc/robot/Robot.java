@@ -9,6 +9,8 @@ import static org.wpilib.units.Units.*;
 import static frc.robot.Constants.FieldK.kLeftResetPose;
 import static frc.robot.Constants.FieldK.kRightResetPose;
 import static frc.robot.Constants.RobotK.*;
+
+import java.io.CharConversionException;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -44,6 +46,7 @@ import org.wpilib.command2.button.Trigger;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
+import frc.robot.dashboards.BasicAutonChooser;
 // import frc.robot.dashboards.AutonChooser;
 // import frc.robot.autons.WaltAdaptableAutonFactory;
 import frc.robot.generated.TunerConstants;
@@ -184,6 +187,8 @@ public class Robot extends TimedRobot {
     private final PerformanceMonitor m_perfMonitor = new PerformanceMonitor(false);
 
     // 2027-TODO: figure out auton/choreo!!!
+    private BasicAutonChooser m_chooser = new BasicAutonChooser();
+    private Command m_chosenAuton;
     // private final Command m_preheaterCommand;
 
     /* CONSTRUCTOR */
@@ -513,6 +518,10 @@ public class Robot extends TimedRobot {
     public void autonomousInit() {
         // 2027-TODO: fix auton/choreo stuff!!!
         // m_adpatableAutonFactory.startAutonTimer();
+        m_chosenAuton = m_chooser.getAuton();
+        if (m_chosenAuton != null) {
+            CommandScheduler.getInstance().schedule(m_chosenAuton);
+        }
     }
 
     @Override
@@ -522,7 +531,11 @@ public class Robot extends TimedRobot {
     }
 
     @Override
-    public void autonomousExit() {}
+    public void autonomousExit() {
+        if (m_chosenAuton != null) {
+            CommandScheduler.getInstance().cancel(m_chosenAuton);
+        }
+    }
 
     @Override
     public void teleopInit() {
