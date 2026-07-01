@@ -64,7 +64,7 @@ public class Constants {
     public static final boolean kDataLoggingEnabled = true;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
-    public static final CANBus kRioBus = new CANBus("s0");
+    public static final CANBus kRioBus = new CANBus("can_s4");
     public static final CANBus kCanivoreBus = new CANBus("fd");
     public static final CANBus kShooterBus = new CANBus("shooter");
 
