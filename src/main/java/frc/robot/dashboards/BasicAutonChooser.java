@@ -12,14 +12,11 @@ import frc.robot.autons.WaltPointToPointAutonFactory.PointToPointAutonDriveInfo;
 import frc.robot.autons.WaltPointToPointAutonFactory.PointToPointAutonInfo;
 
 public class BasicAutonChooser {
-    private SendableChooser<Command> m_chooser = new SendableChooser<Command>();
-    private WaltPointToPointAutonFactory m_autonFactory = new WaltPointToPointAutonFactory(null, null, null, null);
+    private static SendableChooser<Command> m_chooser = new SendableChooser<Command>();
+    private static WaltPointToPointAutonFactory m_autonFactory;
 
-    public BasicAutonChooser() {
-        initAutonChooser();
-    }
-
-    public void initAutonChooser() {
+    public static void initialize(WaltPointToPointAutonFactory autonFactory) {
+        m_autonFactory = autonFactory;
         m_chooser.setDefaultOption("Check Origin", m_autonFactory.createAuton(
             new PointToPointAutonInfo(
                 new PointToPointAutonDriveInfo (
@@ -28,14 +25,14 @@ public class BasicAutonChooser {
                     1,
                     1,
                     false
-                ), 5
+                ), 5, false, false
             )
         ));
         m_chooser.addOption("more", Commands.none());
         SmartDashboard.putData(m_chooser);
     }
 
-    public Command getAuton() {
+    public static Command getAuton() {
         return m_chooser.getSelected();
     }
 }

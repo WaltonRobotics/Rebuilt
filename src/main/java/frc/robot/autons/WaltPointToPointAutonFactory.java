@@ -3,7 +3,7 @@ package frc.robot.autons;
 import org.opencv.core.Point;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.Commands;
-import org.wpilib.command2.ParallelDeadlineGroup;
+import org.wpilib.command2.ParallelCommandGroup;
 import org.wpilib.command2.SequentialCommandGroup;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Translation2d;
@@ -29,6 +29,17 @@ public class WaltPointToPointAutonFactory {
     public Command createAuton(PointToPointAutonInfo... infos) {
         SequentialCommandGroup returnCommand = new SequentialCommandGroup();
         for (PointToPointAutonInfo info : infos) {
+            ParallelCommandGroup subsystemsCommand = new ParallelCommandGroup();
+            if (info.intaking) {
+                subsystemsCommand.addCommands(m_superstructure.intake(() -> info.shooting, () -> false));
+            }
+            if (info.shooting) {
+                subsystemsCommand.addCommands(m_superstructure.activateOuttakeShotCalc());
+                if (!info.intaking) {
+                    subsystemsCommand.addCommands(m_superstructure.intakeShimmy(() -> info.shooting));
+                }
+            }
+            
             returnCommand.addCommands(
                 Commands.race(
                     m_swerve.driveToPoint(
@@ -39,7 +50,7 @@ public class WaltPointToPointAutonFactory {
                         info.driveInfo.isContinuous
                     ),
                     Commands.waitSeconds(info.timeout)
-                )
+                ).alongWith(subsystemsCommand)
             );
         }
         return returnCommand;
@@ -47,7 +58,9 @@ public class WaltPointToPointAutonFactory {
 
     public final record PointToPointAutonInfo(
         PointToPointAutonDriveInfo driveInfo,
-        double timeout
+        double timeout,
+        boolean intaking,
+        boolean shooting
     ) {}
 
     public final record PointToPointAutonDriveInfo(

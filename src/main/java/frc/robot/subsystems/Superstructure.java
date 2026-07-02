@@ -211,7 +211,7 @@ public class Superstructure extends SubsystemBase {
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED),
             Commands.waitSeconds(0.5)
        );
-       // 2027-todo FIX!!!
+       // 2027-TODO: FIX!!!
     //    .finallyDo(() -> {
             // m_intake.stopIntakeRollers();
     //    });
