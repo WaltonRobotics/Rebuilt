@@ -435,7 +435,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      * @param tolerance Distance tolerance in meters to consider "at point"
      * @param maxVel Maximum translation speed (m/s)
      * @param maxRVel Maximum rotational speed (rad/s)
-     * @param robotCenterComp Center-of-rotation offset as Translation2d for robot-specific compensation
+     * @param robotCenterComp Center-of-rotation offset as Translation2d for robot-specific compensation (unused for now)
      * @param isContinuous If true, drive at maxVel without slowing (for waypoint chaining)
      * @return Command that ends when within tolerance (or runs until interrupted if isContinuous)
      */
@@ -444,7 +444,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         double tolerance, 
         double maxVel, 
         double maxRVel, 
-        Translation2d robotCenterComp, 
+        // Translation2d robotCenterComp, 
         boolean isContinuous
     ) {
         m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
@@ -454,7 +454,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             Translation2d diff = target.getTranslation().minus(pose.getTranslation());
             double distance = diff.getNorm();
 
-           //isContinuous skips deceleration for waypoint chaining.
+           // isContinuous skips deceleration for waypoint chaining.
             double translationMag = isContinuous
                 ? maxVel
                 : Math.min(-m_pathXController.calculate(distance, 0.0), maxVel);
@@ -471,14 +471,19 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 -maxRVel, maxRVel
             );
 
-            setControl(swreq_drive
+            setControl(
+                swreq_drive
                 .withVelocityX(xVel)
                 .withVelocityY(yVel)
                 .withRotationalRate(rVel)
                 .withCenterOfRotation(diff)
             );
-        }, () -> setControl(swreq_drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0)))
-        .until(() -> {
+        }, () -> setControl(
+            swreq_drive
+            .withVelocityX(0)
+            .withVelocityY(0)
+            .withRotationalRate(0)
+        )).until(() -> {
             Translation2d diff = target.getTranslation().minus(getState().Pose.getTranslation());
             return !isContinuous && diff.getNorm() < tolerance;
         });
