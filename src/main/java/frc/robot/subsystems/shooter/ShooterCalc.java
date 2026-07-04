@@ -382,26 +382,33 @@ public class ShooterCalc {
         ShotDataLerp shotData,
         double turretReferenceRots,
         double hoodReferenceRots,
-        double shooterReferenceRps
+        double shooterReferenceRps,
+        double shotConfidence
     ) {
+        // old callers that don't pass confidence just get 0.0
+        public ShotCalcOutputs(AzimuthCalcDetails turretCalcDetails, ShotDataLerp shotData,
+                double turretReferenceRots, double hoodReferenceRots, double shooterReferenceRps) {
+            this(turretCalcDetails, shotData, turretReferenceRots, hoodReferenceRots, shooterReferenceRps, 0.0);
+        }
+
         private static final String kCalcTab = "/ShotCalcOutputs";
 
         private static final DoubleLogger log_turretReferenceRots = new DoubleLogger(kLogTab + kCalcTab, "turretReferenceRots");
         private static final DoubleLogger log_hoodReferenceRots = new DoubleLogger(kLogTab + kCalcTab, "hoodReferenceRots");
         private static final DoubleLogger log_shooterReferenceRPS = new DoubleLogger(kLogTab + kCalcTab, "shooterReferenceRPS");
+        private static final DoubleLogger log_shotConfidence = new DoubleLogger(kLogTab + kCalcTab, "shotConfidence");
 
         public void acceptLogging(ShotCalcOutputs outputs) {
             log_turretReferenceRots.accept(outputs.turretReferenceRots);
             log_hoodReferenceRots.accept(outputs.hoodReferenceRots);
             log_shooterReferenceRPS.accept(outputs.shooterReferenceRps);
+            log_shotConfidence.accept(outputs.shotConfidence);
         }
     }
 
     /**
      * Calculates the ideal shot to put the FUEL™ into the HUB™
-     * Accounts for moving speeds
-     * 
-     * @param robotPose current Robot position.
+     * Accounts for moving speeds with latency-compensated pose prediction.
      */
     public static ShotCalcOutputs calcShot(
         Pose2d robotPose,
@@ -412,19 +419,35 @@ public class ShooterCalc {
     ) {
         // How fast the robot is currently going, (CURRENT ROBOT VELOCITY)
         // double speedMps = Math.hypot(ChassisVelocities.vxMetersPerSecond, ChassisVelocities.vyMetersPerSecond);
-        ChassisVelocities fieldSpeeds = (staticShot /*|| speedMps < 0.1*/) ? WpiK.kZeroChassisVelocities : ChassisVelocities;
-        // The Calculated shot itself, according to the current robotPose, robotSpeeds,
-        // and the currentTarget
-        ShotDataLerp calculatedShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
-            robotPose, fieldSpeeds, target, 8);
+        ChassisVelocities fieldSpeeds = staticShot ? WpiK.kZeroChassisVelocities : ChassisVelocities;
 
-        // The turret angle according to the Calculated shot
-        AzimuthCalcDetails azCalcDetails = calcAzimuth(calculatedShot.getTarget(), robotPose, turretPositionRots, fieldSpeeds);
+        // predict where the robot WILL be when the shot actually fires (accounts for latency)
+        Pose2d compensatedPose = ShotCalculator.compensatePoseForLatency(robotPose, fieldSpeeds);
+
+        // run the SOTM solver against the predicted pose
+        ShotDataLerp calculatedShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            compensatedPose, fieldSpeeds, target, 8);
+
+        // figure out where the turret needs to point
+        AzimuthCalcDetails azCalcDetails = calcAzimuth(calculatedShot.getTarget(), compensatedPose, turretPositionRots, fieldSpeeds);
 
         double turretReferenceRots = azCalcDetails.turretReferenceRots();
         double hoodReferenceRots = calculatedShot.hoodAngle() / (2.0 * Math.PI);
         double shooterReferenceRPS = calculatedShot.exitVelocity() / (2.0 * Math.PI);
-        ShotCalcOutputs outputs = new ShotCalcOutputs(azCalcDetails, calculatedShot, turretReferenceRots, hoodReferenceRots, shooterReferenceRPS);
+
+        // how far off is the turret from where we want it? feeds into confidence
+        double headingErrorRad = azCalcDetails.fieldYawRad() - azCalcDetails.currentFieldYawRad();
+        double speed = Math.hypot(fieldSpeeds.vx, fieldSpeeds.vy);
+        double distance = Math.hypot(
+            target.getX() - compensatedPose.getX(),
+            target.getY() - compensatedPose.getY());
+
+        // compute confidence score — just for logging right now, doesn't block anything
+        double confidence = ShotCalculator.computeShotConfidence(
+            calculatedShot.getSolverQuality(), speed, headingErrorRad, distance);
+
+        ShotCalcOutputs outputs = new ShotCalcOutputs(
+            azCalcDetails, calculatedShot, turretReferenceRots, hoodReferenceRots, shooterReferenceRPS, confidence);
         outputs.acceptLogging(outputs);
         return outputs;
     }
