@@ -89,6 +89,10 @@ public class Shooter extends SubsystemBase {
     private double m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
     private double m_calcHoodRots = kHoodRotsd;
     private double m_driverRPSTweak = 0.0;
+    private double m_shotConfidence = 0.0; // updated every cycle from the shot calculator
+
+    // threshold for isShotConfident() — not gating anything yet, just for telemetry
+    private static final double kMinShotConfidence = 30.0;
 
     private int m_ballsShot = 0;
 
@@ -134,6 +138,8 @@ public class Shooter extends SubsystemBase {
     private final DoubleLogger log_ballsShot = new DoubleLogger("Shooter/Flywheel", "balls shot");
     private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
     private final DoubleLogger log_driverAddedRPS = WaltLogger.logDouble(kLogTab, "driverAddedRPS");
+    private final DoubleLogger log_shotConfidence = WaltLogger.logDouble(kLogTab, "shotConfidence");
+    private final BooleanLogger log_shotConfident = WaltLogger.logBoolean(kLogTab, "shotConfident");
 
     /* CONSTRUCTOR */
     public Shooter(Supplier<Pose2d> poseSupplier, Supplier<SwerveDriveState> threadsafeSwerveStateSup, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
@@ -252,6 +258,15 @@ public class Shooter extends SubsystemBase {
         return m_isShooterSpunUp;
     }
 
+    // does NOT block firing — just tells you if the shot calc thinks this is a good shot
+    public boolean isShotConfident() {
+        return m_shotConfidence >= kMinShotConfidence;
+    }
+
+    public double getShotConfidence() {
+        return m_shotConfidence;
+    }
+
     /* GETTERS */
     public double getShooterVelocityRotPerSec() {
         return m_currentFlywheelVelocityRotPerSec;
@@ -323,6 +338,7 @@ public class Shooter extends SubsystemBase {
         m_latestFlywheelAccelerationRotPerSec = sig_shooterAAccel.getValueAsDouble();
 
         ShotCalcOutputs calcData = m_shooterCalc.getLatestShotCalcOutputs();
+        m_shotConfidence = calcData.shotConfidence();
 
         m_periodicTracer.addEpoch("Stashing ShotCalc data");
         log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
@@ -385,7 +401,8 @@ public class Shooter extends SubsystemBase {
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocityRotPerSec);
         log_ballDetected.accept(trg_ballDetected.getAsBoolean());
         log_ballShotDebounce.accept(trg_ballShotDebounced.getAsBoolean());
-
+        log_shotConfidence.accept(m_shotConfidence);
+        log_shotConfident.accept(isShotConfident());
 
         // m_periodicTracer.addEpoch("Logging");
 
