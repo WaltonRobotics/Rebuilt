@@ -11,6 +11,8 @@ import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import static org.wpilib.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK;
+import static frc.robot.Constants.IndexerK.kSpindexerMaxRPSD;
+import static frc.robot.Constants.IndexerK.kTunnelMaxRPSD;
 import static frc.robot.Constants.IntakeK.kIntakeRollersIntakeVolts;
 import static frc.robot.Constants.IntakeK.kIntakeRollersShimmyVolts;
 
@@ -110,10 +112,10 @@ public class Superstructure extends SubsystemBase {
                 Commands.waitUntil(() -> m_shooter.m_hood.atPosition()).withTimeout(ShooterK.kHoodAtPosTimeout),
                 Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocityRotPerSec() >= ShooterK.kShooterSpunUpMinimumD))).withTimeout(ShooterK.kShooterSpunUpTimeout),
                 Commands.parallel(
-                    Commands.run(() -> m_indexer.setTunnelVelocity(Indexer.tunnelRPSFromShooter(m_shooter.getShooterDesiredRotPerSecSupp()).getAsDouble())),
+                    Commands.run(() -> m_indexer.setTunnelVelocity(kTunnelMaxRPSD * 0.95)),
                     Commands.sequence(
                         Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocityRotPerSec() >= IndexerK.kTunnelSpunUpMinimumD)).withTimeout(IndexerK.kTunnelSpunUpTimeout),
-                        Commands.run(() -> m_indexer.setSpindexerVelocity(Indexer.spindexerRPSFromShooter(m_shooter.getShooterDesiredRotPerSecSupp()).getAsDouble()))
+                        Commands.run(() -> m_indexer.setSpindexerVelocity(kSpindexerMaxRPSD * 0.95))
                     )
                 )
             )
