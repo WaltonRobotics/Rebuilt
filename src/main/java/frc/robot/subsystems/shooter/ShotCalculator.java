@@ -14,6 +14,7 @@ import org.wpilib.math.util.MathUtil;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.geometry.Twist2d;
 import org.wpilib.math.interpolation.InterpolatingDoubleTreeMap;
 import org.wpilib.math.kinematics.ChassisVelocities;
 import org.wpilib.units.measure.Angle;
@@ -34,12 +35,51 @@ public class ShotCalculator {
     private static final DoubleLogger log_dragCoefficient = new DoubleLogger("Shooter/Calculator", "dragCoefficient");
     private static final IntLogger log_lerpIterationCount = new IntLogger("Shooter/Calculator", "lerpIterationCount");
     private static final BooleanLogger log_calcConvergedBreakout = new BooleanLogger("Shooter/Calculator", "calcConvergedBreakout");
+    private static final DoubleLogger log_shotConfidence = new DoubleLogger("Shooter/Calculator", "shotConfidence");
+    private static final DoubleLogger log_solverQuality = new DoubleLogger("Shooter/Calculator", "solverQuality");
 
     private static final double kMetersToInches = 1.0 / 0.0254;
     // Horizontal drag damping: actual drift = v * (1 - e^(-c*t)) / c < v*t
     // c = 0 disables drag compensation. Enable via /ShotCalc/sotmDragCoeff/enabled.
-    //YAYAYAYYAYAYAY 2974 IS OUR LUCKY NUMBER HUZZAH YAY YIPPEE
-    private static final WaltTunable kDragCoeffTuner = new WaltTunable("/ShotCalc/sotmDragCoeff", 0.5000, false);
+    private static final WaltTunable kDragCoeffTuner = new WaltTunable("/ShotCalc/sotmDragCoeff", 0.24, false);
+
+    // if we're moving slower than this, just treat it as a static shot (no SOTM)
+    private static final double kMinSOTMSpeed = 0.1; // m/s
+    // if we're moving faster than this, SOTM gets unreliable — cap it
+    private static final double kMaxSOTMSpeed = 3.5; // m/s
+
+    // how much latency we're compensating for in our pose prediction
+    // vision pipeline delay + network round-trip
+    private static final double kPhaseDelayMs = 30.0;
+    // mechanical delay (hood/flywheel settling time)
+    private static final double kMechLatencyMs = 20.0;
+    // total latency we predict ahead by, in seconds
+    private static final double kTotalLatencySec = (kPhaseDelayMs + kMechLatencyMs) / 1000.0;
+
+    // Newton-Raphson solver tuning — shouldn't need to touch these often
+    private static final int kMaxNewtonIterations = 25; // way more than it should ever need (usually 2-3)
+    private static final double kNewtonConvergenceTol = 0.001; // how close TOF needs to be between iterations
+    private static final double kTofMin = 0.05; // sanity clamp — can't have negative or near-zero TOF
+    private static final double kTofMax = 5.0;  // 5 seconds is absurdly long, something is wrong if we hit this
+    private static final double kTofDerivH = 0.001; // step size for numerical derivative of the TOF lookup table
+
+    // confidence scoring weights — controls how much each factor matters
+    // higher weight = that factor has more influence on overall confidence
+    private static final double kWConvergence = 1.0;       // did the solver actually converge?
+    private static final double kWVelocityStability = 0.8;  // are we accelerating/decelerating erratically?
+    private static final double kWHeadingAccuracy = 1.5;    // is the turret pointing where we want? (most important)
+    private static final double kWDistanceInRange = 0.5;    // are we in a reasonable scoring range?
+    private static final double kHeadingMaxErrorRad = Math.toRadians(15); // max heading error before confidence tanks
+    private static final double kHeadingSpeedScalar = 1.0;      // how much speed tightens the heading tolerance
+    private static final double kHeadingReferenceDistance = 2.5; // reference dist for scaling heading tolerance
+
+    // stashed values from last cycle — used to estimate acceleration and warm-start the solver
+    private static double s_prevVx = 0;
+    private static double s_prevVy = 0;
+    private static double s_prevOmega = 0;
+    private static double s_prevSpeed = 0;
+    private static double s_prevTof = -1;     // last cycle's solved TOF, -1 = never solved yet
+    private static double s_prevRawDist = -1;  // last cycle's raw distance to target, -1 = uninitialized
     // private static final Tracer m_iterativeTracer = new Tracer();
 
     // private static final double kRedHubCenterX = AllianceZoneUtil.redHubCenter.getX();
@@ -51,15 +91,15 @@ public class ShotCalculator {
     private static final DoubleSummaryStatistics reductionSummaryStats = new DoubleSummaryStatistics();
     private static final DoubleSummaryStatistics distanceSummaryStats = new DoubleSummaryStatistics();
 
-    private static final double minDistance;
-    private static final double maxDistance;
+    private static final double minScoringDistance;
+    private static final double maxScoringDistance;
 
     private static final boolean kRPSReductionNeeded = false;
 
     private static double kRPSBoost = 0.75;
     private static double kLongRangeRPSBoost = 0.35;
 
-    private static double kScoringRPSBoost = -0.2;
+    private static double kScoringRPSBoost = -3;
     private static final WaltTunable kRPSBoostTuner = new WaltTunable("Shooter/Calculator/RPSBoost", kRPSBoost); 
 
     /**
@@ -78,8 +118,8 @@ public class ShotCalculator {
 
     static {
         //TODO: find the actual minDistance and maxDistance for shooting
-        minDistance = 1.168;
-        maxDistance = 5.672;
+        minScoringDistance = 0.985;
+        maxScoringDistance = 8.627;
 
         kRPSBoost = kRPSBoostTuner.enabled() ? kRPSBoostTuner.get() : kRPSBoost;
 
@@ -325,11 +365,108 @@ public class ShotCalculator {
     }
 
     public static double getMinTimeOfFlight() {
-        return kShotTable.tof(minDistance);
+        return kShotTable.tof(minScoringDistance);
     }
 
     public static double getMaxTimeOfFlight() {
-        return kShotTable.tof(maxDistance);
+        return kShotTable.tof(maxScoringDistance);
+    }
+
+    /**
+     * Predicts where the robot WILL be by the time the shot actually leaves the barrel.
+     * Our pose data is stale by ~50ms (vision pipeline + mechanical response), so we
+     * extrapolate forward using velocity AND acceleration (2nd-order, not just linear).
+     *
+     * Acceleration is estimated by comparing this cycle's velocity to last cycle's (20ms apart).
+     * This is the same idea as 4322's latency compensation.
+     *
+     * Math: compensatedPose = rawPose.exp(v*dt + 0.5*a*dt^2)
+     */
+    public static Pose2d compensatePoseForLatency(Pose2d rawPose, ChassisVelocities speeds) {
+        double dt = kTotalLatencySec;
+
+        // estimate acceleration by comparing velocity to last cycle (finite difference over 20ms)
+        double ax = (speeds.vx - s_prevVx) / 0.02;
+        double ay = (speeds.vy - s_prevVy) / 0.02;
+        double aOmega = (speeds.omega - s_prevOmega) / 0.02;
+
+        // 2nd order extrapolation: position += v*dt + 0.5*a*dt^2
+        Pose2d compensated = rawPose.plus(new Twist2d(
+            speeds.vx * dt + 0.5 * ax * dt * dt,
+            speeds.vy * dt + 0.5 * ay * dt * dt,
+            speeds.omega * dt + 0.5 * aOmega * dt * dt).exp());
+
+        // stash for next cycle so we can compute acceleration again
+        s_prevVx = speeds.vx;
+        s_prevVy = speeds.vy;
+        s_prevOmega = speeds.omega;
+
+        return compensated;
+    }
+
+    // numerically approximates how TOF changes as distance changes in the lookup table
+    // we need this derivative for the Newton solver's update step
+    // central finite difference: nudge distance up and down by a tiny amount, see what TOF does
+    private static double tofMapDerivative(ShotLerpTable table, double dist) {
+        double h = kTofDerivH;
+        return (table.tof(dist + h) - table.tof(dist - h)) / (2.0 * h);
+    }
+
+    /**
+     * Gives us a 0-100 confidence score for the current shot.
+     * Right now this is ONLY for logging/telemetry — does NOT gate firing.
+     * Could be used to gate later if we want to.
+     *
+     * Uses a weighted geometric mean of 4 factors, so if ANY factor is zero
+     * the whole confidence goes to zero (which makes sense — if the solver
+     * didn't converge, we shouldn't trust the shot no matter what).
+     *
+     * Inspired by 4322's approach.
+     */
+    public static double computeShotConfidence(
+            double solverQuality, double currentSpeed,
+            double headingErrorRad, double distance) {
+
+        // 1) did the newton solver actually converge? if not, we don't trust the aim point
+        double convergenceQuality = Math.clamp(solverQuality, 0, 1);
+
+        // 2) are we changing speed rapidly? if speed is jumping around, the predicted
+        //    aim point is gonna be jittery — penalize that
+        double speedDelta = Math.abs(currentSpeed - s_prevSpeed);
+        double velocityStability = Math.clamp(1.0 - speedDelta / 0.5, 0, 1);
+        s_prevSpeed = currentSpeed;
+
+        // 3) is the turret actually pointing where we want it to?
+        //    tolerance gets TIGHTER when we're going fast or close to the target
+        //    (makes sense — small angular error matters more up close and at speed)
+        double distanceScale = Math.clamp(kHeadingReferenceDistance / Math.max(distance, 0.1), 0.5, 2.0);
+        double speedScale = 1.0 / (1.0 + kHeadingSpeedScalar * currentSpeed);
+        double scaledMaxError = kHeadingMaxErrorRad * distanceScale * speedScale;
+        double headingErr = Math.abs(headingErrorRad);
+        double headingAccuracy = Math.clamp(1.0 - headingErr / scaledMaxError, 0, 1);
+
+        // 4) are we in a reasonable shooting range? confidence peaks in the middle of our
+        //    interpolation table range and drops off toward the edges
+        double rangeSpan = maxScoringDistance - minScoringDistance;
+        double rangeFraction = (distance - minScoringDistance) / rangeSpan;
+        double distInRange = 1.0 - 2.0 * Math.abs(rangeFraction - 0.5);
+        distInRange = Math.clamp(distInRange, 0, 1);
+
+        // weighted geometric mean — multiply factors together (in log space) with weights
+        // this way one bad factor drags everything down proportionally
+        double[] c = {convergenceQuality, velocityStability, headingAccuracy, distInRange};
+        double[] w = {kWConvergence, kWVelocityStability, kWHeadingAccuracy, kWDistanceInRange};
+
+        double sumW = 0;
+        double logSum = 0;
+        for (int i = 0; i < c.length; i++) {
+            if (c[i] <= 0) return 0; // any zero factor = zero confidence, full stop
+            logSum += w[i] * Math.log(c[i]);
+            sumW += w[i];
+        }
+        if (sumW <= 0) return 0;
+        double composite = Math.exp(logSum / sumW) * 100.0;
+        return Math.clamp(composite, 0, 100);
     }
 
     /**
@@ -438,19 +575,23 @@ public class ShotCalculator {
     }
 
     /**
-     * Use an iterative interpolation approach to determine shot parameters for a moving robot
-     * compensating for speed, and the target.
+     * The main SOTM solver. Uses Newton-Raphson instead of the old fixed-point iteration.
      *
-     * @param robot current robot pose
-     * @param fieldSpeeds current robot speeds (w direction)
-     * @param target target you are aiming for (either the passing point OR the HUB)
-     * @param iterations amount of iterations to converge on one specific value
-     * @return parameters to shoot a FUEL to the target accurately.
+     * The problem: we need to find a TOF (time of flight) where the aim point we compute
+     * FROM that TOF gives us a distance that, when we look up in the shot table, gives us
+     * back the SAME TOF. It's a chicken-and-egg problem — this solver finds the answer
+     * where both sides agree.
+     *
+     * Newton-Raphson converges in 2-3 iterations instead of 8, and gives us a derivative
+     * for free so we know how confident we are in the answer.
+     *
+     * Also warm-starts from last cycle's TOF (if the robot hasn't moved too far) so most
+     * cycles it barely has to do any work.
      */
     public static ShotDataLerp iterativeMovingShotFromInterpolationMap(Pose2d robot,
             ChassisVelocities fieldSpeeds, Translation3d target, int iterations) {
 
-        // Extract raw doubles once at entry
+        // pull everything into raw doubles up front so we're not calling getters in the loop
         double robotX = robot.getX();
         double robotY = robot.getY();
         double headingRad = robot.getRotation().getRadians();
@@ -465,77 +606,126 @@ public class ShotCalculator {
         double turretX = robotX + kTurretOffsetX_m * cosH - kTurretOffsetY_m * sinH;
         double turretY = robotY + kTurretOffsetX_m * sinH + kTurretOffsetY_m * cosH;
 
-        //turret pivot actual velocity
+        // the turret isn't at the robot center — it's offset, so when the robot spins
+        // the turret pivot has its own tangential velocity on top of the robot's translation
         double vxLaunch = vx - (turretY - robotY) * omega;
         double vyLaunch = vy + (turretX - robotX) * omega;
 
-        double distance = getDistanceToTargetM(robotX, robotY, headingRad, targetX, targetY);
+        // if we're barely moving, just treat it as a static shot — SOTM compensation
+        // at near-zero speeds just adds noise
+        // TODO: see if this needs to be gated on the higher end
+        double speed = Math.hypot(vxLaunch, vyLaunch);
+        boolean velocityFiltered = speed < kMinSOTMSpeed; //|| speed > kMaxSOTMSpeed;
+        if (velocityFiltered) {
+            vxLaunch = 0;
+            vyLaunch = 0;
+        }
+
+        // vector from where the turret is to where the target is
+        double rx = targetX - turretX;
+        double ry = targetY - turretY;
+        double rawDistance = Math.hypot(rx, ry);
+
         boolean passing = ShooterCalc.isPassing().getAsBoolean();
-        // boolean canTurretShoot = ShooterCalc.canTurretShoot();
-
-        // ShotLerpTable shotTable = passing ? (canTurretShoot ? kPassingTable : kAngryTurretTable) : kShotTable;
         ShotLerpTable shotTable = passing ? kPassingTable : kShotTable;
-        double exitVel = shotTable.exitVelocity(distance);
-        double hoodAngle = shotTable.hoodAngle(distance);
-        double tofSec = passing ? kPassingTable.tof(distance) : kShotTable.tof(distance);
 
-        double predX = targetX;
-        double predY = targetY;
+        double dragCoeff = kDragCoeffTuner.enabled() ? kDragCoeffTuner.get() : 0.50;
 
-        //meant to iterate the process, and converge on one specific value.
-        //gets a better ToF estimation & updates predictedTarget accordingly!
-        int iterCount = 0;
+        // --- NEWTON-RAPHSON SOLVER ---
+        // try to warm-start from last cycle's TOF — but only if we haven't moved too far.
+        // if the robot teleported or the target changed, the old TOF is garbage so we cold-start
+        // from the lookup table instead.
+        boolean warmStartValid = s_prevTof >= 0
+            && s_prevRawDist >= 0
+            && Math.abs(rawDistance - s_prevRawDist) < 0.5; // <0.5m change per cycle = sane
+        double tof = warmStartValid ? s_prevTof : shotTable.tof(rawDistance);
+        tof = Math.clamp(tof, kTofMin, kTofMax);
+
+        double projDist = rawDistance;
+        int iterationsUsed = 0;
         boolean converged = false;
-        for (int i = 0; i < iterations; i++) {
-            iterCount = i + 1;
-            double prevExitVel = exitVel;
-            double prevHoodAngle = hoodAngle;
-            double prevTOF = tofSec;
-            double prevPredX = predX;
-            double prevPredY = predY;
+        double solverResidual = 1.0;
 
-            // Inline predictTargetPos — no Translation3d/Time allocation
-            double coeffDrag = 0.5000; //used for SOTM movement SIDE TO SIDE
-            // double coeffDrag = shotTable.drag(distance);
-            //2974 RAHHHHHHHHHHHHHHH – correction: more like 254 RAHHHHHHHHHHHHHHH
-            // if ( (Math.abs(vx) <= 0.05) || (Math.abs(vy) <= 0.05) ) { //NOTE: not sure if these numbers are right
-            //     coeffDrag = 0.2974; //used during static shot (or when the robot is low speed and should be static shooting)
-            // }
-            // if (distance >= 3.6) {
-            //     coeffDrag = 0.53;   //0.7
-            // }
+        for (int i = 0; i < kMaxNewtonIterations; i++) {
+            double prevTOF = tof;
 
-            coeffDrag = kDragCoeffTuner.enabled() ? kDragCoeffTuner.get(): coeffDrag;
-            double driftT = dragCompensatedTOF(tofSec, coeffDrag);
-            predX = targetX - vxLaunch * driftT;
-            predY = targetY - vyLaunch * driftT;
+            // how far the game piece drifts horizontally due to air drag
+            // drag makes the effective drift time shorter than the actual TOF
+            double c = dragCoeff;
+            double dragExp = c < 1e-6 ? 1.0 : Math.exp(-c * tof);
+            double driftTOF = c < 1e-6 ? tof : (1.0 - dragExp) / c;
 
-            distance = getDistanceToTargetM(robotX, robotY, headingRad, predX, predY);
-            passing = ShooterCalc.isPassing().getAsBoolean();
-            // shotTable = passing ? (canTurretShoot ? kPassingTable : kAngryTurretTable) : kShotTable;
-            shotTable = passing ? kPassingTable : kShotTable;
-            exitVel = shotTable.exitVelocity(distance);
-            hoodAngle = shotTable.hoodAngle(distance);
-            tofSec = passing ? kPassingTable.tof(distance) : kShotTable.tof(distance);
+            // where we need to aim — offset the target by how far the robot will drift
+            // during the time the ball is in the air
+            double prx = rx - vxLaunch * driftTOF;
+            double pry = ry - vyLaunch * driftTOF;
+            projDist = Math.hypot(prx, pry);
 
-            double dExitVel = prevExitVel - exitVel;
-            double dHood = prevHoodAngle - hoodAngle;
-            double dTOF = prevTOF - tofSec;
-            double dPredX = prevPredX - predX;
-            double dPredY = prevPredY - predY;
+            // edge case: we're basically ON TOP of the target, math falls apart
+            if (projDist < 0.01) {
+                tof = shotTable.tof(rawDistance);
+                iterationsUsed = kMaxNewtonIterations + 1;
+                break;
+            }
 
-            if (Math.abs(dHood) < .05 && Math.abs(dExitVel) < .5
-                    && Math.sqrt(dPredX * dPredX + dPredY * dPredY) < .005
-                    && Math.abs(dTOF) < .005) {
+            // look up what TOF the shot table says for this projected distance
+            double lookupTOF = shotTable.tof(projDist);
+
+            // newton step — we're solving f(tof) = lookupTOF(projDist(tof)) - tof = 0
+            // the derivative comes from the chain rule:
+            //   f'(tof) = (d/d_tof of lookupTOF) * (d/d_tof of projDist) - 1
+            // projDist changes with tof because the drift changes, which moves the aim point
+            double dPrime = -dragExp * (prx * vxLaunch + pry * vyLaunch) / projDist;
+            double gPrime = tofMapDerivative(shotTable, projDist);
+            double f = lookupTOF - tof;
+            double fPrime = gPrime * dPrime - 1.0;
+
+            if (Math.abs(fPrime) > 0.01) {
+                // normal newton update: tof_new = tof - f/f'
+                tof = tof - f / fPrime;
+            } else {
+                // derivative is basically flat — just use the lookup value directly
+                // (this is the old fixed-point approach as a fallback)
+                tof = lookupTOF;
+            }
+
+            tof = Math.clamp(tof, kTofMin, kTofMax);
+            iterationsUsed = i + 1;
+            solverResidual = Math.abs(tof - prevTOF);
+
+            if (solverResidual < kNewtonConvergenceTol) {
                 converged = true;
                 break;
             }
         }
+
+        // save for next cycle's warm-start
+        s_prevTof = tof;
+        s_prevRawDist = rawDistance;
+
+        // how good was the solve? 1.0 = perfect convergence, drops toward 0 if it didn't settle
+        double solverQuality = converged ? 1.0
+            : Math.clamp(1.0 - solverResidual / 0.1, 0, 1);
+        log_solverQuality.accept(solverQuality);
+
+        // now that we have a converged TOF, compute where we actually need to aim
+        double finalDriftT = dragCompensatedTOF(tof, dragCoeff);
+        double predX = targetX - vxLaunch * finalDriftT;
+        double predY = targetY - vyLaunch * finalDriftT;
+        double distance = getDistanceToTargetM(robotX, robotY, headingRad, predX, predY);
+
+        // look up the actual shot parameters for our final aimed distance
+        passing = ShooterCalc.isPassing().getAsBoolean();
+        shotTable = passing ? kPassingTable : kShotTable;
+        double exitVel = shotTable.exitVelocity(distance);
+        double hoodAngle = shotTable.hoodAngle(distance);
+        double tofSec = shotTable.tof(distance);
+
         log_distToTargetMeters.accept(distance);
         log_isPassingLerp.accept(passing);
         log_calcConvergedBreakout.accept(converged);
-        log_lerpIterationCount.accept(iterCount);
-        ShotDataLerp data = new ShotDataLerp(exitVel, hoodAngle, new Translation3d(predX, predY, targetZ), tofSec);
+        log_lerpIterationCount.accept(iterationsUsed);
+        ShotDataLerp data = new ShotDataLerp(exitVel, hoodAngle, new Translation3d(predX, predY, targetZ), tofSec, solverQuality);
         data.acceptLogging(data);
         return data;
     }
@@ -586,9 +776,14 @@ public class ShotCalculator {
         }
     }
 
-    public record ShotDataLerp(double exitVelocity, double hoodAngle, Translation3d target, double tofSec) {
+    // solverQuality gets piped into the confidence scoring system
+    public record ShotDataLerp(double exitVelocity, double hoodAngle, Translation3d target, double tofSec, double solverQuality) {
+        // old callers that don't care about solver quality just get 1.0 (fully confident)
+        public ShotDataLerp(double exitVelocity, double hoodAngle, Translation3d target, double tofSec) {
+            this(exitVelocity, hoodAngle, target, tofSec, 1.0);
+        }
         public ShotDataLerp(ShotData data, double tofSec) {
-            this(data.exitVelocity, data.hoodAngle, data.target, tofSec);
+            this(data.exitVelocity, data.hoodAngle, data.target, tofSec, 1.0);
         }
         private static final String kCalcTab = "/ShotDataLerp";
 
@@ -608,6 +803,7 @@ public class ShotCalculator {
         public double getHoodAngle() { return hoodAngle; }
         public Translation3d getTarget() { return target; }
         public double getTofSec() { return tofSec; }
+        public double getSolverQuality() { return solverQuality; }
     }
 
     /**

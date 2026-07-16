@@ -6,7 +6,6 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import org.wpilib.networktables.DoubleSubscriber;
 import org.wpilib.units.measure.Angle;
 import org.wpilib.units.measure.AngularVelocity;
 import org.wpilib.hardware.rotation.DutyCycleEncoder;
@@ -24,7 +23,6 @@ import frc.util.SignalManager;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
-import frc.util.WaltLogger.IntLogger;
 import frc.util.WaltLogger.Pose3dLogger;
 
 public class Turret extends SubsystemBase {
@@ -53,6 +51,7 @@ public class Turret extends SubsystemBase {
     private final BooleanLogger log_lcmEncBConn = WaltLogger.logBoolean(kLogTab, "EncB/Conn");
 
     private final DoubleLogger log_turretControlPos = WaltLogger.logDouble(kLogTab, "turretControlPos");
+    private final DoubleLogger log_turretControlFFRadPS = WaltLogger.logDouble(kLogTab, "turretFFRadPS");
     private final DoubleLogger log_turretLCMPos = WaltLogger.logDouble(kLogTab, "turretLCMPos");
     private final DoubleLogger log_turretClosedLoopError = WaltLogger.logDouble(kLogTab, "turretCLE");
     private final BooleanLogger log_atPos = WaltLogger.logBoolean(kLogTab, "atPos");
@@ -139,11 +138,13 @@ public class Turret extends SubsystemBase {
     public void setTurretPos(Angle rots, AngularVelocity velocityFF) {
         m_turret.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFF));
         log_turretControlPos.accept(rots.in(Rotations));
+        log_turretControlFFRadPS.accept(velocityFF.in(RadiansPerSecond));
     }
 
-    public void setTurretPos(double rots, double velocityFF) {
-        m_turret.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFF));
+    public void setTurretPos(double rots, double velocityFFRadPS) {
+        m_turret.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFFRadPS));
         log_turretControlPos.accept(rots);
+        log_turretControlFFRadPS.accept(velocityFFRadPS);
     }
 
     public void setTurretNeutralMode(NeutralModeValue value) {
@@ -175,7 +176,7 @@ public class Turret extends SubsystemBase {
         double encBVal = m_lcmEncB.get();
         log_lcmEncAPos.accept(encAVal);
         log_lcmEncBPos.accept(encBVal);
-        // log_lcmEncBFreq.accept(m_lcmEncB.getFrequency());
+        log_lcmEncBFreq.accept(m_lcmEncB.getFrequency());
         log_lcmEncBConn.accept(m_lcmEncB.isConnected());
 
         refreshTurretCLErr();

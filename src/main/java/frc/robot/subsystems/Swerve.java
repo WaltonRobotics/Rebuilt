@@ -41,7 +41,7 @@ import org.wpilib.command2.Commands;
 import org.wpilib.command2.Subsystem;
 import org.wpilib.command2.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
-import frc.robot.vision.Detection;
+// import frc.robot.vision.Detection;
 import frc.util.WaltDriverStation;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -82,7 +82,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     //     .withDriveRequestType(DriveRequestType.Velocity)
     //     .withSteerRequestType(SteerRequestType.Position);
 
-    private final Detection detection = new Detection();
+    // private final Detection detection = new Detection();
 
     private final DoubleLogger log_absoluteRobotSpeed = new WaltLogger.DoubleLogger("Swerve", "absoluteRobotSpeed");
     private final DoubleLogger log_vxMPS = new DoubleLogger("Swerve", "vxMPS");

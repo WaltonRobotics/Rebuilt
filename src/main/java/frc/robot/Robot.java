@@ -55,7 +55,7 @@ import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Indexer;
-import frc.robot.vision.WaltCamera;
+// import frc.robot.vision.WaltCamera;
 import frc.util.HubShiftUtil;
 import frc.util.PerformanceMonitor;
 import frc.util.SignalManager;
@@ -104,7 +104,7 @@ public class Robot extends TimedRobot {
     private final CommandNiDsXboxController m_manipulator = new CommandNiDsXboxController(1);
 
     // Cached so the drive default-command lambda doesn't allocate a Trigger every tick.
-    private final Trigger trg_driverSlow = m_driver.leftTrigger();
+    private final Trigger trg_driverSlow = m_driver.leftTrigger().and(m_driver.b());
 
     //---INIT SUBSYSTEMS
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
@@ -127,7 +127,7 @@ public class Robot extends TimedRobot {
     //---VISION
 
     // 2027-TODO: CANBusMap!!
-    private PowerDistribution m_PDH = new PowerDistribution(0);
+    private PowerDistribution m_PDH = new PowerDistribution(4);
     // private final NetworkPinger m_radioPinger = new NetworkPinger("Radio", "10.29.74.1", 0.2, 10);
     // private final NetworkPinger m_coprocessorPinger = new NetworkPinger("Coprocessor", "10.29.74.11", 0.2, 10);
     // private final VisionSim m_visionSim = new VisionSim();
@@ -150,9 +150,9 @@ public class Robot extends TimedRobot {
     private final Trigger trg_unlockShooting = m_driver.povDown();
 
     //---MANIPULATOR BUTTONS
-    private final Trigger trg_intake = m_manipulator.rightTrigger().and(trg_manipOverride.negate());
+    private final Trigger trg_intake = m_driver.leftTrigger().and(trg_manipOverride.negate());
     private final Trigger trg_retractIntake = m_manipulator.rightBumper().and(trg_manipOverride.negate());
-    private final Trigger trg_intakeShimmy = m_manipulator.leftBumper();
+    private final Trigger trg_intakeShimmy = m_driver.leftBumper();
 
     private final Trigger trg_emergencyIntakeOnlyBarf = m_manipulator.rightTrigger().and(trg_manipOverride);
 
@@ -243,10 +243,10 @@ public class Robot extends TimedRobot {
         );
 
         // set FPS limit on boot
-        WaltCamera.setFpsLimit(true);
+        // WaltCamera.setFpsLimit(true);
 
         DriverStationBackend.silenceJoystickConnectionWarning(true);
-        PhotonCamera.setVersionCheckEnabled(false);
+        // PhotonCamera.setVersionCheckEnabled(false);
 
         // MANUAL HOMING IS BEING USED
         // addPeriodic(m_shooter::fastPeriodic, 0.0025);
@@ -315,8 +315,8 @@ public class Robot extends TimedRobot {
             m_drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   
-        trg_unlimitFps.onTrue(WaltCamera.setFpsLimitCmd(false));
+        // trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   
+        // trg_unlimitFps.onTrue(WaltCamera.setFpsLimitCmd(false));
 
         /* BUTTON BIDNDS */
         m_driver.leftBumper().and(trg_driverOverride).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));    // Reset the field-centric heading on left bumper press.
@@ -331,7 +331,7 @@ public class Robot extends TimedRobot {
             .whileTrue(m_superstructure.hoodAndFlywheelShotCalc());
 
         // snapshot on each shoot press
-        trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
+        // trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
 
         trg_intake.and(trg_shoot).and(trg_emergencyBarf.negate()).whileTrue(
             m_superstructure.intake(() -> true, () -> false)
@@ -418,27 +418,29 @@ public class Robot extends TimedRobot {
 
         var headingNow = driveState.Pose.getRotation();
         double nowSec = Utils.getCurrentTimeSeconds();
-        for (var camera : WaltCamera.AllCameras) {
-            camera.m_estimator.addHeadingData(nowSec, headingNow);
-            Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
-            if (estimatedPoseOptional.isPresent()) {
-                EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
-                Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
-                // if ((RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())).getAsBoolean()) {
-                //     if (!MathUtil.isNear(driveState.Pose.getX(), estimatedRobotPose2d.getX(), 2.3) || !MathUtil.isNear(driveState.Pose.getY(), estimatedRobotPose2d.getY(), 2.3)){} else {
-                //         m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
-                //     }
-                // } else {
-                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
-                // }
 
-                // 2027-TODO: find new correct method!!!
-                m_visionSeenLastSec = estimatedRobotPose.timestampSeconds;
-                // m_visionSeenLastSec = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
+        // for (var camera : WaltCamera.AllCameras) {
+        //     camera.m_estimator.addHeadingData(nowSec, headingNow);
+        //     Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
+        //     if (estimatedPoseOptional.isPresent()) {
+        //         EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
+        //         Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
+        //         // if ((RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())).getAsBoolean()) {
+        //         //     if (!MathUtil.isNear(driveState.Pose.getX(), estimatedRobotPose2d.getX(), 2.3) || !MathUtil.isNear(driveState.Pose.getY(), estimatedRobotPose2d.getY(), 2.3)){} else {
+        //         //         m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
+        //         //     }
+        //         // } else {
+        //         m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
+        //         // }
 
-                // System.out.println("AddMeasurementFrom: " + camera.getName());
-            }
-        }
+        //         // 2027-TODO: find new correct method!!!
+        //         m_visionSeenLastSec = estimatedRobotPose.timestampSeconds;
+        //         // m_visionSeenLastSec = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
+
+        //         // System.out.println("AddMeasurementFrom: " + camera.getName());
+        //     }
+        // }
+
         m_periodicTracer.addEpoch("VisionUpdate");
 
         log_visionSeenPastSecond.accept((nowSec - m_visionSeenLastSec) < 1.0);
@@ -447,7 +449,7 @@ public class Robot extends TimedRobot {
 
         log_miniPCCurrent.accept(m_PDH.getCurrent(kMiniPCChannel));
         log_rioBusVoltage.accept(RobotController.getBatteryVoltage());
-        log_rioBrownout.accept(RobotController.isBrownedOut());
+        // log_rioBrownout.accept(RobotController.isBrownedOut());
         log_pdhCurrentTotal.accept(m_PDH.getTotalCurrent());
         log_isDSAttatched.accept(RobotState.isDSAttached());
 
@@ -493,12 +495,12 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledPeriodic() {
-        if (m_fpsLimitTimer.hasElapsed(3) && !WaltCamera.areCamsFpsLimited()) {
-            WaltCamera.setFpsLimit(true);
-            m_fpsLimitTimer.restart();
-            // dumb bullshit to hot-path the Chooser on occasion
+        // if (m_fpsLimitTimer.hasElapsed(3) && !WaltCamera.areCamsFpsLimited()) {
+        //     WaltCamera.setFpsLimit(true);
+        //     m_fpsLimitTimer.restart();
+        //     // dumb bullshit to hot-path the Chooser on occasion
 
-        }
+        // }
 
         // oneshot on DisabledInit
         if (m_disableChangeDelayTimer.hasElapsed(3.0)) {
@@ -604,7 +606,7 @@ public class Robot extends TimedRobot {
 
         SwerveDriveState robotState = m_drivetrain.getState();
         Pose2d robotPose = robotState.Pose;
-        WaltCamera.m_visionSim.simulationPeriodic(robotPose);
+        // WaltCamera.m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();
         m_shooter.simulationPeriodic();
         m_intake.simulationPeriodic();
