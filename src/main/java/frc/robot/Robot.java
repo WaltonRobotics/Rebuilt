@@ -100,7 +100,7 @@ public class Robot extends TimedRobot {
     private final CommandNiDsXboxController m_manipulator = new CommandNiDsXboxController(1);
 
     // Cached so the drive default-command lambda doesn't allocate a Trigger every tick.
-    private final Trigger trg_driverSlow = m_driver.leftTrigger();
+    private final Trigger trg_driverSlow = m_driver.leftTrigger().and(m_driver.b());
 
     //---INIT SUBSYSTEMS
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
@@ -145,9 +145,9 @@ public class Robot extends TimedRobot {
     private final Trigger trg_unlockShooting = m_driver.povDown();
 
     //---MANIPULATOR BUTTONS
-    private final Trigger trg_intake = m_manipulator.rightTrigger().and(trg_manipOverride.negate());
+    private final Trigger trg_intake = m_driver.leftTrigger().and(trg_manipOverride.negate());
     private final Trigger trg_retractIntake = m_manipulator.rightBumper().and(trg_manipOverride.negate());
-    private final Trigger trg_intakeShimmy = m_manipulator.leftBumper();
+    private final Trigger trg_intakeShimmy = m_driver.leftBumper();
 
     private final Trigger trg_emergencyIntakeOnlyBarf = m_manipulator.rightTrigger().and(trg_manipOverride);
 

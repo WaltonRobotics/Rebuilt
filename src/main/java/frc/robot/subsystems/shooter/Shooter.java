@@ -52,7 +52,7 @@ public class Shooter extends SubsystemBase {
         new WaltTunable("/Shooter/shooterRPSOverride", kShooterRPSd);
     private static final WaltTunable kHoodRotsOverride =
         new WaltTunable("/Shooter/hoodRotsOverride", 0.0);
-    private static final double kHoodLockedPosRots = Rotations.of(0.33).magnitude();
+    private static final double kHoodLockedPosRots = Rotations.of(0.721).magnitude();
 
     private final Tracer m_periodicTracer = new Tracer();
     /* VARIABLES */
@@ -335,7 +335,7 @@ public class Shooter extends SubsystemBase {
             var turretReference = calcData.turretReferenceRots();
             // set outputs
             var turretVelocityFF = calcData.turretCalcDetails().turretVelocityFF();
-            if (m_turret.getTurretLocked()) {
+            if (/*m_turret.getTurretLocked()*/ true) {
                 m_turret.setTurretPos(m_turret.getTurretLockAngleRots(), 0.0);
                 m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
             } else {
@@ -357,7 +357,8 @@ public class Shooter extends SubsystemBase {
 
         if (m_hood.isHoodHomed()) {
             double hoodReference = calcData.hoodReferenceRots();
-            if (m_turret.getTurretLocked()) {
+            // if (m_turret.getTurretLocked()) {
+            if (true) {
                 m_calcHoodRots = kHoodLockedPosRots;
                 // m_hood.setHoodPos(kHoodLockedPosRots);
             } else {
