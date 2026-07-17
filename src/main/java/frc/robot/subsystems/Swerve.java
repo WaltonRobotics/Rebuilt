@@ -485,7 +485,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             .withRotationalRate(0)
         )).until(() -> {
             Translation2d diff = target.getTranslation().minus(getState().Pose.getTranslation());
-            return !isContinuous && diff.getNorm() < tolerance;
+            return diff.getNorm() < tolerance;
         });
     }
 

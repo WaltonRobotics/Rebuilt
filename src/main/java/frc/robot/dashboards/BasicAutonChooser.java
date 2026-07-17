@@ -24,7 +24,7 @@ public class BasicAutonChooser {
                     0.5,
                     1,
                     1,
-                    false
+                    true
                 ), 5, false, false
             )
         ));
