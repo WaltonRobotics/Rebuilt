@@ -26,44 +26,44 @@ public class WaltPointToPointAutonFactory {
         m_swerve = swerve;
     }
 
-    public Command createAuton(PointToPointAutonInfo... infos) {
+    public Command createAuton(PointToPointPath... paths) {
         SequentialCommandGroup returnCommand = new SequentialCommandGroup();
-        for (PointToPointAutonInfo info : infos) {
+        for (PointToPointPath path : paths) {
             ParallelCommandGroup subsystemsCommand = new ParallelCommandGroup();
-            if (info.intaking) {
-                subsystemsCommand.addCommands(m_superstructure.intake(() -> info.shooting, () -> false));
+            if (path.intaking) {
+                subsystemsCommand.addCommands(m_superstructure.intake(() -> path.shooting, () -> false));
             }
-            if (info.shooting) {
+            if (path.shooting) {
                 subsystemsCommand.addCommands(m_superstructure.activateOuttakeShotCalc());
-                if (!info.intaking) {
-                    subsystemsCommand.addCommands(m_superstructure.intakeShimmy(() -> info.shooting));
+                if (!path.intaking) {
+                    subsystemsCommand.addCommands(m_superstructure.intakeShimmy(() -> path.shooting));
                 }
             }
             
             returnCommand.addCommands(
                 Commands.race(
                     m_swerve.driveToPoint(
-                        info.driveInfo.target, 
-                        info.driveInfo.tolerance, 
-                        info.driveInfo.maxVel, 
-                        info.driveInfo.maxRVel, 
-                        info.driveInfo.isContinuous
+                        path.driveInfo.target, 
+                        path.driveInfo.tolerance, 
+                        path.driveInfo.maxVel, 
+                        path.driveInfo.maxRVel, 
+                        path.driveInfo.isContinuous
                     ),
-                    Commands.waitSeconds(info.timeout)
+                    Commands.waitSeconds(path.timeout)
                 ).alongWith(subsystemsCommand)
             );
         }
         return returnCommand;
     }
 
-    public final record PointToPointAutonInfo(
-        PointToPointAutonDriveInfo driveInfo,
+    public final record PointToPointPath(
+        PointToPointPathDriveInfo driveInfo,
         double timeout,
         boolean intaking,
         boolean shooting
     ) {}
 
-    public final record PointToPointAutonDriveInfo(
+    public final record PointToPointPathDriveInfo(
         Pose2d target, 
         double tolerance, 
         double maxVel, 
