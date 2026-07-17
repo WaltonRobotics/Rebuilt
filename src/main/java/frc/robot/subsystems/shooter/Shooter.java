@@ -335,7 +335,7 @@ public class Shooter extends SubsystemBase {
             var turretReference = calcData.turretReferenceRots();
             // set outputs
             var turretVelocityFF = calcData.turretCalcDetails().turretVelocityFF();
-            if (/*m_turret.getTurretLocked()*/ true) {
+            if (m_turret.getTurretLocked()) {
                 m_turret.setTurretPos(m_turret.getTurretLockAngleRots(), 0.0);
                 m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
             } else {
@@ -343,7 +343,7 @@ public class Shooter extends SubsystemBase {
                 if (m_turret.getHoldTurretAtIntake()) {
                     // m_turret.setTurretPos(Rotations.of(-0.250));
                 } else {
-                    // m_turret.setTurretPos(turretReference, turretVelocityFF);
+                    m_turret.setTurretPos(turretReference, turretVelocityFF);
                     m_calcFlywheelVelocityRotPerSec = kShooterRPSOverride.enabled()
                         ? kShooterRPSOverride.get()
                         : calcData.shooterReferenceRps();
@@ -357,8 +357,7 @@ public class Shooter extends SubsystemBase {
 
         if (m_hood.isHoodHomed()) {
             double hoodReference = calcData.hoodReferenceRots();
-            // if (m_turret.getTurretLocked()) {
-            if (true) {
+            if (m_turret.getTurretLocked()) {
                 m_calcHoodRots = kHoodLockedPosRots;
                 // m_hood.setHoodPos(kHoodLockedPosRots);
             } else {

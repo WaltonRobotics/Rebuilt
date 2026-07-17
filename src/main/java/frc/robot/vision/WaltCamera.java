@@ -1,222 +1,222 @@
-// package frc.robot.vision;
+package frc.robot.vision;
 
-// import java.util.ArrayList;
-// import java.util.Arrays;
-// import java.util.Collections;
-// import java.util.List;
-// import java.util.Optional;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
-// import org.photonvision.EstimatedRobotPose;
-// import org.photonvision.PhotonCamera;
-// import org.photonvision.PhotonPoseEstimator;
-// import org.photonvision.simulation.PhotonCameraSim;
-// import org.photonvision.simulation.SimCameraProperties;
-// import org.photonvision.targeting.PhotonPipelineResult;
-// import org.photonvision.targeting.PhotonTrackedTarget;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
-// import org.wpilib.math.linalg.Matrix;
-// import org.wpilib.math.linalg.VecBuilder;
-// import org.wpilib.math.geometry.Pose3d;
-// import org.wpilib.math.geometry.Transform3d;
-// import org.wpilib.math.numbers.N1;
-// import org.wpilib.math.numbers.N3;
-// import org.wpilib.networktables.NetworkTableInstance;
-// import org.wpilib.networktables.StructArrayPublisher;
-// import org.wpilib.command2.Command;
-// import org.wpilib.command2.Commands;
-// import frc.robot.Robot;
-// import frc.util.VisionUtil;
-// import frc.util.WaltLogger;
-// import frc.util.WaltLogger.DoubleArrayLogger;
-// import frc.util.WaltLogger.IntLogger;
-// import frc.util.WaltLogger.Pose2dLogger;
-// import frc.util.WaltLogger.Pose3dLogger;
+import org.wpilib.math.linalg.Matrix;
+import org.wpilib.math.linalg.VecBuilder;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.numbers.N1;
+import org.wpilib.math.numbers.N3;
+import org.wpilib.networktables.NetworkTableInstance;
+import org.wpilib.networktables.StructArrayPublisher;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
+import frc.robot.Robot;
+import frc.util.VisionUtil;
+import frc.util.WaltLogger;
+import frc.util.WaltLogger.DoubleArrayLogger;
+import frc.util.WaltLogger.IntLogger;
+import frc.util.WaltLogger.Pose2dLogger;
+import frc.util.WaltLogger.Pose3dLogger;
 
-// import static frc.robot.Constants.VisionK;
-// import static frc.robot.Constants.FieldK;
+import static frc.robot.Constants.VisionK;
+import static frc.robot.Constants.FieldK;
 
-// public class WaltCamera extends PhotonCamera {
-//     /* CLASS VARIABLES */
-//     private static final int kGlobalFpsLimit = 5;
-//     private static final int kGlobalFps = 30;
-//     public static final VisionSim m_visionSim = new VisionSim();
+public class WaltCamera extends PhotonCamera {
+    /* CLASS VARIABLES */
+    private static final int kGlobalFpsLimit = 5;
+    private static final int kGlobalFps = 30;
+    public static final VisionSim m_visionSim = new VisionSim();
 
 
-//     public static final List<WaltCamera> AllCameras = Collections.unmodifiableList(Arrays.asList(
-//         new WaltCamera("FL_HAT", VisionK.kFrontLeftCTR),
-//         new WaltCamera("FR_HAT", VisionK.kFrontRightCTR),
-//         new WaltCamera("BL_HAT", VisionK.kBackLeftCTR),
-//         new WaltCamera("BR_HAT", VisionK.kBackRightCTR)
-//     ));
+    public static final List<WaltCamera> AllCameras = Collections.unmodifiableList(Arrays.asList(
+        new WaltCamera("FL_HAT", VisionK.kFrontLeftCTR),
+        new WaltCamera("FR_HAT", VisionK.kFrontRightCTR),
+        new WaltCamera("BL_HAT", VisionK.kBackLeftCTR),
+        new WaltCamera("BR_HAT", VisionK.kBackRightCTR)
+    ));
 
-//     public static void setFpsLimit(boolean limited) {
-//         int fpsLimit = limited ? kGlobalFpsLimit : kGlobalFps;
-//         for (var cam : AllCameras) {
-//             cam.setFPSLimit(fpsLimit); 
-//         }
-//         System.out.println("FPS Limit: " + fpsLimit);
-//     }
+    public static void setFpsLimit(boolean limited) {
+        int fpsLimit = limited ? kGlobalFpsLimit : kGlobalFps;
+        for (var cam : AllCameras) {
+            cam.setFPSLimit(fpsLimit); 
+        }
+        System.out.println("FPS Limit: " + fpsLimit);
+    }
 
-//     public static boolean areCamsFpsLimited() {
-//         boolean areThey = true;
-//         for (var cam : AllCameras) {
-//             if (cam.getFPSLimit() != kGlobalFpsLimit) {
-//                 areThey = false;
-//             }
-//         }
-//         return areThey;
-//     }
+    public static boolean areCamsFpsLimited() {
+        boolean areThey = true;
+        for (var cam : AllCameras) {
+            if (cam.getFPSLimit() != kGlobalFpsLimit) {
+                areThey = false;
+            }
+        }
+        return areThey;
+    }
 
-//     public static void takeSnapshot() {
-//         for (var cam : AllCameras) {
-//             cam.takeOutputSnapshot();
-//         }
-//     }
+    public static void takeSnapshot() {
+        for (var cam : AllCameras) {
+            cam.takeOutputSnapshot();
+        }
+    }
 
-//     public static Command takeSnapshotCmd() {
-//         return Commands.runOnce(WaltCamera::takeSnapshot);
-//     }
+    public static Command takeSnapshotCmd() {
+        return Commands.runOnce(WaltCamera::takeSnapshot);
+    }
 
-//     public static Command setFpsLimitCmd(boolean limited) {
-//         return Commands.runOnce(() -> setFpsLimit(limited));
-//     }
+    public static Command setFpsLimitCmd(boolean limited) {
+        return Commands.runOnce(() -> setFpsLimit(limited));
+    }
 
-//     public final PhotonCameraSim m_sim;
-//     public final Transform3d m_robotToCam;
-//     public final PhotonPoseEstimator m_estimator;
-//     private final SimCameraProperties m_simCameraProps = VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0);
+    public final PhotonCameraSim m_sim;
+    public final Transform3d m_robotToCam;
+    public final PhotonPoseEstimator m_estimator;
+    private final SimCameraProperties m_simCameraProps = VisionUtil.SimCamProps("ThriftyCam", 0, 0, 0, 0);
     
-//     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.0, 1.0, .3); //1.5, 1.5, 6.24
-//     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.25, 0.25, 0.75);  //0.5, 0.5, 5.24
+    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1.0, 1.0, .3); //1.5, 1.5, 6.24
+    public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.25, 0.25, 0.75);  //0.5, 0.5, 5.24
 
-//     private final Pose2dLogger log_camPose;
-//     private final Pose3dLogger log_camTransform;
-//     private final DoubleArrayLogger log_stdDevs;
-//     private final IntLogger log_numResults;
-//     private final StructArrayPublisher<Pose3d> log_camPoseAndTag;
+    private final Pose2dLogger log_camPose;
+    private final Pose3dLogger log_camTransform;
+    private final DoubleArrayLogger log_stdDevs;
+    private final IntLogger log_numResults;
+    private final StructArrayPublisher<Pose3d> log_camPoseAndTag;
 
-//     private Matrix<N3, N1> m_curStdDevs;
+    private Matrix<N3, N1> m_curStdDevs;
 
-//     /* CONSTRUCTOR */
-//     public WaltCamera(String cameraName, Transform3d robotToCam) {
-//         super(cameraName);
-//         // m_sim = new PhotonCameraSim(this);
-//         m_robotToCam = robotToCam;
-//         m_estimator = new PhotonPoseEstimator(FieldK.kTagLayout, m_robotToCam);
+    /* CONSTRUCTOR */
+    public WaltCamera(String cameraName, Transform3d robotToCam) {
+        super(cameraName);
+        // m_sim = new PhotonCameraSim(this);
+        m_robotToCam = robotToCam;
+        m_estimator = new PhotonPoseEstimator(FieldK.kTagLayout, m_robotToCam);
 
-//         final String ntPrefix = "Vision/" + cameraName + "/";
-//         log_camPose = WaltLogger.logPose2d(ntPrefix, "estRobotPose", true);
-//         log_camTransform = WaltLogger.logPose3d(ntPrefix, "transform");
-//         //TODO: Add WaltLogger for this
-//         log_camPoseAndTag = NetworkTableInstance.getDefault()
-//             .getStructArrayTopic(ntPrefix + "estPoseAndTag", Pose3d.struct).publish();
-//         log_stdDevs = WaltLogger.logDoubleArray(ntPrefix, "stdDevs");
-//         log_numResults = WaltLogger.logInt(ntPrefix, "numResults");
+        final String ntPrefix = "Vision/" + cameraName + "/";
+        log_camPose = WaltLogger.logPose2d(ntPrefix, "estRobotPose", true);
+        log_camTransform = WaltLogger.logPose3d(ntPrefix, "transform");
+        //TODO: Add WaltLogger for this
+        log_camPoseAndTag = NetworkTableInstance.getDefault()
+            .getStructArrayTopic(ntPrefix + "estPoseAndTag", Pose3d.struct).publish();
+        log_stdDevs = WaltLogger.logDoubleArray(ntPrefix, "stdDevs");
+        log_numResults = WaltLogger.logInt(ntPrefix, "numResults");
 
-//         log_camTransform.accept(robotToCam);
+        log_camTransform.accept(robotToCam);
 
-//         if (Robot.isSimulation()) {
-//             // Create a PhotonCameraSim which will update the linked PhotonCamera's values with visible targets.
-//             m_sim = new PhotonCameraSim(this, m_simCameraProps);
-//             // Add the simulated camera to view the targets on this simulated field.
-//             m_visionSim.addCamera(m_sim, robotToCam);
+        if (Robot.isSimulation()) {
+            // Create a PhotonCameraSim which will update the linked PhotonCamera's values with visible targets.
+            m_sim = new PhotonCameraSim(this, m_simCameraProps);
+            // Add the simulated camera to view the targets on this simulated field.
+            m_visionSim.addCamera(m_sim, robotToCam);
 
-//             m_sim.enableDrawWireframe(true);
-//         } else m_sim = new PhotonCameraSim(this);
-//     }
+            m_sim.enableDrawWireframe(true);
+        } else m_sim = new PhotonCameraSim(this);
+    }
 
-//     /* VISION ESTIMATION METHODS */
-//    /**
-//      * The latest estimated robot pose on the field from vision data. This may be empty. This should
-//      * only be called once per loop.
-//      *
-//      * <p>Also includes updates for the standard deviations, which can (optionally) be retrieved with
-//      * {@link getEstimationStdDevs}
-//      *
-//      * @return An {@link EstimatedRobotPose} with an estimated pose, estimate timestamp, and targets
-//      *     used for estimation.
-//      */
-//     public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
-//         Optional<EstimatedRobotPose> visionEst = Optional.empty();
-//         List<PhotonPipelineResult> unreadCameraResults = this.getAllUnreadResults();
-//         log_numResults.accept(unreadCameraResults.size());
+    /* VISION ESTIMATION METHODS */
+   /**
+     * The latest estimated robot pose on the field from vision data. This may be empty. This should
+     * only be called once per loop.
+     *
+     * <p>Also includes updates for the standard deviations, which can (optionally) be retrieved with
+     * {@link getEstimationStdDevs}
+     *
+     * @return An {@link EstimatedRobotPose} with an estimated pose, estimate timestamp, and targets
+     *     used for estimation.
+     */
+    public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
+        Optional<EstimatedRobotPose> visionEst = Optional.empty();
+        List<PhotonPipelineResult> unreadCameraResults = this.getAllUnreadResults();
+        log_numResults.accept(unreadCameraResults.size());
 
-//         for (var change : unreadCameraResults) {
-//             if (!change.hasTargets()) { continue; }
-//             visionEst = m_estimator.estimateCoprocMultiTagPose(change);
-//             if (visionEst.isEmpty()) {
-//                 visionEst = m_estimator.estimateLowestAmbiguityPose(change);
-//             }
-//             updateEstimationStdDevs(visionEst, change.getTargets());
-//             log_stdDevs.accept(m_curStdDevs.getData());
-//         }
+        for (var change : unreadCameraResults) {
+            if (!change.hasTargets()) { continue; }
+            visionEst = m_estimator.estimateCoprocMultiTagPose(change);
+            if (visionEst.isEmpty()) {
+                visionEst = m_estimator.estimateLowestAmbiguityPose(change);
+            }
+            updateEstimationStdDevs(visionEst, change.getTargets());
+            log_stdDevs.accept(m_curStdDevs.getData());
+        }
 
-//         if (visionEst.isPresent()) {
-//             log_camPose.accept(visionEst.get().estimatedPose.toPose2d());
-//         }
+        if (visionEst.isPresent()) {
+            log_camPose.accept(visionEst.get().estimatedPose.toPose2d());
+        }
 
-//         return visionEst;
-//     }
+        return visionEst;
+    }
 
-//     /**
-//      * Calculates new standard deviations This algorithm is a heuristic that creates dynamic standard
-//      * deviations based on number of tags, estimation strategy, and distance from the tags.
-//      *
-//      * @param estimatedPose The estimated pose to guess standard deviations for.
-//      * @param targets All targets in this camera frame
-//      */
-//     private void updateEstimationStdDevs(
-//             Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets) {
-//         List<Pose3d> camToTagLines = new ArrayList<>();
-//         if (estimatedPose.isEmpty()) {
-//             // No pose input. Default to single-tag std devs
-//             m_curStdDevs = kSingleTagStdDevs;
-//         } else {
-//             // Pose present. Start running Heuristic
-//             var estStdDevs = kSingleTagStdDevs;
-//             int numTags = 0;
-//             double avgDist = 0;
+    /**
+     * Calculates new standard deviations This algorithm is a heuristic that creates dynamic standard
+     * deviations based on number of tags, estimation strategy, and distance from the tags.
+     *
+     * @param estimatedPose The estimated pose to guess standard deviations for.
+     * @param targets All targets in this camera frame
+     */
+    private void updateEstimationStdDevs(
+            Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets) {
+        List<Pose3d> camToTagLines = new ArrayList<>();
+        if (estimatedPose.isEmpty()) {
+            // No pose input. Default to single-tag std devs
+            m_curStdDevs = kSingleTagStdDevs;
+        } else {
+            // Pose present. Start running Heuristic
+            var estStdDevs = kSingleTagStdDevs;
+            int numTags = 0;
+            double avgDist = 0;
 
-//             // Precalculation - see how many tags we found, and calculate an average-distance metric
-//             for (var tgt : targets) {
-//                 var tagPose = m_estimator.getFieldTags().getTagPose(tgt.getFiducialId());
-//                 if (tagPose.isEmpty()) continue;
-//                 numTags++;
-//                 avgDist +=
-//                         tagPose
-//                                 .get()
-//                                 .toPose2d()
-//                                 .getTranslation()
-//                                 .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
-//                 camToTagLines.add(estimatedPose.get().estimatedPose.plus(m_robotToCam));
-//                 camToTagLines.add(tagPose.get());
-//             }
+            // Precalculation - see how many tags we found, and calculate an average-distance metric
+            for (var tgt : targets) {
+                var tagPose = m_estimator.getFieldTags().getTagPose(tgt.getFiducialId());
+                if (tagPose.isEmpty()) continue;
+                numTags++;
+                avgDist +=
+                        tagPose
+                                .get()
+                                .toPose2d()
+                                .getTranslation()
+                                .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
+                camToTagLines.add(estimatedPose.get().estimatedPose.plus(m_robotToCam));
+                camToTagLines.add(tagPose.get());
+            }
 
-//             if (numTags == 0) {
-//                 // No tags visible. Default to single-tag std devs
-//                 m_curStdDevs = kSingleTagStdDevs;
-//             } else {
-//                 // One or more tags visible, run the full heuristic.
-//                 avgDist /= numTags;
-//                 // Decrease std devs if multiple targets are visible
-//                 if (numTags > 1) estStdDevs = kMultiTagStdDevs;
-//                 // Increase std devs based on (average) distance
-//                 else if (numTags == 1 && avgDist > 4)
-//                     estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
-//                 else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
-//                 m_curStdDevs = estStdDevs;
-//             }
-//         }
-//         log_camPoseAndTag.set(camToTagLines.toArray(new Pose3d[0]));
-//     }
+            if (numTags == 0) {
+                // No tags visible. Default to single-tag std devs
+                m_curStdDevs = kSingleTagStdDevs;
+            } else {
+                // One or more tags visible, run the full heuristic.
+                avgDist /= numTags;
+                // Decrease std devs if multiple targets are visible
+                if (numTags > 1) estStdDevs = kMultiTagStdDevs;
+                // Increase std devs based on (average) distance
+                else if (numTags == 1 && avgDist > 4)
+                    estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+                else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
+                m_curStdDevs = estStdDevs;
+            }
+        }
+        log_camPoseAndTag.set(camToTagLines.toArray(new Pose3d[0]));
+    }
 
-//     /**
-//      * Returns the latest standard deviations of the estimated pose from {@link
-//      * #getEstimatedGlobalPose()}, for use with {@link
-//      * org.wpilib.math.estimator.SwerveDrivePoseEstimator SwerveDrivePoseEstimator}. This should
-//      * only be used when there are targets visible.
-//      */
-//     public Matrix<N3, N1> getEstimationStdDevs() {
-//         return m_curStdDevs;
-//     }
-// }
+    /**
+     * Returns the latest standard deviations of the estimated pose from {@link
+     * #getEstimatedGlobalPose()}, for use with {@link
+     * org.wpilib.math.estimator.SwerveDrivePoseEstimator SwerveDrivePoseEstimator}. This should
+     * only be used when there are targets visible.
+     */
+    public Matrix<N3, N1> getEstimationStdDevs() {
+        return m_curStdDevs;
+    }
+}

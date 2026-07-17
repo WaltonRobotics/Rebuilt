@@ -51,7 +51,7 @@ import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Indexer;
-// import frc.robot.vision.WaltCamera;
+import frc.robot.vision.WaltCamera;
 import frc.util.HubShiftUtil;
 import frc.util.PerformanceMonitor;
 import frc.util.SignalManager;
@@ -236,7 +236,7 @@ public class Robot extends TimedRobot {
         );
 
         // set FPS limit on boot
-        // WaltCamera.setFpsLimit(true);
+        WaltCamera.setFpsLimit(true);
 
         DriverStationBackend.silenceJoystickConnectionWarning(true);
         // PhotonCamera.setVersionCheckEnabled(false);
@@ -308,8 +308,8 @@ public class Robot extends TimedRobot {
             m_drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        // trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   
-        // trg_unlimitFps.onTrue(WaltCamera.setFpsLimitCmd(false));
+        trg_limitFPS.onTrue(WaltCamera.setFpsLimitCmd(true));   
+        trg_unlimitFps.onTrue(WaltCamera.setFpsLimitCmd(false));
 
         /* BUTTON BIDNDS */
         m_driver.leftBumper().and(trg_driverOverride).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));    // Reset the field-centric heading on left bumper press.
@@ -324,7 +324,7 @@ public class Robot extends TimedRobot {
             .whileTrue(m_superstructure.hoodAndFlywheelShotCalc());
 
         // snapshot on each shoot press
-        // trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
+        trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
 
         trg_intake.and(trg_shoot).and(trg_emergencyBarf.negate()).whileTrue(
             m_superstructure.intake(() -> true, () -> false)
@@ -412,27 +412,27 @@ public class Robot extends TimedRobot {
         var headingNow = driveState.Pose.getRotation();
         double nowSec = Utils.getCurrentTimeSeconds();
 
-        // for (var camera : WaltCamera.AllCameras) {
-        //     camera.m_estimator.addHeadingData(nowSec, headingNow);
-        //     Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
-        //     if (estimatedPoseOptional.isPresent()) {
-        //         EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
-        //         Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
-        //         // if ((RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())).getAsBoolean()) {
-        //         //     if (!MathUtil.isNear(driveState.Pose.getX(), estimatedRobotPose2d.getX(), 2.3) || !MathUtil.isNear(driveState.Pose.getY(), estimatedRobotPose2d.getY(), 2.3)){} else {
-        //         //         m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
-        //         //     }
-        //         // } else {
-        //         m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
-        //         // }
+        for (var camera : WaltCamera.AllCameras) {
+            camera.m_estimator.addHeadingData(nowSec, headingNow);
+            Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
+            if (estimatedPoseOptional.isPresent()) {
+                EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
+                Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
+                // if ((RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())).getAsBoolean()) {
+                //     if (!MathUtil.isNear(driveState.Pose.getX(), estimatedRobotPose2d.getX(), 2.3) || !MathUtil.isNear(driveState.Pose.getY(), estimatedRobotPose2d.getY(), 2.3)){} else {
+                //         m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
+                //     }
+                // } else {
+                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
+                // }
 
-        //         // 2027-TODO: find new correct method!!!
-        //         m_visionSeenLastSec = estimatedRobotPose.timestampSeconds;
-        //         // m_visionSeenLastSec = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
+                // 2027-TODO: find new correct method!!!
+                m_visionSeenLastSec = estimatedRobotPose.timestampSeconds;
+                // m_visionSeenLastSec = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
 
-        //         // System.out.println("AddMeasurementFrom: " + camera.getName());
-        //     }
-        // }
+                // System.out.println("AddMeasurementFrom: " + camera.getName());
+            }
+        }
 
         m_periodicTracer.addEpoch("VisionUpdate");
 
