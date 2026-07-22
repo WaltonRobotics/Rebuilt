@@ -49,8 +49,9 @@ public class WaltPointToPointAutonFactory {
                         path.driveInfo.maxRVel, 
                         path.driveInfo.isContinuous
                     ),
-                    Commands.waitSeconds(path.timeout)
-                ).alongWith(subsystemsCommand)
+                    Commands.waitSeconds(path.timeout),
+                    subsystemsCommand
+                )
             );
         }
         return returnCommand;
