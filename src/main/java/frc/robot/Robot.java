@@ -9,6 +9,8 @@ import static org.wpilib.units.Units.*;
 import static frc.robot.Constants.FieldK.kLeftResetPose;
 import static frc.robot.Constants.FieldK.kRightResetPose;
 import static frc.robot.Constants.RobotK.*;
+
+import java.io.CharConversionException;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -44,6 +46,8 @@ import org.wpilib.command2.button.Trigger;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
+import frc.robot.autons.WaltPointToPointAutonFactory;
+import frc.robot.dashboards.BasicAutonChooser;
 // import frc.robot.dashboards.AutonChooser;
 // import frc.robot.autons.WaltAdaptableAutonFactory;
 import frc.robot.generated.TunerConstants;
@@ -119,6 +123,7 @@ public class Robot extends TimedRobot {
     //---AUTONS
     // private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
     // private final WaltAdaptableAutonFactory m_adpatableAutonFactory = new WaltAdaptableAutonFactory(m_superstructure, m_autoFactory, m_intake, m_shooter, m_drivetrain);
+    private final WaltPointToPointAutonFactory m_pointToPointAutonFactory = new WaltPointToPointAutonFactory(m_superstructure, m_intake, m_shooter, m_drivetrain);
     //---VISION
 
     // 2027-TODO: CANBusMap!!
@@ -184,6 +189,7 @@ public class Robot extends TimedRobot {
     private final PerformanceMonitor m_perfMonitor = new PerformanceMonitor(false);
 
     // 2027-TODO: figure out auton/choreo!!!
+    private Command m_chosenAuton;
     // private final Command m_preheaterCommand;
 
     /* CONSTRUCTOR */
@@ -205,6 +211,7 @@ public class Robot extends TimedRobot {
 
         // 2027-TODO: figure out auton/choreo!!!
         // AutonChooser.initialize(m_adpatableAutonFactory);
+        BasicAutonChooser.initialize(m_pointToPointAutonFactory);
         long tChooserInit = System.nanoTime();
         System.out.printf("[INIT PROFILE] AutonChooser.initialize:  %7.1f ms%n", (tChooserInit - tPrev) * 1e-6);
         tPrev = tChooserInit;
@@ -503,6 +510,7 @@ public class Robot extends TimedRobot {
             m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
             m_shooter.m_hood.setHoodNeutralMode(NeutralModeValue.Coast);
         }
+        m_chosenAuton = BasicAutonChooser.getAuton();
     }
 
     @Override
@@ -515,6 +523,10 @@ public class Robot extends TimedRobot {
     public void autonomousInit() {
         // 2027-TODO: fix auton/choreo stuff!!!
         // m_adpatableAutonFactory.startAutonTimer();
+        
+        if (m_chosenAuton != null) {
+            CommandScheduler.getInstance().schedule(m_chosenAuton);
+        }
     }
 
     @Override
@@ -524,7 +536,11 @@ public class Robot extends TimedRobot {
     }
 
     @Override
-    public void autonomousExit() {}
+    public void autonomousExit() {
+        if (m_chosenAuton != null) {
+            CommandScheduler.getInstance().cancel(m_chosenAuton);
+        }
+    }
 
     @Override
     public void teleopInit() {
