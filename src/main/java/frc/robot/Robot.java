@@ -322,7 +322,7 @@ public class Robot extends TimedRobot {
         m_driver.leftBumper().and(trg_driverOverride).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));    // Reset the field-centric heading on left bumper press.
 
         trg_shoot
-            .and(() -> m_shooter.m_turret.atPosition())
+            // .and(() -> m_shooter.m_turret.atPosition())
             .and(trg_snappingBack.negate())
             .whileTrue(m_superstructure.activateOuttakeShotCalc());
 
