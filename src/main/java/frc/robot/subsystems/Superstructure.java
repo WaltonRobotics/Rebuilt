@@ -7,12 +7,15 @@ import org.wpilib.command2.Commands;
 import org.wpilib.command2.SubsystemBase;
 import frc.robot.Constants.IndexerK;
 import frc.robot.Constants.IntakeK;
+import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import static org.wpilib.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK;
 import static frc.robot.Constants.IndexerK.kSpindexerMaxRPSD;
+import static frc.robot.Constants.IndexerK.kSpindexerShootRPSD;
 import static frc.robot.Constants.IndexerK.kTunnelMaxRPSD;
+import static frc.robot.Constants.IndexerK.kTunnelShootRPSD;
 import static frc.robot.Constants.IntakeK.kIntakeRollersIntakeVolts;
 import static frc.robot.Constants.IntakeK.kIntakeRollersShimmyVolts;
 
@@ -46,7 +49,8 @@ public class Superstructure extends SubsystemBase {
             () -> {
                 boolean shooting = isShooting.getAsBoolean();
                 // m_shooter.m_turret.setIntaking(!shooting);
-                m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPSD : IndexerK.kSpindexerIntakeRPSD);
+                m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPSD : IndexerK.kSpindexerIntakeRPSD);                m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPSD : IndexerK.kSpindexerIntakeRPSD);
+                m_indexer.setTunnelVelocity(shooting ? IndexerK.kTunnelShootRPSD : IndexerK.kTunnelIntakeRPSD);
             })
         ).finallyDo(
             () -> {
@@ -57,6 +61,7 @@ public class Superstructure extends SubsystemBase {
                     m_intake.setIntakeRollersVelocity(0);
                 if (!shooting) {
                     m_indexer.setSpindexerVelocity(0);
+                    m_indexer.setTunnelVelocity(0);
                 }
             }
         );
@@ -112,10 +117,10 @@ public class Superstructure extends SubsystemBase {
                 Commands.waitUntil(() -> m_shooter.m_hood.atPosition()).withTimeout(ShooterK.kHoodAtPosTimeout),
                 Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocityRotPerSec() >= ShooterK.kShooterSpunUpMinimumD))).withTimeout(ShooterK.kShooterSpunUpTimeout),
                 Commands.parallel(
-                    Commands.run(() -> m_indexer.setTunnelVelocity(kTunnelMaxRPSD * 0.95)),
+                    Commands.run(() -> m_indexer.setTunnelVelocity(kTunnelShootRPSD)),
                     Commands.sequence(
                         Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocityRotPerSec() >= IndexerK.kTunnelSpunUpMinimumD)).withTimeout(IndexerK.kTunnelSpunUpTimeout),
-                        Commands.run(() -> m_indexer.setSpindexerVelocity(kSpindexerMaxRPSD * 0.95))
+                        Commands.run(() -> m_indexer.setSpindexerVelocity(kSpindexerShootRPSD))
                     )
                 )
             )
@@ -208,15 +213,13 @@ public class Superstructure extends SubsystemBase {
     }
 
     public Command intakeShimmy(BooleanSupplier isShooting) {
-       return Commands.repeatingSequence(
-            intake(isShooting, () -> true).withTimeout(0.5),
-            m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED),
-            Commands.waitSeconds(0.5)
-       );
-       // 2027-TODO: FIX!!!
-    //    .finallyDo(() -> {
-            // m_intake.stopIntakeRollers();
-    //    });
+        return Commands.repeatingSequence(
+            intake(isShooting, () -> true).withTimeout(0.2),
+            m_intake.setIntakeArmPosCmd(IntakeArmPosition.SHIMMY),
+            Commands.waitSeconds(0.2)
+        ).andThen(
+            m_intake.stopIntakeRollers()
+        );
     }
 
     /**

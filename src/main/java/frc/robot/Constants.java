@@ -12,6 +12,7 @@ import static org.wpilib.units.Units.Rotations;
 import static org.wpilib.units.Units.RotationsPerSecond;
 import static org.wpilib.units.Units.Seconds;
 import static frc.robot.Constants.IndexerK.kSpindexerShootRPSD;
+import static frc.robot.Constants.IndexerK.kTunnelIntakeRPSD;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -557,7 +558,7 @@ public class Constants {
         public static final double kTunnelMOI = 0.000215968064;
       
         public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60MaxVelocity.div(kSpindexerGearing);
-        public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.10);
+        public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(0.20);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.85);
         public static final double kSpindexerMaxRPSD = kSpindexerMaxRPS.in(RotationsPerSecond);
         public static final double kSpindexerShootRPSD = kSpindexerShootRPS.in(RotationsPerSecond);
@@ -565,8 +566,10 @@ public class Constants {
 
         public static final AngularVelocity kTunnelMaxRPS = MotorK.kX60FOCMaxVelocity.div(kTunnelGearing);
         public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(0.77);    //9V
+        public static final AngularVelocity kTunnelIntakeRPS = kTunnelMaxRPS.times(-0.20);
         public static final double kTunnelMaxRPSD    = kTunnelMaxRPS.in(RotationsPerSecond);
         public static final double kTunnelShootRPSD = kTunnelShootRPS.in(RotationsPerSecond);
+        public static final double kTunnelIntakeRPSD = kTunnelIntakeRPS.in(RotationsPerSecond);
 
         public static final AngularVelocity kTunnelSpunUpMinimum = RotationsPerSecond.of(10);
         public static final double kTunnelSpunUpMinimumD = 10.0;
