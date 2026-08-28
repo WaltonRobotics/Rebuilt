@@ -24,10 +24,11 @@ import org.wpilib.math.system.LinearSystem;
 import org.wpilib.system.Timer;
 import org.wpilib.system.Tracer;
 import org.wpilib.simulation.FlywheelSim;
-import org.wpilib.command2.Command;
-import org.wpilib.command2.Commands;
-import org.wpilib.command2.SubsystemBase;
-import org.wpilib.command2.button.Trigger;
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Mechanism;
+import org.wpilib.command3.Scheduler;
+import org.wpilib.command3.Trigger;
+import org.wpilib.command3.Coroutine;
 
 import static org.wpilib.units.Units.Hertz;
 import static org.wpilib.units.Units.Rotations;
@@ -46,7 +47,7 @@ import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
-public class Shooter extends SubsystemBase {
+public class Shooter extends Mechanism {
     // NT-tunable overrides for LERP table building (default off)
     private static final WaltTunable kShooterRPSOverride =
         new WaltTunable("/Shooter/shooterRPSOverride", kShooterRPSd);
@@ -165,9 +166,23 @@ public class Shooter extends SubsystemBase {
         m_currentFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
         m_latestFlywheelAccelerationRotPerSec = sig_shooterAAccel.getValueAsDouble();
 
-        trg_ballDetected.onTrue(Commands.runOnce(() -> { m_shotDropSeen = true; m_shotRecoveryTimer.restart(); m_ballsShot++;}));
-        trg_ballDetected.onFalse(Commands.runOnce(() -> { m_shotRecoveryTimer.restart(); }));
-        trg_inShootCtrlMode.onFalse(Commands.runOnce(() -> { m_shotDropSeen = false; m_shotRecoveryTimer.stop(); m_shotRecoveryTimer.reset(); }));
+        // Trigger bindings (no mechanism requirement)
+        trg_ballDetected.onTrue(
+            Command.noRequirements(co -> {
+                m_shotDropSeen = true;
+                m_shotRecoveryTimer.restart();
+                m_ballsShot++;
+            }).named("OnBallDetected"));
+        trg_ballDetected.onFalse(
+            Command.noRequirements(co -> {
+                m_shotRecoveryTimer.restart();
+            }).named("OnBallLost"));
+        trg_inShootCtrlMode.onFalse(
+            Command.noRequirements(co -> {
+                m_shotDropSeen = false;
+                m_shotRecoveryTimer.stop();
+                m_shotRecoveryTimer.reset();
+            }).named("OnShootCtrlModeExit"));
 
         // m_turretVisualizer = new TurretVisualizer(
         //         () -> new Pose3d(m_poseSupplier.get().rotateAround(
@@ -177,50 +192,82 @@ public class Shooter extends SubsystemBase {
 
         // m_fuelSim = FuelSim.getInstance();
         initSim();
+
+    // replaces @Override periodic()
+        Scheduler.getDefault().addPeriodic(this::sideloadedPeriodic);
     }
 
-    // ---SHOOTER (Velocity Control)
+
+    /** set flywheel to a fixed velocity, then release the mechanism. */
     public Command setShooterVelocityCmd(AngularVelocity RPS) {
-        return runOnce(() -> setShooterVelocity(RPS));
+        return run(co -> setShooterVelocity(RPS))
+            .named("SetShooterVelocity");
     }
 
+    /** set flywheel velocity from a supplier. */
     public Command setShooterVelocityCmdSupp(Supplier<AngularVelocity> supp_RPS) {
-        return runOnce(() -> setShooterVelocity(supp_RPS.get()));
+        return run(co -> setShooterVelocity(supp_RPS.get()))
+            .named("SetShooterVelocitySupp");
     }
 
+    /** drive the flywheel continuously from the shot calculator every cycle. */
     public Command shootFromCalc() {
-        return run(() -> setShooterVelocity(m_calcFlywheelVelocityRotPerSec));
+        return runRepeatedly(() -> setShooterVelocity(m_calcFlywheelVelocityRotPerSec))
+            .named("ShootFromCalc");
     }
 
+    // TODO: migrate hood to Mechanism, then use m_hood.runRepeatedly() with proper requirement
+    /** Continuous: drive the hood position from the shot calculator every cycle. */
     public Command hoodFromCalc() {
-        return m_hood.run(() -> m_hood.setHoodPos(m_calcHoodRots));
+        return Command.noRequirements(co -> {
+            while (co.yield()) {
+                m_hood.setHoodPos(m_calcHoodRots);
+            }
+        }).named("HoodFromCalc");
     }
 
+    // TODO: migrate hood to Mechanism, then use m_hood.runRepeatedly() with proper requirement
+    /** Continuous: hold the hood at the halfway position. */
     public Command hoodToHalfway() {
-        return m_hood.run(() -> m_hood.setHoodPos(kHoodRotsHalfwayD));
+        return Command.noRequirements(co -> {
+            while (co.yield()) {
+                m_hood.setHoodPos(kHoodRotsHalfwayD);
+            }
+        }).named("HoodToHalfway");
     }
 
     public Command driverRPSIncreaseWhileHeldCmd() {
-        return driverRPSAlterStatic(true).finallyDo(() -> driverResetRPSAlter());
+        return run(co -> {
+            m_driverRPSTweak += kDriverRPSIncreaseD;
+            log_driverAddedRPS.accept(m_driverRPSTweak);
+            co.park();
+        }).whenCanceled(() -> m_driverRPSTweak = 0)
+          .named("DriverRPSIncreaseWhileHeld");
     }
 
+    /** bump the driver RPS tweak by +/-5% of calc velocity */
     public Command driverRPSAlterDynamic(boolean increase) {
-        return Commands.runOnce(() -> {
+        return Command.noRequirements(co -> {
             m_driverRPSTweak = increase ? (m_calcFlywheelVelocityRotPerSec * 0.05) : (m_calcFlywheelVelocityRotPerSec * -0.05);
             log_driverAddedRPS.accept(m_driverRPSTweak);
-        });
+        }).named("DriverRPSAlterDynamic");
     }
 
+    /** bump the driver RPS tweak by a fixed step. */
     public Command driverRPSAlterStatic(boolean increase) {
-        return Commands.runOnce(() -> {
+        return Command.noRequirements(co -> {
             m_driverRPSTweak += kDriverRPSIncreaseD * (increase ? 1 : -1);
             log_driverAddedRPS.accept(m_driverRPSTweak);
-        });
+        }).named("DriverRPSAlterStatic");
     }
 
+    /** zero out the driver RPS tweak. */
     public Command driverResetRPSAlter() {
-        return Commands.runOnce(() -> m_driverRPSTweak = 0);
+        return Command.noRequirements(co -> m_driverRPSTweak = 0)
+            .named("DriverResetRPSAlter");
     }
+
+    // ==================== HARDWARE SETTERS ====================
 
     public void setShooterVelocity(AngularVelocity RPS) {
         setShooterVelocity(RPS.in(RotationsPerSecond));
@@ -313,9 +360,9 @@ public class Shooter extends SubsystemBase {
                 TalonFXSimState.MotorType.KrakenX60);
     }
 
-    /* PERIODICS */
-    @Override
-    public void periodic() {
+    // ==================== SIDELOADED PERIODIC ====================
+    // runs every scheduler cycle via Scheduler.addPeriodic() - NOT tied to mechanism ownership
+    private void sideloadedPeriodic() {
         m_periodicTracer.addEpoch("Entry (Unused Time)");
 
         // Cache all signals at the top so every consumer in this loop sees the same values
@@ -395,9 +442,8 @@ public class Shooter extends SubsystemBase {
         // m_periodicTracer.printEpochs();
     }
 
-    @Override
-    public void simulationPeriodic() {
-        // 2027-TODO: figure out new LinearSystem generator!!!
-        // WaltMotorSim.updateSimFX(m_shooterA, m_shooterSim);
-    }
+    // 2027-TODO: figure out new LinearSystem generator!!!
+    // private void simulationPeriodic() {
+    //     WaltMotorSim.updateSimFX(m_shooterA, m_shooterSim);
+    // }
 }
