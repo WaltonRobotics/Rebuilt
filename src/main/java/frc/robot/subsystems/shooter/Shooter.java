@@ -65,6 +65,12 @@ public class Shooter extends SubsystemBase {
 
     private final Timer m_shotRecoveryTimer = new Timer();
 
+    // Recovery bump temporarily overshoot the velocity setpoint after a ball
+    // steals energy from the flywheel, so PID recovers faster.
+    private double m_recoveryBumpRPS = 0.0;
+    private static final double kRecoveryBumpRPS = 4.0; // RPS to add on shot detect (tune this)
+    private static final double kRecoveryBumpClearThreshold = 1.0; // clear bump when CL error is within this
+
     private int m_fuelStored = 8;
 
     // private final TurretVisualizer m_turretVisualizer;
@@ -139,6 +145,7 @@ public class Shooter extends SubsystemBase {
 
     private final DoubleLogger log_ballsShot = new DoubleLogger("Shooter/Flywheel", "balls shot");
     private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
+    private final DoubleLogger log_recoveryBump = new DoubleLogger("Shooter/Flywheel", "recoveryBumpRPS");
     private final DoubleLogger log_driverAddedRPS = WaltLogger.logDouble(kLogTab, "driverAddedRPS");
     private final DoubleLogger log_shotConfidence = WaltLogger.logDouble(kLogTab, "shotConfidence");
     private final BooleanLogger log_shotConfident = WaltLogger.logBoolean(kLogTab, "shotConfident");
@@ -165,7 +172,7 @@ public class Shooter extends SubsystemBase {
         m_currentFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
         m_latestFlywheelAccelerationRotPerSec = sig_shooterAAccel.getValueAsDouble();
 
-        trg_ballDetected.onTrue(Commands.runOnce(() -> { m_shotDropSeen = true; m_shotRecoveryTimer.restart(); m_ballsShot++;}));
+        trg_ballDetected.onTrue(Commands.runOnce(() -> { m_shotDropSeen = true; m_shotRecoveryTimer.restart(); m_ballsShot++; m_recoveryBumpRPS = kRecoveryBumpRPS; }));
         trg_ballDetected.onFalse(Commands.runOnce(() -> { m_shotRecoveryTimer.restart(); }));
         trg_inShootCtrlMode.onFalse(Commands.runOnce(() -> { m_shotDropSeen = false; m_shotRecoveryTimer.stop(); m_shotRecoveryTimer.reset(); }));
 
@@ -231,8 +238,9 @@ public class Shooter extends SubsystemBase {
             // cope to get clErr to 0
             m_shooterA.setControl(m_veloTQFOCReq.withVelocity(0));
             m_shooterA.setControl(m_motorIdleReq);
+            m_recoveryBumpRPS = 0.0;
         } else {
-            m_shooterA.setControl(m_veloTQFOCReq.withVelocity(rotPerSec));
+            m_shooterA.setControl(m_veloTQFOCReq.withVelocity(rotPerSec + m_recoveryBumpRPS));
         }
     }
 
@@ -374,6 +382,11 @@ public class Shooter extends SubsystemBase {
 
         m_periodicTracer.addEpoch("Setting Hood & Turret References");
 
+        // Clear recovery bump once flywheel is back within threshold of setpoint
+        if (m_recoveryBumpRPS > 0.0 && Math.abs(sig_shooterCLErr.getValueAsDouble()) <= kRecoveryBumpClearThreshold) {
+            m_recoveryBumpRPS = 0.0;
+        }
+
         refreshShooterSpunUp();
 
         m_periodicTracer.addEpoch("Refresh shooterSpunUp");
@@ -385,6 +398,7 @@ public class Shooter extends SubsystemBase {
         log_turretPositionRots.accept(m_latestTurretPositionRots);
         log_spunUp.accept(m_isShooterSpunUp);
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocityRotPerSec);
+        log_recoveryBump.accept(m_recoveryBumpRPS);
         log_ballDetected.accept(trg_ballDetected.getAsBoolean());
         log_ballShotDebounce.accept(trg_ballShotDebounced.getAsBoolean());
         log_shotConfidence.accept(m_shotConfidence);
