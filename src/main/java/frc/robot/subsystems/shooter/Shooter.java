@@ -68,8 +68,13 @@ public class Shooter extends SubsystemBase {
     // Recovery bump temporarily overshoot the velocity setpoint after a ball
     // steals energy from the flywheel, so PID recovers faster.
     private double m_recoveryBumpRPS = 0.0;
-    private static final double kRecoveryBumpRPS = 4.0; // RPS to add on shot detect (tune this)
+    private static final double kRecoveryBumpRPS = 6.0; // RPS to add on shot detect (tune this)
+    private static final WaltTunable kRecoveryBumpRPSOverride = 
+        new WaltTunable("/Shooter/bumpRPSOverride", kRecoveryBumpRPS);
     private static final double kRecoveryBumpClearThreshold = 1.0; // clear bump when CL error is within this
+    private static final WaltTunable kRecoveryBumpClearOverride = 
+        new WaltTunable("/Shooter/kRecoveryBumpClearOverride", kRecoveryBumpClearThreshold);
+    
 
     private int m_fuelStored = 8;
 
@@ -172,7 +177,7 @@ public class Shooter extends SubsystemBase {
         m_currentFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
         m_latestFlywheelAccelerationRotPerSec = sig_shooterAAccel.getValueAsDouble();
 
-        trg_ballDetected.onTrue(Commands.runOnce(() -> { m_shotDropSeen = true; m_shotRecoveryTimer.restart(); m_ballsShot++; m_recoveryBumpRPS = kRecoveryBumpRPS; }));
+        trg_ballDetected.onTrue(Commands.runOnce(() -> { m_shotDropSeen = true; m_shotRecoveryTimer.restart(); m_ballsShot++; m_recoveryBumpRPS = kRecoveryBumpRPSOverride.get(); }));
         trg_ballDetected.onFalse(Commands.runOnce(() -> { m_shotRecoveryTimer.restart(); }));
         trg_inShootCtrlMode.onFalse(Commands.runOnce(() -> { m_shotDropSeen = false; m_shotRecoveryTimer.stop(); m_shotRecoveryTimer.reset(); }));
 
@@ -383,7 +388,7 @@ public class Shooter extends SubsystemBase {
         m_periodicTracer.addEpoch("Setting Hood & Turret References");
 
         // Clear recovery bump once flywheel is back within threshold of setpoint
-        if (m_recoveryBumpRPS > 0.0 && Math.abs(sig_shooterCLErr.getValueAsDouble()) <= kRecoveryBumpClearThreshold) {
+        if (m_recoveryBumpRPS > 0.0 && Math.abs(sig_shooterCLErr.getValueAsDouble()) <= kRecoveryBumpClearOverride.get()) {
             m_recoveryBumpRPS = 0.0;
         }
 
