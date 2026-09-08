@@ -37,10 +37,11 @@
         }
         ```
         - notice how all the turret references are commented out, this ensures that all turret tracking is disabled and the wire wont kill itself
+        - (all the `m_turret.setTurretpos()` NEED and i repeat <u>***NEED***</u> to be commented out)
 
     - <u>***NEXT***</u> open a tab of ***advantage scope*** and ***tunerx*** 
         - ensure that EncA is connected via tunerx, and EncB is connected via advantage scope
-            - check `Turret/EncB/Conn`; if true, connected most likely
+            - check `Turret/EncB/Conn`; if true, connected most likely (maybe confirm with chris/banks or other elec mentors to see if wired up correctly)
         - plot `Turret/EncA/Pos` and `Turret/EncB/Pos`
         - plot `Turret/LCMPos` and `Turret/positionRots`
             - once working, the two values should be in sync and be the same
@@ -56,5 +57,8 @@
 
         ```
         - then just follow the rest of the directions (surely you dont need my help even more)
+
+    - for the kLCMAtHomeRots, place the turret in such a way that the wire is directly infront of the camera
+        - ![a rough sketch of how to place the turret](image.png)
 
 
