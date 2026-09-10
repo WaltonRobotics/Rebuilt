@@ -49,7 +49,7 @@ public class Superstructure extends SubsystemBase {
             () -> {
                 boolean shooting = isShooting.getAsBoolean();
                 // m_shooter.m_turret.setIntaking(!shooting);
-                m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPSD : IndexerK.kSpindexerIntakeRPSD);                m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPSD : IndexerK.kSpindexerIntakeRPSD);
+                m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPSD : IndexerK.kSpindexerIntakeRPSD); 
                 m_indexer.setTunnelVelocity(shooting ? IndexerK.kTunnelShootRPSD : IndexerK.kTunnelIntakeRPSD);
             })
         ).finallyDo(

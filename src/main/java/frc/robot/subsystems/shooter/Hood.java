@@ -54,6 +54,7 @@ public class Hood extends SubsystemBase {
 
     private boolean m_isHoodHomed = false;
     private boolean m_hoodAtPos = false;
+    private double m_commandedPosRots = 0.0;
 
     public Hood() {
         m_hood.getConfigurator().apply(kHoodTalonFXSConfiguration);
@@ -70,6 +71,7 @@ public class Hood extends SubsystemBase {
 
     // ---HOOD
     public void setHoodPos(double rots) {
+        m_commandedPosRots = rots;
         m_hood.setControl(m_hoodPVRequest.withPosition(rots));
         log_hoodControlPos.accept(rots);
     }
@@ -88,7 +90,7 @@ public class Hood extends SubsystemBase {
 
     private void refreshHoodAtPos() {
         log_hoodCLErr.accept(sig_hoodCLErr.getValueAsDouble());
-        m_hoodAtPos = sig_hoodPos.isNear(0, kHoodMaxErrD);
+        m_hoodAtPos = Math.abs(sig_hoodPos.getValueAsDouble() - m_commandedPosRots) <= kHoodMaxErrD;
         log_hoodAtPos.accept(m_hoodAtPos);
     }
 
