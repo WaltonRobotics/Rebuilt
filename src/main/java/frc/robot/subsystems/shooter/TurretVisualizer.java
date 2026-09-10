@@ -52,8 +52,8 @@
 //         double xVel = horizontalVel * Math.cos(robot.getRotation().toRotation2d().getRadians());
 //         double yVel = horizontalVel * Math.sin(robot.getRotation().toRotation2d().getRadians());
 
-//         xVel += fieldSpeeds.vxMetersPerSecond;
-//         yVel += fieldSpeeds.vyMetersPerSecond;
+//         xVel += fieldSpeeds.vx;
+//         yVel += fieldSpeeds.vy;
 
 //         return new Translation3d(xVel, yVel, verticalVel);
 //     }

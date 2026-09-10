@@ -32,7 +32,11 @@ import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N3;
 import org.wpilib.units.measure.Angle;
 import org.wpilib.driverstation.Alliance;
-import org.wpilib.driverstation.DriverStation;
+import org.wpilib.driverstation.MatchState;
+import org.wpilib.driverstation.RobotState;
+import org.wpilib.driverstation.Alliance;
+import org.wpilib.driverstation.MatchType;
+import org.wpilib.driverstation.DriverStationErrors;
 import org.wpilib.driverstation.RobotState;
 import org.wpilib.system.Notifier;
 import org.wpilib.system.RobotController;
@@ -370,13 +374,13 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     //     // var speed = getState().Speeds;
     //     var targetSpeeds = sample.getChassisVelocities();
 
-    //     targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(
+    //     targetSpeeds.vx += m_pathXController.calculate(
     //         pose.getX(), sample.x
     //     );
-    //     targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(
+    //     targetSpeeds.vy += m_pathYController.calculate(
     //         pose.getY(), sample.y
     //     );
-    //     targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(
+    //     targetSpeeds.omega += m_pathThetaController.calculate(
     //         pose.getRotation().getRadians(), sample.heading
     //     );
 

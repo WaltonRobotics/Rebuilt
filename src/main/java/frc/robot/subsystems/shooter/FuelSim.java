@@ -498,8 +498,8 @@
 //                 * Math.sin(
 //                         turretYaw.plus(launchPose.getRotation().getMeasureZ()).in(Radians));
 
-//         xVel += fieldSpeeds.vxMetersPerSecond;
-//         yVel += fieldSpeeds.vyMetersPerSecond;
+//         xVel += fieldSpeeds.vx;
+//         yVel += fieldSpeeds.vy;
 
 //         spawnFuel(launchPose.getTranslation(), new Translation3d(xVel, yVel, verticalVel));
 //     }
@@ -549,7 +549,7 @@
 //     private void handleRobotCollisions(BoundedQueue<Fuel> fuels) {
 //         Pose2d robot = robotPoseSupplier.get();
 //         ChassisVelocities speeds = robotFieldSpeedsSupplier.get();
-//         Translation2d robotVel = new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
+//         Translation2d robotVel = new Translation2d(speeds.vx, speeds.vy);
 
 //         for (Fuel fuel : fuels) {
 //             handleRobotCollision(fuel, robot, robotVel);

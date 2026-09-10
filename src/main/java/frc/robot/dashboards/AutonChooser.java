@@ -5,7 +5,11 @@
 // import java.util.List;
 
 // import org.wpilib.hardware.hal.simulation.AddressableLEDDataJNI;
-// import org.wpilib.driverstation.DriverStation;
+// import org.wpilib.driverstation.MatchState;
+// import org.wpilib.driverstation.RobotState;
+// import org.wpilib.driverstation.Alliance;
+// import org.wpilib.driverstation.MatchType;
+// import org.wpilib.driverstation.DriverStationErrors;
 // import org.wpilib.smartdashboard.SmartDashboard;
 // import org.wpilib.command2.Command;
 // import org.wpilib.command2.Commands;
@@ -404,7 +408,7 @@
 //                     System.out.printf("[CLASSLOAD] %s: %.1f ms%n", cls, elapsed * 1e-6);
 //                 }
 //             } catch (ClassNotFoundException e) {
-//                 DriverStation.reportWarning(
+//                 DriverStationErrors.reportWarning(
 //                     "ChoreoLib warmup: class not found: " + cls + " (library version mismatch?)",
 //                     false);
 //             }

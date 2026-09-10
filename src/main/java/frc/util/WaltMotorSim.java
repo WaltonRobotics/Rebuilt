@@ -35,7 +35,7 @@ public class WaltMotorSim {
     //     motorSim.setInputVoltage(motorFXSimState.getMotorVoltage());
     //     motorSim.update(Constants.kSimPeriodicUpdateInterval);
 
-    //     motorFXSimState.setRawRotorPosition(motorSim.getAngularPositionRotations() * motorSim.getGearing());
+    //     motorFXSimState.setRawRotorPosition(motorSim.getAngularPosition() * motorSim.getGearing());
     //     motorFXSimState.setRotorVelocity(motorSim.getAngularVelocity().times(motorSim.getGearing()));
     //     motorFXSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
     }

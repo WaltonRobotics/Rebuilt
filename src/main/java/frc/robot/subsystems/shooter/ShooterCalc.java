@@ -357,8 +357,8 @@ public class ShooterCalc {
 
         // double d2 = toTargetX * toTargetX + toTargetY * toTargetY;
         // double turretFFRadPerSec = d2 > 0
-        //     ? (toTargetY * fieldSpeeds.vxMetersPerSecond - toTargetX * fieldSpeeds.vyMetersPerSecond) / d2
-        //         - fieldSpeeds.omegaRadiansPerSecond
+        //     ? (toTargetY * fieldSpeeds.vx - toTargetX * fieldSpeeds.vy) / d2
+        //         - fieldSpeeds.omega
         //     : 0.0;
 
 
@@ -418,7 +418,7 @@ public class ShooterCalc {
         ChassisVelocities ChassisVelocities
     ) {
         // How fast the robot is currently going, (CURRENT ROBOT VELOCITY)
-        // double speedMps = Math.hypot(ChassisVelocities.vxMetersPerSecond, ChassisVelocities.vyMetersPerSecond);
+        // double speedMps = Math.hypot(ChassisVelocities.vx, ChassisVelocities.vy);
         ChassisVelocities fieldSpeeds = staticShot ? WpiK.kZeroChassisVelocities : ChassisVelocities;
 
         // predict where the robot WILL be when the shot actually fires (accounts for latency)

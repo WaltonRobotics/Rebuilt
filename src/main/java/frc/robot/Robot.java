@@ -27,7 +27,12 @@ import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.units.measure.AngularVelocity;
 import org.wpilib.units.measure.LinearVelocity;
 import org.wpilib.system.DataLogManager;
+import org.wpilib.driverstation.MatchState;
+import org.wpilib.driverstation.RobotState;
+import org.wpilib.driverstation.Alliance;
 import org.wpilib.driverstation.DriverStation;
+import org.wpilib.driverstation.MatchType;
+import org.wpilib.driverstation.DriverStationErrors;
 import org.wpilib.driverstation.RobotState;
 import org.wpilib.driverstation.internal.DriverStationBackend;
 
@@ -471,7 +476,7 @@ public class Robot extends TimedRobot {
         //         new Transform3d(
         //             new Translation3d(), new Rotation3d(
         //                 Rotations.of(0),
-        //                 Rotations.of(-m_shooter.getHoodSimEncoder().getAngularPositionRotations()),
+        //                 Rotations.of(-m_shooter.getHoodSimEncoder().getAngularPosition()),
         //                 m_shooter.getTurret().getPosition().getValue()
         //             )
         //         )
@@ -554,7 +559,7 @@ public class Robot extends TimedRobot {
     public void teleopExit() {}
 
     // 2027-TODO - convert to opmode!
-    public void testInit() {
+    public void utilityInit() {
         CommandScheduler.getInstance().cancelAll();
         
         CommandScheduler.getInstance().schedule(
