@@ -1,73 +1,73 @@
-package frc.robot.vision;
+// package frc.robot.vision;
 
-import static frc.robot.Constants.FieldK.kTagLayout;
+// import static frc.robot.Constants.FieldK.kTagLayout;
 
-import java.util.LinkedList;
-import java.util.List;
+// import java.util.LinkedList;
+// import java.util.List;
 
-import org.photonvision.simulation.PhotonCameraSim;
-import org.photonvision.simulation.VisionSystemSim;
-import org.photonvision.targeting.PhotonTrackedTarget;
+// import org.photonvision.simulation.PhotonCameraSim;
+// import org.photonvision.simulation.VisionSystemSim;
+// import org.photonvision.targeting.PhotonTrackedTarget;
 
-import org.wpilib.math.geometry.Pose2d;
-import org.wpilib.math.geometry.Rotation3d;
-import org.wpilib.math.geometry.Transform3d;
-import org.wpilib.smartdashboard.Field2d;
-import frc.robot.Robot;
+// import org.wpilib.math.geometry.Pose2d;
+// import org.wpilib.math.geometry.Rotation3d;
+// import org.wpilib.math.geometry.Transform3d;
+// import org.wpilib.smartdashboard.Field2d;
+// import frc.robot.Robot;
 
-public class VisionSim {
-    /* CLASS VARIABLES */
-    private final VisionSystemSim m_photonVisionSim;
+// public class VisionSim {
+//     /* CLASS VARIABLES */
+//     private final VisionSystemSim m_photonVisionSim;
 
-    /* CONSTRUCTOR */
-    public VisionSim() {
-        m_photonVisionSim = new VisionSystemSim("main");
-        m_photonVisionSim.addAprilTags(kTagLayout);
-    }
+//     /* CONSTRUCTOR */
+//     public VisionSim() {
+//         m_photonVisionSim = new VisionSystemSim("main");
+//         m_photonVisionSim.addAprilTags(kTagLayout);
+//     }
 
-    /* METHODS */
-    public void addCamera(PhotonCameraSim photonCameraSim, Transform3d roboToCam) {
-        m_photonVisionSim.addCamera(photonCameraSim, roboToCam);
-    }
+//     /* METHODS */
+//     public void addCamera(PhotonCameraSim photonCameraSim, Transform3d roboToCam) {
+//         m_photonVisionSim.addCamera(photonCameraSim, roboToCam);
+//     }
 
-    public void resetSimPose(Pose2d pose) {
-        if (Robot.isSimulation()) {
-            m_photonVisionSim.resetRobotPose(pose);
-        }
-    }
+//     public void resetSimPose(Pose2d pose) {
+//         if (Robot.isSimulation()) {
+//             m_photonVisionSim.resetRobotPose(pose);
+//         }
+//     }
 
-    public Field2d getSimDebugField() {
-        if (!Robot.isSimulation()) {
-            return new Field2d();
-        }
+//     public Field2d getSimDebugField() {
+//         if (!Robot.isSimulation()) {
+//             return new Field2d();
+//         }
 
-        return m_photonVisionSim.getDebugField();
-    }
+//         return m_photonVisionSim.getDebugField();
+//     }
 
-    public List<PhotonTrackedTarget> simFuelList() {
-        List<PhotonTrackedTarget> simTargetList = new LinkedList<>();
+//     public List<PhotonTrackedTarget> simFuelList() {
+//         List<PhotonTrackedTarget> simTargetList = new LinkedList<>();
 
-        Rotation3d fuelRotation = new Rotation3d(10, 30, 45);
+//         Rotation3d fuelRotation = new Rotation3d(10, 30, 45);
 
-        PhotonTrackedTarget simFuel = new PhotonTrackedTarget(
-            45, 30, 70, 20, -1, -1, -1, new Transform3d(5, 6, 0, fuelRotation), new Transform3d(), 0, new LinkedList<>(), new LinkedList<>()
-        );
-        PhotonTrackedTarget simFuelTwo = new PhotonTrackedTarget(
-            45, 30, 20, 20, -1, -1, -1, new Transform3d(1,1,1, fuelRotation), new Transform3d(), 0, new LinkedList<>(), new LinkedList<>()
-        );
-        PhotonTrackedTarget simFuelThree = new PhotonTrackedTarget(
-            45, 30, 90, 20, -1, -1, -1, new Transform3d(8, 5, 0, fuelRotation), new Transform3d(), 0, new LinkedList<>(), new LinkedList<>()
-        );
+//         PhotonTrackedTarget simFuel = new PhotonTrackedTarget(
+//             45, 30, 70, 20, -1, -1, -1, new Transform3d(5, 6, 0, fuelRotation), new Transform3d(), 0, new LinkedList<>(), new LinkedList<>()
+//         );
+//         PhotonTrackedTarget simFuelTwo = new PhotonTrackedTarget(
+//             45, 30, 20, 20, -1, -1, -1, new Transform3d(1,1,1, fuelRotation), new Transform3d(), 0, new LinkedList<>(), new LinkedList<>()
+//         );
+//         PhotonTrackedTarget simFuelThree = new PhotonTrackedTarget(
+//             45, 30, 90, 20, -1, -1, -1, new Transform3d(8, 5, 0, fuelRotation), new Transform3d(), 0, new LinkedList<>(), new LinkedList<>()
+//         );
 
-        simTargetList.add(simFuel);
-        simTargetList.add(simFuelTwo);
-        simTargetList.add(simFuelThree);
+//         simTargetList.add(simFuel);
+//         simTargetList.add(simFuelTwo);
+//         simTargetList.add(simFuelThree);
         
-        return simTargetList;
-    }
+//         return simTargetList;
+//     }
 
-    /* PERIODICS */
-    public void simulationPeriodic(Pose2d robotSimPose) {
-        m_photonVisionSim.update(robotSimPose);
-    }
-}
+//     /* PERIODICS */
+//     public void simulationPeriodic(Pose2d robotSimPose) {
+//         m_photonVisionSim.update(robotSimPose);
+//     }
+// }
