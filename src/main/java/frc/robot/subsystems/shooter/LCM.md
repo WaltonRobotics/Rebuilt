@@ -59,6 +59,6 @@
         - then just follow the rest of the directions (surely you dont need my help even more)
 
     - for the kLCMAtHomeRots, place the turret in such a way that the wire is directly infront of the camera
-        - ![a rough sketch of how to place the turret](image.png)
+        ![a rough sketch of how to place the turret](../../../../../../../image.png)
 
 
