@@ -91,7 +91,7 @@ public class ShooterCalc {
     private final ShotCalcOutputs kEmptyShotCalcOutputs = new ShotCalcOutputs(kEmptyAzimuthCalcDetails, kEmptyShotData, 0, 0, 0);
 
     private volatile boolean m_useStaticShot = true;
-    private static volatile Translation3d m_aimTarget = Translation3d.kZero;
+    private static volatile Translation3d m_aimTarget = Translation3d.ZERO;
     private volatile ShotCalcOutputs m_shotCalcOutputs = kEmptyShotCalcOutputs;
     private static volatile boolean m_isPassingFlag = false;
     private static final BooleanSupplier m_isPassing = () -> m_isPassingFlag;

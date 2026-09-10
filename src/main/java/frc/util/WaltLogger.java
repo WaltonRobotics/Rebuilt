@@ -92,7 +92,7 @@ public class WaltLogger {
         }
 
         public void accept(Translation2d value) {
-            accept(new Pose2d(value, Rotation2d.kZero));
+            accept(new Pose2d(value, Rotation2d.ZERO));
         }
 
         public void accept(Translation2d translation, Rotation2d value) {
@@ -128,7 +128,7 @@ public class WaltLogger {
         public void accept(Translation2d[] translations) {
             Pose2d[] poses = new Pose2d[translations.length];
             for (int i = 0; i < translations.length; i++) {
-                poses[i] = new Pose2d(translations[i], Rotation2d.kZero);
+                poses[i] = new Pose2d(translations[i], Rotation2d.ZERO);
             }
             accept(poses);
         }

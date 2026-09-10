@@ -42,7 +42,7 @@ public class Hood extends SubsystemBase {
     private final DoubleLogger log_hoodCLErr = WaltLogger.logDouble(kLogTab, "closedLoopErr");
     private final BooleanLogger log_hoodAtPos = WaltLogger.logBoolean(kLogTab, "hoodAtPos");
 
-    private Debouncer m_currentDebouncer = new Debouncer(0.125, DebounceType.kRising);
+    private Debouncer m_currentDebouncer = new Debouncer(0.125, DebounceType.RISING);
 
     private final StatusSignal<Current> sig_hoodStatorCurrent = m_hood.getStatorCurrent();
     private final StatusSignal<Angle> sig_hoodPos = m_hood.getPosition();

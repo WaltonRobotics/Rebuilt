@@ -66,8 +66,8 @@ public class Intake extends SubsystemBase {
     
     private VoltageOut m_intakeArmZeroingReq = new VoltageOut(0);
 
-    private Debouncer m_currentDebouncer = new Debouncer(0.100, DebounceType.kRising);
-    private Debouncer m_velocityDebouncer = new Debouncer(0.125, DebounceType.kRising);
+    private Debouncer m_currentDebouncer = new Debouncer(0.100, DebounceType.RISING);
+    private Debouncer m_velocityDebouncer = new Debouncer(0.125, DebounceType.RISING);
 
     private boolean m_isIntakeArmHomed = false;
 

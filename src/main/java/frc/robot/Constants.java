@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import org.wpilib.hardware.hal.CANBusMap;
+// import org.wpilib.hardware.hal.CANBusMap;
 
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -41,9 +41,9 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import org.wpilib.vision.apriltag.AprilTag;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
-import org.wpilib.vision.apriltag.AprilTagFields;
+// import org.wpilib.vision.apriltag.AprilTag;
+// import org.wpilib.vision.apriltag.AprilTagFieldLayout;
+// import org.wpilib.vision.apriltag.AprilTagFields;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Rotation3d;
@@ -58,7 +58,7 @@ import org.wpilib.units.measure.Current;
 import org.wpilib.units.measure.Distance;
 import org.wpilib.units.measure.Time;
 import frc.util.AllianceFlipUtil;
-import frc.util.VisionUtil;
+// import frc.util.VisionUtil;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
@@ -88,7 +88,7 @@ public class Constants {
         public static final Rotation2d kTurretAngleOffset = Rotation2d.fromRotations(0.106 + 0.0067); //4.87        //0.132324  // was 0.12, decreased 0.014 (~5deg) to fix consistent rightward aim error
         public static final Rotation3d kTurretAngleOffset3d = new Rotation3d(kTurretAngleOffset);
         public static final Translation3d kTurretTranslation = new Translation3d(Inches.of(-4.744), Inches.of(-4.239), Inches.of(15.769));
-        public static final Transform3d kTurretTransformNoRotation = new Transform3d(kTurretTranslation, Rotation3d.kZero);
+        public static final Transform3d kTurretTransformNoRotation = new Transform3d(kTurretTranslation, Rotation3d.ZERO);
         public static final Transform3d kTurretTransform = new Transform3d(kTurretTranslation, kTurretAngleOffset3d);
         public static final Distance kInchesAboveFunnel = Inches.of(20);// distance the ball must travel above the funnel opening to arc correctly into the hub
         public static final Angle kTurretBarfPos = Rotations.of(-0.113);
@@ -373,10 +373,10 @@ public class Constants {
         // public static final Camera[] kCameras = new Camera[4];
         // private static final String kSimCameraSimVisualNames = /"VisionEstimation"; //suffixed to each camera name
         // ONSHAPE X IS OUR Y -- ONSHAPE Y IS OUR X !!! NOTE THIS PLEASE DO NOT FORGET
-        public static final Transform3d kFrontLeftCTR = VisionUtil.transformToRobo(8.875, 12.18175, 20.45, 180, -20, 45);
-        public static final Transform3d kFrontRightCTR = VisionUtil.transformToRobo(8.875, -12.18175, 20.45, 180, -20, -45);
-        public static final Transform3d kBackLeftCTR = VisionUtil.transformToRobo(-11.375, 11.875, 20.5625, 0, -20, 135);
-        public static final Transform3d kBackRightCTR = VisionUtil.transformToRobo(-12.455, -12.055, 18.25, 180,-20, -135);
+        // public static final Transform3d kFrontLeftCTR = VisionUtil.transformToRobo(8.875, 12.18175, 20.45, 180, -20, 45);
+        // public static final Transform3d kFrontRightCTR = VisionUtil.transformToRobo(8.875, -12.18175, 20.45, 180, -20, -45);
+        // public static final Transform3d kBackLeftCTR = VisionUtil.transformToRobo(-11.375, 11.875, 20.5625, 0, -20, 135);
+        // public static final Transform3d kBackRightCTR = VisionUtil.transformToRobo(-12.455, -12.055, 18.25, 180,-20, -135);
         //Initialize cameras
         // static {
         //     kCameras[0] = new Camera(
@@ -418,19 +418,19 @@ public class Constants {
         public static final double kFieldLengthMeters = Units.inchesToMeters(651.22); 
         public static final double kFieldWidthMeters = Units.inchesToMeters(317.69);
 
-        public static final Pose2d kLeftResetPose = new Pose2d(0.478, 8 - 0.392, Rotation2d.kZero);
-        public static final Pose2d kRightResetPose = new Pose2d(0.478, 0.392, Rotation2d.kZero);
+        public static final Pose2d kLeftResetPose = new Pose2d(0.478, 8 - 0.392, Rotation2d.ZERO);
+        public static final Pose2d kRightResetPose = new Pose2d(0.478, 0.392, Rotation2d.ZERO);
 
-        public static final AprilTagFieldLayout kTagLayout;
+        // public static final AprilTagFieldLayout kTagLayout;
 
-        //Ignore trench April Tags
-        static {
-            HashSet<Integer> excludedAprilTagsID = new HashSet<> (Arrays.asList(1, 6, 7, 12, 17, 22, 23, 28));
-            AprilTagFieldLayout fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
-            List<AprilTag> tags = new ArrayList<> (fieldLayout.getTags());
-            tags.removeIf(tag -> excludedAprilTagsID.contains(tag.ID));
-            kTagLayout = new AprilTagFieldLayout(tags, fieldLayout.getFieldLength(), fieldLayout.getFieldWidth());
-        }
+        // //Ignore trench April Tags
+        // static {
+        //     HashSet<Integer> excludedAprilTagsID = new HashSet<> (Arrays.asList(1, 6, 7, 12, 17, 22, 23, 28));
+        //     AprilTagFieldLayout fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
+        //     List<AprilTag> tags = new ArrayList<> (fieldLayout.getTags());
+        //     tags.removeIf(tag -> excludedAprilTagsID.contains(tag.ID));
+        //     kTagLayout = new AprilTagFieldLayout(tags, fieldLayout.getFieldLength(), fieldLayout.getFieldWidth());
+        // }
     }
 
     public static class RobotK {
