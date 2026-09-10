@@ -3,6 +3,7 @@ package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.CoastOut;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -72,9 +73,21 @@ public class Shooter extends SubsystemBase {
     private static final WaltTunable kRecoveryBumpRPSOverride = 
         new WaltTunable("/Shooter/bumpRPSOverride", kRecoveryBumpRPS);
     private static final double kRecoveryBumpClearThreshold = 1.0; // clear bump when CL error is within this
-    private static final WaltTunable kRecoveryBumpClearOverride = 
+    private static final WaltTunable kRecoveryBumpClearOverride =
         new WaltTunable("/Shooter/kRecoveryBumpClearOverride", kRecoveryBumpClearThreshold);
-    
+
+    // bang bang -- full send when below target, hold duty when at/above. enable via NT
+    private static final WaltTunable kBangBangEnabled =
+        new WaltTunable("/Shooter/bangBang/enabled", 0.0); // >0 = enabled
+    private static final WaltTunable kBangBangHoldDuty =
+        new WaltTunable("/Shooter/bangBang/holdDutyCycle", 0.15);
+    private static final WaltTunable kBangBangDeadband =
+        new WaltTunable("/Shooter/bangBang/deadbandRPS", 0.5);
+    private final DutyCycleOut m_bangBangFullReq = new DutyCycleOut(1.0);
+
+    // overshoot -- always command X% above calc'd RPS so the flywheel has energy margin
+    private static final WaltTunable kOvershootPct =
+        new WaltTunable("/Shooter/overshootPct", 0.0); // e.g. 0.07 = 7% overshoot
 
     private int m_fuelStored = 8;
 
@@ -151,6 +164,8 @@ public class Shooter extends SubsystemBase {
     private final DoubleLogger log_ballsShot = new DoubleLogger("Shooter/Flywheel", "balls shot");
     private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
     private final DoubleLogger log_recoveryBump = new DoubleLogger("Shooter/Flywheel", "recoveryBumpRPS");
+    private final BooleanLogger log_bangBangActive = WaltLogger.logBoolean("Shooter/Flywheel", "bangBangActive");
+    private final DoubleLogger log_overshootRPS = new DoubleLogger("Shooter/Flywheel", "overshootRPS");
     private final DoubleLogger log_driverAddedRPS = WaltLogger.logDouble(kLogTab, "driverAddedRPS");
     private final DoubleLogger log_shotConfidence = WaltLogger.logDouble(kLogTab, "shotConfidence");
     private final BooleanLogger log_shotConfident = WaltLogger.logBoolean(kLogTab, "shotConfident");
@@ -244,8 +259,23 @@ public class Shooter extends SubsystemBase {
             m_shooterA.setControl(m_veloTQFOCReq.withVelocity(0));
             m_shooterA.setControl(m_motorIdleReq);
             m_recoveryBumpRPS = 0.0;
+            return;
+        }
+
+        // overshoot -- pad the setpoint so we have energy margin when balls steal RPM
+        double overshoot = kOvershootPct.enabled() ? rotPerSec * kOvershootPct.get() : 0.0;
+        double commandedRPS = rotPerSec + m_recoveryBumpRPS + overshoot;
+
+        if (kBangBangEnabled.enabled() && kBangBangEnabled.get() > 0) {
+            // bang bang -- skip PIDF entirely, just full send or hold
+            double deadband = kBangBangDeadband.get();
+            if (m_currentFlywheelVelocityRotPerSec < commandedRPS - deadband) {
+                m_shooterA.setControl(m_bangBangFullReq.withOutput(1.0));
+            } else {
+                m_shooterA.setControl(m_bangBangFullReq.withOutput(kBangBangHoldDuty.get()));
+            }
         } else {
-            m_shooterA.setControl(m_veloTQFOCReq.withVelocity(rotPerSec + m_recoveryBumpRPS));
+            m_shooterA.setControl(m_veloTQFOCReq.withVelocity(commandedRPS));
         }
     }
 
@@ -404,6 +434,8 @@ public class Shooter extends SubsystemBase {
         log_spunUp.accept(m_isShooterSpunUp);
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocityRotPerSec);
         log_recoveryBump.accept(m_recoveryBumpRPS);
+        log_bangBangActive.accept(kBangBangEnabled.enabled() && kBangBangEnabled.get() > 0);
+        log_overshootRPS.accept(kOvershootPct.enabled() ? m_calcFlywheelVelocityRotPerSec * kOvershootPct.get() : 0.0);
         log_ballDetected.accept(trg_ballDetected.getAsBoolean());
         log_ballShotDebounce.accept(trg_ballShotDebounced.getAsBoolean());
         log_shotConfidence.accept(m_shotConfidence);
