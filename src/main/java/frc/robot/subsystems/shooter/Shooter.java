@@ -77,6 +77,7 @@ public class Shooter extends SubsystemBase {
         new WaltTunable("/Shooter/kRecoveryBumpClearOverride", kRecoveryBumpClearThreshold);
 
     // bang bang -- full send when below target, hold duty when at/above. enable via NT
+    // DONT USE (NOT TUNED)
     private static final WaltTunable kBangBangEnabled =
         new WaltTunable("/Shooter/bangBang/enabled", 0.0); // >0 = enabled
     private static final WaltTunable kBangBangHoldDuty =
@@ -87,7 +88,7 @@ public class Shooter extends SubsystemBase {
 
     // overshoot -- always command X% above calc'd RPS so the flywheel has energy margin
     private static final WaltTunable kOvershootPct =
-        new WaltTunable("/Shooter/overshootPct", 0.0); // e.g. 0.07 = 7% overshoot
+        new WaltTunable("/Shooter/overshootPct", 0.03); // e.g. 0.07 = 7% overshoot
 
     private int m_fuelStored = 8;
 
@@ -263,11 +264,13 @@ public class Shooter extends SubsystemBase {
         }
 
         // overshoot -- pad the setpoint so we have energy margin when balls steal RPM
-        double overshoot = kOvershootPct.enabled() ? rotPerSec * kOvershootPct.get() : 0.0;
+        // double overshoot = kOvershootPct.enabled() ? rotPerSec * kOvershootPct.get() : 0.0; --------- UNCOMMENT IF TUNING BAD OR WANT TO RETURN TO NO OVERSHOOT
+        double overshoot = rotPerSec * kOvershootPct.get();
         double commandedRPS = rotPerSec + m_recoveryBumpRPS + overshoot;
 
         if (kBangBangEnabled.enabled() && kBangBangEnabled.get() > 0) {
             // bang bang -- skip PIDF entirely, just full send or hold
+            // need to tune still, dont use
             double deadband = kBangBangDeadband.get();
             if (m_currentFlywheelVelocityRotPerSec < commandedRPS - deadband) {
                 m_shooterA.setControl(m_bangBangFullReq.withOutput(1.0));

@@ -207,7 +207,9 @@ public class Indexer extends SubsystemBase {
             m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(0));
             m_tunnel.setControl(m_tunnelMotorIdleReq);
         } else {
-            RPS = kTunnelRPSOverride.enabled() ? kTunnelRPSOverride.get() : RPS;
+            if (RPS > 0) {
+                RPS = kTunnelRPSOverride.enabled() ? kTunnelRPSOverride.get() : RPS;
+            }
             m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS));
         }
         m_desiredTunnelRPS = RPS;
