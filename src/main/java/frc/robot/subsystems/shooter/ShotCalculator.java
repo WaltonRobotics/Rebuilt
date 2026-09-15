@@ -35,7 +35,6 @@ public class ShotCalculator {
     private static final DoubleLogger log_dragCoefficient = new DoubleLogger("Shooter/Calculator", "dragCoefficient");
     private static final IntLogger log_lerpIterationCount = new IntLogger("Shooter/Calculator", "lerpIterationCount");
     private static final BooleanLogger log_calcConvergedBreakout = new BooleanLogger("Shooter/Calculator", "calcConvergedBreakout");
-    private static final DoubleLogger log_shotConfidence = new DoubleLogger("Shooter/Calculator", "shotConfidence");
     private static final DoubleLogger log_solverQuality = new DoubleLogger("Shooter/Calculator", "solverQuality");
 
     private static final double kMetersToInches = 1.0 / 0.0254;

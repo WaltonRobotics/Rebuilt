@@ -11,8 +11,6 @@ import static org.wpilib.units.Units.RadiansPerSecond;
 import static org.wpilib.units.Units.Rotations;
 import static org.wpilib.units.Units.RotationsPerSecond;
 import static org.wpilib.units.Units.Seconds;
-import static frc.robot.Constants.IndexerK.kSpindexerShootRPSD;
-import static frc.robot.Constants.IndexerK.kTunnelIntakeRPSD;
 
 import java.util.ArrayList;
 import java.util.Arrays;

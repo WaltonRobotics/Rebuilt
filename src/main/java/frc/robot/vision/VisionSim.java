@@ -1,7 +1,6 @@
 package frc.robot.vision;
 
 import static frc.robot.Constants.FieldK.kFilteredTagField;
-import static frc.robot.Constants.FieldK.kTagLayout;
 
 import java.util.LinkedList;
 import java.util.List;

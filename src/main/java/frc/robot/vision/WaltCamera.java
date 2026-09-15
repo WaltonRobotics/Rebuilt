@@ -32,8 +32,6 @@ import frc.util.WaltLogger.IntLogger;
 import frc.util.WaltLogger.Pose2dLogger;
 import frc.util.WaltLogger.Pose3dLogger;
 
-import org.wpilib.vision.apriltag.AprilTagDetector;
-
 import static frc.robot.Constants.VisionK;
 import static frc.robot.Constants.FieldK;
 

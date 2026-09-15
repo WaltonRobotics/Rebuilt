@@ -7,14 +7,11 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 
-import org.wpilib.networktables.DoubleSubscriber;
 import org.wpilib.units.measure.AngularVelocity;
 import org.wpilib.units.measure.Current;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.Commands;
 import org.wpilib.command2.SubsystemBase;
-import org.wpilib.simulation.DCMotorSim;
-
 import static org.wpilib.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IndexerK.*;
 

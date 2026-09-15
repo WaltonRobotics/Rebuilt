@@ -1,26 +1,21 @@
 
 package frc.robot.subsystems;
 
-import org.wpilib.units.measure.AngularVelocity;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.Commands;
 import org.wpilib.command2.SubsystemBase;
 import frc.robot.Constants.IndexerK;
 import frc.robot.Constants.IntakeK;
-import frc.robot.Constants.ShooterK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
 import static org.wpilib.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK;
-import static frc.robot.Constants.IndexerK.kSpindexerMaxRPSD;
 import static frc.robot.Constants.IndexerK.kSpindexerShootRPSD;
-import static frc.robot.Constants.IndexerK.kTunnelMaxRPSD;
 import static frc.robot.Constants.IndexerK.kTunnelShootRPSD;
 import static frc.robot.Constants.IntakeK.kIntakeRollersIntakeVolts;
 import static frc.robot.Constants.IntakeK.kIntakeRollersShimmyVolts;
 
 import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 
 public class Superstructure extends SubsystemBase {
     /* SUBSYSTEMS */

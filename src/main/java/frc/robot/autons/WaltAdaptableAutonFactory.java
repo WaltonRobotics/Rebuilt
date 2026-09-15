@@ -1,7 +1,5 @@
 package frc.robot.autons;
 
-import static frc.robot.Constants.IntakeK.kIntakeRollersIntakeVolts;
-
 import java.util.Set;
 import java.util.function.Supplier;
 

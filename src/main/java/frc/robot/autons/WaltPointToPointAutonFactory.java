@@ -1,13 +1,10 @@
 package frc.robot.autons;
 
-import org.opencv.core.Point;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.Commands;
 import org.wpilib.command2.ParallelCommandGroup;
 import org.wpilib.command2.SequentialCommandGroup;
 import org.wpilib.math.geometry.Pose2d;
-import org.wpilib.math.geometry.Translation2d;
-
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Swerve;

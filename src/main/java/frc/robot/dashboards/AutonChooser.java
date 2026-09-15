@@ -4,15 +4,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-import org.wpilib.hardware.hal.simulation.AddressableLEDDataJNI;
 import org.wpilib.tunable.Tunables;
 
 import choreo.auto.AutoChooser;
 
-import org.wpilib.driverstation.MatchState;
-import org.wpilib.driverstation.RobotState;
-import org.wpilib.driverstation.Alliance;
-import org.wpilib.driverstation.MatchType;
 import org.wpilib.driverstation.DriverStationErrors;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.Commands;
@@ -59,9 +54,9 @@ public class AutonChooser {
     private final static String kLeftSweepAndDepot = "LEFT Bump Sweep and Depot";
 
     //---STRESS TEST
-    private final static String kRightStressTestLong = "RIGHT Long Stress Test";
-    private final static String kRightStressTestOverlap = "RIGHT Overlap Stress Test";
-    private final static String kRightStressTestTenTimes = "RIGHT Five Times Stress Test";
+    // private final static String kRightStressTestLong = "RIGHT Long Stress Test";
+    // private final static String kRightStressTestOverlap = "RIGHT Overlap Stress Test";
+    // private final static String kRightStressTestTenTimes = "RIGHT Five Times Stress Test";
 
     /* NEW AUTON NAMES */
     //---2 CYCLES

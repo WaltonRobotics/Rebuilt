@@ -17,9 +17,6 @@ import org.wpilib.units.measure.Distance;
 import static org.wpilib.units.Units.Inches;
 import static frc.robot.Constants.FieldK.*;
 
-import java.io.IOException;
-import java.nio.file.Path;
-
 /**
  * Contains information for location of field element and other useful reference points.
  *
