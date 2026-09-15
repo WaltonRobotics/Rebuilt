@@ -6,21 +6,22 @@ import org.wpilib.command2.Command;
 import org.wpilib.command2.Commands;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
-import org.wpilib.smartdashboard.SendableChooser;
-import org.wpilib.smartdashboard.SmartDashboard;
+import org.wpilib.tunable.Selectable;
+import org.wpilib.tunable.Tunables;
+
 import frc.robot.autons.WaltPointToPointAutonFactory;
 import frc.robot.autons.WaltPointToPointAutonFactory.PointToPointPathDriveInfo;
 import frc.robot.generated.TunerConstants;
 import frc.robot.autons.WaltPointToPointAutonFactory.PointToPointPath;
 
 public class BasicAutonChooser {
-    private static SendableChooser<Command> m_chooser = new SendableChooser<Command>();
+    private static Selectable<Command> m_chooser = new Selectable<Command>();
     private static WaltPointToPointAutonFactory m_autonFactory;
 
     private static final double kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
     
     //---POSES---//
-    private static final Pose2d pose_oneOneTranslation = new Pose2d(1, 1, Rotation2d.kZero);
+    private static final Pose2d pose_oneOneTranslation = new Pose2d(1, 1, Rotation2d.ZERO);
 
     private static final Pose2d pose_chainTestOne = new Pose2d(8.27, 2.33, Rotation2d.fromDegrees(0.0));
     private static final Pose2d pose_chainTestTwo = new Pose2d(7.33, 4.80, Rotation2d.fromDegrees(0.0));
@@ -123,15 +124,15 @@ public class BasicAutonChooser {
         addAuton(auto_subsystemsTest);
         addAuton(auto_doNothing);
 
-        SmartDashboard.putData(m_chooser);
+        Tunables.publish("BasicAutonChooser", m_chooser);
     }
 
     private static void setDefaultAuton(PointToPointAuton auton) {
-        m_chooser.setDefaultOption(auton.name, auton.auton);
+        m_chooser.addDefault(auton.name, auton.auton);
     }
 
     private static void addAuton(PointToPointAuton auton) {
-        m_chooser.addOption(auton.name, auton.auton);
+        m_chooser.add(auton.name, auton.auton);
     }
 
     public static Command getAuton() {
