@@ -19,6 +19,8 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import choreo.auto.AutoFactory;
+
 import org.wpilib.math.filter.SlewRateLimiter;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.units.measure.AngularVelocity;
@@ -43,7 +45,9 @@ import org.wpilib.command2.button.Trigger;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
+import frc.robot.autons.WaltAdaptableAutonFactory;
 import frc.robot.autons.WaltPointToPointAutonFactory;
+import frc.robot.dashboards.AutonChooser;
 import frc.robot.dashboards.BasicAutonChooser;
 // import frc.robot.dashboards.AutonChooser;
 // import frc.robot.autons.WaltAdaptableAutonFactory;
@@ -118,8 +122,8 @@ public class Robot extends TimedRobot {
     private final Superstructure m_superstructure = new Superstructure(m_intake, m_indexer, m_shooter);
 
     //---AUTONS
-    // private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
-    // private final WaltAdaptableAutonFactory m_adpatableAutonFactory = new WaltAdaptableAutonFactory(m_superstructure, m_autoFactory, m_intake, m_shooter, m_drivetrain);
+    private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
+    private final WaltAdaptableAutonFactory m_adpatableAutonFactory = new WaltAdaptableAutonFactory(m_superstructure, m_autoFactory, m_intake, m_shooter, m_drivetrain);
     private final WaltPointToPointAutonFactory m_pointToPointAutonFactory = new WaltPointToPointAutonFactory(m_superstructure, m_intake, m_shooter, m_drivetrain);
     //---VISION
 
@@ -185,9 +189,8 @@ public class Robot extends TimedRobot {
     private final Tracer m_periodicTracer = new Tracer();
     private final PerformanceMonitor m_perfMonitor = new PerformanceMonitor(false);
 
-    // 2027-TODO: figure out auton/choreo!!!
     private Command m_chosenAuton;
-    // private final Command m_preheaterCommand;
+    private final Command m_preheaterCommand;
 
     /* CONSTRUCTOR */
     public Robot() {
@@ -206,7 +209,6 @@ public class Robot extends TimedRobot {
 
         lastGotTagMsmtTimer.start();
 
-        // 2027-TODO: figure out auton/choreo!!!
         // AutonChooser.initialize(m_adpatableAutonFactory);
         BasicAutonChooser.initialize(m_pointToPointAutonFactory);
         long tChooserInit = System.nanoTime();
@@ -223,20 +225,19 @@ public class Robot extends TimedRobot {
         System.out.printf("[INIT PROFILE] forceLoadChoreoClasses:   %7.1f ms%n", (tClassLoad - tPrev) * 1e-6);
         tPrev = tClassLoad;
 
-        // m_adpatableAutonFactory.preloadAllTrajectories(AutonChooser.allTrajectoryNames());
-        // long tPreload = System.nanoTime();
-        // System.out.printf("[INIT PROFILE] preloadAllTrajectories:   %7.1f ms%n", (tPreload - tPrev) * 1e-6);
-        // tPrev = tPreload;
+        m_adpatableAutonFactory.preloadAllTrajectories(AutonChooser.allTrajectoryNames());
+        long tPreload = System.nanoTime();
+        System.out.printf("[INIT PROFILE] preloadAllTrajectories:   %7.1f ms%n", (tPreload - tPrev) * 1e-6);
+        tPrev = tPreload;
 
-        // AutonChooser.preheatAllRoutines();
-        // long tPreheat = System.nanoTime();
-        // System.out.printf("[INIT PROFILE] preheatAllRoutines:       %7.1f ms%n", (tPreheat - tPrev) * 1e-6);
-        // tPrev = tPreheat;
+        AutonChooser.preheatAllRoutines();
+        long tPreheat = System.nanoTime();
+        System.out.printf("[INIT PROFILE] preheatAllRoutines:       %7.1f ms%n", (tPreheat - tPrev) * 1e-6);
+        tPrev = tPreheat;
 
         // 2027-TODO: Fix auton/choreo stuff!!!
         RobotModeTriggers.autonomous().whileTrue(
-            Commands.none()
-            // AutonChooser.m_chooser.selectedCommandScheduler().withTimeout(20.3)
+            AutonChooser.m_chooser.selectedCommandScheduler().withTimeout(20.3)
         );
 
         // set FPS limit on boot
@@ -253,12 +254,10 @@ public class Robot extends TimedRobot {
         System.out.printf("[INIT PROFILE] misc (cameras/logging):   %7.1f ms%n", (tMisc - tPrev) * 1e-6);
         tPrev = tMisc;
 
-        // m_preheaterCommand = AutonChooser.getPreheater();
+        m_preheaterCommand = AutonChooser.getPreheater();
 
         // 2027-TODO: figure out auton/choreo!!!
-        // CommandScheduler.getInstance().schedule(m_preheaterCommand);
-        // m_preheaterCommand = AutonChooser.m_chooser.selectedCommandScheduler();
-        // CommandScheduler.getInstance().schedule(m_preheaterCommand);
+        CommandScheduler.getInstance().schedule(m_preheaterCommand);
 
         long tEnd = System.nanoTime();
         System.out.printf("[INIT PROFILE] preheater cmd build:      %7.1f ms%n", (tEnd - tPrev) * 1e-6);
@@ -520,7 +519,7 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         // 2027-TODO: fix auton/choreo stuff!!!
-        // m_adpatableAutonFactory.startAutonTimer();
+        m_adpatableAutonFactory.startAutonTimer();
         
         if (m_chosenAuton != null) {
             CommandScheduler.getInstance().schedule(m_chosenAuton);
@@ -529,8 +528,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousPeriodic() {
-        // m_adpatableAutonFactory.logTimer("Auton", () -> m_adpatableAutonFactory.autonTimer);
-        // log_autonTime.accept(m_adpatableAutonFactory.autonTimer.get());
+        m_adpatableAutonFactory.logTimer("Auton", () -> m_adpatableAutonFactory.autonTimer);
+        log_autonTime.accept(m_adpatableAutonFactory.autonTimer.get());
     }
 
     @Override
