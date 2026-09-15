@@ -143,7 +143,7 @@ public class Constants {
         public static final double kShooterMoI = 0.000349 * 2.5;  //J for 5 3" 0.53lb flywheels
         public static final double kTurretMoI = 0.104506595;
 
-        public static final double kShooterGearing = 1/1;
+        public static final double kShooterGearing = 1.0/1;
         public static final double kTurretGearing = 41.66666666/1;
         public static final double kHoodGearing = 25.0/1;
 
@@ -471,7 +471,7 @@ public class Constants {
 
         /* MOTOR CONSTANTS */
         public static final double kIntakeArmMOI = 0.0209;
-        public static final double kIntakeArmGearing = 125/1;
+        public static final double kIntakeArmGearing = 125.0/1;
 
         public static final double kIntakeRollersMOI = 0.0001; // 0.00343880857
         public static final double kIntakeRollersGearing = 12.0/30;

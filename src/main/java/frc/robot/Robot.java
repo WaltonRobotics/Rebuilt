@@ -521,22 +521,22 @@ public class Robot extends TimedRobot {
         // 2027-TODO: fix auton/choreo stuff!!!
         m_adpatableAutonFactory.startAutonTimer();
         
-        if (m_chosenAuton != null) {
-            CommandScheduler.getInstance().schedule(m_chosenAuton);
-        }
+        // if (m_chosenAuton != null) {
+        //     CommandScheduler.getInstance().schedule(m_chosenAuton);
+        // }
     }
 
     @Override
     public void autonomousPeriodic() {
-        m_adpatableAutonFactory.logTimer("Auton", () -> m_adpatableAutonFactory.autonTimer);
+        CommandScheduler.getInstance().schedule(m_adpatableAutonFactory.logTimer("Auton", () -> m_adpatableAutonFactory.autonTimer));
         log_autonTime.accept(m_adpatableAutonFactory.autonTimer.get());
     }
 
     @Override
     public void autonomousExit() {
-        if (m_chosenAuton != null) {
-            CommandScheduler.getInstance().cancel(m_chosenAuton);
-        }
+        // if (m_chosenAuton != null) {
+        //     CommandScheduler.getInstance().cancel(m_chosenAuton);
+        // }
     }
 
     @Override
