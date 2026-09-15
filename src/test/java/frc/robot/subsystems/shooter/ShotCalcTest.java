@@ -40,7 +40,7 @@ class ShotCalcTest {
 
     @BeforeAll
     static void setup() {
-        HAL.initialize(500, 0);
+        HAL.initialize();
 
         // These depend on FieldConstants which loads AprilTag layout
         HUB_TARGET = frc.robot.FieldConstants.Hub.blueInnerCenterPoint;
@@ -50,7 +50,7 @@ class ShotCalcTest {
         double hubX = HUB_TARGET.getX();
         double hubY = HUB_TARGET.getY();
 
-        CLOSE_POSE = new Pose2d(hubX - 1.5, hubY, Rotation2d.kZero);
+        CLOSE_POSE = new Pose2d(hubX - 1.5, hubY, Rotation2d.ZERO);
         MID_POSE = new Pose2d(hubX - 3.9, hubY + 1.0, Rotation2d.fromDegrees(15));
         FAR_POSE = new Pose2d(hubX - 5.7, hubY - 1.5, Rotation2d.fromDegrees(-20));
     }
@@ -126,7 +126,7 @@ class ShotCalcTest {
         @Test
         void samePosition_returnsSmallDistance() {
             // Robot right at the hub X,Y — distance should just be the turret transform offset
-            Pose2d atHub = new Pose2d(HUB_TARGET.getX(), HUB_TARGET.getY(), Rotation2d.kZero);
+            Pose2d atHub = new Pose2d(HUB_TARGET.getX(), HUB_TARGET.getY(), Rotation2d.ZERO);
             Distance d = ShotCalculator.getDistanceToTarget(atHub, HUB_TARGET);
             // Should be small but nonzero due to turret offset
             assertTrue(d.in(Meters) < 1.0);
@@ -137,8 +137,8 @@ class ShotCalcTest {
         void isConsistent_withDifferentHeadings() {
             // Robot heading shouldn't drastically change the 2D distance
             // (turret transform rotates with robot, so there IS some effect)
-            Pose2d heading0 = new Pose2d(2.0, 4.0, Rotation2d.kZero);
-            Pose2d heading90 = new Pose2d(2.0, 4.0, Rotation2d.kCCW_90deg);
+            Pose2d heading0 = new Pose2d(2.0, 4.0, Rotation2d.ZERO);
+            Pose2d heading90 = new Pose2d(2.0, 4.0, Rotation2d.CCW_90DEG);
             Distance d0 = ShotCalculator.getDistanceToTarget(heading0, HUB_TARGET);
             Distance d90 = ShotCalculator.getDistanceToTarget(heading90, HUB_TARGET);
             // Both should be in a similar ballpark (within turret offset range ~0.17m)
@@ -355,7 +355,7 @@ class ShotCalcTest {
 
         /** Build a pose at roughly `dist` meters from the hub, facing it. */
         private Pose2d poseAtDistance(double dist) {
-            return new Pose2d(HUB_TARGET.getX() - dist, HUB_TARGET.getY(), Rotation2d.kZero);
+            return new Pose2d(HUB_TARGET.getX() - dist, HUB_TARGET.getY(), Rotation2d.ZERO);
         }
 
         /** Euclidean XY shift between the predicted target and the actual target. */

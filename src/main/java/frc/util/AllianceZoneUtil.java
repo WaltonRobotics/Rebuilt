@@ -4,10 +4,10 @@ import static org.wpilib.units.Units.*;
 
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Pose3d;
-import org.wpilib.math.geometry.Rectangle2d;
 import org.wpilib.math.geometry.Rotation3d;
 import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.shape.Rectangle2d;
 import org.wpilib.units.measure.Distance;
 
 public class AllianceZoneUtil {
@@ -24,24 +24,24 @@ public class AllianceZoneUtil {
     private static final Distance allianceZone_x_len = hub_x_centerPos.minus(hub_x_len.div(2));
     private static final Distance neutralZone_x_len = (centerField_x_pos.minus(hub_x_centerPos.plus(hub_x_len.div(2)))).times(2);
     public static final Pose3d blueHubCenter =
-        new Pose3d(hub_x_centerPos, centerField_y_pos, hub_z_len, Rotation3d.kZero);
+        new Pose3d(hub_x_centerPos, centerField_y_pos, hub_z_len, Rotation3d.ZERO);
     public static final Pose3d redHubCenter =
         new Pose3d(
-            field_x_len.minus(hub_x_centerPos), centerField_y_pos, hub_z_len, Rotation3d.kZero);
+            field_x_len.minus(hub_x_centerPos), centerField_y_pos, hub_z_len, Rotation3d.ZERO);
     public static final Pose3d redRightTarget =
         new Pose3d(
-            new Translation3d(Inches.of(651.2), Inches.of(49.86), Inches.zero()), Rotation3d.kZero);
+            new Translation3d(Inches.of(651.2), Inches.of(49.86), Inches.zero()), Rotation3d.ZERO);
 
     public static final Pose3d blueLeftTarget =
         new Pose3d(
-            new Translation3d(Inches.zero(), Inches.of(200.86), Inches.zero()), Rotation3d.kZero);
+            new Translation3d(Inches.zero(), Inches.of(200.86), Inches.zero()), Rotation3d.ZERO);
 
     public static final Pose3d redLeftTarget =
         new Pose3d(
-            new Translation3d(Inches.of(651.2), Inches.of(200.86), Inches.zero()), Rotation3d.kZero);
+            new Translation3d(Inches.of(651.2), Inches.of(200.86), Inches.zero()), Rotation3d.ZERO);
 
     public static final Pose3d blueRightTarget =
-        new Pose3d(new Translation3d(Inches.zero(), Inches.of(49.86), Inches.zero()), Rotation3d.kZero);
+        new Pose3d(new Translation3d(Inches.zero(), Inches.of(49.86), Inches.zero()), Rotation3d.ZERO);
     
 
     enum Region {

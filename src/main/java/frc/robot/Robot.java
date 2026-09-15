@@ -35,7 +35,7 @@ import org.wpilib.driverstation.MatchType;
 import org.wpilib.driverstation.DriverStationErrors;
 import org.wpilib.driverstation.RobotState;
 import org.wpilib.driverstation.internal.DriverStationBackend;
-
+import org.wpilib.hardware.bus.CANPort;
 import org.wpilib.hardware.power.PowerDistribution;
 import org.wpilib.system.RobotController;
 import org.wpilib.framework.TimedRobot;
@@ -132,7 +132,7 @@ public class Robot extends TimedRobot {
     //---VISION
 
     // 2027-TODO: CANBusMap!!
-    private PowerDistribution m_PDH = new PowerDistribution(4);
+    private PowerDistribution m_PDH = new PowerDistribution(CANPort.CAN_S4);
     // private final NetworkPinger m_radioPinger = new NetworkPinger("Radio", "10.29.74.1", 0.2, 10);
     // private final NetworkPinger m_coprocessorPinger = new NetworkPinger("Coprocessor", "10.29.74.11", 0.2, 10);
     // private final VisionSim m_visionSim = new VisionSim();
@@ -148,11 +148,11 @@ public class Robot extends TimedRobot {
     private final Trigger trg_shoot = m_driver.rightTrigger().and(trg_driverOverride.negate());
     private final Trigger trg_emergencyBarf = m_driver.rightTrigger().and(trg_driverOverride);
     private final Trigger trg_unjam = m_driver.rightBumper();
-    private final Trigger trg_resetPoseLeft = m_driver.leftBumper().and(trg_driverOverride.and(m_driver.povLeft()));
-    private final Trigger trg_resetPoseRight = m_driver.leftBumper().and(trg_driverOverride.and(m_driver.povRight()));
+    private final Trigger trg_resetPoseLeft = m_driver.leftBumper().and(trg_driverOverride.and(m_driver.getHID().povLeft()));
+    private final Trigger trg_resetPoseRight = m_driver.leftBumper().and(trg_driverOverride.and(m_driver.getHID().povRight()));
 
-    private final Trigger trg_lockShooting = m_driver.povRight();
-    private final Trigger trg_unlockShooting = m_driver.povDown();
+    private final Trigger trg_lockShooting = m_driver.getHID().povUp();
+    private final Trigger trg_unlockShooting = m_driver.getHID().povDown();
 
     //---MANIPULATOR BUTTONS
     private final Trigger trg_intake = m_driver.leftTrigger().and(trg_manipOverride.negate());
@@ -250,7 +250,8 @@ public class Robot extends TimedRobot {
         // set FPS limit on boot
         WaltCamera.setFpsLimit(true);
 
-        DriverStationBackend.silenceJoystickConnectionWarning(true);
+        //TODO: for 2027 build season, maybe start logging which DS we are? if we arent already
+        DriverStationBackend.silenceJoystickConnectionAlert(true);
         // PhotonCamera.setVersionCheckEnabled(false);
 
         // MANUAL HOMING IS BEING USED
@@ -392,8 +393,8 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
-        m_driver.povLeft().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMinRots_double));
-        m_driver.povUp().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double));
+        m_driver.getHID().povLeft().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMinRots_double));
+        m_driver.getHID().povUp().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double));
 
         //---OTHER POSSIBLE BUTTON BINDS
         // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));

@@ -71,7 +71,7 @@ class ShotCalcPerfTest {
 
     @BeforeAll
     static void setup() {
-        HAL.initialize(500, 0);
+        HAL.initialize();
         HUB_TARGET = FieldConstants.Hub.blueInnerCenterPoint;
         double hubX = HUB_TARGET.getX();
         double hubY = HUB_TARGET.getY();
