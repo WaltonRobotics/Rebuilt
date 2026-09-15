@@ -41,6 +41,9 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import org.wpilib.fields.Field;
+import org.wpilib.fields.FieldTag;
+import org.wpilib.fields.Fields;
 // import org.wpilib.vision.apriltag.AprilTag;
 // import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 // import org.wpilib.vision.apriltag.AprilTagFields;
@@ -57,8 +60,9 @@ import org.wpilib.units.measure.AngularVelocity;
 import org.wpilib.units.measure.Current;
 import org.wpilib.units.measure.Distance;
 import org.wpilib.units.measure.Time;
+
 import frc.util.AllianceFlipUtil;
-// import frc.util.VisionUtil;
+import frc.util.VisionUtil;
 
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
@@ -373,10 +377,10 @@ public class Constants {
         // public static final Camera[] kCameras = new Camera[4];
         // private static final String kSimCameraSimVisualNames = /"VisionEstimation"; //suffixed to each camera name
         // ONSHAPE X IS OUR Y -- ONSHAPE Y IS OUR X !!! NOTE THIS PLEASE DO NOT FORGET
-        // public static final Transform3d kFrontLeftCTR = VisionUtil.transformToRobo(8.875, 12.18175, 20.45, 180, -20, 45);
-        // public static final Transform3d kFrontRightCTR = VisionUtil.transformToRobo(8.875, -12.18175, 20.45, 180, -20, -45);
-        // public static final Transform3d kBackLeftCTR = VisionUtil.transformToRobo(-11.375, 11.875, 20.5625, 0, -20, 135);
-        // public static final Transform3d kBackRightCTR = VisionUtil.transformToRobo(-12.455, -12.055, 18.25, 180,-20, -135);
+        public static final Transform3d kFrontLeftCTR = VisionUtil.transformToRobo(8.875, 12.18175, 20.45, 180, -20, 45);
+        public static final Transform3d kFrontRightCTR = VisionUtil.transformToRobo(8.875, -12.18175, 20.45, 180, -20, -45);
+        public static final Transform3d kBackLeftCTR = VisionUtil.transformToRobo(-11.375, 11.875, 20.5625, 0, -20, 135);
+        public static final Transform3d kBackRightCTR = VisionUtil.transformToRobo(-12.455, -12.055, 18.25, 180,-20, -135);
         //Initialize cameras
         // static {
         //     kCameras[0] = new Camera(
@@ -423,14 +427,28 @@ public class Constants {
 
         // public static final AprilTagFieldLayout kTagLayout;
 
-        // //Ignore trench April Tags
-        // static {
-        //     HashSet<Integer> excludedAprilTagsID = new HashSet<> (Arrays.asList(1, 6, 7, 12, 17, 22, 23, 28));
-        //     AprilTagFieldLayout fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
-        //     List<AprilTag> tags = new ArrayList<> (fieldLayout.getTags());
-        //     tags.removeIf(tag -> excludedAprilTagsID.contains(tag.ID));
-        //     kTagLayout = new AprilTagFieldLayout(tags, fieldLayout.getFieldLength(), fieldLayout.getFieldWidth());
-        // }
+        public static final List<FieldTag> kTagLayout;
+        public static final Field kFilteredTagField;
+
+        //Ignore trench April Tags
+        static {
+            HashSet<Integer> excludedAprilTagsID = new HashSet<>(Arrays.asList(1, 6, 7, 12, 17, 22, 23, 28));
+            Field fieldLayout = Field.loadField(Fields.FRC_2026_REBUILT_WELDED);
+            List<FieldTag> tags = new ArrayList<>(fieldLayout.getTags());
+            tags.removeIf(tag -> excludedAprilTagsID.contains(tag.getID()));
+            kTagLayout = tags;
+            //i think this should work????
+            kFilteredTagField = new Field(
+                fieldLayout.name,
+                fieldLayout.season,
+                fieldLayout.game,
+                fieldLayout.fieldImage,
+                fieldLayout.getFieldLength(),
+                fieldLayout.getFieldWidth(),
+                fieldLayout.program,
+                tags
+            );
+        }
     }
 
     public static class RobotK {
