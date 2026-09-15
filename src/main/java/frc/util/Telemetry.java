@@ -97,7 +97,7 @@ public class Telemetry {
         /* Also write to log file */
         SignalLogger.writeStruct("DriveState/Pose", Pose2d.struct, state.Pose);
         // 2027-TODO: find state.Speeds!!!
-        // SignalLogger.writeStruct("DriveState/Speeds", ChassisVelocities.struct, state.Speeds);
+        SignalLogger.writeStruct("DriveState/Velocity", ChassisVelocities.struct, state.Velocity);
         SignalLogger.writeStructArray("DriveState/ModuleStates", SwerveModuleVelocity.struct, state.ModuleVelocities);
         SignalLogger.writeStructArray("DriveState/ModuleTargets", SwerveModuleVelocity.struct, state.ModuleTargets);
         SignalLogger.writeStructArray("DriveState/ModulePositions", SwerveModulePosition.struct, state.ModulePositions);

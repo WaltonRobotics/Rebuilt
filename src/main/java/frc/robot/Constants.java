@@ -563,7 +563,6 @@ public class Constants {
         public static final String kLogTab = "Indexer";
         
         /* IDS */
-        //TODO: Make ids accurate
         public static final int kSpindexerCANID = 10;
         public static final int kTunnelCANID = 11;
 
