@@ -38,7 +38,7 @@ public class Superstructure extends SubsystemBase {
     public Command intake(BooleanSupplier isShooting, BooleanSupplier isShimmying) {
         return Commands.sequence(
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
-            Commands.waitUntil(() -> m_intake.isIntakeArmAtDest()).withTimeout(0.25),
+            // Commands.waitUntil(() -> m_intake.isIntakeArmAtDest()).withTimeout(0.25),
             m_intake.setIntakeRollersVelocityCmd(isShimmying.getAsBoolean() ? kIntakeRollersShimmyVolts : kIntakeRollersIntakeVolts),
             Commands.run(
             () -> {
@@ -106,10 +106,10 @@ public class Superstructure extends SubsystemBase {
     public Command activateOuttakeShotCalc() {
         return Commands.parallel(
             m_shooter.shootFromCalc(),
-            m_shooter.hoodFromCalc(),
+            // m_shooter.hoodFromCalc(),
 
             Commands.sequence(
-                Commands.waitUntil(() -> m_shooter.m_hood.atPosition()).withTimeout(ShooterK.kHoodAtPosTimeout),
+                // Commands.waitUntil(() -> m_shooter.m_hood.atPosition()).withTimeout(ShooterK.kHoodAtPosTimeout),
                 Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocityRotPerSec() >= ShooterK.kShooterSpunUpMinimumD))).withTimeout(ShooterK.kShooterSpunUpTimeout),
                 Commands.parallel(
                     Commands.run(() -> m_indexer.setTunnelVelocity(kTunnelShootRPSD)),
@@ -126,12 +126,12 @@ public class Superstructure extends SubsystemBase {
         });
     }
 
-    public Command activateHoodShotCalc() {
-        return m_shooter.hoodFromCalc()
-        .finallyDo(() -> {
-            hoodBackToSafe();
-        });
-    }
+    // public Command activateHoodShotCalc() {
+    //     // // return m_shooter.hoodFromCalc()
+    //     // .finallyDo(() -> {
+    //     //     hoodBackToSafe();
+    //     // });
+    // }
 
     public Command spinUpFlywheel() {
         return m_shooter.shootFromCalc()
@@ -142,7 +142,7 @@ public class Superstructure extends SubsystemBase {
 
     public Command hoodAndFlywheelShotCalc() {
         return Commands.parallel(
-            m_shooter.hoodFromCalc(),
+            // m_shooter.hoodFromCalc(),
             m_shooter.shootFromCalc()
         )
         .finallyDo( () -> {
@@ -165,7 +165,7 @@ public class Superstructure extends SubsystemBase {
     }
 
     public void hoodBackToSafe() {
-        m_shooter.m_hood.setHoodPos(ShooterK.kHoodEmergencyRotsD);
+        // m_shooter.m_hood.setHoodPos(ShooterK.kHoodEmergencyRotsD);
     }
 
     /**
@@ -175,7 +175,7 @@ public class Superstructure extends SubsystemBase {
         return Commands.startEnd(
             () -> {
                 m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
-                m_shooter.m_turret.lockAndSetTurretLockPos(ShooterK.kTurretBarfPos.magnitude());
+                // m_shooter.m_turret.lockAndSetTurretLockPos(ShooterK.kTurretBarfPos.magnitude());
                 m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPSD);
                 m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPSD);
                 m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
@@ -183,7 +183,7 @@ public class Superstructure extends SubsystemBase {
             },
             () -> {
                 m_intake.setIntakeRollersVelocity(0);
-                m_shooter.m_turret.setTurretLock(false);
+                // m_shooter.m_turret.setTurretLock(false);
                 m_shooter.setShooterVelocity(RotationsPerSecond.zero());
                 m_indexer.setSpindexerVelocity(0);
                 m_indexer.setTunnelVelocity(0);

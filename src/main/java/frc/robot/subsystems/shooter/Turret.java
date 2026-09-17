@@ -1,10 +1,10 @@
 package frc.robot.subsystems.shooter;
 
-import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.NeutralModeValue;
+// import com.ctre.phoenix6.StatusSignal;
+// import com.ctre.phoenix6.controls.PositionVoltage;
+// import com.ctre.phoenix6.hardware.CANcoder;
+// import com.ctre.phoenix6.hardware.TalonFX;
+// import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import org.wpilib.units.measure.Angle;
 import org.wpilib.units.measure.AngularVelocity;
@@ -19,7 +19,7 @@ import static frc.robot.Constants.TurretK.kLogTab;
 import static frc.robot.Constants.TurretK.*;
 
 import java.util.function.BooleanSupplier;
-import frc.util.SignalManager;
+// import frc.util.SignalManager;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -31,8 +31,8 @@ public class Turret extends SubsystemBase {
     private boolean m_turretLocked = false;
     private double m_turretLockAngleRots = 0.0;
 
-    private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); // X44Foc
-    private final PositionVoltage m_PVRequest = new PositionVoltage(0).withEnableFOC(true);
+    // private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); // X44Foc
+    // private final PositionVoltage m_PVRequest = new PositionVoltage(0).withEnableFOC(true);
 
     // ---LOGIC BOOLEANS
     private boolean m_isTurretHomed = true;
@@ -42,7 +42,7 @@ public class Turret extends SubsystemBase {
     private boolean m_isSnappingBack = false;
     private final BooleanSupplier supp_isSnappingBack = () -> m_isSnappingBack;
 
-    private final CANcoder m_lcmEncA = new CANcoder(19, Constants.kCanivoreBus);
+    // private final CANcoder m_lcmEncA = new CANcoder(19, Constants.kCanivoreBus);
     private final DutyCycleEncoder m_lcmEncB = new DutyCycleEncoder(3);
 
     private final DoubleLogger log_lcmEncAPos = WaltLogger.logDouble(kLogTab, "EncA/Pos");
@@ -60,37 +60,37 @@ public class Turret extends SubsystemBase {
 
     private final BooleanLogger log_isTurretSnappingBack = WaltLogger.logBoolean(kLogTab, "snappingBack");
 
-    private final StatusSignal<Double> sig_turretCLErr = m_turret.getClosedLoopError();
-    private final StatusSignal<Angle> sig_turretPos = m_turret.getPosition();
-    private final StatusSignal<Angle> sig_lcmEncAAbsPos = m_lcmEncA.getAbsolutePosition();
+    // private final StatusSignal<Double> sig_turretCLErr = m_turret.getClosedLoopError();
+    // private final StatusSignal<Angle> sig_turretPos = m_turret.getPosition();
+    // private final StatusSignal<Angle> sig_lcmEncAAbsPos = m_lcmEncA.getAbsolutePosition();
 
-    public Turret() {
-        m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
-        m_lcmEncA.getConfigurator().apply(kEncoderAConfiguration);
+    // public Turret() {
+    //     m_turret.getConfigurator().apply(kTurretTalonFXConfiguration);
+    //     m_lcmEncA.getConfigurator().apply(kEncoderAConfiguration);
 
-        m_lcmEncB.setAssumedFrequency(488);
-        m_lcmEncB.setConnectedFrequencyThreshold(400);
+    //     m_lcmEncB.setAssumedFrequency(488);
+    //     m_lcmEncB.setConnectedFrequencyThreshold(400);
 
-        SignalManager.register(Constants.kCanivoreBus, sig_turretCLErr, sig_turretPos, sig_lcmEncAAbsPos);
+    //     SignalManager.register(Constants.kCanivoreBus, sig_turretCLErr, sig_turretPos, sig_lcmEncAAbsPos);
 
-        log_turretTransform.accept(kTurretTransform);
+    //     log_turretTransform.accept(kTurretTransform);
 
-        homeTurret(true);
-    }
+    //     homeTurret(true);
+    // }
 
     public void homeTurret(boolean useLCM) {
-        if (useLCM) {
-            double lcmRots = calcTurretAngleLCM(sig_lcmEncAAbsPos.getValueAsDouble() * 360, -(m_lcmEncB.get() - kEncBOffset) * 360) / 360.0;
-            m_turret.setPosition(lcmRots);
-        } else {
-            m_turret.setPosition(kInitPosition);
-        }
+        // if (useLCM) {
+        //     double lcmRots = calcTurretAngleLCM(sig_lcmEncAAbsPos.getValueAsDouble() * 360, -(m_lcmEncB.get() - kEncBOffset) * 360) / 360.0;
+        //     m_turret.setPosition(lcmRots);
+        // } else {
+        //     m_turret.setPosition(kInitPosition);
+        // }
     }
 
     private void refreshTurretCLErr() {
-        log_turretClosedLoopError.accept(sig_turretCLErr.getValueAsDouble());
-        m_turretAtPos = sig_turretCLErr.isNear(0, kTurretMaxErrD);
-        m_isSnappingBack = sig_turretCLErr.getValueAsDouble() >= kTurretMaxErrDSpin;
+        // log_turretClosedLoopError.accept(sig_turretCLErr.getValueAsDouble());
+        // m_turretAtPos = sig_turretCLErr.isNear(0, kTurretMaxErrD);
+        // m_isSnappingBack = sig_turretCLErr.getValueAsDouble() >= kTurretMaxErrDSpin;
         log_atPos.accept(m_turretAtPos);
         log_isTurretSnappingBack.accept(m_isSnappingBack);
     }
@@ -110,7 +110,7 @@ public class Turret extends SubsystemBase {
     public void setTurretLock(boolean locked) {
         m_turretLocked = locked;
         if (m_turretLocked) {
-            m_turretLockAngleRots = sig_turretPos.getValueAsDouble();
+            // m_turretLockAngleRots = sig_turretPos.getValueAsDouble();
         }
 
         log_turretLocked.accept(m_turretLocked);
@@ -136,24 +136,24 @@ public class Turret extends SubsystemBase {
     }
 
     public void setTurretPos(Angle rots, AngularVelocity velocityFF) {
-        m_turret.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFF));
+        // m_turret.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFF));
         log_turretControlPos.accept(rots.in(Rotations));
         log_turretControlFFRadPS.accept(velocityFF.in(RadiansPerSecond));
     }
 
     public void setTurretPos(double rots, double velocityFFRadPS) {
-        m_turret.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFFRadPS));
+        // m_turret.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFFRadPS));
         log_turretControlPos.accept(rots);
         log_turretControlFFRadPS.accept(velocityFFRadPS);
     }
 
-    public void setTurretNeutralMode(NeutralModeValue value) {
-        // m_turret.setNeutralMode(value);
-    }
+    // public void setTurretNeutralMode(NeutralModeValue value) {
+    //     // m_turret.setNeutralMode(value);
+    // }
 
-    public double getCurrTurretPos() {
-        return sig_turretPos.getValueAsDouble();
-    }
+    // public double getCurrTurretPos() {
+    //     // return sig_turretPos.getValueAsDouble();
+    // }
 
     public boolean getTurretLocked() {
         return m_turretLocked;
@@ -172,17 +172,17 @@ public class Turret extends SubsystemBase {
     }
 
     public void periodic() {
-        double encAVal = sig_lcmEncAAbsPos.getValueAsDouble();
+        // double encAVal = sig_lcmEncAAbsPos.getValueAsDouble();
         double encBVal = m_lcmEncB.get();
-        log_lcmEncAPos.accept(encAVal);
+        // log_lcmEncAPos.accept(encAVal);
         log_lcmEncBPos.accept(encBVal);
         log_lcmEncBFreq.accept(m_lcmEncB.getFrequency());
         log_lcmEncBConn.accept(m_lcmEncB.isConnected());
 
         refreshTurretCLErr();
 
-        double turretAngleDeg = calcTurretAngleLCM(encAVal * 360, -(encBVal - kEncBOffset) * 360);
-        log_turretLCMPos.accept(turretAngleDeg / 360.0);
+        // double turretAngleDeg = calcTurretAngleLCM(encAVal * 360, -(encBVal - kEncBOffset) * 360);
+        // log_turretLCMPos.accept(turretAngleDeg / 360.0);
     }
 
     public static double calcTurretAngleLCM(double e1, double e2) {

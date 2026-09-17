@@ -1,25 +1,25 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.sim.TalonFXSimState;
-import com.ctre.phoenix6.sim.ChassisReference;
+// import com.ctre.phoenix6.StatusSignal;
+// import com.ctre.phoenix6.controls.Follower;
+// import com.ctre.phoenix6.controls.MotionMagicVoltage;
+// import com.ctre.phoenix6.controls.VelocityVoltage;
+// import com.ctre.phoenix6.hardware.TalonFX;
+// import com.ctre.phoenix6.signals.MotorAlignmentValue;
+// import com.ctre.phoenix6.signals.NeutralModeValue;
+// import com.ctre.phoenix6.sim.TalonFXSimState;
+// import com.ctre.phoenix6.sim.ChassisReference;
 
 import static org.wpilib.units.Units.Degrees;
 import static org.wpilib.units.Units.Rotations;
 import static org.wpilib.units.Units.RotationsPerSecond;
-import static frc.robot.Constants.kRioBus;
+// import static frc.robot.Constants.kRioBus;
 import static frc.robot.Constants.IntakeK.*;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-import com.ctre.phoenix6.controls.VoltageOut;
+// import com.ctre.phoenix6.controls.VoltageOut;
 
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
@@ -32,34 +32,34 @@ import org.wpilib.command2.FunctionalCommand;
 import org.wpilib.command2.SubsystemBase;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
-import frc.util.WaltMotorSim;
+// import frc.util.WaltMotorSim;
 import frc.robot.Robot;
-import frc.util.SignalManager;
+// import frc.util.SignalManager;
 import frc.util.WaltLogger;
 
 public class Intake extends SubsystemBase {
     /* CLASS VARIABLES */
     //---MOTORS + CONTROL REQUESTS
-    private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID, kRioBus); //x60Foc
+    // private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID, kRioBus); //x60Foc
 
-    private final TalonFX m_intakeRollersA = new TalonFX(kIntakeRollersA_CANID, kRioBus); //x60Foc
-    private final TalonFX m_intakeRollersB = new TalonFX(kIntakeRollersB_CANID, kRioBus); //x60Foc
+    // private final TalonFX m_intakeRollersA = new TalonFX(kIntakeRollersA_CANID, kRioBus); //x60Foc
+    // private final TalonFX m_intakeRollersB = new TalonFX(kIntakeRollersB_CANID, kRioBus); //x60Foc
 
-    private MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0).withEnableFOC(true);
-    private VelocityVoltage m_VelVoltReq = new VelocityVoltage(0).withEnableFOC(true);
-    private VoltageOut m_voltsReq = new VoltageOut(0).withEnableFOC(true);
+    // private MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0).withEnableFOC(true);
+    // private VelocityVoltage m_VelVoltReq = new VelocityVoltage(0).withEnableFOC(true);
+    // private VoltageOut m_voltsReq = new VoltageOut(0).withEnableFOC(true);
 
-    private final StatusSignal<Current> sig_intakeArmStatorCurrent = m_intakeArm.getStatorCurrent();
-    private final StatusSignal<AngularVelocity> sig_intakeArmVelo = m_intakeArm.getVelocity();
-    private final StatusSignal<AngularVelocity> sig_intakeRollersAVelo = m_intakeRollersA.getVelocity();
-    private final StatusSignal<Angle> sig_intakeArmPos = m_intakeArm.getPosition();
-    private final StatusSignal<Boolean> sig_intakeArmMMAtTarget = m_intakeArm.getMotionMagicAtTarget();
+    // private final StatusSignal<Current> sig_intakeArmStatorCurrent = m_intakeArm.getStatorCurrent();
+    // private final StatusSignal<AngularVelocity> sig_intakeArmVelo = m_intakeArm.getVelocity();
+    // private final StatusSignal<AngularVelocity> sig_intakeRollersAVelo = m_intakeRollersA.getVelocity();
+    // private final StatusSignal<Angle> sig_intakeArmPos = m_intakeArm.getPosition();
+    // private final StatusSignal<Boolean> sig_intakeArmMMAtTarget = m_intakeArm.getMotionMagicAtTarget();
 
-    private BooleanSupplier m_currentSpike = () -> sig_intakeArmStatorCurrent.getValueAsDouble() > 5.0;
-    private BooleanSupplier m_veloIsNearZero = () -> Math.abs(sig_intakeArmVelo.getValueAsDouble()) < 0.005;
-    private BooleanSupplier m_shimmyVeloIsNearZero = () -> Math.abs(sig_intakeArmVelo.getValueAsDouble()) < 0.05;
+    // private BooleanSupplier m_currentSpike = () -> sig_intakeArmStatorCurrent.getValueAsDouble() > 5.0;
+    // private BooleanSupplier m_veloIsNearZero = () -> Math.abs(sig_intakeArmVelo.getValueAsDouble()) < 0.005;
+    // private BooleanSupplier m_shimmyVeloIsNearZero = () -> Math.abs(sig_intakeArmVelo.getValueAsDouble()) < 0.05;
     
-    private VoltageOut m_intakeArmZeroingReq = new VoltageOut(0);
+    // private VoltageOut m_intakeArmZeroingReq = new VoltageOut(0);
 
     private Debouncer m_currentDebouncer = new Debouncer(0.100, DebounceType.RISING);
     private Debouncer m_velocityDebouncer = new Debouncer(0.125, DebounceType.RISING);
@@ -99,26 +99,26 @@ public class Intake extends SubsystemBase {
 
     /* CONSTRUCTOR */
     public Intake() {
-        m_intakeArm.getConfigurator().apply(kIntakeArmConfiguration);
+        // m_intakeArm.getConfigurator().apply(kIntakeArmConfiguration);
 
-        m_intakeRollersA.getConfigurator().apply(kIntakeRollersAConfiguration);
-        m_intakeRollersB.getConfigurator().apply(kIntakeRollersBConfiguration);
+        // m_intakeRollersA.getConfigurator().apply(kIntakeRollersAConfiguration);
+        // m_intakeRollersB.getConfigurator().apply(kIntakeRollersBConfiguration);
 
-        m_intakeRollersB.setControl(new Follower(kIntakeRollersA_CANID, MotorAlignmentValue.Opposed));
+        // m_intakeRollersB.setControl(new Follower(kIntakeRollersA_CANID, MotorAlignmentValue.Opposed));
 
-        SignalManager.register(kRioBus, sig_intakeArmStatorCurrent, sig_intakeArmVelo, sig_intakeRollersAVelo, sig_intakeArmPos, sig_intakeArmMMAtTarget);
+        // SignalManager.register(kRioBus, sig_intakeArmStatorCurrent, sig_intakeArmVelo, sig_intakeRollersAVelo, sig_intakeArmPos, sig_intakeArmMMAtTarget);
 
-        if (Robot.isReal()) {
-            setDefaultCommand(intakeArmCurrentSenseHoming());
-            // setDefaultCommand(intakeArmHome());
-        }
+        // if (Robot.isReal()) {
+        //     setDefaultCommand(intakeArmCurrentSenseHoming());
+        //     // setDefaultCommand(intakeArmHome());
+        // }
 
         initSim();
     }
 
     private void initSim() {
-        WaltMotorSim.initSimFX(m_intakeArm, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
-        WaltMotorSim.initSimFX(m_intakeRollersA, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
+        // WaltMotorSim.initSimFX(m_intakeArm, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX44);
+        // WaltMotorSim.initSimFX(m_intakeRollersA, ChassisReference.CounterClockwise_Positive, TalonFXSimState.MotorType.KrakenX60);
     }
 
     /* COMMANDS */
@@ -135,16 +135,16 @@ public class Intake extends SubsystemBase {
     }
 
     public void setIntakeArmPos(Angle rots) {
-        m_intakeArm.setControl(m_MMVReq.withPosition(rots));
+        // m_intakeArm.setControl(m_MMVReq.withPosition(rots));
     }
 
-    public boolean isIntakeArmAtDest() {
-       return m_shimmyVeloIsNearZero.getAsBoolean();
-    }
+    // public boolean isIntakeArmAtDest() {
+    // //    return m_shimmyVeloIsNearZero.getAsBoolean();
+    // }
 
-     public void setIntakeArmNeutralMode(NeutralModeValue value) {
-        // m_intakeArm.setNeutralMode(value);
-    }
+    //  public void setIntakeArmNeutralMode(NeutralModeValue value) {
+    //     // m_intakeArm.setNeutralMode(value);
+    // }
 
     public Command startIntakeRollers(double volts) {
         return setIntakeRollersVelocityCmd(volts);
@@ -155,7 +155,7 @@ public class Intake extends SubsystemBase {
     }
 
     public void setIntakeRollersVelocity(double volts) {
-        m_intakeRollersA.setControl(m_VelVoltReq.withVelocity(volts / 12 * kIntakeRollersMaxRPS.in(RotationsPerSecond)));   ///kV = 0.488599348534
+        // m_intakeRollersA.setControl(m_VelVoltReq.withVelocity(volts / 12 * kIntakeRollersMaxRPS.in(RotationsPerSecond)));   ///kV = 0.488599348534
         // m_intakeRollersA.setControl(m_voltsReq.withOutput(volts));
     }
 
@@ -167,7 +167,7 @@ public class Intake extends SubsystemBase {
     public Command intakeArmHome() {
         return Commands.parallel(
             Commands.sequence(
-                runOnce(() -> m_intakeArm.setPosition(0)),
+                // runOnce(() -> m_intakeArm.setPosition(0)),
 
                 runOnce(() -> m_isIntakeArmHomed = true),
                 runOnce(() -> log_isIntakeArmHomed.accept(m_isIntakeArmHomed)),
@@ -177,39 +177,39 @@ public class Intake extends SubsystemBase {
         );
     }
 
-    public Command intakeArmCurrentSenseHoming() {
-        Runnable init = () -> {
-            m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(-3.25));
+    // public Command intakeArmCurrentSenseHoming() {
+    //     Runnable init = () -> {
+    //         // m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(-3.25));
 
-            m_isIntakeArmHomed = false;
-            log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
-        };
+    //         m_isIntakeArmHomed = false;
+    //         log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
+    //     };
 
-        Runnable execute = () -> {};
+    //     Runnable execute = () -> {};
 
-        Consumer<Boolean> onEnd = (Boolean interrupted) -> {
-            m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(0));
-            m_intakeArm.setPosition(0);
-            removeDefaultCommand();
-            setIntakeArmPos(IntakeArmPosition.RETRACTED);
-            m_isIntakeArmHomed = true;
-            log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
-        };
+    //     Consumer<Boolean> onEnd = (Boolean interrupted) -> {
+    //         // m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(0));
+    //         // m_intakeArm.setPosition(0);
+    //         removeDefaultCommand();
+    //         setIntakeArmPos(IntakeArmPosition.RETRACTED);
+    //         m_isIntakeArmHomed = true;
+    //         log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
+    //     };
 
-        BooleanSupplier isFinished = () ->
-            m_currentDebouncer.calculate(m_currentSpike.getAsBoolean()) &&
-            m_velocityDebouncer.calculate(m_veloIsNearZero.getAsBoolean());
+    //     // BooleanSupplier isFinished = () ->
+    //     //     m_currentDebouncer.calculate(m_currentSpike.getAsBoolean()) &&
+    //     //     m_velocityDebouncer.calculate(m_veloIsNearZero.getAsBoolean());
 
-        return new FunctionalCommand(init, execute, onEnd, isFinished, this).withTimeout(3).withName("intakeArm homing");
-    }
+    //     // return new FunctionalCommand(init, execute, onEnd, isFinished, this).withTimeout(3).withName("intakeArm homing");
+    // }
 
     /* PERIODICS */
     @Override
     public void periodic() {
-        log_targetIntakeArmRots.accept(m_MMVReq.Position);
-        log_targetIntakeRollersRPS.accept(m_voltsReq.Output);
-        log_intakeRollersRPS.accept(sig_intakeRollersAVelo.getValueAsDouble());
-        log_intakeArmRots.accept(sig_intakeArmPos.getValueAsDouble());
+        // log_targetIntakeArmRots.accept(m_MMVReq.Position);
+        // log_targetIntakeRollersRPS.accept(m_voltsReq.Output);
+        // log_intakeRollersRPS.accept(sig_intakeRollersAVelo.getValueAsDouble());
+        // log_intakeArmRots.accept(sig_intakeArmPos.getValueAsDouble());
     }
 
     @Override
