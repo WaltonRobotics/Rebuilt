@@ -1,146 +1,146 @@
-// package frc.robot.dashboards;
+package frc.robot.dashboards;
 
-// import static org.wpilib.units.Units.MetersPerSecond;
+import static org.wpilib.units.Units.MetersPerSecond;
 
-// import org.wpilib.command2.Command;
-// import org.wpilib.command2.Commands;
-// import org.wpilib.math.geometry.Pose2d;
-// import org.wpilib.math.geometry.Rotation2d;
-// import org.wpilib.tunable.Selectable;
-// import org.wpilib.tunable.Tunables;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.tunable.Selectable;
+import org.wpilib.tunable.Tunables;
 
-// import frc.robot.autons.WaltPointToPointAutonFactory;
-// import frc.robot.autons.WaltPointToPointAutonFactory.PointToPointPathDriveInfo;
-// import frc.robot.generated.TunerConstants;
-// import frc.robot.autons.WaltPointToPointAutonFactory.PointToPointPath;
+import frc.robot.autons.WaltPointToPointAutonFactory;
+import frc.robot.autons.WaltPointToPointAutonFactory.PointToPointPathDriveInfo;
+import frc.robot.generated.TunerConstants;
+import frc.robot.autons.WaltPointToPointAutonFactory.PointToPointPath;
 
-// public class BasicAutonChooser {
-//     private static Selectable<Command> m_chooser = new Selectable<Command>();
-//     private static WaltPointToPointAutonFactory m_autonFactory;
+public class BasicAutonChooser {
+    private static Selectable<Command> m_chooser = new Selectable<Command>();
+    private static WaltPointToPointAutonFactory m_autonFactory;
 
-//     private static final double kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+    private static final double kMaxTranslationSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
     
-//     //---POSES---//
-//     private static final Pose2d pose_oneOneTranslation = new Pose2d(1, 1, Rotation2d.ZERO);
+    //---POSES---//
+    private static final Pose2d pose_oneOneTranslation = new Pose2d(1, 1, Rotation2d.ZERO);
 
-//     private static final Pose2d pose_chainTestOne = new Pose2d(8.27, 2.33, Rotation2d.fromDegrees(0.0));
-//     private static final Pose2d pose_chainTestTwo = new Pose2d(7.33, 4.80, Rotation2d.fromDegrees(0.0));
+    private static final Pose2d pose_chainTestOne = new Pose2d(8.27, 2.33, Rotation2d.fromDegrees(0.0));
+    private static final Pose2d pose_chainTestTwo = new Pose2d(7.33, 4.80, Rotation2d.fromDegrees(0.0));
 
-//     private static final Pose2d pose_intakeTest = new Pose2d(9.63, 1.88, Rotation2d.fromDegrees(-90.0));
-//     private static final Pose2d pose_shootingTest = new Pose2d(8.29, 5.92, Rotation2d.fromDegrees(270.0));
-//     private static final Pose2d pose_passingTest = new Pose2d(8.22, 2.48, Rotation2d.fromDegrees(270.0));
+    private static final Pose2d pose_intakeTest = new Pose2d(9.63, 1.88, Rotation2d.fromDegrees(-90.0));
+    private static final Pose2d pose_shootingTest = new Pose2d(8.29, 5.92, Rotation2d.fromDegrees(270.0));
+    private static final Pose2d pose_passingTest = new Pose2d(8.22, 2.48, Rotation2d.fromDegrees(270.0));
 
-//     //---PATHS---//
-//     private static final PointToPointPath path_oneOneTranslation = new PointToPointPath(
-//         new PointToPointPathDriveInfo (
-//             pose_oneOneTranslation,
-//             0.5,
-//             1,
-//             1,
-//             true
-//         ), 5, false, false
-//     );
+    //---PATHS---//
+    private static final PointToPointPath path_oneOneTranslation = new PointToPointPath(
+        new PointToPointPathDriveInfo (
+            pose_oneOneTranslation,
+            0.5,
+            1,
+            1,
+            true
+        ), 5, false, false
+    );
 
-//     private static final PointToPointPath path_chainTestOne = new PointToPointPath(
-//         new PointToPointPathDriveInfo(
-//             pose_chainTestOne,
-//             0.1,
-//             kMaxTranslationSpeed,
-//             1,
-//             true
-//         ), 10, false, false
-//     );
-//     private static final PointToPointPath path_chainTestTwo = new PointToPointPath(
-//         new PointToPointPathDriveInfo(
-//             pose_chainTestTwo,
-//             0.1,
-//             kMaxTranslationSpeed,
-//             1,
-//             false
-//         ), 10, false, false
-//     );
+    private static final PointToPointPath path_chainTestOne = new PointToPointPath(
+        new PointToPointPathDriveInfo(
+            pose_chainTestOne,
+            0.1,
+            kMaxTranslationSpeed,
+            1,
+            true
+        ), 10, false, false
+    );
+    private static final PointToPointPath path_chainTestTwo = new PointToPointPath(
+        new PointToPointPathDriveInfo(
+            pose_chainTestTwo,
+            0.1,
+            kMaxTranslationSpeed,
+            1,
+            false
+        ), 10, false, false
+    );
 
-//     private static final PointToPointPath path_intakeTest = new PointToPointPath(
-//         new PointToPointPathDriveInfo(
-//             pose_intakeTest,
-//             0.1,
-//             1,
-//             1,
-//             true
-//         ), 20, true, false
-//     );
-//     private static final PointToPointPath path_shootingTest = new PointToPointPath(
-//         new PointToPointPathDriveInfo(
-//             pose_shootingTest,
-//             0.1,
-//             1,
-//             1,
-//             true
-//         ), 20, false, true
-//     );
-//     private static final PointToPointPath path_passingTest = new PointToPointPath(
-//         new PointToPointPathDriveInfo(
-//             pose_passingTest,
-//             0.1,
-//             1,
-//             1,
-//             false
-//         ), 20, true, true
-//     );
+    private static final PointToPointPath path_intakeTest = new PointToPointPath(
+        new PointToPointPathDriveInfo(
+            pose_intakeTest,
+            0.1,
+            1,
+            1,
+            true
+        ), 20, true, false
+    );
+    private static final PointToPointPath path_shootingTest = new PointToPointPath(
+        new PointToPointPathDriveInfo(
+            pose_shootingTest,
+            0.1,
+            1,
+            1,
+            true
+        ), 20, false, true
+    );
+    private static final PointToPointPath path_passingTest = new PointToPointPath(
+        new PointToPointPathDriveInfo(
+            pose_passingTest,
+            0.1,
+            1,
+            1,
+            false
+        ), 20, true, true
+    );
 
-//     //---FUNCTIONALITIES---//
-//     public static void initialize(WaltPointToPointAutonFactory autonFactory) {
-//         m_autonFactory = autonFactory;
+    //---FUNCTIONALITIES---//
+    public static void initialize(WaltPointToPointAutonFactory autonFactory) {
+        m_autonFactory = autonFactory;
 
-//         PointToPointAuton auto_checkOrigin = new PointToPointAuton(
-//             "Check Origin",
-//             m_autonFactory.createAuton(path_oneOneTranslation)
-//         );
+        PointToPointAuton auto_checkOrigin = new PointToPointAuton(
+            "Check Origin",
+            m_autonFactory.createAuton(path_oneOneTranslation)
+        );
 
-//         PointToPointAuton auto_checkChaining = new PointToPointAuton(
-//             "Check Chaining",
-//             m_autonFactory.createAuton(
-//                 path_chainTestOne,
-//                 path_chainTestTwo
-//             )
-//         );
+        PointToPointAuton auto_checkChaining = new PointToPointAuton(
+            "Check Chaining",
+            m_autonFactory.createAuton(
+                path_chainTestOne,
+                path_chainTestTwo
+            )
+        );
 
-//         PointToPointAuton auto_subsystemsTest = new PointToPointAuton(
-//             "Subsystem Test",
-//             m_autonFactory.createAuton(
-//                 path_intakeTest,
-//                 path_shootingTest,
-//                 path_passingTest
-//             )
-//         );
+        PointToPointAuton auto_subsystemsTest = new PointToPointAuton(
+            "Subsystem Test",
+            m_autonFactory.createAuton(
+                path_intakeTest,
+                path_shootingTest,
+                path_passingTest
+            )
+        );
 
-//         PointToPointAuton auto_doNothing = new PointToPointAuton(
-//             "Do Nothing",
-//             Commands.none()
-//         );
+        PointToPointAuton auto_doNothing = new PointToPointAuton(
+            "Do Nothing",
+            Commands.none()
+        );
 
-//         setDefaultAuton(auto_checkOrigin);
-//         addAuton(auto_checkChaining);
-//         addAuton(auto_subsystemsTest);
-//         addAuton(auto_doNothing);
+        setDefaultAuton(auto_checkOrigin);
+        addAuton(auto_checkChaining);
+        addAuton(auto_subsystemsTest);
+        addAuton(auto_doNothing);
 
-//         Tunables.publish("BasicAutonChooser", m_chooser);
-//     }
+        Tunables.publish("BasicAutonChooser", m_chooser);
+    }
 
-//     private static void setDefaultAuton(PointToPointAuton auton) {
-//         m_chooser.addDefault(auton.name, auton.auton);
-//     }
+    private static void setDefaultAuton(PointToPointAuton auton) {
+        m_chooser.addDefault(auton.name, auton.auton);
+    }
 
-//     private static void addAuton(PointToPointAuton auton) {
-//         m_chooser.add(auton.name, auton.auton);
-//     }
+    private static void addAuton(PointToPointAuton auton) {
+        m_chooser.add(auton.name, auton.auton);
+    }
 
-//     public static Command getAuton() {
-//         return m_chooser.getSelected();
-//     }
+    public static Command getAuton() {
+        return m_chooser.getSelected();
+    }
 
-//     public record PointToPointAuton(
-//         String name,
-//         Command auton
-//     ) {}
-// }
+    public record PointToPointAuton(
+        String name,
+        Command auton
+    ) {}
+}

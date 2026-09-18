@@ -19,25 +19,25 @@ import java.util.List;
 
 // import org.wpilib.hardware.hal.CANBusMap;
 
-// import com.ctre.phoenix6.CANBus;
-// import com.ctre.phoenix6.configs.CANcoderConfiguration;
-// import com.ctre.phoenix6.configs.CommutationConfigs;
-// import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-// import com.ctre.phoenix6.configs.ExternalFeedbackConfigs;
-// import com.ctre.phoenix6.configs.FeedbackConfigs;
-// import com.ctre.phoenix6.configs.MagnetSensorConfigs;
-// import com.ctre.phoenix6.configs.MotionMagicConfigs;
-// import com.ctre.phoenix6.configs.MotorOutputConfigs;
-// import com.ctre.phoenix6.configs.Slot0Configs;
-// import com.ctre.phoenix6.configs.Slot1Configs;
-// import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
-// import com.ctre.phoenix6.configs.TalonFXConfiguration;
-// import com.ctre.phoenix6.configs.TalonFXSConfiguration;
-// import com.ctre.phoenix6.configs.VoltageConfigs;
-// import com.ctre.phoenix6.signals.AdvancedHallSupportValue;
-// import com.ctre.phoenix6.signals.InvertedValue;
-// import com.ctre.phoenix6.signals.MotorArrangementValue;
-// import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CommutationConfigs;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.ExternalFeedbackConfigs;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
+import com.ctre.phoenix6.configs.MagnetSensorConfigs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
+import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.TalonFXSConfiguration;
+import com.ctre.phoenix6.configs.VoltageConfigs;
+import com.ctre.phoenix6.signals.AdvancedHallSupportValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorArrangementValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import org.wpilib.fields.Field;
 import org.wpilib.fields.FieldTag;
@@ -67,9 +67,9 @@ public class Constants {
     public static final boolean kDataLoggingEnabled = true;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
-    // public static final CANBus kRioBus = new CANBus("can_s4");
-    // public static final CANBus kCanivoreBus = new CANBus("fd");
-    // public static final CANBus kShooterBus = new CANBus("shooter");
+    public static final CANBus kRioBus = new CANBus("can_s4");
+    public static final CANBus kCanivoreBus = new CANBus("fd");
+    public static final CANBus kShooterBus = new CANBus("shooter");
 
     public static final class MotorK {
         public static final double kX60MaxRadPerSec = DCMotor.getKrakenX60(1).freeSpeed;
@@ -221,146 +221,146 @@ public class Constants {
 
         /* CONFIGS */
         // TODO: Check what more configs would be necessary
-        // private static final Slot0Configs kShooterASlot0Configs = new Slot0Configs()   //Note to self (hrehaan) (and saarth cuz i did the same thing): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
-        //     .withKS(0.37)
-        //     .withKV(0.1)
-        //     .withKA(0)
-        //     .withKP(0.5)
-        //     .withKI(0)
-        //     .withKD(0); // kP was causing the werid sinusoid behavior, kS and kA were adding inconsistency with the destination values
-        // private static final CurrentLimitsConfigs kShooterACurrentLimitConfigs = new CurrentLimitsConfigs()
-        //     .withStatorCurrentLimit(80)
-        //     .withSupplyCurrentLimit(50)
-        //     .withSupplyCurrentLowerLimit(20)
-        //     .withStatorCurrentLimitEnable(true);
-        // private static final MotorOutputConfigs kShooterAOutputConfigs = new MotorOutputConfigs()
-        //     .withInverted(InvertedValue.CounterClockwise_Positive)
-        //     .withNeutralMode(NeutralModeValue.Coast);
-        // private static final FeedbackConfigs kShooterAFeedbackConfigs = new FeedbackConfigs()
-        //     .withSensorToMechanismRatio(kShooterGearing);
-        // private static final VoltageConfigs kShooterAVoltageConfigs = new VoltageConfigs()
-        //     .withPeakForwardVoltage(kPeakShooterVolts)
-        //     .withPeakReverseVoltage(-kPeakShooterVolts);
-        // private static final Slot1Configs kShooterASlot1Configs = new Slot1Configs()
-        //     .withKP(5)
-        //     .withKI(0)
-        //     .withKD(0)
-        //     .withKS(4.5)
-        //     .withKV(0.16)
-        //     .withKA(0);
-        // public static final TalonFXConfiguration kShooterATalonFXConfiguration = new TalonFXConfiguration()
-        //     .withSlot0(kShooterASlot0Configs)
-        //     .withSlot1(kShooterASlot1Configs)
-        //     .withCurrentLimits(kShooterACurrentLimitConfigs)
-        //     .withMotorOutput(kShooterAOutputConfigs)
-        //     .withFeedback(kShooterAFeedbackConfigs)
-        //     .withVoltage(kShooterAVoltageConfigs);
+        private static final Slot0Configs kShooterASlot0Configs = new Slot0Configs()   //Note to self (hrehaan) (and saarth cuz i did the same thing): the default PID sets ZERO volts to a motor, which makes all sim effectively useless cuz the motor has ZERO supplyV
+            .withKS(0.37)
+            .withKV(0.1)
+            .withKA(0)
+            .withKP(0.5)
+            .withKI(0)
+            .withKD(0); // kP was causing the werid sinusoid behavior, kS and kA were adding inconsistency with the destination values
+        private static final CurrentLimitsConfigs kShooterACurrentLimitConfigs = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(80)
+            .withSupplyCurrentLimit(50)
+            .withSupplyCurrentLowerLimit(20)
+            .withStatorCurrentLimitEnable(true);
+        private static final MotorOutputConfigs kShooterAOutputConfigs = new MotorOutputConfigs()
+            .withInverted(InvertedValue.CounterClockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Coast);
+        private static final FeedbackConfigs kShooterAFeedbackConfigs = new FeedbackConfigs()
+            .withSensorToMechanismRatio(kShooterGearing);
+        private static final VoltageConfigs kShooterAVoltageConfigs = new VoltageConfigs()
+            .withPeakForwardVoltage(kPeakShooterVolts)
+            .withPeakReverseVoltage(-kPeakShooterVolts);
+        private static final Slot1Configs kShooterASlot1Configs = new Slot1Configs()
+            .withKP(5)
+            .withKI(0)
+            .withKD(0)
+            .withKS(4.5)
+            .withKV(0.16)
+            .withKA(0);
+        public static final TalonFXConfiguration kShooterATalonFXConfiguration = new TalonFXConfiguration()
+            .withSlot0(kShooterASlot0Configs)
+            .withSlot1(kShooterASlot1Configs)
+            .withCurrentLimits(kShooterACurrentLimitConfigs)
+            .withMotorOutput(kShooterAOutputConfigs)
+            .withFeedback(kShooterAFeedbackConfigs)
+            .withVoltage(kShooterAVoltageConfigs);
 
 
 
-        // private static final MotorOutputConfigs kShooterBOutputConfigs = new MotorOutputConfigs()
-        //     .withInverted(InvertedValue.CounterClockwise_Positive)
-        //     .withNeutralMode(NeutralModeValue.Coast);
-        // public static final TalonFXConfiguration kShooterBTalonFXConfiguration = kShooterATalonFXConfiguration.clone()
-        //     .withMotorOutput(kShooterBOutputConfigs);
+        private static final MotorOutputConfigs kShooterBOutputConfigs = new MotorOutputConfigs()
+            .withInverted(InvertedValue.CounterClockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Coast);
+        public static final TalonFXConfiguration kShooterBTalonFXConfiguration = kShooterATalonFXConfiguration.clone()
+            .withMotorOutput(kShooterBOutputConfigs);
 
-        // //---HOOD
-        // private static final Slot0Configs kHoodSlot0Configs = new Slot0Configs()
-        //     .withKP(29)
-        //     .withKI(0)
-        //     .withKD(0)
-        //     .withKS(0.5)
-        //     .withKV(4)
-        //     .withKA(0)
-        //     .withKG(0);
-        // private static final CurrentLimitsConfigs kHoodCurrentLimitConfig = new CurrentLimitsConfigs()
-        //     .withStatorCurrentLimit(30)
-        //     .withSupplyCurrentLimit(15)
-        //     .withSupplyCurrentLowerLimit(5)
-        //     .withSupplyCurrentLowerTime(1)
-        //     .withStatorCurrentLimitEnable(true)
-        //     .withSupplyCurrentLimitEnable(true);
-        // private static final MotorOutputConfigs kHoodOutputConfigs = new MotorOutputConfigs()
-        //     .withInverted(InvertedValue.Clockwise_Positive)
-        //     .withNeutralMode(NeutralModeValue.Brake);
-        // private static final VoltageConfigs kHoodVoltageConfigs = new VoltageConfigs()
-        //     .withPeakForwardVoltage(16)
-        //     .withPeakReverseVoltage(-16);
-        // private static final CommutationConfigs kHoodCommutationConfigs = new CommutationConfigs()
-        //     .withAdvancedHallSupport(AdvancedHallSupportValue.Enabled)
-        //     .withMotorArrangement(MotorArrangementValue.NEO550_JST);
-        // private static final ExternalFeedbackConfigs kHoodFeedbackConfigs = new ExternalFeedbackConfigs()
-        //     .withSensorToMechanismRatio(kHoodGearing);
-        // public static final SoftwareLimitSwitchConfigs kHoodSoftLimitConfigs = new SoftwareLimitSwitchConfigs()
-        //     .withForwardSoftLimitThreshold(kHoodAbsoluteMaxRots.minus(Rotations.of(0.05)))
-        //     .withReverseSoftLimitThreshold(kHoodAbsoluteMinRots.plus(Rotations.of(0.05)))
-        //     .withForwardSoftLimitEnable(true)
-        //     .withReverseSoftLimitEnable(true);
-        // public static final SoftwareLimitSwitchConfigs kHoodSoftLimitConfigsNoEnable = kHoodSoftLimitConfigs
-        //     .withForwardSoftLimitEnable(false)
-        //     .withReverseSoftLimitEnable(false); 
-        // public static final TalonFXSConfiguration kHoodTalonFXSConfiguration = new TalonFXSConfiguration()
-        //     .withSlot0(kHoodSlot0Configs)
-        //     .withCurrentLimits(kHoodCurrentLimitConfig)
-        //     .withMotorOutput(kHoodOutputConfigs)
-        //     .withExternalFeedback(kHoodFeedbackConfigs)
-        //     .withVoltage(kHoodVoltageConfigs)
-        //     .withCommutation(kHoodCommutationConfigs)
-        //     .withSoftwareLimitSwitch(kHoodSoftLimitConfigs);
-        // public static final TalonFXSConfiguration kHoodTalonFXSConfigurationNoSoftLimit = new TalonFXSConfiguration()
-        //     .withSlot0(kHoodSlot0Configs)
-        //     .withCurrentLimits(kHoodCurrentLimitConfig)
-        //     .withMotorOutput(kHoodOutputConfigs)
-        //     .withExternalFeedback(kHoodFeedbackConfigs)
-        //     .withVoltage(kHoodVoltageConfigs)
-        //     .withCommutation(kHoodCommutationConfigs)
-        //     .withSoftwareLimitSwitch(kHoodSoftLimitConfigsNoEnable);
+        //---HOOD
+        private static final Slot0Configs kHoodSlot0Configs = new Slot0Configs()
+            .withKP(29)
+            .withKI(0)
+            .withKD(0)
+            .withKS(0.5)
+            .withKV(4)
+            .withKA(0)
+            .withKG(0);
+        private static final CurrentLimitsConfigs kHoodCurrentLimitConfig = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(30)
+            .withSupplyCurrentLimit(15)
+            .withSupplyCurrentLowerLimit(5)
+            .withSupplyCurrentLowerTime(1)
+            .withStatorCurrentLimitEnable(true)
+            .withSupplyCurrentLimitEnable(true);
+        private static final MotorOutputConfigs kHoodOutputConfigs = new MotorOutputConfigs()
+            .withInverted(InvertedValue.Clockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Brake);
+        private static final VoltageConfigs kHoodVoltageConfigs = new VoltageConfigs()
+            .withPeakForwardVoltage(16)
+            .withPeakReverseVoltage(-16);
+        private static final CommutationConfigs kHoodCommutationConfigs = new CommutationConfigs()
+            .withAdvancedHallSupport(AdvancedHallSupportValue.Enabled)
+            .withMotorArrangement(MotorArrangementValue.NEO550_JST);
+        private static final ExternalFeedbackConfigs kHoodFeedbackConfigs = new ExternalFeedbackConfigs()
+            .withSensorToMechanismRatio(kHoodGearing);
+        public static final SoftwareLimitSwitchConfigs kHoodSoftLimitConfigs = new SoftwareLimitSwitchConfigs()
+            .withForwardSoftLimitThreshold(kHoodAbsoluteMaxRots.minus(Rotations.of(0.05)))
+            .withReverseSoftLimitThreshold(kHoodAbsoluteMinRots.plus(Rotations.of(0.05)))
+            .withForwardSoftLimitEnable(true)
+            .withReverseSoftLimitEnable(true);
+        public static final SoftwareLimitSwitchConfigs kHoodSoftLimitConfigsNoEnable = kHoodSoftLimitConfigs
+            .withForwardSoftLimitEnable(false)
+            .withReverseSoftLimitEnable(false); 
+        public static final TalonFXSConfiguration kHoodTalonFXSConfiguration = new TalonFXSConfiguration()
+            .withSlot0(kHoodSlot0Configs)
+            .withCurrentLimits(kHoodCurrentLimitConfig)
+            .withMotorOutput(kHoodOutputConfigs)
+            .withExternalFeedback(kHoodFeedbackConfigs)
+            .withVoltage(kHoodVoltageConfigs)
+            .withCommutation(kHoodCommutationConfigs)
+            .withSoftwareLimitSwitch(kHoodSoftLimitConfigs);
+        public static final TalonFXSConfiguration kHoodTalonFXSConfigurationNoSoftLimit = new TalonFXSConfiguration()
+            .withSlot0(kHoodSlot0Configs)
+            .withCurrentLimits(kHoodCurrentLimitConfig)
+            .withMotorOutput(kHoodOutputConfigs)
+            .withExternalFeedback(kHoodFeedbackConfigs)
+            .withVoltage(kHoodVoltageConfigs)
+            .withCommutation(kHoodCommutationConfigs)
+            .withSoftwareLimitSwitch(kHoodSoftLimitConfigsNoEnable);
 
-        // //---TURRET
-        // private static final Slot0Configs kTurretSlot0Configs = new Slot0Configs()
-        //     .withKS(0)
-        //     .withKV(5)
-        //     .withKA(0.02)
-        //     .withKP(300)  //3 - testing values in Pheonix Tuner
-        //     .withKI(0)
-        //     .withKD(5); // OLD: kP was too low making the slope less steep, kS kV and kA were causing rlly weird behavior (jumping up/down way further than targeted position)
-        // private static final CurrentLimitsConfigs kTurretCurrentLimitConfigs = new CurrentLimitsConfigs()
-        //     .withStatorCurrentLimit(55)
-        //     .withSupplyCurrentLimit(55)
-        //     .withSupplyCurrentLowerLimit(15)
-        //     .withSupplyCurrentLowerTime(1.0) // drop to 15A after 1 second
-        //     .withStatorCurrentLimitEnable(true)
-        //     .withSupplyCurrentLimitEnable(true);
-        // private static final MotorOutputConfigs kTurretOutputConfigs = new MotorOutputConfigs()
-        //     .withInverted(InvertedValue.CounterClockwise_Positive)
-        //     .withNeutralMode(NeutralModeValue.Brake);
-        // private static final MotionMagicConfigs kTurretMotionMagicConfigs = new MotionMagicConfigs()
-        //     .withMotionMagicCruiseVelocity(110)  //TODO: update MMV Configs
-        //     .withMotionMagicAcceleration(20)
-        //     .withMotionMagicJerk(0);
-        // private static final SoftwareLimitSwitchConfigs kTurretSoftwareLimitSwitchConfigs = new SoftwareLimitSwitchConfigs()
-        //     .withForwardSoftLimitEnable(true)
-        //     .withForwardSoftLimitThreshold(0.75)
-        //     .withReverseSoftLimitEnable(true)
-        //     .withReverseSoftLimitThreshold(-0.75);
-        // private static final FeedbackConfigs kTurretFeedbackConfigs = new FeedbackConfigs()
-        //     .withSensorToMechanismRatio(kTurretGearing);
-        // private static final VoltageConfigs kTurretVoltageConfigs = new VoltageConfigs()
-        //     .withPeakForwardVoltage(12)
-        //     .withPeakReverseVoltage(-12);
-        // public static final TalonFXConfiguration kTurretTalonFXConfiguration = new TalonFXConfiguration()
-        //     .withSlot0(kTurretSlot0Configs)
-        //     .withCurrentLimits(kTurretCurrentLimitConfigs)
-        //     .withMotorOutput(kTurretOutputConfigs)
-        //     .withMotionMagic(kTurretMotionMagicConfigs)
-        //     .withSoftwareLimitSwitch(kTurretSoftwareLimitSwitchConfigs)
-        //     .withFeedback(kTurretFeedbackConfigs)
-        //     .withVoltage(kTurretVoltageConfigs);
+        //---TURRET
+        private static final Slot0Configs kTurretSlot0Configs = new Slot0Configs()
+            .withKS(0)
+            .withKV(5)
+            .withKA(0.02)
+            .withKP(300)  //3 - testing values in Pheonix Tuner
+            .withKI(0)
+            .withKD(5); // OLD: kP was too low making the slope less steep, kS kV and kA were causing rlly weird behavior (jumping up/down way further than targeted position)
+        private static final CurrentLimitsConfigs kTurretCurrentLimitConfigs = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(55)
+            .withSupplyCurrentLimit(55)
+            .withSupplyCurrentLowerLimit(15)
+            .withSupplyCurrentLowerTime(1.0) // drop to 15A after 1 second
+            .withStatorCurrentLimitEnable(true)
+            .withSupplyCurrentLimitEnable(true);
+        private static final MotorOutputConfigs kTurretOutputConfigs = new MotorOutputConfigs()
+            .withInverted(InvertedValue.CounterClockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Brake);
+        private static final MotionMagicConfigs kTurretMotionMagicConfigs = new MotionMagicConfigs()
+            .withMotionMagicCruiseVelocity(110)  //TODO: update MMV Configs
+            .withMotionMagicAcceleration(20)
+            .withMotionMagicJerk(0);
+        private static final SoftwareLimitSwitchConfigs kTurretSoftwareLimitSwitchConfigs = new SoftwareLimitSwitchConfigs()
+            .withForwardSoftLimitEnable(true)
+            .withForwardSoftLimitThreshold(0.75)
+            .withReverseSoftLimitEnable(true)
+            .withReverseSoftLimitThreshold(-0.75);
+        private static final FeedbackConfigs kTurretFeedbackConfigs = new FeedbackConfigs()
+            .withSensorToMechanismRatio(kTurretGearing);
+        private static final VoltageConfigs kTurretVoltageConfigs = new VoltageConfigs()
+            .withPeakForwardVoltage(12)
+            .withPeakReverseVoltage(-12);
+        public static final TalonFXConfiguration kTurretTalonFXConfiguration = new TalonFXConfiguration()
+            .withSlot0(kTurretSlot0Configs)
+            .withCurrentLimits(kTurretCurrentLimitConfigs)
+            .withMotorOutput(kTurretOutputConfigs)
+            .withMotionMagic(kTurretMotionMagicConfigs)
+            .withSoftwareLimitSwitch(kTurretSoftwareLimitSwitchConfigs)
+            .withFeedback(kTurretFeedbackConfigs)
+            .withVoltage(kTurretVoltageConfigs);
 
-        // public static final MagnetSensorConfigs kEncoderAMagnetSensorConfigs = new MagnetSensorConfigs()
-        //     .withMagnetOffset(TurretK.kEncAMagnetOffset);
-        // public static final CANcoderConfiguration kEncoderAConfiguration = new CANcoderConfiguration()
-        //     .withMagnetSensor(kEncoderAMagnetSensorConfigs);
+        public static final MagnetSensorConfigs kEncoderAMagnetSensorConfigs = new MagnetSensorConfigs()
+            .withMagnetOffset(TurretK.kEncAMagnetOffset);
+        public static final CANcoderConfiguration kEncoderAConfiguration = new CANcoderConfiguration()
+            .withMagnetSensor(kEncoderAMagnetSensorConfigs);
 
         //Left, Center (Climb), Center (Hub), Right - Driver POV
         public static final Pose2d kShooterOverridePose[] = {
@@ -490,73 +490,73 @@ public class Constants {
 
         /* CONFIGS */
         // IntakeArm Motor
-        // private static final CurrentLimitsConfigs kIntakeArmCurrentLimitConfigs = new CurrentLimitsConfigs()
-        //     .withStatorCurrentLimit(20)
-        //     .withSupplyCurrentLimit(20)
-        //     .withSupplyCurrentLowerLimit(20)
-        //     .withStatorCurrentLimitEnable(true)
-        //     .withSupplyCurrentLimitEnable(true);
-        // private static final Slot0Configs kIntakeArmSlot0Configs = new Slot0Configs()
-        //     .withKS(1.5)
-        //     .withKV(0)
-        //     .withKA(0)
-        //     .withKP(50)
-        //     .withKI(0)
-        //     .withKD(0);
-        // public static final MotorOutputConfigs kIntakeArmMotorOutputConfigs = new MotorOutputConfigs()
-        //     .withNeutralMode(NeutralModeValue.Brake)
-        //     .withInverted(InvertedValue.Clockwise_Positive);
-        // // private static final MotionMagicConfigs kIntakeArmMotionMagicConfigs = new MotionMagicConfigs()
-        // //     .withMotionMagicCruiseVelocity(20)
-        // //     .withMotionMagicAcceleration(64)
-        // //     .withMotionMagicJerk(0);
-        // // public static final FeedbackConfigs kIntakeArmFeedbackConfigs = new FeedbackConfigs()
-        // //     .withSensorToMechanismRatio(kIntakeArmGearing);
-        // private static final VoltageConfigs kIntakeArmVoltageConfigs = new VoltageConfigs()
-        //     .withPeakForwardVoltage(12)
-        //     .withPeakReverseVoltage(-12);
-        // // public static final TalonFXConfiguration kIntakeArmConfiguration = new TalonFXConfiguration()
-        // //     .withCurrentLimits(kIntakeArmCurrentLimitConfigs)
-        // //     .withSlot0(kIntakeArmSlot0Configs)
-        // //     .withMotorOutput(kIntakeArmMotorOutputConfigs)
-        // //     .withMotionMagic(kIntakeArmMotionMagicConfigs)
-        // //     .withVoltage(kIntakeArmVoltageConfigs)
-        // //     .withFeedback(kIntakeArmFeedbackConfigs);
+        private static final CurrentLimitsConfigs kIntakeArmCurrentLimitConfigs = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(20)
+            .withSupplyCurrentLimit(20)
+            .withSupplyCurrentLowerLimit(20)
+            .withStatorCurrentLimitEnable(true)
+            .withSupplyCurrentLimitEnable(true);
+        private static final Slot0Configs kIntakeArmSlot0Configs = new Slot0Configs()
+            .withKS(1.5)
+            .withKV(0)
+            .withKA(0)
+            .withKP(50)
+            .withKI(0)
+            .withKD(0);
+        public static final MotorOutputConfigs kIntakeArmMotorOutputConfigs = new MotorOutputConfigs()
+            .withNeutralMode(NeutralModeValue.Brake)
+            .withInverted(InvertedValue.Clockwise_Positive);
+        private static final MotionMagicConfigs kIntakeArmMotionMagicConfigs = new MotionMagicConfigs()
+            .withMotionMagicCruiseVelocity(20)
+            .withMotionMagicAcceleration(64)
+            .withMotionMagicJerk(0);
+        public static final FeedbackConfigs kIntakeArmFeedbackConfigs = new FeedbackConfigs()
+            .withSensorToMechanismRatio(kIntakeArmGearing);
+        private static final VoltageConfigs kIntakeArmVoltageConfigs = new VoltageConfigs()
+            .withPeakForwardVoltage(12)
+            .withPeakReverseVoltage(-12);
+        public static final TalonFXConfiguration kIntakeArmConfiguration = new TalonFXConfiguration()
+            .withCurrentLimits(kIntakeArmCurrentLimitConfigs)
+            .withSlot0(kIntakeArmSlot0Configs)
+            .withMotorOutput(kIntakeArmMotorOutputConfigs)
+            .withMotionMagic(kIntakeArmMotionMagicConfigs)
+            .withVoltage(kIntakeArmVoltageConfigs)
+            .withFeedback(kIntakeArmFeedbackConfigs);
 
-        // // IntakeRollers Motors
-        // private static final CurrentLimitsConfigs kIntakeRollersACurrentLimitConfigs = new CurrentLimitsConfigs()
-        //     .withStatorCurrentLimit(55)
-        //     .withSupplyCurrentLimit(35)
-        //     .withSupplyCurrentLowerTime(0)
-        //     .withStatorCurrentLimitEnable(true)
-        //     .withSupplyCurrentLimitEnable(true);
-        // private static final Slot0Configs kIntakeRollersASlot0Configs = new Slot0Configs()
-        //     .withKS(0)
-        //     .withKV(0.048) // 0.488599348534
-        //     .withKA(0)
-        //     .withKP(0.05)
-        //     .withKI(0)
-        //     .withKD(0);
-        // public static final MotorOutputConfigs kIntakeRollersAMotorOutputConfigs = new MotorOutputConfigs()
-        //     .withInverted(InvertedValue.Clockwise_Positive)
-        //     .withNeutralMode(NeutralModeValue.Coast);
-        // public static final FeedbackConfigs kIntakeRollersAFeedbackConfigs = new FeedbackConfigs()
-        //     .withSensorToMechanismRatio(kIntakeRollersGearing);
-        // private static final VoltageConfigs kIntakeRollersAVoltageConfigs = new VoltageConfigs()
-        //     .withPeakForwardVoltage(12)    //1.2
-        //     .withPeakReverseVoltage(-12);  //-1.2
-        // public static final TalonFXConfiguration kIntakeRollersAConfiguration = new TalonFXConfiguration()
-        //     .withCurrentLimits(kIntakeRollersACurrentLimitConfigs)
-        //     .withSlot0(kIntakeRollersASlot0Configs)
-        //     .withMotorOutput(kIntakeRollersAMotorOutputConfigs)
-        //     .withFeedback(kIntakeRollersAFeedbackConfigs)
-        //     .withVoltage(kIntakeRollersAVoltageConfigs);
+        // IntakeRollers Motors
+        private static final CurrentLimitsConfigs kIntakeRollersACurrentLimitConfigs = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(55)
+            .withSupplyCurrentLimit(35)
+            .withSupplyCurrentLowerTime(0)
+            .withStatorCurrentLimitEnable(true)
+            .withSupplyCurrentLimitEnable(true);
+        private static final Slot0Configs kIntakeRollersASlot0Configs = new Slot0Configs()
+            .withKS(0)
+            .withKV(0.048) // 0.488599348534
+            .withKA(0)
+            .withKP(0.05)
+            .withKI(0)
+            .withKD(0);
+        public static final MotorOutputConfigs kIntakeRollersAMotorOutputConfigs = new MotorOutputConfigs()
+            .withInverted(InvertedValue.Clockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Coast);
+        public static final FeedbackConfigs kIntakeRollersAFeedbackConfigs = new FeedbackConfigs()
+            .withSensorToMechanismRatio(kIntakeRollersGearing);
+        private static final VoltageConfigs kIntakeRollersAVoltageConfigs = new VoltageConfigs()
+            .withPeakForwardVoltage(12)    //1.2
+            .withPeakReverseVoltage(-12);  //-1.2
+        public static final TalonFXConfiguration kIntakeRollersAConfiguration = new TalonFXConfiguration()
+            .withCurrentLimits(kIntakeRollersACurrentLimitConfigs)
+            .withSlot0(kIntakeRollersASlot0Configs)
+            .withMotorOutput(kIntakeRollersAMotorOutputConfigs)
+            .withFeedback(kIntakeRollersAFeedbackConfigs)
+            .withVoltage(kIntakeRollersAVoltageConfigs);
 
-        // public static final MotorOutputConfigs kIntakeRollersBMotorOutputConfigs = new MotorOutputConfigs()
-        //     .withInverted(InvertedValue.CounterClockwise_Positive)
-        //     .withNeutralMode(NeutralModeValue.Coast);
-        // public static final TalonFXConfiguration kIntakeRollersBConfiguration = kIntakeRollersAConfiguration.clone()
-        //     .withMotorOutput(kIntakeRollersBMotorOutputConfigs);
+        public static final MotorOutputConfigs kIntakeRollersBMotorOutputConfigs = new MotorOutputConfigs()
+            .withInverted(InvertedValue.CounterClockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Coast);
+        public static final TalonFXConfiguration kIntakeRollersBConfiguration = kIntakeRollersAConfiguration.clone()
+            .withMotorOutput(kIntakeRollersBMotorOutputConfigs);
     }
 
     public static class IndexerK {
@@ -600,64 +600,63 @@ public class Constants {
         public static final double kSpindexerFromShooterRatio = (kR_bigFlywheel + kR_smallFlywheel) / (2.0 * kR_spindexerFloor);
 
         /* CONFIGS */
-        //TODO: Make transfer configs accurate
-        // private static final Slot0Configs kSpindexerSlot0Configs = new Slot0Configs()
-        //     .withKS(0.420)
-        //     .withKV(0.560)
-        //     .withKA(0)
-        //     .withKP(1.5)
-        //     .withKI(0)
-        //     .withKD(0);
-        // // private static final CurrentLimitsConfigs kSpindexerCurrentLimitConfigs = new CurrentLimitsConfigs()
-        // //     .withStatorCurrentLimit(65)
-        // //     .withSupplyCurrentLimit(30)
-        // //     .withSupplyCurrentLowerTime(0)
-        // //     .withSupplyCurrentLowerLimit(20)
-        // //     .withStatorCurrentLimitEnable(true)
-        // //     .withSupplyCurrentLimitEnable(true);
-        // // private static final MotorOutputConfigs kSpindexerMotorOutputConfigs = new MotorOutputConfigs()
-        // //     .withInverted(InvertedValue.Clockwise_Positive)
-        // //     .withNeutralMode(NeutralModeValue.Coast);
-        // // private static final FeedbackConfigs kSpindexerFeedbackConfigs = new FeedbackConfigs()
-        // //     .withSensorToMechanismRatio(kSpindexerGearing);
-        // private static final VoltageConfigs kSpindexerVoltageConfigs = new VoltageConfigs()
-        //     .withPeakForwardVoltage(16)    //1.2
-        //     .withPeakReverseVoltage(-16);  //-1.2
-        // public static final TalonFXConfiguration kSpindexerTalonFXConfiguration = new TalonFXConfiguration()
-        //     .withSlot0(kSpindexerSlot0Configs)
-        //     .withCurrentLimits(kSpindexerCurrentLimitConfigs)
-        //     .withMotorOutput(kSpindexerMotorOutputConfigs)
-        //     .withFeedback(kSpindexerFeedbackConfigs)
-        //     .withVoltage(kSpindexerVoltageConfigs);
+        private static final Slot0Configs kSpindexerSlot0Configs = new Slot0Configs()
+            .withKS(0.420)
+            .withKV(0.560)
+            .withKA(0)
+            .withKP(1.5)
+            .withKI(0)
+            .withKD(0);
+        private static final CurrentLimitsConfigs kSpindexerCurrentLimitConfigs = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(65)
+            .withSupplyCurrentLimit(30)
+            .withSupplyCurrentLowerTime(0)
+            .withSupplyCurrentLowerLimit(20)
+            .withStatorCurrentLimitEnable(true)
+            .withSupplyCurrentLimitEnable(true);
+        private static final MotorOutputConfigs kSpindexerMotorOutputConfigs = new MotorOutputConfigs()
+            .withInverted(InvertedValue.Clockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Coast);
+        private static final FeedbackConfigs kSpindexerFeedbackConfigs = new FeedbackConfigs()
+            .withSensorToMechanismRatio(kSpindexerGearing);
+        private static final VoltageConfigs kSpindexerVoltageConfigs = new VoltageConfigs()
+            .withPeakForwardVoltage(16)    //1.2
+            .withPeakReverseVoltage(-16);  //-1.2
+        public static final TalonFXConfiguration kSpindexerTalonFXConfiguration = new TalonFXConfiguration()
+            .withSlot0(kSpindexerSlot0Configs)
+            .withCurrentLimits(kSpindexerCurrentLimitConfigs)
+            .withMotorOutput(kSpindexerMotorOutputConfigs)
+            .withFeedback(kSpindexerFeedbackConfigs)
+            .withVoltage(kSpindexerVoltageConfigs);
 
-        // private static final Slot0Configs kTunnelSlot0Configs = new Slot0Configs()
-        //     .withKS(0.2)
-        //     .withKV(0.1337)
-        //     .withKA(0)
-        //     .withKP(0.37)
-        //     .withKI(0)
-        //     .withKD(0);
-        // private static final CurrentLimitsConfigs kTunnelCurrentLimitConfigs = new CurrentLimitsConfigs()
-        //     .withStatorCurrentLimit(60)
-        //     .withSupplyCurrentLimit(30)
-        //     .withSupplyCurrentLowerTime(0)
-        //     .withSupplyCurrentLowerLimit(20)
-        //     .withStatorCurrentLimitEnable(true)
-        //     .withSupplyCurrentLimitEnable(true);
-        // private static final MotorOutputConfigs kTunnelMotorOutputConfigs = new MotorOutputConfigs()
-        //     .withInverted(InvertedValue.CounterClockwise_Positive)
-        //     .withNeutralMode(NeutralModeValue.Coast);
-        // private static final FeedbackConfigs kTunnelFeedbackConfigs = new FeedbackConfigs()
-        //     .withSensorToMechanismRatio(kTunnelGearing);
-        // private static final VoltageConfigs kTunnelVoltageConfigs = new VoltageConfigs()
-        //     .withPeakForwardVoltage(16)  //1.2
-        //     .withPeakReverseVoltage(-16);    //-1.2
-        // public static final TalonFXConfiguration kTunnelTalonFXConfiguration = new TalonFXConfiguration()
-        //     .withSlot0(kTunnelSlot0Configs)
-        //     .withCurrentLimits(kTunnelCurrentLimitConfigs)
-        //     .withMotorOutput(kTunnelMotorOutputConfigs)
-        //     .withFeedback(kTunnelFeedbackConfigs)
-        //     .withVoltage(kTunnelVoltageConfigs);
+        private static final Slot0Configs kTunnelSlot0Configs = new Slot0Configs()
+            .withKS(0.2)
+            .withKV(0.1337)
+            .withKA(0)
+            .withKP(0.37)
+            .withKI(0)
+            .withKD(0);
+        private static final CurrentLimitsConfigs kTunnelCurrentLimitConfigs = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(60)
+            .withSupplyCurrentLimit(30)
+            .withSupplyCurrentLowerTime(0)
+            .withSupplyCurrentLowerLimit(20)
+            .withStatorCurrentLimitEnable(true)
+            .withSupplyCurrentLimitEnable(true);
+        private static final MotorOutputConfigs kTunnelMotorOutputConfigs = new MotorOutputConfigs()
+            .withInverted(InvertedValue.CounterClockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Coast);
+        private static final FeedbackConfigs kTunnelFeedbackConfigs = new FeedbackConfigs()
+            .withSensorToMechanismRatio(kTunnelGearing);
+        private static final VoltageConfigs kTunnelVoltageConfigs = new VoltageConfigs()
+            .withPeakForwardVoltage(16)  //1.2
+            .withPeakReverseVoltage(-16);    //-1.2
+        public static final TalonFXConfiguration kTunnelTalonFXConfiguration = new TalonFXConfiguration()
+            .withSlot0(kTunnelSlot0Configs)
+            .withCurrentLimits(kTunnelCurrentLimitConfigs)
+            .withMotorOutput(kTunnelMotorOutputConfigs)
+            .withFeedback(kTunnelFeedbackConfigs)
+            .withVoltage(kTunnelVoltageConfigs);
     }
 
     public static class TurretK {

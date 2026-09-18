@@ -4,7 +4,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-// import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import org.wpilib.math.util.MathUtil;
 import org.wpilib.math.geometry.Pose2d;
@@ -40,8 +40,8 @@ public class ShooterCalc {
     private static final WaltTunable kLateralBiasTuner =
         new WaltTunable("/ShotCalc/lateralBiasGainRots", kTurretLateralBiasGainRots);
 
-    // private final Supplier<SwerveDriveState> m_threadsafeSwerveDriveStateSup;
-    // private final DoubleSupplier m_turretPosRotsSup;
+    private final Supplier<SwerveDriveState> m_threadsafeSwerveDriveStateSup;
+    private final DoubleSupplier m_turretPosRotsSup;
     private final SwerveDriveKinematics m_swerveKinematics = new SwerveDriveKinematics(TunerConstants.moduleTranslations);
 
     private final Pose3dLogger log_globalShotTarget = WaltLogger.logPose3d(kLogTab, "globalTarget");
@@ -106,13 +106,13 @@ public class ShooterCalc {
     // private double robotY;
     private boolean robotInNoPassingZone;
 
-    // public ShooterCalc(Supplier<SwerveDriveState> threadsafeSwerveDriveStateSup, DoubleSupplier turretPosSup) {
-    //     m_threadsafeSwerveDriveStateSup = threadsafeSwerveDriveStateSup;
-    //     m_turretPosRotsSup = turretPosSup;
+    public ShooterCalc(Supplier<SwerveDriveState> threadsafeSwerveDriveStateSup, DoubleSupplier turretPosSup) {
+        m_threadsafeSwerveDriveStateSup = threadsafeSwerveDriveStateSup;
+        m_turretPosRotsSup = turretPosSup;
 
-    //     m_notifier.setName("ShooterCalc");
-    //     m_notifier.startPeriodic(Hertz.of(75)); // 2x slower than robot loop
-    // }
+        m_notifier.setName("ShooterCalc");
+        m_notifier.startPeriodic(Hertz.of(75)); // 2x slower than robot loop
+    }
 
     public void shouldUseStaticShot(boolean should) {
         m_useStaticShot = should;
@@ -138,42 +138,21 @@ public class ShooterCalc {
         return m_underTrench;
     }
 
-    /**
-     * first checks if we're passing. If we're not passing, then we can shoot whenever
-     * If we are passing, it checks if we're NOT in the unable-to-pass range. If we're not in it, then the turret can shoot!
-     * 
-     * lowk should be checking if we are IN THE RANGE rather than greater than the outsides, but this is cope for now cuz sadness
-     */
-    private void refreshCanTurretShoot() {
-        if (isPassing().getAsBoolean()) {
-            // if (m_turretPosRotsSup.getAsDouble() > kTurretMinNotAbleToPassRange && m_turretPosRotsSup.getAsDouble() < kTurretMaxNotAbleToPassRange/* && !robotInNoPassingZone */) {
-            //     m_canTurretShoot = true;
-            // } else {
-            //     m_canTurretShoot = false;
-            // }
-            // log_canTurretShoot.accept(m_canTurretShoot);
-        } else {
-            m_canTurretShoot = true;    //the turret can shoot anytime we are not passing
-            log_canTurretShoot.accept(m_canTurretShoot);
-        }
-    }
-
 
     private void calcCallback() {
         m_calcTimer.restart();
         // getters from outside
-        // SwerveDriveState swerveState = m_threadsafeSwerveDriveStateSup.get();
-        // Pose2d robotPose = swerveState.Pose;
-        // ChassisVelocities robotChassisVelocities =  m_swerveKinematics
-        // //     .toChassisVelocities(swerveState.ModuleVelocities)
-        //     .toFieldRelative(robotPose.getRotation());
-        // double turretPositionRots = m_turretPosRotsSup.getAsDouble();
-        // Pose3d turretPose = new Pose3d(robotPose).transformBy(kTurretTransform);
+        SwerveDriveState swerveState = m_threadsafeSwerveDriveStateSup.get();
+        Pose2d robotPose = swerveState.Pose;
+        ChassisVelocities robotChassisVelocities =  m_swerveKinematics
+            .toChassisVelocities(swerveState.ModuleVelocities)
+            .toFieldRelative(robotPose.getRotation());
+        double turretPositionRots = m_turretPosRotsSup.getAsDouble();
+        Pose3d turretPose = new Pose3d(robotPose).transformBy(kTurretTransform);
 
-        // m_underTrench = underTrench(turretPose.toPose2d());
-        // m_aimTarget = calculateTarget(robotPose);
-        // m_shotCalcOutputs = calcShot(robotPose, m_useStaticShot, m_aimTarget, turretPositionRots, robotChassisVelocities);
-        // refreshCanTurretShoot();
+        m_underTrench = underTrench(turretPose.toPose2d());
+        m_aimTarget = calculateTarget(robotPose);
+        m_shotCalcOutputs = calcShot(robotPose, m_useStaticShot, m_aimTarget, turretPositionRots, robotChassisVelocities);
 
         // Logging
         log_globalShotTarget.accept(m_aimTarget);

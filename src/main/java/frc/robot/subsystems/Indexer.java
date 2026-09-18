@@ -1,11 +1,11 @@
 package frc.robot.subsystems;
 
-// import com.ctre.phoenix6.StatusSignal;
-// import com.ctre.phoenix6.controls.CoastOut;
-// import com.ctre.phoenix6.controls.VelocityVoltage;
-// import com.ctre.phoenix6.hardware.TalonFX;
-// import com.ctre.phoenix6.sim.ChassisReference;
-// import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.controls.CoastOut;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.sim.ChassisReference;
+import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 
 import org.wpilib.units.measure.AngularVelocity;
 import org.wpilib.units.measure.Current;
@@ -18,8 +18,8 @@ import static frc.robot.Constants.IndexerK.*;
 import java.util.function.DoubleSupplier;
 
 import frc.robot.Constants;
-// import frc.util.SignalManager;
-// import frc.util.WaltMotorSim;
+import frc.util.SignalManager;
+import frc.util.WaltMotorSim;
 import frc.util.WaltTunable;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
@@ -28,17 +28,17 @@ import frc.util.WaltLogger.DoubleLogger;
 public class Indexer extends SubsystemBase {
     /* CLASS VARIABLES */
     //---MOTORS + CONTROL REQUESTS
-    // private final TalonFX m_spindexer = new TalonFX(kSpindexerCANID, Constants.kCanivoreBus); // X60Foc
-    // private final TalonFX m_tunnel = new TalonFX(kTunnelCANID, Constants.kCanivoreBus); // X60Foc
+    private final TalonFX m_spindexer = new TalonFX(kSpindexerCANID, Constants.kCanivoreBus); // X60Foc
+    private final TalonFX m_tunnel = new TalonFX(kTunnelCANID, Constants.kCanivoreBus); // X60Foc
 
-    // private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(0).withEnableFOC(false);
-    // private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
+    private final VelocityVoltage m_spindexerVelocityRequest = new VelocityVoltage(0).withEnableFOC(false);
+    private final VelocityVoltage m_tunnelVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
 
     private static final WaltTunable kTunnelRPSOverride = new WaltTunable("/Indexer/Tunnel/tunnelRPSOverride", kTunnelShootRPSD);
     private static final WaltTunable kSpindexerRPSOverride = new WaltTunable("/Indexer/Spindexer/spindexerRPSOverride", kSpindexerShootRPSD);
 
-    // private final CoastOut m_spindexerMotorIdleReq = new CoastOut();
-    // private final CoastOut m_tunnelMotorIdleReq = new CoastOut();
+    private final CoastOut m_spindexerMotorIdleReq = new CoastOut();
+    private final CoastOut m_tunnelMotorIdleReq = new CoastOut();
 
     /* SIM OBJECTS */
     // 2027-TODO: figure out new LinearSystem generator!!!
@@ -77,11 +77,11 @@ public class Indexer extends SubsystemBase {
     private final DoubleLogger log_spindexerStatorCurrent = WaltLogger.logDouble(kLogTab + kSpindexerLogTab, "statorCurrent");
     private final DoubleLogger log_spindexerSupplyCurrent = WaltLogger.logDouble(kLogTab + kSpindexerLogTab, "supplyCurrent");
 
-    // private final StatusSignal<AngularVelocity> sig_spindexerVelo = m_spindexer.getVelocity();
-    // private final StatusSignal<Current> sig_spindexerStatorCurrent = m_spindexer.getStatorCurrent();
-    // private final StatusSignal<Current> sig_spindexerSupplyCurrent = m_spindexer.getSupplyCurrent();;
-    // private final StatusSignal<AngularVelocity> sig_tunnelVelo = m_tunnel.getVelocity();
-    // private final StatusSignal<Double> sig_tunnelCLErr = m_tunnel.getClosedLoopError();
+    private final StatusSignal<AngularVelocity> sig_spindexerVelo = m_spindexer.getVelocity();
+    private final StatusSignal<Current> sig_spindexerStatorCurrent = m_spindexer.getStatorCurrent();
+    private final StatusSignal<Current> sig_spindexerSupplyCurrent = m_spindexer.getSupplyCurrent();;
+    private final StatusSignal<AngularVelocity> sig_tunnelVelo = m_tunnel.getVelocity();
+    private final StatusSignal<Double> sig_tunnelCLErr = m_tunnel.getClosedLoopError();
 
     private final DoubleLogger log_tunnelClosedLoopError = WaltLogger.logDouble(kLogTab + kTunnelLogTab, "closedLoopError");
     private final BooleanLogger log_isTunnelSpunUp = WaltLogger.logBoolean(kLogTab + kTunnelLogTab, "spunUp");
@@ -93,19 +93,19 @@ public class Indexer extends SubsystemBase {
 
     /* CONSTRUCTOR */
     public Indexer() {
-        // m_spindexer.getConfigurator().apply(kSpindexerTalonFXConfiguration);
-        // m_tunnel.getConfigurator().apply(kTunnelTalonFXConfiguration);
+        m_spindexer.getConfigurator().apply(kSpindexerTalonFXConfiguration);
+        m_tunnel.getConfigurator().apply(kTunnelTalonFXConfiguration);
 
-        // SignalManager.register(Constants.kCanivoreBus, sig_spindexerVelo, sig_tunnelVelo, sig_tunnelCLErr, sig_spindexerStatorCurrent, sig_spindexerSupplyCurrent);
+        SignalManager.register(Constants.kCanivoreBus, sig_spindexerVelo, sig_tunnelVelo, sig_tunnelCLErr, sig_spindexerStatorCurrent, sig_spindexerSupplyCurrent);
 
-        // initSim();
+        initSim();
     }
 
     //TODO: Change orientation if necessary
-    // private void initSim() {
-    //     WaltMotorSim.initSimFX(m_spindexer, ChassisReference.CounterClockwise_Positive, MotorType.KrakenX60);
-    //     WaltMotorSim.initSimFX(m_tunnel, ChassisReference.CounterClockwise_Positive, MotorType.KrakenX60);
-    // }
+    private void initSim() {
+        WaltMotorSim.initSimFX(m_spindexer, ChassisReference.CounterClockwise_Positive, MotorType.KrakenX60);
+        WaltMotorSim.initSimFX(m_tunnel, ChassisReference.CounterClockwise_Positive, MotorType.KrakenX60);
+    }
 
     /* COMMANDS */
     //---STARTS AND STOPS
@@ -153,14 +153,14 @@ public class Indexer extends SubsystemBase {
     }
 
     private void refreshTunnelState() {
-        // m_tunnelVelocityRotPerSec = sig_tunnelVelo.getValueAsDouble();
+        m_tunnelVelocityRotPerSec = sig_tunnelVelo.getValueAsDouble();
         log_tunnelRPS.accept(m_tunnelVelocityRotPerSec);
 
-        // log_tunnelClosedLoopError.accept(sig_tunnelCLErr.getValueAsDouble());
-        // m_isTunnelSpunUp = sig_tunnelCLErr.isNear(0, 3);
-        // if (m_desiredTunnelRPS > 80) {
-        //     m_isTunnelSpunUp = sig_tunnelCLErr.isNear(0, 6);
-        // }
+        log_tunnelClosedLoopError.accept(sig_tunnelCLErr.getValueAsDouble());
+        m_isTunnelSpunUp = sig_tunnelCLErr.isNear(0, 3);
+        if (m_desiredTunnelRPS > 80) {
+            m_isTunnelSpunUp = sig_tunnelCLErr.isNear(0, 6);
+        }
         
         log_isTunnelSpunUp.accept(m_isTunnelSpunUp);
     }
@@ -184,11 +184,11 @@ public class Indexer extends SubsystemBase {
     //---SPINDEXER
     public void setSpindexerVelocity(double RPS) {
         if (RPS == 0) {
-            // m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(0));
-            // m_spindexer.setControl(m_spindexerMotorIdleReq);
+            m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(0));
+            m_spindexer.setControl(m_spindexerMotorIdleReq);
         } else {
             RPS = kSpindexerRPSOverride.enabled() ? kSpindexerRPSOverride.get() : RPS; 
-            // m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RPS));
+            m_spindexer.setControl(m_spindexerVelocityRequest.withVelocity(RPS));
         }
         m_desiredSpindexerRPS = RPS;
         log_desiredSpindexerRPS.accept(RPS);
@@ -201,13 +201,13 @@ public class Indexer extends SubsystemBase {
     //---TUNNEL
     public void setTunnelVelocity(double RPS) {
         if (RPS == 0) {
-            // m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(0));
-            // m_tunnel.setControl(m_tunnelMotorIdleReq);
+            m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(0));
+            m_tunnel.setControl(m_tunnelMotorIdleReq);
         } else {
             if (RPS > 0) {
                 RPS = kTunnelRPSOverride.enabled() ? kTunnelRPSOverride.get() : RPS;
             }
-            // m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS));
+            m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS));
         }
         m_desiredTunnelRPS = RPS;
         log_desiredTunnelRPS.accept(RPS);
