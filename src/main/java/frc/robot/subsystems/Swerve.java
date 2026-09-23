@@ -344,7 +344,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         double timestampSeconds,
         Matrix<N3, N1> visionMeasurementStdDevs
     ) {
-        // 2027-TODO: find new correct method (Utils.fpgaToCurrentTime)!!!
         super.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
     }
 

@@ -40,7 +40,8 @@ import frc.util.WaltLogger;
 public class Intake extends SubsystemBase {
     /* CLASS VARIABLES */
     //---MOTORS + CONTROL REQUESTS
-    private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID, kRioBus); //x60Foc
+    // private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID, kRioBus); //x60Foc
+    private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID, kRioBus);
 
     private final TalonFX m_intakeRollersA = new TalonFX(kIntakeRollersA_CANID, kRioBus); //x60Foc
     private final TalonFX m_intakeRollersB = new TalonFX(kIntakeRollersB_CANID, kRioBus); //x60Foc

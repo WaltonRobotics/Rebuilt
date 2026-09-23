@@ -13,6 +13,7 @@ import static frc.robot.Constants.RobotK.*;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
@@ -29,6 +30,7 @@ import org.wpilib.system.DataLogManager;
 import org.wpilib.driverstation.RobotState;
 import org.wpilib.driverstation.DriverStation;
 import org.wpilib.driverstation.internal.DriverStationBackend;
+import org.wpilib.hardware.bus.CAN;
 import org.wpilib.hardware.bus.CANPort;
 import org.wpilib.hardware.power.PowerDistribution;
 import org.wpilib.system.RobotController;
@@ -39,6 +41,7 @@ import org.wpilib.command2.Command;
 import org.wpilib.command2.CommandScheduler;
 import org.wpilib.command2.Commands;
 import org.wpilib.command2.button.CommandNiDsXboxController;
+import org.wpilib.command2.button.CommandXboxController;
 import org.wpilib.command2.button.RobotModeTriggers;
 import org.wpilib.command2.button.Trigger;
 
@@ -63,6 +66,7 @@ import frc.util.SignalManager;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.IntLogger;
 import frc.util.WaltLogger.Pose2dLogger;
 
 public class Robot extends TimedRobot {
@@ -126,8 +130,12 @@ public class Robot extends TimedRobot {
     private final WaltPointToPointAutonFactory m_pointToPointAutonFactory = new WaltPointToPointAutonFactory(m_superstructure, m_intake, m_shooter, m_drivetrain);
     //---VISION
 
+    private final IntLogger log_optionalVisionCount = new IntLogger(kLogTab, "areWeAddingEstimates");
+    public int visionCounter = 0;
+
     // 2027-TODO: CANBusMap!!
     private PowerDistribution m_PDH = new PowerDistribution(CANPort.CAN_S4);
+    private CANBus m_fixedBus = new CANBus(CANPort.CAN_S4);
     // private final NetworkPinger m_radioPinger = new NetworkPinger("Radio", "10.29.74.1", 0.2, 10);
     // private final NetworkPinger m_coprocessorPinger = new NetworkPinger("Coprocessor", "10.29.74.11", 0.2, 10);
     // private final VisionSim m_visionSim = new VisionSim();
@@ -421,19 +429,11 @@ public class Robot extends TimedRobot {
             if (estimatedPoseOptional.isPresent()) {
                 EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
                 Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
-                // if ((RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())).getAsBoolean()) {
-                //     if (!MathUtil.isNear(driveState.Pose.getX(), estimatedRobotPose2d.getX(), 2.3) || !MathUtil.isNear(driveState.Pose.getY(), estimatedRobotPose2d.getY(), 2.3)){} else {
-                //         m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
-                //     }
-                // } else {
-                // m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
-                // }
-
-                // 2027-TODO: find new correct method!!!
+                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
                 m_visionSeenLastSec = estimatedRobotPose.timestampSeconds;
-                // m_visionSeenLastSec = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
 
-                // System.out.println("AddMeasurementFrom: " + camera.getName());
+                System.out.println("AddMeasurementFrom: " + camera.getName());
+                visionCounter++;
             }
         }
 
@@ -448,6 +448,7 @@ public class Robot extends TimedRobot {
         // log_rioBrownout.accept(RobotController.isBrownedOut());
         log_pdhCurrentTotal.accept(m_PDH.getTotalCurrent());
         log_isDSAttatched.accept(RobotState.isDSAttached());
+        log_optionalVisionCount.accept(visionCounter);
 
         // log_currentShift.accept(HubShiftUtil.getOfficialShiftInfo().currentShift().toString());
         // log_currentFudgedShift.accept(HubShiftUtil.getShiftedShiftInfo().currentShift().toString());

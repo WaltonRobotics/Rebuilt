@@ -42,6 +42,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import org.wpilib.fields.Field;
 import org.wpilib.fields.FieldTag;
 import org.wpilib.fields.Fields;
+import org.wpilib.hardware.bus.CANPort;
 // import org.wpilib.vision.apriltag.AprilTag;
 // import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 // import org.wpilib.vision.apriltag.AprilTagFields;
@@ -67,6 +68,7 @@ public class Constants {
     public static final boolean kDataLoggingEnabled = true;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
+    // public static final CANBus kRioBus = new CANBus(CANPort.CAN_S4);
     public static final CANBus kRioBus = new CANBus("can_s4");
     public static final CANBus kCanivoreBus = new CANBus("fd");
     public static final CANBus kShooterBus = new CANBus("shooter");
@@ -430,10 +432,10 @@ public class Constants {
 
         //Ignore trench April Tags
         static {
-            HashSet<Integer> excludedAprilTagsID = new HashSet<>(Arrays.asList(1, 6, 7, 12, 17, 22, 23, 28));
+            // HashSet<Integer> excludedAprilTagsID = new HashSet<>(Arrays.asList(1, 6, 7, 12, 17, 22, 23, 28));
             Field fieldLayout = Field.loadField(Fields.FRC_2026_REBUILT_WELDED);
             List<FieldTag> tags = new ArrayList<>(fieldLayout.getTags());
-            tags.removeIf(tag -> excludedAprilTagsID.contains(tag.getID()));
+            // tags.removeIf(tag -> excludedAprilTagsID.contains(tag.getID()));
             kTagLayout = tags;
             //i think this should work????
             kFilteredTagField = new Field(
