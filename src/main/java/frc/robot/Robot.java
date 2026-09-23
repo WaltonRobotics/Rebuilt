@@ -503,7 +503,7 @@ public class Robot extends TimedRobot {
         if (m_disableChangeDelayTimer.hasElapsed(3.0)) {
             m_disableChangeDelayTimer.stop();
             m_disableChangeDelayTimer.reset();
-            m_shooter.m_turret.setTurretNeutralMode(NeutralModeValue.Coast);
+            // m_shooter.m_turret.setTurretNeutralMode(NeutralModeValue.Coast);
             m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
             m_shooter.m_hood.setHoodNeutralMode(NeutralModeValue.Coast);
         }

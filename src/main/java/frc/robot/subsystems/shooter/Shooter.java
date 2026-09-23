@@ -389,7 +389,7 @@ public class Shooter extends SubsystemBase {
                 if (m_turret.getHoldTurretAtIntake()) {
                     // m_turret.setTurretPos(Rotations.of(-0.250));
                 } else {
-                    // m_turret.setTurretPos(turretReference, turretVelocityFF);
+                    m_turret.setTurretPos(turretReference, turretVelocityFF);
                     m_calcFlywheelVelocityRotPerSec = kShooterRPSOverride.enabled()
                         ? kShooterRPSOverride.get()
                         : calcData.shooterReferenceRps();
