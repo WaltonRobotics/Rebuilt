@@ -130,8 +130,6 @@ public class Robot extends TimedRobot {
     private final WaltPointToPointAutonFactory m_pointToPointAutonFactory = new WaltPointToPointAutonFactory(m_superstructure, m_intake, m_shooter, m_drivetrain);
     //---VISION
 
-    private final IntLogger log_optionalVisionCount = new IntLogger(kLogTab, "areWeAddingEstimates");
-    public int visionCounter = 0;
 
     // 2027-TODO: CANBusMap!!
     private PowerDistribution m_PDH = new PowerDistribution(CANPort.CAN_S4);
@@ -226,7 +224,6 @@ public class Robot extends TimedRobot {
         // class-loading, trajectory JSON parsing, and routine/trigger composition all
         // happen up-front instead of on the first autonomousInit tick.
         
-        // 2027-TODO: figure out auton/choreo!!!
         // AutonChooser.forceLoadChoreoClasses();
         long tClassLoad = System.nanoTime();
         System.out.printf("[INIT PROFILE] forceLoadChoreoClasses:   %7.1f ms%n", (tClassLoad - tPrev) * 1e-6);
@@ -433,7 +430,6 @@ public class Robot extends TimedRobot {
                 m_visionSeenLastSec = estimatedRobotPose.timestampSeconds;
 
                 System.out.println("AddMeasurementFrom: " + camera.getName());
-                visionCounter++;
             }
         }
 
@@ -448,7 +444,6 @@ public class Robot extends TimedRobot {
         // log_rioBrownout.accept(RobotController.isBrownedOut());
         log_pdhCurrentTotal.accept(m_PDH.getTotalCurrent());
         log_isDSAttatched.accept(RobotState.isDSAttached());
-        log_optionalVisionCount.accept(visionCounter);
 
         // log_currentShift.accept(HubShiftUtil.getOfficialShiftInfo().currentShift().toString());
         // log_currentFudgedShift.accept(HubShiftUtil.getShiftedShiftInfo().currentShift().toString());
@@ -518,7 +513,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        // 2027-TODO: fix auton/choreo stuff!!!
         m_adpatableAutonFactory.startAutonTimer();
         
         // if (m_chosenAuton != null) {
@@ -602,7 +596,7 @@ public class Robot extends TimedRobot {
 
         SwerveDriveState robotState = m_drivetrain.getState();
         Pose2d robotPose = robotState.Pose;
-        // WaltCamera.m_visionSim.simulationPeriodic(robotPose);
+        WaltCamera.m_visionSim.simulationPeriodic(robotPose);
         m_drivetrain.simulationPeriodic();
         m_shooter.simulationPeriodic();
         m_intake.simulationPeriodic();

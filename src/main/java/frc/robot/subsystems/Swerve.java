@@ -321,7 +321,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      */
     @Override
     public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
-        // 2027-TODO: find new correct method (Utils.fpgaToCurrentTime)!!!
         super.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds);
     }
 
@@ -355,9 +354,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      */
     @Override
     public Optional<Pose2d> samplePoseAt(double timestampSeconds) {
-        // 2027-TODO: find new correct method!!!
         return super.samplePoseAt(timestampSeconds);
-        // return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
     }
 
     public ChassisVelocities getChassisVelocities() {

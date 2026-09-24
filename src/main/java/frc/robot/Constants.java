@@ -578,14 +578,14 @@ public class Constants {
         public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(0.20);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.85);
         public static final double kSpindexerMaxRPSD = kSpindexerMaxRPS.in(RotationsPerSecond);
-        public static final double kSpindexerShootRPSD = 7; //kSpindexerShootRPS.in(RotationsPerSecond); (RETUNED FOR MORE BPS @ 9/10)
+        public static final double kSpindexerShootRPSD = 16.0; //kSpindexerShootRPS.in(RotationsPerSecond); (RETUNED FOR MORE BPS + CONSISTENCY @ 9/24)
         public static final double kSpindexerIntakeRPSD = kSpindexerIntakeRPS.in(RotationsPerSecond);
 
         public static final AngularVelocity kTunnelMaxRPS = MotorK.kX60FOCMaxVelocity.div(kTunnelGearing);
         public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(0.77);    //9V
         public static final AngularVelocity kTunnelIntakeRPS = kTunnelMaxRPS.times(-0.20);
         public static final double kTunnelMaxRPSD    = kTunnelMaxRPS.in(RotationsPerSecond);
-        public static final double kTunnelShootRPSD = 60.0;    //kTunnelShootRPS.in(RotationsPerSecond); (RETUNED FOR MORE BPS @ 9/10)
+        public static final double kTunnelShootRPSD = 40.0;    //kTunnelShootRPS.in(RotationsPerSecond); (RETUNED FOR MORE BPS + CONSISTENCY@ 9/24)
         public static final double kTunnelIntakeRPSD = kTunnelIntakeRPS.in(RotationsPerSecond);
 
         public static final AngularVelocity kTunnelSpunUpMinimum = RotationsPerSecond.of(10);
