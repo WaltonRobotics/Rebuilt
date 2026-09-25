@@ -428,8 +428,6 @@ public class Robot extends TimedRobot {
                 Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
                 m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
                 m_visionSeenLastSec = estimatedRobotPose.timestampSeconds;
-
-                System.out.println("AddMeasurementFrom: " + camera.getName());
             }
         }
 

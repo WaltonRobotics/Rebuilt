@@ -1,7 +1,7 @@
 {
     "fileName": "photonlib.json",
     "name": "photonlib",
-    "version": "dev-v2027.0.0-alpha-2-57-gb23f80bb",
+    "version": "dev-v2027.0.0-alpha-2-67-g1f419c9d",
     "uuid": "515fe07e-bfc6-11fa-b3de-0242ac130004",
     "wpilibYear": "2027_alpha7",
     "mavenUrls": [
@@ -13,7 +13,7 @@
         {
             "groupId": "org.photonvision",
             "artifactId": "photontargeting-cpp",
-            "version": "dev-v2027.0.0-alpha-2-57-gb23f80bb",
+            "version": "dev-v2027.0.0-alpha-2-67-g1f419c9d",
             "skipInvalidPlatforms": true,
             "isJar": false,
             "validPlatforms": [
@@ -24,19 +24,24 @@
             ]
         },
         {
-        "groupId": "org.wpilib.fields",
-        "artifactId": "fields-cpp",
-        "version": "wpilib",
-        "skipInvalidPlatforms": true,
-        "isJar": false,
-        "validPlatforms": ["windowsx86-64", "linuxsystemcore", "linuxx86-64", "osxuniversal"]
+            "groupId": "org.wpilib.fields",
+            "artifactId": "fields-cpp",
+            "version": "wpilib",
+            "skipInvalidPlatforms": true,
+            "isJar": false,
+            "validPlatforms": [
+                "windowsx86-64",
+                "linuxsystemcore",
+                "linuxx86-64",
+                "osxuniversal"
+            ]
         }
     ],
     "cppDependencies": [
         {
             "groupId": "org.photonvision",
             "artifactId": "photonlib-cpp",
-            "version": "dev-v2027.0.0-alpha-2-57-gb23f80bb",
+            "version": "dev-v2027.0.0-alpha-2-67-g1f419c9d",
             "libName": "photonlib",
             "headerClassifier": "headers",
             "sharedLibrary": true,
@@ -51,7 +56,7 @@
         {
             "groupId": "org.photonvision",
             "artifactId": "photontargeting-cpp",
-            "version": "dev-v2027.0.0-alpha-2-57-gb23f80bb",
+            "version": "dev-v2027.0.0-alpha-2-67-g1f419c9d",
             "libName": "photontargeting",
             "headerClassifier": "headers",
             "sharedLibrary": true,
@@ -68,12 +73,12 @@
         {
             "groupId": "org.photonvision",
             "artifactId": "photonlib-java",
-            "version": "dev-v2027.0.0-alpha-2-57-gb23f80bb"
+            "version": "dev-v2027.0.0-alpha-2-67-g1f419c9d"
         },
         {
             "groupId": "org.photonvision",
             "artifactId": "photontargeting-java",
-            "version": "dev-v2027.0.0-alpha-2-57-gb23f80bb"
+            "version": "dev-v2027.0.0-alpha-2-67-g1f419c9d"
         }
     ]
 }
