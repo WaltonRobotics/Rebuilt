@@ -426,7 +426,7 @@ public class Robot extends TimedRobot {
             if (estimatedPoseOptional.isPresent()) {
                 EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
                 Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
-                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
+                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, nowSec, camera.getEstimationStdDevs());
                 m_visionSeenLastSec = estimatedRobotPose.timestampSeconds;
             }
         }
