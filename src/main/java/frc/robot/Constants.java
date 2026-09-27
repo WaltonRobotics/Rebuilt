@@ -672,36 +672,26 @@ public class Constants {
         public static final double kEncAMagnetOffset = 0.27001953125; // 0.320556640625; RETUNED 9/3/26
         public static final double kEncBOffset = 0.501; // measure: encB reading when turret is at encA=0  //0.529614; RETUNED 9/3/26 ; 
     }
+    
     public static class AutonK {
         public static final String kLogTab = "Auton";
 
-        public static final Pose2d kRightNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
-            Meters.of(2.251265048980713), new Rotation2d(0));
-        public static final Pose2d kRightDepotPose = new Pose2d(Meters.of(1.1576627492904663), 
-            Meters.of(5.958622932434082), new Rotation2d(Math.PI));
-
-        public static final Pose2d kLeftNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
-            Meters.of(5.437880039215088), new Rotation2d(0));
-
-        public static final double kIntakeTimeout = 7.5;
-        public static final double kShootingTimeout = 4; //12
-        public static final double kSOTMTimeout = 100; //12
-        public static final double kSweepShootingTimeout = 20;
-
-        public static final double kFollowDelay = 2;
+        public static final double kShootingTimeout = 4;
+        public static final double kSOTMTimeout = 100;
 
         public static final String kPreheatTrajectory = "PreHeat";
 
         /* PATHS */
         //---BUMP RETURN PATHS
         public static final String kRightOneBumpReturn = "RIGHT_one_bumpReturn";
-        public static final String kRightOneBumpReturnFollow = "RIGHT_one_bumpReturnFollow";
         public static final String kLeftOneBumpReturn = "LEFT_one_bumpReturn";
-        public static final String kLeftOneBumpReturnFollow = "LEFT_one_bumpReturnFollow";
+        public static final String kLeftOneBumpReturnFast = "LEFT_one_bumpReturnFast";
         public static final String kRightTwoBumpReturn = "RIGHT_two_bumpReturn";
         public static final String kLeftTwoBumpReturn = "LEFT_two_bumpReturn";
+        public static final String kLeftTwoBumpReturnFast = "LEFT_two_bumpReturnFast";
         public static final String kRightTwoBumpToTrench = "RIGHT_two_bumpToTrench";
         public static final String kLeftTwoBumpToTrench = "LEFT_two_bumpToTrench";
+        public static final String kLeftTwoBumpToTrenchFast = "LEFT_two_bumpToTrenchFast";
 
         //---TRENCH RETURN PATHS
         public static final String kRightOneTrenchReturn = "RIGHT_one_trenchReturn";
@@ -710,12 +700,11 @@ public class Constants {
         public static final String kLeftTwoTrenchReturn = "LEFT_two_trenchReturn";
 
         //---DEPOT PATHS
-        public static final String kLeftOneTrenchToDepot = "LEFT_one_trenchToDepot";
         public static final String kLeftTwoTrenchToDepot = "LEFT_two_trenchToDepot";
         public static final String kLeftTwoDepotToTrench = "LEFT_two_depotToTrench";
         public static final String kLeftOneBumpToDepot = "LEFT_one_bumpToDepot";
         public static final String kLeftTwoBumpToDepot = "LEFT_two_bumpToDepot";
-        public static final String kLeftTwoDepotToBump = "LEFT_two_depotToBump";
+        public static final String kLeftTwoDepotSweep = "LEFT_two_depotSweep";
 
         //---MISC
         public static final String kRightOneSelfPass = "RIGHT_one_selfPass";
