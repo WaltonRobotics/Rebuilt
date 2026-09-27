@@ -685,12 +685,17 @@ public class Constants {
         //---BUMP RETURN PATHS
         public static final String kRightOneBumpReturn = "RIGHT_one_bumpReturn";
         public static final String kLeftOneBumpReturn = "LEFT_one_bumpReturn";
-        public static final String kLeftOneBumpReturnFast = "LEFT_one_bumpReturnFast";
         public static final String kRightTwoBumpReturn = "RIGHT_two_bumpReturn";
         public static final String kLeftTwoBumpReturn = "LEFT_two_bumpReturn";
-        public static final String kLeftTwoBumpReturnFast = "LEFT_two_bumpReturnFast";
         public static final String kRightTwoBumpToTrench = "RIGHT_two_bumpToTrench";
         public static final String kLeftTwoBumpToTrench = "LEFT_two_bumpToTrench";
+
+        //---FAST BUMP RETURN PATHS
+        public static final String kRightOneBumpReturnFast = "RIGHT_one_bumpReturnFast";
+        public static final String kLeftOneBumpReturnFast = "LEFT_one_bumpReturnFast";
+        public static final String kRightTwoBumpReturnFast = "RIGHT_two_bumpReturnFast";
+        public static final String kLeftTwoBumpReturnFast = "LEFT_two_bumpReturnFast";
+        public static final String kRightTwoBumpToTrenchFast = "RIGHT_two_bumpToTrenchFast";
         public static final String kLeftTwoBumpToTrenchFast = "LEFT_two_bumpToTrenchFast";
 
         //---TRENCH RETURN PATHS
