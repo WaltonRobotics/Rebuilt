@@ -66,6 +66,7 @@ import frc.util.VisionUtil;
 public class Constants {
     public static final boolean kDebugLoggingEnabled = true;
     public static final boolean kDataLoggingEnabled = true;
+    public static final boolean kSingleDriverEnabled = false;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
     // public static final CANBus kRioBus = new CANBus(CANPort.CAN_S4);
@@ -151,7 +152,7 @@ public class Constants {
 
         public static final int kPeakShooterVolts = 16;
 
-        public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.55); //0.75 rots in each direction from home
+        public static final Angle kTurretMaxRotsFromHome = Rotations.of(0.525); //0.75 rots in each direction from home
         public static final Angle kTurretMinRots = Rotations.of(-kTurretMaxRotsFromHome.in(Rotations));
         public static final Angle kTurretMaxRots = Rotations.of(kTurretMaxRotsFromHome.in(Rotations));
         public static final double kTurretMaxErrD = Rotations.of(0.05).in(Rotations);
@@ -578,7 +579,7 @@ public class Constants {
         public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(0.20);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.85);
         public static final double kSpindexerMaxRPSD = kSpindexerMaxRPS.in(RotationsPerSecond);
-        public static final double kSpindexerShootRPSD = 16.0; //kSpindexerShootRPS.in(RotationsPerSecond); (RETUNED FOR MORE BPS + CONSISTENCY @ 9/24)
+        public static final double kSpindexerShootRPSD = 12.0; //kSpindexerShootRPS.in(RotationsPerSecond); (RETUNED FOR MORE BPS + CONSISTENCY @ 9/24)
         public static final double kSpindexerIntakeRPSD = kSpindexerIntakeRPS.in(RotationsPerSecond);
 
         public static final AngularVelocity kTunnelMaxRPS = MotorK.kX60FOCMaxVelocity.div(kTunnelGearing);

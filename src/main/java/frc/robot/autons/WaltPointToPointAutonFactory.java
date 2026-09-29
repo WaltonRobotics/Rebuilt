@@ -31,7 +31,7 @@ public class WaltPointToPointAutonFactory {
                 subsystemsCommand.addCommands(m_superstructure.intake(() -> path.shooting, () -> false));
             }
             if (path.shooting) {
-                subsystemsCommand.addCommands(m_superstructure.activateOuttakeShotCalc());
+                subsystemsCommand.addCommands(m_superstructure.activateOuttakeShotCalc(() -> false));
                 if (!path.intaking) {
                     subsystemsCommand.addCommands(m_superstructure.intakeShimmy(() -> path.shooting));
                 }

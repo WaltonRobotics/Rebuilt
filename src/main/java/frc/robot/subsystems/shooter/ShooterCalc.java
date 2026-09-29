@@ -97,11 +97,12 @@ public class ShooterCalc {
     private static final BooleanSupplier m_isPassing = () -> m_isPassingFlag;
     private static volatile boolean m_canTurretShoot = false;
     private static volatile boolean m_underTrench = false;
+    private static volatile boolean m_inAllianceZone = false;
 
     private final Notifier m_notifier = new Notifier(this::calcCallback);
     private final Timer m_calcTimer = new Timer();
 
-    private boolean isRed = WaltDriverStation.getAlliance().orElse(Alliance.BLUE) == Alliance.RED;
+    private boolean m_isRed = WaltDriverStation.getAlliance().orElse(Alliance.BLUE) == Alliance.RED;
     // private double robotX;
     // private double robotY;
     private boolean robotInNoPassingZone;
@@ -138,6 +139,10 @@ public class ShooterCalc {
         return m_underTrench;
     }
 
+    public static boolean inOurZone() {
+        return m_inAllianceZone;
+    }
+
 
     private void calcCallback() {
         m_calcTimer.restart();
@@ -153,6 +158,7 @@ public class ShooterCalc {
         m_underTrench = underTrench(turretPose.toPose2d());
         m_aimTarget = calculateTarget(robotPose);
         m_shotCalcOutputs = calcShot(robotPose, m_useStaticShot, m_aimTarget, turretPositionRots, robotChassisVelocities);
+        m_inAllianceZone = inAllianceZone(robotPose);
 
         // Logging
         log_globalShotTarget.accept(m_aimTarget);
@@ -169,6 +175,22 @@ public class ShooterCalc {
     }
 
     /**
+     * Identifies whether the robot is within the alliance zone based on Alliance Selected.
+     * @param robotPose current robot pose
+     * @return robot in AllianceZone
+     */
+    private boolean inAllianceZone(Pose2d robotPose) {
+        m_isRed = WaltDriverStation.getAlliance().orElse(Alliance.BLUE) == Alliance.RED;
+
+        double robotX = robotPose.getX();
+
+        boolean robotPastOurZoneX = m_isRed ? robotX < kRedHubCenterX : robotX > kBlueHubCenterX;
+        log_robotPastOurZoneX.accept(robotPastOurZoneX);
+
+        return robotPastOurZoneX;
+    }
+
+    /**
      * Sets the target to a Pose on the field relative to where the robot is.
      * EX: Robot in alliance zone red -> Red Hub Center
      * Executes Passing and Shooting aiming.
@@ -177,17 +199,15 @@ public class ShooterCalc {
      * @return target pose
      */
     private Translation3d calculateTarget(Pose2d robotPose) {
-        // m_currentTarget = AllianceFlipUtil.apply(target);
-        isRed = WaltDriverStation.getAlliance().orElse(Alliance.BLUE) == Alliance.RED;
         Translation3d theTarget = FieldConstants.Hub.blueInnerCenterPoint;
+        m_isRed = WaltDriverStation.getAlliance().orElse(Alliance.BLUE) == Alliance.RED;
 
         double robotX = robotPose.getX();
         double robotY = robotPose.getY();
 
-        boolean robotPastOurZoneX = isRed ? robotX < kRedHubCenterX : robotX > kBlueHubCenterX;
-        log_robotPastOurZoneX.accept(robotPastOurZoneX);
+        boolean robotPastOurZoneX = inAllianceZone(robotPose);
 
-        robotInNoPassingZone = (robotPastOurZoneX && (robotY < kNoPassZoneLeftY) && (robotY > kNoPassZoneRightY) && isRed)
+        robotInNoPassingZone = (robotPastOurZoneX && (robotY < kNoPassZoneLeftY) && (robotY > kNoPassZoneRightY) && m_isRed)
             ? (robotX > FieldConstants.fieldLength - kNoPassZoneTopX)
             : robotX < kNoPassZoneTopX;
         log_robotInHubPassingZone.accept(robotInNoPassingZone);
@@ -195,7 +215,7 @@ public class ShooterCalc {
         if (robotPastOurZoneX) {
             m_isPassingFlag = true;
             // if (!robotInNoPassingZone) {
-            boolean robotLeftOfCenter = isRed ? robotY < kCenterFieldYM : robotY > kCenterFieldYM;
+            boolean robotLeftOfCenter = m_isRed ? robotY < kCenterFieldYM : robotY > kCenterFieldYM;
             theTarget = robotLeftOfCenter ? kLeftPassTarget : kRightPassTarget;
             // }
         } else {
@@ -208,16 +228,16 @@ public class ShooterCalc {
     }
 
     private boolean underTrench(Pose2d turretPose) {
-        isRed = WaltDriverStation.getAlliance().orElse(Alliance.BLUE) == Alliance.RED;
+        m_isRed = WaltDriverStation.getAlliance().orElse(Alliance.BLUE) == Alliance.RED;
 
         double robotX = turretPose.getX();
         double robotY = turretPose.getY();
 
-        boolean inTrenchZone = isRed 
+        boolean inTrenchZone = m_isRed 
             ? (robotY < FieldConstants.LinesHorizontal.rightTrenchOpenStart || robotY > FieldConstants.LinesHorizontal.leftTrenchOpenEnd) 
             : (robotY > FieldConstants.LinesHorizontal.rightTrenchOpenStart || robotY < FieldConstants.LinesHorizontal.leftTrenchOpenEnd);
 
-        double trenchCenterX = isRed 
+        double trenchCenterX = m_isRed 
             ? FieldConstants.LinesVertical.oppHubCenter 
             : FieldConstants.LinesVertical.hubCenter;
         double trenchHalfDepth = FieldConstants.LeftTrench.depth / 2.0;

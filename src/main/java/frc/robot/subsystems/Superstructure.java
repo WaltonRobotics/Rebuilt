@@ -103,7 +103,7 @@ public class Superstructure extends SubsystemBase {
      * Note: does not move turret or hood.
      * @param RPS the speed for the shooter
      */
-    public Command activateOuttakeShotCalc() {
+    public Command activateOuttakeShotCalc(BooleanSupplier autoShimmy) {
         return Commands.parallel(
             m_shooter.shootFromCalc(),
             m_shooter.hoodFromCalc(),
@@ -117,6 +117,14 @@ public class Superstructure extends SubsystemBase {
                         Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocityRotPerSec() >= IndexerK.kTunnelSpunUpMinimumD)).withTimeout(IndexerK.kTunnelSpunUpTimeout),
                         Commands.run(() -> m_indexer.setSpindexerVelocity(kSpindexerShootRPSD))
                     )
+                ),
+                Commands.either(
+                    Commands.sequence(
+                        Commands.waitSeconds(1.5),
+                        Commands.run(() -> intakeShimmy(() -> true))
+                    ), 
+                    Commands.none(),
+                    autoShimmy
                 )
             )
         )
@@ -212,8 +220,8 @@ public class Superstructure extends SubsystemBase {
             intake(isShooting, () -> true).withTimeout(0.2),
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.SHIMMY),
             Commands.waitSeconds(0.2)
-        ).andThen(
-            m_intake.stopIntakeRollers()
+        ).finallyDo(
+            () -> m_intake.stopIntakeRollers()
         );
     }
 
