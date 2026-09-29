@@ -65,8 +65,8 @@
      "val":7.517491114139557
     },
     "heading":{
-     "exp":"0 rad",
-     "val":0.0
+     "exp":"pi rad",
+     "val":3.141592653589793
     }
    },
    "leftFollowTrench":{
@@ -149,8 +149,8 @@
      "val":7.456321716308594
     },
     "heading":{
-     "exp":"0 rad",
-     "val":0.0
+     "exp":"pi rad",
+     "val":3.141592653589793
     }
    },
    "outpost":{
@@ -191,8 +191,8 @@
      "val":0.612508885860443
     },
     "heading":{
-     "exp":"0 rad",
-     "val":0.0
+     "exp":"pi rad",
+     "val":3.141592653589793
     }
    },
    "rightFollowTrench":{
@@ -275,8 +275,8 @@
      "val":0.7472248911857605
     },
     "heading":{
-     "exp":"0 rad",
-     "val":0.0
+     "exp":"pi rad",
+     "val":3.141592653589793
     }
    }
   }
