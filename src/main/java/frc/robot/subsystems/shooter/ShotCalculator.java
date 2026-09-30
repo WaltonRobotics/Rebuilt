@@ -95,7 +95,7 @@ public class ShotCalculator {
 
     private static final boolean kRPSReductionNeeded = false;
 
-    private static double kRPSBoost = -1;
+    private static double kRPSBoost = 0.75;
     private static double kLongRangeRPSBoost = 0.35;
     private static double kSuperLongRangeRPSBoost = -0.4;
 

@@ -6,7 +6,6 @@
 package frc.robot;
 
 import static org.wpilib.units.Units.*;
-import static frc.robot.Constants.kSingleDriverEnabled;
 import static frc.robot.Constants.FieldK.kLeftResetPose;
 import static frc.robot.Constants.FieldK.kRightResetPose;
 import static frc.robot.Constants.RobotK.*;
@@ -47,7 +46,6 @@ import org.wpilib.command2.button.RobotModeTriggers;
 import org.wpilib.command2.button.Trigger;
 
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.ShooterCalc;
 import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.autons.WaltAdaptableAutonFactory;
@@ -110,7 +108,7 @@ public class Robot extends TimedRobot {
     private final CommandNiDsXboxController m_manipulator = new CommandNiDsXboxController(1);
 
     // Cached so the drive default-command lambda doesn't allocate a Trigger every tick.
-    private Trigger trg_driverSlow;
+    private final Trigger trg_driverSlow = m_driver.leftTrigger().and(m_driver.b());
 
     //---INIT SUBSYSTEMS
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
@@ -141,7 +139,6 @@ public class Robot extends TimedRobot {
     // private final VisionSim m_visionSim = new VisionSim();
 
     /* TRIGGERS */
-    // private final Trigger trg_inAllianceZone = new Trigger(() ->  ShooterCalc.inOurZone());
     // private Trigger trg_optimalPrefireTime = new Trigger(HubShiftUtil.optimalPrefireTime());
     // private Trigger trg_comebackTime = new Trigger(HubShiftUtil.comebackTime());
     private final Trigger trg_snappingBack = new Trigger(m_shooter.m_turret.isSnappingBack());
@@ -159,9 +156,9 @@ public class Robot extends TimedRobot {
     private final Trigger trg_unlockShooting = m_driver.getHID().povDown();
 
     //---MANIPULATOR BUTTONS
-    private Trigger trg_intake;
-    private Trigger trg_intakeShimmy;
+    private final Trigger trg_intake = m_driver.leftTrigger().and(trg_manipOverride.negate());
     private final Trigger trg_retractIntake = m_manipulator.rightBumper().and(trg_manipOverride.negate());
+    private final Trigger trg_intakeShimmy = m_driver.leftBumper();
 
     private final Trigger trg_emergencyIntakeOnlyBarf = m_manipulator.rightTrigger().and(trg_manipOverride);
 
@@ -270,21 +267,6 @@ public class Robot extends TimedRobot {
         System.out.printf("[INIT PROFILE] preheater cmd build:      %7.1f ms%n", (tEnd - tPrev) * 1e-6);
         System.out.printf("[INIT PROFILE] =============================%n");
         System.out.printf("[INIT PROFILE] CONSTRUCTOR TOTAL:        %7.1f ms%n", (tEnd - t0) * 1e-6);
-
-        assignDriverBinds(kSingleDriverEnabled);
-    }
-
-    private void assignDriverBinds(boolean driverOnly) {
-        if (driverOnly) {
-            // needs to be tested to see if this is ergonomic / comfortable 
-            trg_driverSlow = m_driver.leftStick();
-            trg_intake = m_driver.leftTrigger().and(trg_manipOverride.negate());
-            trg_intakeShimmy = m_driver.rightTrigger();
-        } else {
-            trg_driverSlow = m_driver.leftTrigger().and(m_driver.b());
-            trg_intake = m_manipulator.leftTrigger().and(trg_manipOverride.negate());
-            trg_intakeShimmy = m_manipulator.leftBumper();
-        }
     }
 
     /* COMMANDS */
@@ -311,9 +293,9 @@ public class Robot extends TimedRobot {
                 // : kMaxAngularRps * -m_driver.getRightX();
 
             return drive
-                .withVelocityX(driverXVelo) // Drive forward with Y (forward)
-                .withVelocityY(driverYVelo) // Drive left with X (left)
-                .withRotationalRate(driverYawRate); // Drive counterclockwise with negative X (left)
+                .withVelocityX(slowButton ? limit_driverX.calculate(driverXVelo) : driverXVelo) // Drive forward with Y (forward)
+                .withVelocityY(slowButton ? limit_driverY.calculate(driverYVelo) : driverYVelo) // Drive left with X (left)
+                .withRotationalRate(slowButton ? limit_driverYawRate.calculate(driverYawRate) : driverYawRate); // Drive counterclockwise with negative X (left)
             }
         );
     }
@@ -343,7 +325,7 @@ public class Robot extends TimedRobot {
         trg_shoot
             // .and(() -> m_shooter.m_turret.atPosition())
             .and(trg_snappingBack.negate())
-            .whileTrue(m_superstructure.activateOuttakeShotCalc(() -> kSingleDriverEnabled));
+            .whileTrue(m_superstructure.activateOuttakeShotCalc());
 
         trg_shoot
             .and(trg_snappingBack)
