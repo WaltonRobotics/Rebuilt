@@ -163,7 +163,7 @@ public class Constants {
         public static final AngularVelocity kShooterMaxRPS = MotorK.kX44MaxVelocity.div(kShooterGearing);
         public static final double kShooterMaxRPSd = kShooterMaxRPS.in(RotationsPerSecond);
         public static final AngularVelocity kShooterRPS = kShooterMaxRPS.times(0.65);   //Kraken X44 Max RPM: 7758
-        public static final double kShooterRPSd = 50.675 - 3;
+        public static final double kShooterRPSd = 51;
         public static final AngularVelocity kShooterAutonCloseRPS = kShooterMaxRPS.times(0.60);  //auton pose is closer to the hub than teleop scoring
         public static final AngularVelocity kShooterAuton_EndSweep_RPS = kShooterMaxRPS.times(0.70); // end of sweep paths
         public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.37);
@@ -462,6 +462,8 @@ public class Constants {
         public static final Distance kBumperHeight = Inches.of(4.5);
         public static final double kRobotSpeedIntakingLimit = 0.31;
         public static final double kRobotEvasionLimit = 1.5;
+
+        public static final boolean kSingleDriverMode = false;
     }
 
     public static class SuperstructureK {
@@ -578,14 +580,14 @@ public class Constants {
         public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(0.20);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.85);
         public static final double kSpindexerMaxRPSD = kSpindexerMaxRPS.in(RotationsPerSecond);
-        public static final double kSpindexerShootRPSD = 16.0; //kSpindexerShootRPS.in(RotationsPerSecond); (RETUNED FOR MORE BPS + CONSISTENCY @ 9/24)
+        public static final double kSpindexerShootRPSD = 13.0; //kSpindexerShootRPS.in(RotationsPerSecond); (RETUNED FOR MORE BPS + CONSISTENCY @ 9/24)
         public static final double kSpindexerIntakeRPSD = kSpindexerIntakeRPS.in(RotationsPerSecond);
 
         public static final AngularVelocity kTunnelMaxRPS = MotorK.kX60FOCMaxVelocity.div(kTunnelGearing);
         public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(0.77);    //9V
         public static final AngularVelocity kTunnelIntakeRPS = kTunnelMaxRPS.times(-0.20);
         public static final double kTunnelMaxRPSD    = kTunnelMaxRPS.in(RotationsPerSecond);
-        public static final double kTunnelShootRPSD = 40.0;    //kTunnelShootRPS.in(RotationsPerSecond); (RETUNED FOR MORE BPS + CONSISTENCY@ 9/24)
+        public static final double kTunnelShootRPSD = 30.0;    //kTunnelShootRPS.in(RotationsPerSecond); (RETUNED FOR MORE BPS + CONSISTENCY@ 9/24)
         public static final double kTunnelIntakeRPSD = kTunnelIntakeRPS.in(RotationsPerSecond);
 
         public static final AngularVelocity kTunnelSpunUpMinimum = RotationsPerSecond.of(10);

@@ -156,9 +156,9 @@ public class Robot extends TimedRobot {
     private final Trigger trg_unlockShooting = m_driver.getHID().povDown();
 
     //---MANIPULATOR BUTTONS
-    private final Trigger trg_intake = m_driver.leftTrigger().and(trg_manipOverride.negate());
-    private final Trigger trg_retractIntake = m_manipulator.rightBumper().and(trg_manipOverride.negate());
-    private final Trigger trg_intakeShimmy = m_driver.leftBumper();
+    private final Trigger trg_intake = RobotK.kSingleDriverMode ? m_driver.leftTrigger().and(trg_driverOverride.negate()) : m_manipulator.rightTrigger().and(trg_manipOverride.negate());
+    private final Trigger trg_retractIntake = m_manipulator.rightBumper().and(trg_manipOverride);
+    private final Trigger trg_intakeShimmy = RobotK.kSingleDriverMode ? m_driver.leftBumper() : m_manipulator.leftBumper();
 
     private final Trigger trg_emergencyIntakeOnlyBarf = m_manipulator.rightTrigger().and(trg_manipOverride);
 

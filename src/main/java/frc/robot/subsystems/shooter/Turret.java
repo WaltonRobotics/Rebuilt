@@ -29,7 +29,7 @@ public class Turret extends SubsystemBase {
     private static final double kTurretMaxRotsFromHomeDeg = kTurretMaxRotsFromHome.in(Degrees);
     private boolean m_holdTurretAtIntakePos = false;
     private boolean m_turretLocked = false;
-    private double m_turretLockAngleRots = 0.0;
+    private double m_turretLockAngleRots = -0.115;
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); // X44Foc
     private final PositionVoltage m_PVRequest = new PositionVoltage(0).withEnableFOC(true);
