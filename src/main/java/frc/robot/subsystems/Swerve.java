@@ -387,9 +387,12 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         );
     }
 
+    public SwerveRequest.SwerveDriveBrake getStopReq() {
+        return new SwerveDriveBrake();
+    }
+
     public Command xBrakeCmd() {
-        final SwerveRequest.SwerveDriveBrake stopReq = new SwerveDriveBrake();
-        return runOnce(() -> setControl(stopReq));
+        return runOnce(() -> setControl(getStopReq()));
     }
 
 

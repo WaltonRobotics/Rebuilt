@@ -282,22 +282,25 @@ public class Robot extends TimedRobot {
         final double slowRotRps = kMaxAngularRps * rotationMult;
 
         return m_drivetrain.applyRequest(() -> {
-            boolean slowButton = trg_driverSlow.getAsBoolean();
-            double translationMps = slowButton ? slowMps : kMaxTranslationMps;
-            double rotationalMps = slowButton ? slowRotRps : kMaxAngularRps;
+            if (trg_shoot.getAsBoolean() && m_shooter.m_turret.getTurretLocked()) {
+                return m_drivetrain.getStopReq();
+            } else {
+                boolean slowButton = trg_driverSlow.getAsBoolean();
+                double translationMps = slowButton ? slowMps : kMaxTranslationMps;
+                double rotationalMps = slowButton ? slowRotRps : kMaxAngularRps;
 
-            double driverXVelo = translationMps * -m_driver.getLeftY();
-            double driverYVelo = translationMps * -m_driver.getLeftX();
-            double driverYawRate = rotationalMps * -m_driver.getRightX(); //m_driver.leftBumper().getAsBoolean()
-                // ? slowRotRps * -m_driver.getRightX()
-                // : kMaxAngularRps * -m_driver.getRightX();
+                double driverXVelo = translationMps * -m_driver.getLeftY();
+                double driverYVelo = translationMps * -m_driver.getLeftX();
+                double driverYawRate = rotationalMps * -m_driver.getRightX(); //m_driver.leftBumper().getAsBoolean()
+                    // ? slowRotRps * -m_driver.getRightX()
+                    // : kMaxAngularRps * -m_driver.getRightX();
 
-            return drive
-                .withVelocityX(slowButton ? limit_driverX.calculate(driverXVelo) : driverXVelo) // Drive forward with Y (forward)
-                .withVelocityY(slowButton ? limit_driverY.calculate(driverYVelo) : driverYVelo) // Drive left with X (left)
-                .withRotationalRate(slowButton ? limit_driverYawRate.calculate(driverYawRate) : driverYawRate); // Drive counterclockwise with negative X (left)
+                return drive
+                    .withVelocityX(slowButton ? limit_driverX.calculate(driverXVelo) : driverXVelo) // Drive forward with Y (forward)
+                    .withVelocityY(slowButton ? limit_driverY.calculate(driverYVelo) : driverYVelo) // Drive left with X (left)
+                    .withRotationalRate(slowButton ? limit_driverYawRate.calculate(driverYawRate) : driverYawRate); // Drive counterclockwise with negative X (left)
             }
-        );
+        });
     }
 
     // private void setBothRumble(RumbleType type, double intensity) {

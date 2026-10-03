@@ -58,6 +58,8 @@ public class Turret extends SubsystemBase {
     private final BooleanLogger log_turretLocked = WaltLogger.logBoolean(kLogTab, "turretLocked");
     private final Pose3dLogger log_turretTransform = WaltLogger.logPose3d(kLogTab, "turretTransform");
 
+    private final DoubleLogger log_turretLCMRealDelta = WaltLogger.logDouble(kLogTab, "turretLCMRealDelta");
+
     private final BooleanLogger log_isTurretSnappingBack = WaltLogger.logBoolean(kLogTab, "snappingBack");
 
     private final StatusSignal<Double> sig_turretCLErr = m_turret.getClosedLoopError();
@@ -183,6 +185,7 @@ public class Turret extends SubsystemBase {
 
         double turretAngleDeg = calcTurretAngleLCM(encAVal * 360, -(encBVal - kEncBOffset) * 360);
         log_turretLCMPos.accept(turretAngleDeg / 360.0);
+        log_turretLCMRealDelta.accept(((turretAngleDeg / 360.0) - getCurrTurretPos()));
     }
 
     public static double calcTurretAngleLCM(double e1, double e2) {
