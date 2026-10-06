@@ -48,7 +48,7 @@ public class Hood extends SubsystemBase {
     private final StatusSignal<Angle> sig_hoodPos = m_hood.getPosition();
     private final StatusSignal<Double> sig_hoodCLErr = m_hood.getClosedLoopError();
 
-    private BooleanSupplier m_currentSpike = () -> sig_hoodStatorCurrent.getValueAsDouble() > 5.0;
+    private BooleanSupplier m_currentSpike = () -> sig_hoodStatorCurrent.getValueAsDouble() > 3.0;
 
     private final StaticBrake m_BrakeReq = new StaticBrake();
 

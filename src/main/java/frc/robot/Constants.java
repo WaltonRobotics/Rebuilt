@@ -463,7 +463,7 @@ public class Constants {
         public static final double kRobotSpeedIntakingLimit = 0.31;
         public static final double kRobotEvasionLimit = 1.5;
 
-        public static final boolean kSingleDriverMode = false;
+        public static final boolean kSingleDriverMode = true;
     }
 
     public static class SuperstructureK {
