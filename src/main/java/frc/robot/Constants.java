@@ -670,9 +670,9 @@ public class Constants {
         public static final double kGearOneToothCount = 10;
         public static final double kGearTwoToothCount = 19;
 
-        public static final double kLCMAtHomeRots = 0.251; // measure: turretLCMPos log value when turret is at home // 0.251; RETUNED 9/3/26
-        public static final double kEncAMagnetOffset = 0.320556640625; // 0.; RETUNED 9/3/26
-        public static final double kEncBOffset = 0.529614; // measure: encB reading when turret is at encA=0  //0.; RETUNED 9/3/26 ; 
+        public static final double kLCMAtHomeRots = 0.04778; //0.251 // measure: turretLCMPos log value when turret is at home // 0.251; RETUNED 9/3/26
+        public static final double kEncAMagnetOffset = 0.19458; // 0.; RETUNED 9/3/26
+        public static final double kEncBOffset = 0.680272; // measure: encB reading when turret is at encA=0  //0.; RETUNED 9/3/26 ; 
     }
     
     public static class AutonK {
