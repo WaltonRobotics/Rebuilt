@@ -66,6 +66,11 @@ public class Shooter extends SubsystemBase {
 
     private final Timer m_shotRecoveryTimer = new Timer();
 
+    private static final WaltTunable kCopeTurretRots = 
+        new WaltTunable("/Shooter/Turret/turretRots", 0.02);
+    private static final WaltTunable kShooterRPSBoost = 
+        new WaltTunable("Shooter/Flywheel/RPSBoost", 0.75);
+
     // Recovery bump temporarily overshoot the velocity setpoint after a ball
     // steals energy from the flywheel, so PID recovers faster.
     private double m_recoveryBumpRPS = 0.0;
@@ -389,10 +394,10 @@ public class Shooter extends SubsystemBase {
                 if (m_turret.getHoldTurretAtIntake()) {
                     // m_turret.setTurretPos(Rotations.of(-0.250));
                 } else {
-                    m_turret.setTurretPos(turretReference, turretVelocityFF);
+                    m_turret.setTurretPos(turretReference + kCopeTurretRots.getOr(0.02), turretVelocityFF);
                     m_calcFlywheelVelocityRotPerSec = kShooterRPSOverride.enabled()
                         ? kShooterRPSOverride.get()
-                        : calcData.shooterReferenceRps();
+                        : calcData.shooterReferenceRps() + kShooterRPSBoost.getOr(0);
                     if (kAllowDriverRPSTweak) { // ENABLE THIS TO ALLOW DRIVER RPS TWEAK
                         m_calcFlywheelVelocityRotPerSec += m_driverRPSTweak;
                         m_calcFlywheelVelocityRotPerSec = Math.clamp(m_calcFlywheelVelocityRotPerSec, 0, kShooterMaxRPSd);    //clamp here or clamp only when setShooterVel is called?
