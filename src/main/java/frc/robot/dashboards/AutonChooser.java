@@ -69,9 +69,9 @@ public class AutonChooser {
 
         addMultiAuton(kRightTrenchTwoCycleBumpReturnFast,
             new AdaptableAutonInfo(AutonK.kRightOneBumpReturnFast, AutonK.kSOTMTimeout, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrenchFast, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, AutonK.kSOTMTimeout, true, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoBumpReturnFast, AutonK.kSOTMTimeout, true, 0),
-            new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrenchFast, AutonK.kSOTMTimeout, true, 0),
+            new AdaptableAutonInfo(AutonK.kRightTwoBumpToTrench, AutonK.kSOTMTimeout, true, 0),
             new AdaptableAutonInfo(AutonK.kRightTwoGoOut, AutonK.kSOTMTimeout, true, 0));
 
         addMultiAuton(kLeftTrenchTwoCycleBumpReturnFast,

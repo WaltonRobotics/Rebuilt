@@ -160,7 +160,7 @@ public class Robot extends TimedRobot {
     private final Trigger trg_retractIntake = m_manipulator.rightBumper().and(trg_manipOverride);
     private final Trigger trg_intakeShimmy = RobotK.kSingleDriverMode ? m_driver.leftBumper() : m_manipulator.leftBumper();
 
-    private final Trigger trg_emergencyIntakeOnlyBarf = m_manipulator.rightTrigger().and(trg_manipOverride);
+    private final Trigger trg_emergencyIntakeOnlyBarf = m_manipulator.rightTrigger().and(trg_manipOverride.negate());
 
     private final Trigger trg_homeIntake =  m_manipulator.x().and(trg_manipOverride);
     private final Trigger trg_homeHood = m_manipulator.start().and(trg_manipOverride);
@@ -437,7 +437,6 @@ public class Robot extends TimedRobot {
         m_periodicTracer.addEpoch("VisionUpdate");
 
         log_visionSeenPastSecond.accept((nowSec - m_visionSeenLastSec) < 1.0);
-        // log_isDisabled.accept(trg_limitFPS);
         m_periodicTracer.addEpoch("Logging");
 
         log_miniPCCurrent.accept(m_PDH.getCurrent(kMiniPCChannel));
@@ -488,12 +487,10 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledPeriodic() {
-        // if (m_fpsLimitTimer.hasElapsed(3) && !WaltCamera.areCamsFpsLimited()) {
-        //     WaltCamera.setFpsLimit(true);
-        //     m_fpsLimitTimer.restart();
-        //     // dumb bullshit to hot-path the Chooser on occasion
-
-        // }
+        if (m_fpsLimitTimer.hasElapsed(3) && !WaltCamera.areCamsFpsLimited()) {
+            WaltCamera.setFpsLimit(true);
+            m_fpsLimitTimer.restart();
+        }
 
         // oneshot on DisabledInit
         if (m_disableChangeDelayTimer.hasElapsed(3.0)) {
@@ -523,7 +520,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousPeriodic() {
-        // log_autonTime.accept(m_adpatableAutonFactory.autonTimer.get());
+        log_autonTime.accept(m_adpatableAutonFactory.autonTimer.get());
     }
 
     @Override

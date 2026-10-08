@@ -13,8 +13,6 @@ import static org.wpilib.units.Units.RotationsPerSecond;
 import static org.wpilib.units.Units.Seconds;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 
 // import org.wpilib.hardware.hal.CANBusMap;
@@ -42,7 +40,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import org.wpilib.fields.Field;
 import org.wpilib.fields.FieldTag;
 import org.wpilib.fields.Fields;
-import org.wpilib.hardware.bus.CANPort;
 // import org.wpilib.vision.apriltag.AprilTag;
 // import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 // import org.wpilib.vision.apriltag.AprilTagFields;
@@ -463,7 +460,7 @@ public class Constants {
         public static final double kRobotSpeedIntakingLimit = 0.31;
         public static final double kRobotEvasionLimit = 1.5;
 
-        public static final boolean kSingleDriverMode = true;
+        public static final boolean kSingleDriverMode = false;
     }
 
     public static class SuperstructureK {

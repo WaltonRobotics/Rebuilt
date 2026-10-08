@@ -41,6 +41,8 @@ public class Turret extends SubsystemBase {
     public BooleanSupplier turretAtPosSupp = () -> m_turretAtPos;
     private boolean m_isSnappingBack = false;
     private final BooleanSupplier supp_isSnappingBack = () -> m_isSnappingBack;
+    private boolean m_turretLCMRight = false;
+    private final BooleanSupplier supp_turretLCMRight = () -> m_turretLCMRight;
 
     private final CANcoder m_lcmEncA = new CANcoder(19, Constants.kCanivoreBus);
     private final DutyCycleEncoder m_lcmEncB = new DutyCycleEncoder(3);
@@ -59,6 +61,7 @@ public class Turret extends SubsystemBase {
     private final Pose3dLogger log_turretTransform = WaltLogger.logPose3d(kLogTab, "turretTransform");
 
     private final DoubleLogger log_turretLCMRealDelta = WaltLogger.logDouble(kLogTab, "turretLCMRealDelta");
+    private final BooleanLogger log_turretLCMRight = WaltLogger.logBoolean(kLogTab, "turretLCMRight");
 
     private final BooleanLogger log_isTurretSnappingBack = WaltLogger.logBoolean(kLogTab, "snappingBack");
 
@@ -184,8 +187,11 @@ public class Turret extends SubsystemBase {
         refreshTurretCLErr();
 
         double turretAngleDeg = calcTurretAngleLCM(encAVal * 360, -(encBVal - kEncBOffset) * 360);
+        m_turretLCMRight = (((turretAngleDeg / 360.0) - getCurrTurretPos()) < 0.01 ) && ((turretAngleDeg / 360.0) - getCurrTurretPos()) > -0.01;
+
         log_turretLCMPos.accept(turretAngleDeg / 360.0);
         log_turretLCMRealDelta.accept(((turretAngleDeg / 360.0) - getCurrTurretPos()));
+        log_turretLCMRight.accept(supp_turretLCMRight.getAsBoolean());
     }
 
     public static double calcTurretAngleLCM(double e1, double e2) {

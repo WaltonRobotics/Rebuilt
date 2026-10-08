@@ -60,13 +60,8 @@ public class Hood extends SubsystemBase {
         m_hood.getConfigurator().apply(kHoodTalonFXSConfiguration);
 
         SignalManager.register(kShooterBus, sig_hoodStatorCurrent, sig_hoodPos, sig_hoodCLErr);
-
-        m_hood.setPosition(0);
-        m_isHoodHomed = true;
-        log_hoodHomed.accept(m_isHoodHomed);
-        setHoodPos(0.05); //really really low position to see that this is working
-
-        // setDefaultCommand(hoodCurrentSenseHomingCmd());
+    
+        setDefaultCommand(hoodCurrentSenseHomingCmd());
     }
 
     // ---HOOD

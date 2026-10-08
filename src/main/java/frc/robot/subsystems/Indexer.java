@@ -229,9 +229,9 @@ public class Indexer extends SubsystemBase {
     /* PERIODICS */
     @Override
     public void periodic() {
-        // log_spindexerRPS.accept(sig_spindexerVelo.getValueAsDouble());
-        // log_spindexerStatorCurrent.accept(sig_spindexerStatorCurrent.getValueAsDouble());
-        // log_spindexerSupplyCurrent.accept(sig_spindexerSupplyCurrent.getValueAsDouble());
+        log_spindexerRPS.accept(sig_spindexerVelo.getValueAsDouble());
+        log_spindexerStatorCurrent.accept(sig_spindexerStatorCurrent.getValueAsDouble());
+        log_spindexerSupplyCurrent.accept(sig_spindexerSupplyCurrent.getValueAsDouble());
         refreshTunnelState();
     }
 
