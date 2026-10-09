@@ -341,7 +341,7 @@ public class ShooterCalc {
 
 
         double distance = Math.hypot(toTargetX, toTargetY);
-        double tangentialVel = (toTargetX * vx - toTargetY * vy) / distance;
+        double tangentialVel = (toTargetY * vx - toTargetX * vy) / distance;
         double turretFFRadPerSec = tangentialVel / distance;
 
         turretFFRadPerSec -= fieldSpeeds.omega;
