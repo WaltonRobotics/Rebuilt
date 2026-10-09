@@ -95,11 +95,13 @@ public class ShotCalculator {
 
     private static final boolean kRPSReductionNeeded = false;
 
+    //note that these boosts are for passing
     private static double kRPSBoost = 1.3;
     private static double kLongRangeRPSBoost = 0.35;
     private static double kSuperLongRangeRPSBoost = -0.4;
 
-    private static double kScoringRPSBoost = -0.25;
+    //note that this boost is for scoring
+    private static double kScoringRPSBoost = 0.5;
 
     private static double kTOFCope = 0.5;
     private static final WaltTunable kRPSBoostTuner = new WaltTunable("Shooter/Calculator/RPSBoost", kRPSBoost); 
