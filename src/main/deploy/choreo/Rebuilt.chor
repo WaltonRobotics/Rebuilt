@@ -7,8 +7,8 @@
    "spinUpBuffer":{
     "dimension":"Time",
     "var":{
-     "exp":"-0.05 s",
-     "val":-0.05
+     "exp":"0.05 s",
+     "val":0.05
     }
    }
   },
@@ -99,8 +99,8 @@
    },
    "leftShootBump":{
     "x":{
-     "exp":"3.243910007476807 m",
-     "val":3.243910007476807
+     "exp":"3 m",
+     "val":3.0
     },
     "y":{
      "exp":"leftStartBump.y",
@@ -170,7 +170,7 @@
    "rightAllianceBump":{
     "x":{
      "exp":"rightShootBump.x + 0.3 m",
-     "val":3.5465278625488277
+     "val":3.3
     },
     "y":{
      "exp":"rightShootBump.y",
@@ -212,7 +212,7 @@
    "rightNeutralBump":{
     "x":{
      "exp":"rightShootBump.x + 2.3 m",
-     "val":5.546527862548828
+     "val":5.3
     },
     "y":{
      "exp":"rightShootBump.y",
@@ -225,16 +225,16 @@
    },
    "rightShootBump":{
     "x":{
-     "exp":"3.246527862548828 m",
-     "val":3.246527862548828
+     "exp":"3 m",
+     "val":3.0
     },
     "y":{
      "exp":"rightStartBump.y",
      "val":2.455909967422486
     },
     "heading":{
-     "exp":"pi rad",
-     "val":3.141592653589793
+     "exp":"2.5 rad",
+     "val":2.5
     }
    },
    "rightStartBump":{
