@@ -7,8 +7,8 @@
    "spinUpBuffer":{
     "dimension":"Time",
     "var":{
-     "exp":"0.05 s",
-     "val":0.05
+     "exp":"0.5 s",
+     "val":0.5
     }
    }
   },

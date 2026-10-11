@@ -210,7 +210,7 @@ public class Superstructure extends SubsystemBase {
     public Command intakeShimmy(BooleanSupplier isShooting) {
         return Commands.repeatingSequence(
             intake(isShooting, () -> true).withTimeout(0.2),
-            m_intake.setIntakeArmPosCmd(IntakeArmPosition.SHIMMY),
+            m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED),
             Commands.waitSeconds(0.2)
         ).andThen(
             m_intake.stopIntakeRollers()
