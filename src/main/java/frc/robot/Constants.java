@@ -13,6 +13,8 @@ import static org.wpilib.units.Units.RotationsPerSecond;
 import static org.wpilib.units.Units.Seconds;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 // import org.wpilib.hardware.hal.CANBusMap;
@@ -429,10 +431,10 @@ public class Constants {
 
         //Ignore trench April Tags
         static {
-            // HashSet<Integer> excludedAprilTagsID = new HashSet<>(Arrays.asList(1, 6, 7, 12, 17, 22, 23, 28));
+            HashSet<Integer> excludedAprilTagsID = new HashSet<>(Arrays.asList(1, 6, 7, 12, 17, 22, 23, 28));
             Field fieldLayout = Field.loadField(Fields.FRC_2026_REBUILT_WELDED);
             List<FieldTag> tags = new ArrayList<>(fieldLayout.getTags());
-            // tags.removeIf(tag -> excludedAprilTagsID.contains(tag.getID()));
+            tags.removeIf(tag -> excludedAprilTagsID.contains(tag.getID()));
             kTagLayout = tags;
             //i think this should work????
             kFilteredTagField = new Field(
