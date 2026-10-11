@@ -169,6 +169,7 @@ public class Robot extends TimedRobot {
     //---MISC TRGs
     private final Trigger trg_limitFPS = RobotModeTriggers.disabled();
     private final Trigger trg_unlimitFps = RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop());
+    private final Trigger trg_singlePlayer = new Trigger(() -> kSingleDriverMode);
 
 
 
@@ -333,6 +334,12 @@ public class Robot extends TimedRobot {
         trg_shoot
             .and(trg_snappingBack)
             .whileTrue(m_superstructure.hoodAndFlywheelShotCalc());
+
+        trg_shoot
+            .and(trg_singlePlayer)
+            .whileTrue(
+                m_superstructure.intakeShimmy(() -> true)
+            ).debounce(3);
 
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
