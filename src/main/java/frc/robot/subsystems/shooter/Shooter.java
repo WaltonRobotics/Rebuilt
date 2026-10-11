@@ -67,7 +67,7 @@ public class Shooter extends SubsystemBase {
     private final Timer m_shotRecoveryTimer = new Timer();
 
     private static final WaltTunable kCopeTurretRots = 
-        new WaltTunable("/Shooter/Turret/turretRots", 0.02);
+        new WaltTunable("/Shooter/Turret/turretRots", 0.03);
     private static final WaltTunable kShooterRPSBoost = 
         new WaltTunable("Shooter/Flywheel/RPSBoost", 0.75);
 
@@ -394,7 +394,7 @@ public class Shooter extends SubsystemBase {
                 if (m_turret.getHoldTurretAtIntake()) {
                     // m_turret.setTurretPos(Rotations.of(-0.250));
                 } else {
-                    m_turret.setTurretPos(turretReference + kCopeTurretRots.getOr(0.025), turretVelocityFF);
+                    m_turret.setTurretPos(turretReference + kCopeTurretRots.getOr(0.03), turretVelocityFF);
                     m_calcFlywheelVelocityRotPerSec = kShooterRPSOverride.enabled()
                         ? kShooterRPSOverride.get()
                         : calcData.shooterReferenceRps() + kShooterRPSBoost.getOr(0);
