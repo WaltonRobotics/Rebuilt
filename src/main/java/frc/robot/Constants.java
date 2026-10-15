@@ -94,7 +94,7 @@ public class Constants {
         public static final Transform3d kTurretTransformNoRotation = new Transform3d(kTurretTranslation, Rotation3d.ZERO);
         public static final Transform3d kTurretTransform = new Transform3d(kTurretTranslation, kTurretAngleOffset3d);
         public static final Distance kInchesAboveFunnel = Inches.of(20);// distance the ball must travel above the funnel opening to arc correctly into the hub
-        public static final Angle kTurretBarfPos = Rotations.of(-0.113);
+        public static final Angle kTurretBarfPos = Rotations.of(-0.113 + 0.03);
 
         public static final boolean kUseStaticShot = false;
         public static final boolean kAllowDriverRPSTweak = false;
@@ -576,7 +576,7 @@ public class Constants {
         public static final double kTunnelMOI = 0.000215968064;
       
         public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60MaxVelocity.div(kSpindexerGearing);
-        public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(0.20);
+        public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.85);
         public static final double kSpindexerMaxRPSD = kSpindexerMaxRPS.in(RotationsPerSecond);
         public static final double kSpindexerShootRPSD = 13.0; //kSpindexerShootRPS.in(RotationsPerSecond); (RETUNED FOR MORE BPS + CONSISTENCY @ 9/24)
@@ -690,6 +690,8 @@ public class Constants {
         public static final String kLeftTwoBumpReturn = "LEFT_two_bumpReturn";
         public static final String kRightTwoBumpToTrench = "RIGHT_two_bumpToTrench";
         public static final String kLeftTwoBumpToTrench = "LEFT_two_bumpToTrench";
+
+        public static final String kLeftOneBumpReturnFollow = "LEFT_one_bumpReturnFollow";
 
         //---FAST BUMP RETURN PATHS
         public static final String kRightOneBumpReturnFast = "RIGHT_one_bumpReturnFast";

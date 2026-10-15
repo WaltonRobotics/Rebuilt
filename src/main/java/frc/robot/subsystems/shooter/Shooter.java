@@ -387,7 +387,7 @@ public class Shooter extends SubsystemBase {
             // set outputs
             var turretVelocityFF = calcData.turretCalcDetails().turretVelocityFF();
             if (m_turret.getTurretLocked()) {
-                m_turret.setTurretPos(m_turret.getTurretLockAngleRots(), 0.0);
+                m_turret.setTurretPos(m_turret.getTurretLockAngleRots() + kCopeTurretRots.getOr(0.03), 0.0);
                 m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
             } else {
                 // NOT LOCKED
