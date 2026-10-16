@@ -87,7 +87,7 @@ public class Robot extends TimedRobot {
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-        .withDeadband(kMaxTranslationSpeed.times(0.1)).withRotationalDeadband(kMaxAngularRate.times(0.1)) // Add a 10% deadband
+        .withDeadband(kMaxTranslationSpeed.times(0.01)).withRotationalDeadband(kMaxAngularRate.times(0.01)) // Add a 10% deadband
         .withDriveRequestType(DriveRequestType.Velocity); // Use open-loop control for drive motors
 
     // private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -181,6 +181,10 @@ public class Robot extends TimedRobot {
     private final Pose2dLogger log_robotPose = WaltLogger.logPose2d("Drive", "Pose", true);
 
     private final DoubleLogger log_autonTime = WaltLogger.logDouble("Auton", "autonTime");
+
+    private final DoubleLogger log_driverXVelo = WaltLogger.logDouble(kLogTab, "driverXVelo");
+    private final DoubleLogger log_driverYVelo = WaltLogger.logDouble(kLogTab, "driverYVelo");
+    private final DoubleLogger log_driverYawVelo = WaltLogger.logDouble(kLogTab, "driverYawVelo");
 
     //NOT DISPLAYING
     // private final StringLogger log_currentShift = WaltLogger.logString("Util/Shift", "currentShift");
@@ -286,9 +290,8 @@ public class Robot extends TimedRobot {
             if (trg_shoot.getAsBoolean() && m_shooter.m_turret.getTurretLocked()) {
                 return m_drivetrain.getStopReq();
             } else {
-                boolean slowButton = trg_driverSlow.getAsBoolean();
-                double translationMps = slowButton ? slowMps : kMaxTranslationMps;
-                double rotationalMps = slowButton ? slowRotRps : kMaxAngularRps;
+                double translationMps = kMaxTranslationMps * 2;
+                double rotationalMps = kMaxAngularRps;
 
                 double driverXVelo = translationMps * -m_driver.getLeftY();
                 double driverYVelo = translationMps * -m_driver.getLeftX();
@@ -296,10 +299,15 @@ public class Robot extends TimedRobot {
                     // ? slowRotRps * -m_driver.getRightX()
                     // : kMaxAngularRps * -m_driver.getRightX();
 
+                log_driverXVelo.accept(driverXVelo);
+                log_driverYVelo.accept(driverYVelo);
+                log_driverYawVelo.accept(driverYawRate);
+
+
                 return drive
-                    .withVelocityX(slowButton ? limit_driverX.calculate(driverXVelo) : driverXVelo) // Drive forward with Y (forward)
-                    .withVelocityY(slowButton ? limit_driverY.calculate(driverYVelo) : driverYVelo) // Drive left with X (left)
-                    .withRotationalRate(slowButton ? limit_driverYawRate.calculate(driverYawRate) : driverYawRate); // Drive counterclockwise with negative X (left)
+                    .withVelocityX(driverXVelo) // Drive forward with Y (forward)
+                    .withVelocityY(driverYVelo) // Drive left with X (left)
+                    .withRotationalRate(driverYawRate); // Drive counterclockwise with negative X (left)
             }
         });
     }
@@ -549,45 +557,45 @@ public class Robot extends TimedRobot {
     public void teleopExit() {}
 
     // 2027-TODO - convert to opmode!
-    public void utilityInit() {
-        CommandScheduler.getInstance().cancelAll();
+    // public void utilityInit() {
+    //     CommandScheduler.getInstance().cancelAll();
         
-        CommandScheduler.getInstance().schedule(
-            Commands.sequence(
-                m_drivetrain.runOnce(m_drivetrain::seedFieldCentric),
-                Commands.waitSeconds(1),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(kMaxTranslationSpeed)
-                        .withVelocityY(0)
-                        .withRotationalRate(0)
-                ),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.xBrakeCmd(),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(kMaxTranslationSpeed.unaryMinus())
-                        .withVelocityY(0)
-                        .withRotationalRate(0)
-                ),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.xBrakeCmd(),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(0)
-                        .withVelocityY(0)
-                        .withRotationalRate(kMaxAngularRate)
-                ),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.xBrakeCmd(),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(0)
-                        .withVelocityY(0)
-                        .withRotationalRate(0)
-                )
-            )
-        );
-    }
+    //     CommandScheduler.getInstance().schedule(
+    //         Commands.sequence(
+    //             m_drivetrain.runOnce(m_drivetrain::seedFieldCentric),
+    //             Commands.waitSeconds(1),
+    //             m_drivetrain.applyRequest(() ->
+    //                 drive.withVelocityX(kMaxTranslationSpeed)
+    //                     .withVelocityY(0)
+    //                     .withRotationalRate(0)
+    //             ),
+    //             Commands.waitSeconds(2.5),
+    //             m_drivetrain.xBrakeCmd(),
+    //             Commands.waitSeconds(2.5),
+    //             m_drivetrain.applyRequest(() ->
+    //                 drive.withVelocityX(kMaxTranslationSpeed.unaryMinus())
+    //                     .withVelocityY(0)
+    //                     .withRotationalRate(0)
+    //             ),
+    //             Commands.waitSeconds(2.5),
+    //             m_drivetrain.xBrakeCmd(),
+    //             Commands.waitSeconds(2.5),
+    //             m_drivetrain.applyRequest(() ->
+    //                 drive.withVelocityX(0)
+    //                     .withVelocityY(0)
+    //                     .withRotationalRate(kMaxAngularRate)
+    //             ),
+    //             Commands.waitSeconds(2.5),
+    //             m_drivetrain.xBrakeCmd(),
+    //             Commands.waitSeconds(2.5),
+    //             m_drivetrain.applyRequest(() ->
+    //                 drive.withVelocityX(0)
+    //                     .withVelocityY(0)
+    //                     .withRotationalRate(0)
+    //             )
+    //         )
+    //     );
+    // }
     @Override
     public void simulationInit() {
         // FuelSim.getInstance().start();
