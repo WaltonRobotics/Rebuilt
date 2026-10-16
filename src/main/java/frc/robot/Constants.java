@@ -94,7 +94,7 @@ public class Constants {
         public static final Transform3d kTurretTransformNoRotation = new Transform3d(kTurretTranslation, Rotation3d.ZERO);
         public static final Transform3d kTurretTransform = new Transform3d(kTurretTranslation, kTurretAngleOffset3d);
         public static final Distance kInchesAboveFunnel = Inches.of(20);// distance the ball must travel above the funnel opening to arc correctly into the hub
-        public static final Angle kTurretBarfPos = Rotations.of(-0.113); // +0.03
+        public static final Angle kTurretBarfPos = Rotations.of(-0.113 + 0.03);
 
         public static final boolean kUseStaticShot = false;
         public static final boolean kAllowDriverRPSTweak = false;
