@@ -147,7 +147,7 @@ public class Turret extends SubsystemBase {
     }
 
     public void setTurretPos(double rots, double velocityFFRadPS) {
-        m_turret.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFFRadPS / (2 * Math.PI))); 
+        m_turret.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFFRadPS)); 
         log_turretControlPos.accept(rots);
         log_turretControlFFRadPS.accept(velocityFFRadPS);
     }
