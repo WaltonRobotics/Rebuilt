@@ -186,6 +186,11 @@ public class Robot extends TimedRobot {
     private final DoubleLogger log_driverYVelo = WaltLogger.logDouble(kLogTab, "driverYVelo");
     private final DoubleLogger log_driverYawVelo = WaltLogger.logDouble(kLogTab, "driverYawVelo");
 
+    
+    private final DoubleLogger log_driverStickY = WaltLogger.logDouble(kLogTab, "driverStickY");
+    private final DoubleLogger log_driverStickX = WaltLogger.logDouble(kLogTab, "driverStickX");
+    private final DoubleLogger log_driverStickTurn = WaltLogger.logDouble(kLogTab, "driverStickTurn");
+
     //NOT DISPLAYING
     // private final StringLogger log_currentShift = WaltLogger.logString("Util/Shift", "currentShift");
     // private final DoubleLogger log_elapsedTime = WaltLogger.logDouble("Util/Shift", "elapsedTime");
@@ -293,9 +298,18 @@ public class Robot extends TimedRobot {
                 double translationMps = kMaxTranslationMps * 2;
                 double rotationalMps = kMaxAngularRps;
 
-                double driverXVelo = translationMps * -m_driver.getLeftY();
-                double driverYVelo = translationMps * -m_driver.getLeftX();
-                double driverYawRate = rotationalMps * -m_driver.getRightX(); //m_driver.leftBumper().getAsBoolean()
+                double driverStickY = m_driver.getLeftY();
+                double driverStickX = m_driver.getLeftX();
+                double driverStickTurn = m_driver.getRightX();
+
+                log_driverStickY.accept(driverStickY);
+                log_driverStickX.accept(driverStickX);
+                log_driverStickTurn.accept(driverStickTurn);
+                
+
+                double driverXVelo = translationMps * -driverStickY;
+                double driverYVelo = translationMps * -driverStickX;
+                double driverYawRate = rotationalMps * -driverStickTurn; //m_driver.leftBumper().getAsBoolean()
                     // ? slowRotRps * -m_driver.getRightX()
                     // : kMaxAngularRps * -m_driver.getRightX();
 
