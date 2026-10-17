@@ -41,6 +41,7 @@ public class Hood extends SubsystemBase {
     private final DoubleLogger log_hoodPositionDeg = WaltLogger.logDouble(kLogTab, "positionDeg"); //for debugging purposes
     private final DoubleLogger log_hoodCLErr = WaltLogger.logDouble(kLogTab, "closedLoopErr");
     private final BooleanLogger log_hoodAtPos = WaltLogger.logBoolean(kLogTab, "hoodAtPos");
+    private final BooleanLogger log_hoodStatorCurrentCheck = WaltLogger.logBoolean(kLogTab, "statorCurrentFlag");
 
     private Debouncer m_currentDebouncer = new Debouncer(0.125, DebounceType.RISING);
 
@@ -61,7 +62,13 @@ public class Hood extends SubsystemBase {
 
         SignalManager.register(kShooterBus, sig_hoodStatorCurrent, sig_hoodPos, sig_hoodCLErr);
     
-        setDefaultCommand(hoodCurrentSenseHomingCmd());
+
+        m_hood.setPosition(0);
+        m_isHoodHomed = true;
+        log_hoodHomed.accept(m_isHoodHomed);
+        setHoodPos(0.05); //really really low position to see that this is working
+
+        // setDefaultCommand(hoodCurrentSenseHomingCmd());
     }
 
     // ---HOOD
@@ -131,6 +138,7 @@ public class Hood extends SubsystemBase {
     public void periodic() {
         double posRots = sig_hoodPos.getValueAsDouble();
         refreshHoodAtPos();
+        log_hoodStatorCurrentCheck.accept(m_currentSpike);
         log_hoodCurrentPos.accept(getHoodAngleDeg(posRots));
         log_hoodPositionDeg.accept(posRots * 360.0);
     }

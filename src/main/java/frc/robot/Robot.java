@@ -561,7 +561,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
-        HubShiftUtil.initialize();
+        // HubShiftUtil.initialize();
+        // m_shooter.m_hood.hoodCurrentSenseHomingCmd();
     }
 
     @Override
