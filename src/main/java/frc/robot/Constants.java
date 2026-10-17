@@ -100,6 +100,7 @@ public class Constants {
         public static final boolean kAllowDriverRPSTweak = false;
 
         public static final double kRPSAdditionOnButton = 0.5;
+        public static final double kRPSAdjustmentDefault = 3.0; // mean of first used match is 3.75
 
         // private static final Pose3dLogger log_turretTransform = WaltLogger.logPose3d(kLogTab, "TurretTransformRaw");
         // static {

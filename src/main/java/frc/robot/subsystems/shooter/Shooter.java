@@ -120,7 +120,7 @@ public class Shooter extends SubsystemBase {
     private double m_calcHoodRots = kHoodRotsd;
     private double m_driverRPSTweak = 0.0;
     private double m_shotConfidence = 0.0; // updated every cycle from the shot calculator
-    private double m_manualRpsAdjustment = 0.0;
+    private double m_manualRpsAdjustment = kRPSAdjustmentDefault;
 
     // threshold for isShotConfident() — not gating anything yet, just for telemetry
     private static final double kMinShotConfidence = 30.0;
@@ -328,7 +328,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void unadjustRps() {
-        m_manualRpsAdjustment = 0;
+        m_manualRpsAdjustment = kRPSAdjustmentDefault;
     }
 
     // /**
