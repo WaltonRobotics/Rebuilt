@@ -87,7 +87,7 @@ public class Robot extends TimedRobot {
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-        .withDeadband(kMaxTranslationSpeed.times(0.01)).withRotationalDeadband(kMaxAngularRate.times(0.01)) // Add a 10% deadband
+        .withDeadband(kMaxTranslationSpeed.times(0.1)).withRotationalDeadband(kMaxAngularRate.times(0.1)) // Add a 10% deadband
         .withDriveRequestType(DriveRequestType.Velocity); // Use open-loop control for drive motors
 
     // private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -295,7 +295,7 @@ public class Robot extends TimedRobot {
             if (trg_shoot.getAsBoolean() && m_shooter.m_turret.getTurretLocked()) {
                 return m_drivetrain.getStopReq();
             } else {
-                double translationMps = kMaxTranslationMps * 2;
+                double translationMps = kMaxTranslationMps;
                 double rotationalMps = kMaxAngularRps;
 
                 double driverStickY = m_driver.getLeftY();
