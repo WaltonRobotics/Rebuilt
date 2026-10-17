@@ -93,7 +93,7 @@ public class Hood extends SubsystemBase {
     private void refreshHoodAtPos() {
         log_hoodCLErr.accept(sig_hoodCLErr.getValueAsDouble());
         // m_hoodAtPos = Math.abs(sig_hoodPos.getValueAsDouble() - m_commandedPosRots) <= kHoodMaxErrD;
-        m_hoodAtPos = sig_hoodCLErr.getValueAsDouble() <= kHoodMaxErrD;
+        m_hoodAtPos = sig_hoodCLErr.getValueAsDouble() <= kHoodMaxErrD; // all in rotations
         log_hoodAtPos.accept(m_hoodAtPos);
     }
 

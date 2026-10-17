@@ -103,6 +103,9 @@ public class ShotCalculator {
     //note that this boost is for scoring
     private static double kScoringRPSBoost = 0.5;
 
+    //this boost is for the hood angle
+    private static double kHoodBoost = -0.05;
+
     private static double kTOFCope = 0.5;
     private static final WaltTunable kRPSBoostTuner = new WaltTunable("Shooter/Calculator/RPSBoost", kRPSBoost); 
 
