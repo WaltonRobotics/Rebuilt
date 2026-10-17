@@ -99,6 +99,8 @@ public class Constants {
         public static final boolean kUseStaticShot = false;
         public static final boolean kAllowDriverRPSTweak = false;
 
+        public static final double kRPSAdditionOnButton = 0.5;
+
         // private static final Pose3dLogger log_turretTransform = WaltLogger.logPose3d(kLogTab, "TurretTransformRaw");
         // static {
         //     log_turretTransform.accept(kTurretTransform);

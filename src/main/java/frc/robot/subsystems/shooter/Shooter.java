@@ -93,7 +93,7 @@ public class Shooter extends SubsystemBase {
 
     // overshoot -- always command X% above calc'd RPS so the flywheel has energy margin
     private static final WaltTunable kOvershootPct =
-        new WaltTunable("/Shooter/overshootPct", 0.03); // e.g. 0.07 = 7% overshoot
+        new WaltTunable("/Shooter/overshootPct", 0.035); // e.g. 0.07 = 7% overshoot
 
     private int m_fuelStored = 8;
 
@@ -120,6 +120,7 @@ public class Shooter extends SubsystemBase {
     private double m_calcHoodRots = kHoodRotsd;
     private double m_driverRPSTweak = 0.0;
     private double m_shotConfidence = 0.0; // updated every cycle from the shot calculator
+    private double m_manualRpsAdjustment = 0.0;
 
     // threshold for isShotConfident() — not gating anything yet, just for telemetry
     private static final double kMinShotConfidence = 30.0;
@@ -172,9 +173,10 @@ public class Shooter extends SubsystemBase {
     private final DoubleLogger log_recoveryBump = new DoubleLogger("Shooter/Flywheel", "recoveryBumpRPS");
     private final BooleanLogger log_bangBangActive = WaltLogger.logBoolean("Shooter/Flywheel", "bangBangActive");
     private final DoubleLogger log_overshootRPS = new DoubleLogger("Shooter/Flywheel", "overshootRPS");
-    private final DoubleLogger log_driverAddedRPS = WaltLogger.logDouble(kLogTab, "driverAddedRPS");
     private final DoubleLogger log_shotConfidence = WaltLogger.logDouble(kLogTab, "shotConfidence");
     private final BooleanLogger log_shotConfident = WaltLogger.logBoolean(kLogTab, "shotConfident");
+
+    private final DoubleLogger log_shotAdjustmentRps = WaltLogger.logDouble(kLogTab, "shotAdjRps");
 
     /* CONSTRUCTOR */
     public Shooter(Supplier<Pose2d> poseSupplier, Supplier<SwerveDriveState> threadsafeSwerveStateSup, Supplier<ChassisVelocities> fieldSpeedsSupplier) {
@@ -231,28 +233,6 @@ public class Shooter extends SubsystemBase {
 
     public Command hoodToHalfway() {
         return m_hood.run(() -> m_hood.setHoodPos(kHoodRotsHalfwayD));
-    }
-
-    public Command driverRPSIncreaseWhileHeldCmd() {
-        return driverRPSAlterStatic(true).finallyDo(() -> driverResetRPSAlter());
-    }
-
-    public Command driverRPSAlterDynamic(boolean increase) {
-        return Commands.runOnce(() -> {
-            m_driverRPSTweak = increase ? (m_calcFlywheelVelocityRotPerSec * 0.05) : (m_calcFlywheelVelocityRotPerSec * -0.05);
-            log_driverAddedRPS.accept(m_driverRPSTweak);
-        });
-    }
-
-    public Command driverRPSAlterStatic(boolean increase) {
-        return Commands.runOnce(() -> {
-            m_driverRPSTweak += kDriverRPSIncreaseD * (increase ? 1 : -1);
-            log_driverAddedRPS.accept(m_driverRPSTweak);
-        });
-    }
-
-    public Command driverResetRPSAlter() {
-        return Commands.runOnce(() -> m_driverRPSTweak = 0);
     }
 
     public void setShooterVelocity(AngularVelocity RPS) {
@@ -343,6 +323,14 @@ public class Shooter extends SubsystemBase {
         return accelDrop;
     }
 
+    public void adjustRpsBy(double rpsReq) {
+        m_manualRpsAdjustment += rpsReq;
+    }
+
+    public void unadjustRps() {
+        m_manualRpsAdjustment = 0;
+    }
+
     // /**
     //  * Launches SIMULATION FUEL™ at the current Flywheel Velocity, current Hood
     //  * Angle, and the
@@ -397,7 +385,7 @@ public class Shooter extends SubsystemBase {
                     m_turret.setTurretPos(turretReference + kCopeTurretRots.getOr(0.03), turretVelocityFF);
                     m_calcFlywheelVelocityRotPerSec = kShooterRPSOverride.enabled()
                         ? kShooterRPSOverride.get()
-                        : calcData.shooterReferenceRps() + kShooterRPSBoost.getOr(0);
+                        : calcData.shooterReferenceRps() + kShooterRPSBoost.getOr(0) + m_manualRpsAdjustment;
                     if (kAllowDriverRPSTweak) { // ENABLE THIS TO ALLOW DRIVER RPS TWEAK
                         m_calcFlywheelVelocityRotPerSec += m_driverRPSTweak;
                         m_calcFlywheelVelocityRotPerSec = Math.clamp(m_calcFlywheelVelocityRotPerSec, 0, kShooterMaxRPSd);    //clamp here or clamp only when setShooterVel is called?
@@ -443,11 +431,13 @@ public class Shooter extends SubsystemBase {
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocityRotPerSec);
         log_recoveryBump.accept(m_recoveryBumpRPS);
         log_bangBangActive.accept(kBangBangEnabled.enabled() && kBangBangEnabled.get() > 0);
-        log_overshootRPS.accept(kOvershootPct.enabled() ? m_calcFlywheelVelocityRotPerSec * kOvershootPct.get() : 0.0);
+        log_overshootRPS.accept(m_calcFlywheelVelocityRotPerSec * kOvershootPct.getOrDefault());
         log_ballDetected.accept(trg_ballDetected.getAsBoolean());
         log_ballShotDebounce.accept(trg_ballShotDebounced.getAsBoolean());
         log_shotConfidence.accept(m_shotConfidence);
         log_shotConfident.accept(isShotConfident());
+
+        log_shotAdjustmentRps.accept(m_manualRpsAdjustment);
 
         // m_periodicTracer.addEpoch("Logging");
 

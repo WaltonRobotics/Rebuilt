@@ -9,6 +9,7 @@ import static org.wpilib.units.Units.*;
 import static frc.robot.Constants.FieldK.kLeftResetPose;
 import static frc.robot.Constants.FieldK.kRightResetPose;
 import static frc.robot.Constants.RobotK.*;
+import static frc.robot.Constants.ShooterK.kRPSAdditionOnButton;
 
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
@@ -144,6 +145,7 @@ public class Robot extends TimedRobot {
     private final Trigger trg_snappingBack = new Trigger(m_shooter.m_turret.isSnappingBack());
     private final Trigger trg_driverOverride = m_driver.b();
     private final Trigger trg_manipOverride = m_manipulator.b();
+    private final Trigger trg_NOTmanipOverride = trg_manipOverride.negate();
 
     //---DRIVER BUTTONS
     private final Trigger trg_shoot = m_driver.rightTrigger().and(trg_driverOverride.negate());
@@ -156,11 +158,11 @@ public class Robot extends TimedRobot {
     private final Trigger trg_unlockShooting = m_driver.getHID().povDown();
 
     //---MANIPULATOR BUTTONS
-    private final Trigger trg_intake = RobotK.kSingleDriverMode ? m_driver.leftTrigger().and(trg_driverOverride.negate()) : m_manipulator.rightTrigger().and(trg_manipOverride.negate());
+    private final Trigger trg_intake = RobotK.kSingleDriverMode ? m_driver.leftTrigger().and(trg_driverOverride.negate()) : m_manipulator.rightTrigger().and(trg_NOTmanipOverride);
     private final Trigger trg_retractIntake = m_manipulator.rightBumper().and(trg_manipOverride);
     private final Trigger trg_intakeShimmy = RobotK.kSingleDriverMode ? m_driver.leftBumper() : m_manipulator.leftBumper();
 
-    private final Trigger trg_emergencyIntakeOnlyBarf = m_manipulator.rightTrigger().and(trg_manipOverride.negate());
+    private final Trigger trg_emergencyIntakeOnlyBarf = m_manipulator.rightTrigger().and(trg_NOTmanipOverride);
 
     private final Trigger trg_homeIntake =  m_manipulator.x().and(trg_manipOverride);
     private final Trigger trg_homeHood = m_manipulator.start().and(trg_manipOverride);
@@ -170,6 +172,9 @@ public class Robot extends TimedRobot {
     private final Trigger trg_limitFPS = RobotModeTriggers.disabled();
     private final Trigger trg_unlimitFps = RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop());
     private final Trigger trg_singlePlayer = new Trigger(() -> kSingleDriverMode);
+    private final Trigger trg_addRPS = m_manipulator.getHID().povUp().and(trg_NOTmanipOverride);
+    private final Trigger trg_reduceRPS = m_manipulator.getHID().povDown().and(trg_NOTmanipOverride);
+    private final Trigger trg_unadjustRps = m_manipulator.getHID().povRight().and(trg_NOTmanipOverride);
 
 
 
@@ -396,6 +401,12 @@ public class Robot extends TimedRobot {
 
         trg_resetPoseLeft.onTrue(Commands.runOnce(() -> m_drivetrain.resetPose(kLeftResetPose)));
         trg_resetPoseRight.onTrue(Commands.runOnce(() -> m_drivetrain.resetPose(kRightResetPose)));
+
+        trg_addRPS.onTrue(Commands.runOnce(() -> m_shooter.adjustRpsBy(kRPSAdditionOnButton)));
+        trg_reduceRPS.onTrue(Commands.runOnce(() -> m_shooter.adjustRpsBy(-kRPSAdditionOnButton)));
+        trg_unadjustRps.onTrue(Commands.runOnce(() -> m_shooter.unadjustRps()));
+
+    
 
         //---OLD RUMBLE LOGIC
         // Trigger trg_hubActiveOrPassing =
