@@ -7,14 +7,12 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 
-import edu.wpi.first.networktables.DoubleSubscriber;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import org.wpilib.units.measure.AngularVelocity;
+import org.wpilib.units.measure.Current;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
+import org.wpilib.command2.SubsystemBase;
+import static org.wpilib.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IndexerK.*;
 
 import java.util.function.DoubleSupplier;
@@ -43,8 +41,9 @@ public class Indexer extends SubsystemBase {
     private final CoastOut m_tunnelMotorIdleReq = new CoastOut();
 
     /* SIM OBJECTS */
+    // 2027-TODO: figure out new LinearSystem generator!!!
     // private final DCMotorSim m_spindexerSim = new DCMotorSim(
-    //     LinearSystemId.createDCMotorSystem(
+    //     LinearSystem.createDCMotorSystem(
     //         DCMotor.getKrakenX60Foc(1),
     //         kSpindexerMOI,
     //         kSpindexerGearing
@@ -53,7 +52,7 @@ public class Indexer extends SubsystemBase {
     // );
 
     // private final DCMotorSim m_tunnelSim = new DCMotorSim(
-    //     LinearSystemId.createDCMotorSystem(
+    //     LinearSystem.createDCMotorSystem(
     //         DCMotor.getKrakenX60Foc(1),
     //         kTunnelMOI,
     //         kTunnelGearing
@@ -205,7 +204,9 @@ public class Indexer extends SubsystemBase {
             m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(0));
             m_tunnel.setControl(m_tunnelMotorIdleReq);
         } else {
-            RPS = kTunnelRPSOverride.enabled() ? kTunnelRPSOverride.get() : RPS;
+            if (RPS > 0) {
+                RPS = kTunnelRPSOverride.enabled() ? kTunnelRPSOverride.get() : RPS;
+            }
             m_tunnel.setControl(m_tunnelVelocityRequest.withVelocity(RPS));
         }
         m_desiredTunnelRPS = RPS;

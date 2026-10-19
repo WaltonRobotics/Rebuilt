@@ -37,8 +37,8 @@ public final class SignalManager {
 
         void log(CANBus.CANBusStatus status) {
             busUtilization.accept(status.BusUtilization);
-            busOffCount.accept(status.BusOffCount);
-            txFullCount.accept(status.TxFullCount);
+            busOffCount.accept(((int) status.BusOffCount));
+            txFullCount.accept((int) status.TxFullCount);
             rec.accept(status.REC);
             tec.accept(status.TEC);
             isValid.accept(status.Status.isOK());

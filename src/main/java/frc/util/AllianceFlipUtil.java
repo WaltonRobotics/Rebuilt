@@ -9,13 +9,13 @@ package frc.util;
 
 
 import java.util.Optional;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Translation2d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.driverstation.Alliance;
 import frc.robot.FieldConstants;
 
 /** Utility functions for flipping from the blue to red alliance. */
@@ -36,7 +36,7 @@ public class AllianceFlipUtil {
   }
 
   public static Rotation2d apply(Rotation2d rotation) {
-    return shouldFlip() ? rotation.rotateBy(Rotation2d.kPi) : rotation;
+    return shouldFlip() ? rotation.rotateBy(Rotation2d.PI) : rotation;
   }
 
   public static Pose2d apply(Pose2d pose) {
@@ -64,7 +64,7 @@ public class AllianceFlipUtil {
   //kept this method, since I don't know what disableHAL is... until that point this shall stay :D
   public static boolean shouldFlip() {
     Optional<Alliance> alliance = WaltDriverStation.getAlliance();
-    return alliance.isPresent() && alliance.get() == Alliance.Red;
+    return alliance.isPresent() && alliance.get() == Alliance.RED;
     // return true;
   }
 }

@@ -7,7 +7,7 @@
 
 package frc.util;
 
-import edu.wpi.first.math.geometry.Twist2d;
+import org.wpilib.math.geometry.Twist2d;
 
 public class EqualsUtil {
   public static boolean epsilonEquals(double a, double b, double epsilon) {

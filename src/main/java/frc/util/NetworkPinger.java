@@ -2,7 +2,7 @@ package frc.util;
 
 import java.net.InetAddress;
 
-import edu.wpi.first.wpilibj.Notifier;
+import org.wpilib.system.Notifier;
 import frc.util.WaltLogger.BooleanLogger;
 
 public class NetworkPinger {

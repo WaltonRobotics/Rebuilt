@@ -6,15 +6,14 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.networktables.DoubleSubscriber;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.wpilib.units.measure.Angle;
+import org.wpilib.units.measure.AngularVelocity;
+import org.wpilib.hardware.rotation.DutyCycleEncoder;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.SubsystemBase;
 import frc.robot.Constants;
 
-import static edu.wpi.first.units.Units.*;
+import static org.wpilib.units.Units.*;
 import static frc.robot.Constants.ShooterK.*;
 import static frc.robot.Constants.TurretK.kLogTab;
 import static frc.robot.Constants.TurretK.*;
@@ -24,40 +23,45 @@ import frc.util.SignalManager;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
-import frc.util.WaltLogger.IntLogger;
 import frc.util.WaltLogger.Pose3dLogger;
 
 public class Turret extends SubsystemBase {
     private static final double kTurretMaxRotsFromHomeDeg = kTurretMaxRotsFromHome.in(Degrees);
     private boolean m_holdTurretAtIntakePos = false;
     private boolean m_turretLocked = false;
-    private double m_turretLockAngleRots = 0.0;
+    private double m_turretLockAngleRots = -0.115;
 
     private final TalonFX m_turret = new TalonFX(kTurretCANID, Constants.kCanivoreBus); // X44Foc
     private final PositionVoltage m_PVRequest = new PositionVoltage(0).withEnableFOC(true);
 
-    // ---LOGIC BOOLEANS
+    // LOGIC
     private boolean m_isTurretHomed = true;
     public BooleanSupplier turretHomedSupp = () -> m_isTurretHomed;
     private boolean m_turretAtPos = false;
     public BooleanSupplier turretAtPosSupp = () -> m_turretAtPos;
     private boolean m_isSnappingBack = false;
     private final BooleanSupplier supp_isSnappingBack = () -> m_isSnappingBack;
+    private boolean m_turretLCMRight = false;
+    private final BooleanSupplier supp_turretLCMRight = () -> m_turretLCMRight;
 
     private final CANcoder m_lcmEncA = new CANcoder(19, Constants.kCanivoreBus);
     private final DutyCycleEncoder m_lcmEncB = new DutyCycleEncoder(3);
 
     private final DoubleLogger log_lcmEncAPos = WaltLogger.logDouble(kLogTab, "EncA/Pos");
     private final DoubleLogger log_lcmEncBPos = WaltLogger.logDouble(kLogTab, "EncB/Pos");
-    private final IntLogger log_lcmEncBFreq = WaltLogger.logInt(kLogTab, "EncB/Freq");
+    private final DoubleLogger log_lcmEncBFreq = WaltLogger.logDouble(kLogTab, "EncB/Freq");
     private final BooleanLogger log_lcmEncBConn = WaltLogger.logBoolean(kLogTab, "EncB/Conn");
 
     private final DoubleLogger log_turretControlPos = WaltLogger.logDouble(kLogTab, "turretControlPos");
+    private final DoubleLogger log_turretControlFFRadPS = WaltLogger.logDouble(kLogTab, "turretFFRadPS");
     private final DoubleLogger log_turretLCMPos = WaltLogger.logDouble(kLogTab, "turretLCMPos");
     private final DoubleLogger log_turretClosedLoopError = WaltLogger.logDouble(kLogTab, "turretCLE");
     private final BooleanLogger log_atPos = WaltLogger.logBoolean(kLogTab, "atPos");
     private final BooleanLogger log_turretLocked = WaltLogger.logBoolean(kLogTab, "turretLocked");
     private final Pose3dLogger log_turretTransform = WaltLogger.logPose3d(kLogTab, "turretTransform");
+
+    private final DoubleLogger log_turretLCMRealDelta = WaltLogger.logDouble(kLogTab, "turretLCMRealDelta");
+    private final BooleanLogger log_turretLCMRight = WaltLogger.logBoolean(kLogTab, "turretLCMRight");
 
     private final BooleanLogger log_isTurretSnappingBack = WaltLogger.logBoolean(kLogTab, "snappingBack");
 
@@ -139,15 +143,17 @@ public class Turret extends SubsystemBase {
     public void setTurretPos(Angle rots, AngularVelocity velocityFF) {
         m_turret.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFF));
         log_turretControlPos.accept(rots.in(Rotations));
+        log_turretControlFFRadPS.accept(velocityFF.in(RadiansPerSecond));
     }
 
-    public void setTurretPos(double rots, double velocityFF) {
-        m_turret.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFF));
+    public void setTurretPos(double rots, double velocityFFRadPS) {
+        m_turret.setControl(m_PVRequest.withPosition(rots).withVelocity(velocityFFRadPS)); 
         log_turretControlPos.accept(rots);
+        log_turretControlFFRadPS.accept(velocityFFRadPS);
     }
 
     public void setTurretNeutralMode(NeutralModeValue value) {
-        m_turret.setNeutralMode(value);
+        m_turret.configNeutralMode(value);
     }
 
     public double getCurrTurretPos() {
@@ -181,7 +187,11 @@ public class Turret extends SubsystemBase {
         refreshTurretCLErr();
 
         double turretAngleDeg = calcTurretAngleLCM(encAVal * 360, -(encBVal - kEncBOffset) * 360);
+        m_turretLCMRight = (((turretAngleDeg / 360.0) - getCurrTurretPos()) < 0.01 ) && ((turretAngleDeg / 360.0) - getCurrTurretPos()) > -0.01;
+
         log_turretLCMPos.accept(turretAngleDeg / 360.0);
+        log_turretLCMRealDelta.accept(((turretAngleDeg / 360.0) - getCurrTurretPos()));
+        log_turretLCMRight.accept(supp_turretLCMRight.getAsBoolean());
     }
 
     public static double calcTurretAngleLCM(double e1, double e2) {

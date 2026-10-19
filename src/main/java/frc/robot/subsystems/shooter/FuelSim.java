@@ -1,20 +1,20 @@
 // package frc.robot.subsystems.shooter;
 
-// import static edu.wpi.first.units.Units.Meters;
-// import static edu.wpi.first.units.Units.MetersPerSecond;
-// import static edu.wpi.first.units.Units.Radians;
+// import static org.wpilib.units.Units.Meters;
+// import static org.wpilib.units.Units.MetersPerSecond;
+// import static org.wpilib.units.Units.Radians;
 
-// import edu.wpi.first.math.geometry.Pose2d;
-// import edu.wpi.first.math.geometry.Pose3d;
-// import edu.wpi.first.math.geometry.Rotation2d;
-// import edu.wpi.first.math.geometry.Rotation3d;
-// import edu.wpi.first.math.geometry.Transform3d;
-// import edu.wpi.first.math.geometry.Translation2d;
-// import edu.wpi.first.math.geometry.Translation3d;
-// import edu.wpi.first.math.kinematics.ChassisSpeeds;
-// import edu.wpi.first.units.measure.Angle;
-// import edu.wpi.first.units.measure.Distance;
-// import edu.wpi.first.units.measure.LinearVelocity;
+// import org.wpilib.math.geometry.Pose2d;
+// import org.wpilib.math.geometry.Pose3d;
+// import org.wpilib.math.geometry.Rotation2d;
+// import org.wpilib.math.geometry.Rotation3d;
+// import org.wpilib.math.geometry.Transform3d;
+// import org.wpilib.math.geometry.Translation2d;
+// import org.wpilib.math.geometry.Translation3d;
+// import org.wpilib.math.kinematics.ChassisVelocities;
+// import org.wpilib.units.measure.Angle;
+// import org.wpilib.units.measure.Distance;
+// import org.wpilib.units.measure.LinearVelocity;
 // import frc.util.BoundedQueue;
 // import frc.util.WaltLogger;
 // import frc.util.WaltLogger.Translation3dArrayLogger;
@@ -317,7 +317,7 @@
 //     private boolean running = false;
 //     private boolean simulateAirResistance = false;
 //     private Supplier<Pose2d> robotPoseSupplier = null;
-//     private Supplier<ChassisSpeeds> robotFieldSpeedsSupplier = null;
+//     private Supplier<ChassisVelocities> robotFieldSpeedsSupplier = null;
 //     private double robotWidth; // size along the robot's y axis
 //     private double robotLength; // size along the robot's x axis
 //     private double bumperHeight;
@@ -418,14 +418,14 @@
 //      * @param length from front to back (x-axis)
 //      * @param bumperHeight
 //      * @param poseSupplier
-//      * @param fieldSpeedsSupplier field-relative `ChassisSpeeds` supplier
+//      * @param fieldSpeedsSupplier field-relative `ChassisVelocities` supplier
 //      */
 //     public void registerRobot(
 //             double width,
 //             double length,
 //             double bumperHeight,
 //             Supplier<Pose2d> poseSupplier,
-//             Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
+//             Supplier<ChassisVelocities> fieldSpeedsSupplier) {
 //         this.robotPoseSupplier = poseSupplier;
 //         this.robotFieldSpeedsSupplier = fieldSpeedsSupplier;
 //         this.robotWidth = width;
@@ -487,7 +487,7 @@
 
 //         Pose3d launchPose = new Pose3d(this.robotPoseSupplier.get())
 //                 .plus(new Transform3d(new Translation3d(Meters.zero(), Meters.zero(), launchHeight), Rotation3d.kZero));
-//         ChassisSpeeds fieldSpeeds = this.robotFieldSpeedsSupplier.get();
+//         ChassisVelocities fieldSpeeds = this.robotFieldSpeedsSupplier.get();
 
 //         double horizontalVel = Math.cos(hoodAngle.in(Radians)) * launchVelocity.in(MetersPerSecond);
 //         double verticalVel = Math.sin(hoodAngle.in(Radians)) * launchVelocity.in(MetersPerSecond);
@@ -498,8 +498,8 @@
 //                 * Math.sin(
 //                         turretYaw.plus(launchPose.getRotation().getMeasureZ()).in(Radians));
 
-//         xVel += fieldSpeeds.vxMetersPerSecond;
-//         yVel += fieldSpeeds.vyMetersPerSecond;
+//         xVel += fieldSpeeds.vx;
+//         yVel += fieldSpeeds.vy;
 
 //         spawnFuel(launchPose.getTranslation(), new Translation3d(xVel, yVel, verticalVel));
 //     }
@@ -548,8 +548,8 @@
 
 //     private void handleRobotCollisions(BoundedQueue<Fuel> fuels) {
 //         Pose2d robot = robotPoseSupplier.get();
-//         ChassisSpeeds speeds = robotFieldSpeedsSupplier.get();
-//         Translation2d robotVel = new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
+//         ChassisVelocities speeds = robotFieldSpeedsSupplier.get();
+//         Translation2d robotVel = new Translation2d(speeds.vx, speeds.vy);
 
 //         for (Fuel fuel : fuels) {
 //             handleRobotCollision(fuel, robot, robotVel);

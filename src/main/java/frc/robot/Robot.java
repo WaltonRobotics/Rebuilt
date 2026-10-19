@@ -5,14 +5,16 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
+import static org.wpilib.units.Units.*;
 import static frc.robot.Constants.FieldK.kLeftResetPose;
 import static frc.robot.Constants.FieldK.kRightResetPose;
 import static frc.robot.Constants.RobotK.*;
+import static frc.robot.Constants.ShooterK.kRPSAdditionOnButton;
+
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonCamera;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
@@ -20,29 +22,37 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.Tracer;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+import org.wpilib.math.filter.SlewRateLimiter;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.units.measure.AngularVelocity;
+import org.wpilib.units.measure.LinearVelocity;
+import org.wpilib.system.DataLogManager;
+import org.wpilib.driverstation.RobotState;
+import org.wpilib.driverstation.DriverStation;
+import org.wpilib.driverstation.internal.DriverStationBackend;
+import org.wpilib.hardware.bus.CAN;
+import org.wpilib.hardware.bus.CANPort;
+import org.wpilib.hardware.power.PowerDistribution;
+import org.wpilib.system.RobotController;
+import org.wpilib.framework.TimedRobot;
+import org.wpilib.system.Timer;
+import org.wpilib.system.Tracer;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.CommandScheduler;
+import org.wpilib.command2.Commands;
+import org.wpilib.command2.button.CommandNiDsXboxController;
+import org.wpilib.command2.button.CommandXboxController;
+import org.wpilib.command2.button.RobotModeTriggers;
+import org.wpilib.command2.button.Trigger;
 
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
+import frc.robot.autons.WaltAdaptableAutonFactory;
+import frc.robot.autons.WaltPointToPointAutonFactory;
+import frc.robot.dashboards.AutonChooser;
+import frc.robot.dashboards.BasicAutonChooser;
 import frc.robot.dashboards.AutonChooser;
 import frc.robot.autons.WaltAdaptableAutonFactory;
 import frc.robot.generated.TunerConstants;
@@ -54,10 +64,10 @@ import frc.robot.vision.WaltCamera;
 import frc.util.HubShiftUtil;
 import frc.util.PerformanceMonitor;
 import frc.util.SignalManager;
-// import frc.util.WaltVisualSim;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
+import frc.util.WaltLogger.IntLogger;
 import frc.util.WaltLogger.Pose2dLogger;
 
 public class Robot extends TimedRobot {
@@ -73,7 +83,7 @@ public class Robot extends TimedRobot {
     private final double kMaxTranslationMps = kMaxTranslationSpeed.in(MetersPerSecond);
     private final double kMaxAngularRps = kMaxAngularRate.in(RadiansPerSecond);
 
-    private double m_visionSeenLastSec = Utils.getCurrentTimeSeconds();
+    private double m_visionSeenLastSec = Utils.getMonotonicTimeSeconds();
     private final BooleanLogger log_visionSeenPastSecond = new BooleanLogger(kLogTab, "VisionSeenLastSec");
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -81,7 +91,7 @@ public class Robot extends TimedRobot {
         .withDeadband(kMaxTranslationSpeed.times(0.1)).withRotationalDeadband(kMaxAngularRate.times(0.1)) // Add a 10% deadband
         .withDriveRequestType(DriveRequestType.Velocity); // Use open-loop control for drive motors
 
-    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+    // private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     // private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
     // private final SwerveRequest.RobotCentric tuneDrive = new SwerveRequest.RobotCentric()
@@ -95,11 +105,11 @@ public class Robot extends TimedRobot {
     private final SlewRateLimiter limit_driverYawRate = new SlewRateLimiter(0.30);
 
     //---CONTROLLERS
-    private final CommandXboxController m_driver = new CommandXboxController(0);
-    private final CommandXboxController m_manipulator = new CommandXboxController(1);
+    private final CommandNiDsXboxController m_driver = new CommandNiDsXboxController(0);
+    private final CommandNiDsXboxController m_manipulator = new CommandNiDsXboxController(1);
 
     // Cached so the drive default-command lambda doesn't allocate a Trigger every tick.
-    private final Trigger trg_driverSlow = m_driver.leftTrigger();
+    private final Trigger trg_driverSlow = m_driver.leftTrigger().and(m_driver.b());
 
     //---INIT SUBSYSTEMS
     public final Swerve m_drivetrain = TunerConstants.createDrivetrain();
@@ -107,7 +117,7 @@ public class Robot extends TimedRobot {
     private final Shooter m_shooter = new Shooter(
         () -> m_drivetrain.getState().Pose, 
         () -> m_drivetrain.getStateCopy(),
-        () -> m_drivetrain.getChassisSpeeds());
+        () -> m_drivetrain.getChassisVelocities());
 
     private final Intake m_intake = new Intake();
     private final Indexer m_indexer = new Indexer();
@@ -118,9 +128,13 @@ public class Robot extends TimedRobot {
     //---AUTONS
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
     private final WaltAdaptableAutonFactory m_adpatableAutonFactory = new WaltAdaptableAutonFactory(m_superstructure, m_autoFactory, m_intake, m_shooter, m_drivetrain);
+    private final WaltPointToPointAutonFactory m_pointToPointAutonFactory = new WaltPointToPointAutonFactory(m_superstructure, m_intake, m_shooter, m_drivetrain);
     //---VISION
 
-    private PowerDistribution m_PDH = new PowerDistribution();
+
+    // 2027-TODO: CANBusMap!!
+    private PowerDistribution m_PDH = new PowerDistribution(CANPort.CAN_S4);
+    private CANBus m_fixedBus = new CANBus(CANPort.CAN_S4);
     // private final NetworkPinger m_radioPinger = new NetworkPinger("Radio", "10.29.74.1", 0.2, 10);
     // private final NetworkPinger m_coprocessorPinger = new NetworkPinger("Coprocessor", "10.29.74.11", 0.2, 10);
     // private final VisionSim m_visionSim = new VisionSim();
@@ -131,23 +145,24 @@ public class Robot extends TimedRobot {
     private final Trigger trg_snappingBack = new Trigger(m_shooter.m_turret.isSnappingBack());
     private final Trigger trg_driverOverride = m_driver.b();
     private final Trigger trg_manipOverride = m_manipulator.b();
+    private final Trigger trg_NOTmanipOverride = trg_manipOverride.negate();
 
     //---DRIVER BUTTONS
     private final Trigger trg_shoot = m_driver.rightTrigger().and(trg_driverOverride.negate());
     private final Trigger trg_emergencyBarf = m_driver.rightTrigger().and(trg_driverOverride);
     private final Trigger trg_unjam = m_driver.rightBumper();
-    private final Trigger trg_resetPoseLeft = m_driver.leftBumper().and(trg_driverOverride.and(m_driver.povLeft()));
-    private final Trigger trg_resetPoseRight = m_driver.leftBumper().and(trg_driverOverride.and(m_driver.povRight()));
+    private final Trigger trg_resetPoseLeft = m_driver.leftBumper().and(trg_driverOverride.and(m_driver.getHID().povLeft()));
+    private final Trigger trg_resetPoseRight = m_driver.leftBumper().and(trg_driverOverride.and(m_driver.getHID().povRight()));
 
-    private final Trigger trg_lockShooting = m_driver.povRight();
-    private final Trigger trg_unlockShooting = m_driver.povDown();
+    private final Trigger trg_lockShooting = m_driver.getHID().povUp();
+    private final Trigger trg_unlockShooting = m_driver.getHID().povDown();
 
     //---MANIPULATOR BUTTONS
-    private final Trigger trg_intake = m_manipulator.rightTrigger().and(trg_manipOverride.negate());
-    private final Trigger trg_retractIntake = m_manipulator.rightBumper().and(trg_manipOverride.negate());
-    private final Trigger trg_intakeShimmy = m_manipulator.leftBumper();
+    private final Trigger trg_intake = RobotK.kSingleDriverMode ? m_driver.leftTrigger().and(trg_driverOverride.negate()) : m_manipulator.rightTrigger().and(trg_NOTmanipOverride);
+    private final Trigger trg_retractIntake = m_manipulator.rightBumper().and(trg_manipOverride);
+    private final Trigger trg_intakeShimmy = RobotK.kSingleDriverMode ? m_driver.leftBumper() : m_manipulator.leftBumper();
 
-    private final Trigger trg_emergencyIntakeOnlyBarf = m_manipulator.rightTrigger().and(trg_manipOverride);
+    private final Trigger trg_emergencyIntakeOnlyBarf = m_manipulator.rightTrigger().and(trg_NOTmanipOverride);
 
     private final Trigger trg_homeIntake =  m_manipulator.x().and(trg_manipOverride);
     private final Trigger trg_homeHood = m_manipulator.start().and(trg_manipOverride);
@@ -156,6 +171,10 @@ public class Robot extends TimedRobot {
     //---MISC TRGs
     private final Trigger trg_limitFPS = RobotModeTriggers.disabled();
     private final Trigger trg_unlimitFps = RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop());
+    private final Trigger trg_singlePlayer = new Trigger(() -> kSingleDriverMode);
+    private final Trigger trg_addRPS = m_manipulator.getHID().povUp().and(trg_NOTmanipOverride);
+    private final Trigger trg_reduceRPS = m_manipulator.getHID().povDown().and(trg_NOTmanipOverride);
+    private final Trigger trg_unadjustRps = m_manipulator.getHID().povRight().and(trg_NOTmanipOverride);
 
 
 
@@ -167,6 +186,15 @@ public class Robot extends TimedRobot {
     private final Pose2dLogger log_robotPose = WaltLogger.logPose2d("Drive", "Pose", true);
 
     private final DoubleLogger log_autonTime = WaltLogger.logDouble("Auton", "autonTime");
+
+    private final DoubleLogger log_driverXVelo = WaltLogger.logDouble(kLogTab, "driverXVelo");
+    private final DoubleLogger log_driverYVelo = WaltLogger.logDouble(kLogTab, "driverYVelo");
+    private final DoubleLogger log_driverYawVelo = WaltLogger.logDouble(kLogTab, "driverYawVelo");
+
+    
+    private final DoubleLogger log_driverStickY = WaltLogger.logDouble(kLogTab, "driverStickY");
+    private final DoubleLogger log_driverStickX = WaltLogger.logDouble(kLogTab, "driverStickX");
+    private final DoubleLogger log_driverStickTurn = WaltLogger.logDouble(kLogTab, "driverStickTurn");
 
     //NOT DISPLAYING
     // private final StringLogger log_currentShift = WaltLogger.logString("Util/Shift", "currentShift");
@@ -180,6 +208,8 @@ public class Robot extends TimedRobot {
 
     private final Tracer m_periodicTracer = new Tracer();
     private final PerformanceMonitor m_perfMonitor = new PerformanceMonitor(false);
+
+    private Command m_chosenAuton;
     private final Command m_preheaterCommand;
 
     /* CONSTRUCTOR */
@@ -200,6 +230,7 @@ public class Robot extends TimedRobot {
         lastGotTagMsmtTimer.start();
 
         AutonChooser.initialize(m_adpatableAutonFactory);
+        // BasicAutonChooser.initialize(m_pointToPointAutonFactory);
         long tChooserInit = System.nanoTime();
         System.out.printf("[INIT PROFILE] AutonChooser.initialize:  %7.1f ms%n", (tChooserInit - tPrev) * 1e-6);
         tPrev = tChooserInit;
@@ -207,21 +238,23 @@ public class Robot extends TimedRobot {
         // Choreo warmup. Runs synchronously on the main thread during robotInit so
         // class-loading, trajectory JSON parsing, and routine/trigger composition all
         // happen up-front instead of on the first autonomousInit tick.
-        AutonChooser.forceLoadChoreoClasses();
+        
+        // AutonChooser.forceLoadChoreoClasses();
         long tClassLoad = System.nanoTime();
         System.out.printf("[INIT PROFILE] forceLoadChoreoClasses:   %7.1f ms%n", (tClassLoad - tPrev) * 1e-6);
         tPrev = tClassLoad;
 
-        // m_adpatableAutonFactory.preloadAllTrajectories(AutonChooser.allTrajectoryNames());
-        // long tPreload = System.nanoTime();
-        // System.out.printf("[INIT PROFILE] preloadAllTrajectories:   %7.1f ms%n", (tPreload - tPrev) * 1e-6);
-        // tPrev = tPreload;
+        m_adpatableAutonFactory.preloadAllTrajectories(AutonChooser.allTrajectoryNames());
+        long tPreload = System.nanoTime();
+        System.out.printf("[INIT PROFILE] preloadAllTrajectories:   %7.1f ms%n", (tPreload - tPrev) * 1e-6);
+        tPrev = tPreload;
 
-        // AutonChooser.preheatAllRoutines();
-        // long tPreheat = System.nanoTime();
-        // System.out.printf("[INIT PROFILE] preheatAllRoutines:       %7.1f ms%n", (tPreheat - tPrev) * 1e-6);
-        // tPrev = tPreheat;
+        AutonChooser.preheatAllRoutines();
+        long tPreheat = System.nanoTime();
+        System.out.printf("[INIT PROFILE] preheatAllRoutines:       %7.1f ms%n", (tPreheat - tPrev) * 1e-6);
+        tPrev = tPreheat;
 
+        // 2027-TODO: Fix auton/choreo stuff!!!
         RobotModeTriggers.autonomous().whileTrue(
             AutonChooser.m_chooser.selectedCommandScheduler().withTimeout(20.3)
         );
@@ -229,11 +262,9 @@ public class Robot extends TimedRobot {
         // set FPS limit on boot
         WaltCamera.setFpsLimit(true);
 
-        DriverStation.silenceJoystickConnectionWarning(true);
-        PhotonCamera.setVersionCheckEnabled(false);
-        LiveWindow.disableAllTelemetry();
-
-        
+        //TODO: for 2027 build season, maybe start logging which DS we are? if we arent already
+        DriverStationBackend.silenceJoystickConnectionAlert(true);
+        // PhotonCamera.setVersionCheckEnabled(false);
 
         // MANUAL HOMING IS BEING USED
         // addPeriodic(m_shooter::fastPeriodic, 0.0025);
@@ -243,9 +274,9 @@ public class Robot extends TimedRobot {
         tPrev = tMisc;
 
         m_preheaterCommand = AutonChooser.getPreheater();
+
+        // 2027-TODO: figure out auton/choreo!!!
         CommandScheduler.getInstance().schedule(m_preheaterCommand);
-        // m_preheaterCommand = AutonChooser.m_chooser.selectedCommandScheduler();
-        // CommandScheduler.getInstance().schedule(m_preheaterCommand);
 
         long tEnd = System.nanoTime();
         System.out.printf("[INIT PROFILE] preheater cmd build:      %7.1f ms%n", (tEnd - tPrev) * 1e-6);
@@ -266,22 +297,38 @@ public class Robot extends TimedRobot {
         final double slowRotRps = kMaxAngularRps * rotationMult;
 
         return m_drivetrain.applyRequest(() -> {
-            boolean slowButton = trg_driverSlow.getAsBoolean();
-            double translationMps = slowButton ? slowMps : kMaxTranslationMps;
-            double rotationalMps = slowButton ? slowRotRps : kMaxAngularRps;
+            if (trg_shoot.getAsBoolean() && m_shooter.m_turret.getTurretLocked()) {
+                return m_drivetrain.getStopReq();
+            } else {
+                double translationMps = kMaxTranslationMps;
+                double rotationalMps = kMaxAngularRps;
 
-            double driverXVelo = translationMps * -m_driver.getLeftY();
-            double driverYVelo = translationMps * -m_driver.getLeftX();
-            double driverYawRate = rotationalMps * -m_driver.getRightX(); //m_driver.leftBumper().getAsBoolean()
-                // ? slowRotRps * -m_driver.getRightX()
-                // : kMaxAngularRps * -m_driver.getRightX();
+                double driverStickY = m_driver.getLeftY();
+                double driverStickX = m_driver.getLeftX();
+                double driverStickTurn = m_driver.getRightX();
 
-            return drive
-                .withVelocityX(slowButton ? limit_driverX.calculate(driverXVelo) : driverXVelo) // Drive forward with Y (forward)
-                .withVelocityY(slowButton ? limit_driverY.calculate(driverYVelo) : driverYVelo) // Drive left with X (left)
-                .withRotationalRate(slowButton ? limit_driverYawRate.calculate(driverYawRate) : driverYawRate); // Drive counterclockwise with negative X (left)
+                log_driverStickY.accept(driverStickY);
+                log_driverStickX.accept(driverStickX);
+                log_driverStickTurn.accept(driverStickTurn);
+                
+
+                double driverXVelo = translationMps * -driverStickY;
+                double driverYVelo = translationMps * -driverStickX;
+                double driverYawRate = rotationalMps * -driverStickTurn; //m_driver.leftBumper().getAsBoolean()
+                    // ? slowRotRps * -m_driver.getRightX()
+                    // : kMaxAngularRps * -m_driver.getRightX();
+
+                log_driverXVelo.accept(driverXVelo);
+                log_driverYVelo.accept(driverYVelo);
+                log_driverYawVelo.accept(driverYawRate);
+
+
+                return drive
+                    .withVelocityX(driverXVelo) // Drive forward with Y (forward)
+                    .withVelocityY(driverYVelo) // Drive left with X (left)
+                    .withRotationalRate(driverYawRate); // Drive counterclockwise with negative X (left)
             }
-        );
+        });
     }
 
     // private void setBothRumble(RumbleType type, double intensity) {
@@ -307,13 +354,19 @@ public class Robot extends TimedRobot {
         m_driver.leftBumper().and(trg_driverOverride).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));    // Reset the field-centric heading on left bumper press.
 
         trg_shoot
-            .and(() -> m_shooter.m_turret.atPosition())
+            // .and(() -> m_shooter.m_turret.atPosition())
             .and(trg_snappingBack.negate())
             .whileTrue(m_superstructure.activateOuttakeShotCalc());
 
         trg_shoot
             .and(trg_snappingBack)
             .whileTrue(m_superstructure.hoodAndFlywheelShotCalc());
+
+        trg_shoot
+            .and(trg_singlePlayer)
+            .whileTrue(
+                m_superstructure.intakeShimmy(() -> true)
+            ).debounce(3);
 
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
@@ -349,6 +402,12 @@ public class Robot extends TimedRobot {
         trg_resetPoseLeft.onTrue(Commands.runOnce(() -> m_drivetrain.resetPose(kLeftResetPose)));
         trg_resetPoseRight.onTrue(Commands.runOnce(() -> m_drivetrain.resetPose(kRightResetPose)));
 
+        trg_addRPS.onTrue(Commands.runOnce(() -> m_shooter.adjustRpsBy(kRPSAdditionOnButton)));
+        trg_reduceRPS.onTrue(Commands.runOnce(() -> m_shooter.adjustRpsBy(-kRPSAdditionOnButton)));
+        trg_unadjustRps.onTrue(Commands.runOnce(() -> m_shooter.unadjustRps()));
+
+    
+
         //---OLD RUMBLE LOGIC
         // Trigger trg_hubActiveOrPassing =
         //     new Trigger(
@@ -372,8 +431,8 @@ public class Robot extends TimedRobot {
     }
 
     private void configureTestBindings() {
-        m_driver.povLeft().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMinRots_double));
-        m_driver.povUp().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double));
+        m_driver.getHID().povLeft().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMinRots_double));
+        m_driver.getHID().povUp().onTrue(m_shooter.m_hood.setHoodPosCmd(ShooterK.kHoodMaxRots_double));
 
         //---OTHER POSSIBLE BUTTON BINDS
         // m_driver.y().onTrue(m_shooter.driverRPSAlter(true));
@@ -403,34 +462,28 @@ public class Robot extends TimedRobot {
 
         var headingNow = driveState.Pose.getRotation();
         double nowSec = Utils.getCurrentTimeSeconds();
+
         for (var camera : WaltCamera.AllCameras) {
             camera.m_estimator.addHeadingData(nowSec, headingNow);
             Optional<EstimatedRobotPose> estimatedPoseOptional = camera.getEstimatedGlobalPose();
             if (estimatedPoseOptional.isPresent()) {
                 EstimatedRobotPose estimatedRobotPose = estimatedPoseOptional.get();
                 Pose2d estimatedRobotPose2d = estimatedRobotPose.estimatedPose.toPose2d();
-                // if ((RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())).getAsBoolean()) {
-                //     if (!MathUtil.isNear(driveState.Pose.getX(), estimatedRobotPose2d.getX(), 2.3) || !MathUtil.isNear(driveState.Pose.getY(), estimatedRobotPose2d.getY(), 2.3)){} else {
-                //         m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
-                //     }
-                // } else {
-                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, estimatedRobotPose.timestampSeconds, camera.getEstimationStdDevs());
-                // }
-                m_visionSeenLastSec = Utils.fpgaToCurrentTime(estimatedRobotPose.timestampSeconds);
-                // System.out.println("AddMeasurementFrom: " + camera.getName());
+                m_drivetrain.addVisionMeasurement(estimatedRobotPose2d, nowSec, camera.getEstimationStdDevs());
+                m_visionSeenLastSec = estimatedRobotPose.timestampSeconds;
             }
         }
+
         m_periodicTracer.addEpoch("VisionUpdate");
 
         log_visionSeenPastSecond.accept((nowSec - m_visionSeenLastSec) < 1.0);
-        // log_isDisabled.accept(trg_limitFPS);
         m_periodicTracer.addEpoch("Logging");
 
         log_miniPCCurrent.accept(m_PDH.getCurrent(kMiniPCChannel));
         log_rioBusVoltage.accept(RobotController.getBatteryVoltage());
-        log_rioBrownout.accept(RobotController.isBrownedOut());
+        // log_rioBrownout.accept(RobotController.isBrownedOut());
         log_pdhCurrentTotal.accept(m_PDH.getTotalCurrent());
-        log_isDSAttatched.accept(DriverStation.isDSAttached());
+        log_isDSAttatched.accept(RobotState.isDSAttached());
 
         // log_currentShift.accept(HubShiftUtil.getOfficialShiftInfo().currentShift().toString());
         // log_currentFudgedShift.accept(HubShiftUtil.getShiftedShiftInfo().currentShift().toString());
@@ -450,7 +503,7 @@ public class Robot extends TimedRobot {
         //         new Transform3d(
         //             new Translation3d(), new Rotation3d(
         //                 Rotations.of(0),
-        //                 Rotations.of(-m_shooter.getHoodSimEncoder().getAngularPositionRotations()),
+        //                 Rotations.of(-m_shooter.getHoodSimEncoder().getAngularPosition()),
         //                 m_shooter.getTurret().getPosition().getValue()
         //             )
         //         )
@@ -477,18 +530,17 @@ public class Robot extends TimedRobot {
         if (m_fpsLimitTimer.hasElapsed(3) && !WaltCamera.areCamsFpsLimited()) {
             WaltCamera.setFpsLimit(true);
             m_fpsLimitTimer.restart();
-            // dumb bullshit to hot-path the Chooser on occasion
-
         }
 
         // oneshot on DisabledInit
         if (m_disableChangeDelayTimer.hasElapsed(3.0)) {
             m_disableChangeDelayTimer.stop();
             m_disableChangeDelayTimer.reset();
-            m_shooter.m_turret.setTurretNeutralMode(NeutralModeValue.Coast);
+            // m_shooter.m_turret.setTurretNeutralMode(NeutralModeValue.Coast);
             m_intake.setIntakeArmNeutralMode(NeutralModeValue.Coast);
             m_shooter.m_hood.setHoodNeutralMode(NeutralModeValue.Coast);
         }
+        // m_chosenAuton = BasicAutonChooser.getAuton();
     }
 
     @Override
@@ -500,20 +552,28 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         m_adpatableAutonFactory.startAutonTimer();
+        
+        // if (m_chosenAuton != null) {
+        //     CommandScheduler.getInstance().schedule(m_chosenAuton);
+        // }
     }
 
     @Override
     public void autonomousPeriodic() {
-        // m_adpatableAutonFactory.logTimer("Auton", () -> m_adpatableAutonFactory.autonTimer);
         log_autonTime.accept(m_adpatableAutonFactory.autonTimer.get());
     }
 
     @Override
-    public void autonomousExit() {}
+    public void autonomousExit() {
+        // if (m_chosenAuton != null) {
+        //     CommandScheduler.getInstance().cancel(m_chosenAuton);
+        // }
+    }
 
     @Override
     public void teleopInit() {
-        HubShiftUtil.initialize();
+        // HubShiftUtil.initialize();
+        // m_shooter.m_hood.hoodCurrentSenseHomingCmd();
     }
 
     @Override
@@ -522,53 +582,46 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopExit() {}
 
-    @Override
-    public void testInit() {
-        CommandScheduler.getInstance().cancelAll();
+    // 2027-TODO - convert to opmode!
+    // public void utilityInit() {
+    //     CommandScheduler.getInstance().cancelAll();
         
-        CommandScheduler.getInstance().schedule(
-            Commands.sequence(
-                m_drivetrain.runOnce(m_drivetrain::seedFieldCentric),
-                Commands.waitSeconds(1),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(kMaxTranslationSpeed)
-                        .withVelocityY(0)
-                        .withRotationalRate(0)
-                ),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.xBrakeCmd(),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(kMaxTranslationSpeed.unaryMinus())
-                        .withVelocityY(0)
-                        .withRotationalRate(0)
-                ),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.xBrakeCmd(),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(0)
-                        .withVelocityY(0)
-                        .withRotationalRate(kMaxAngularRate)
-                ),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.xBrakeCmd(),
-                Commands.waitSeconds(2.5),
-                m_drivetrain.applyRequest(() ->
-                    drive.withVelocityX(0)
-                        .withVelocityY(0)
-                        .withRotationalRate(0)
-                )
-            )
-        );
-    }
-
-    @Override
-    public void testPeriodic() {}
-
-    @Override
-    public void testExit() {}
-
+    //     CommandScheduler.getInstance().schedule(
+    //         Commands.sequence(
+    //             m_drivetrain.runOnce(m_drivetrain::seedFieldCentric),
+    //             Commands.waitSeconds(1),
+    //             m_drivetrain.applyRequest(() ->
+    //                 drive.withVelocityX(kMaxTranslationSpeed)
+    //                     .withVelocityY(0)
+    //                     .withRotationalRate(0)
+    //             ),
+    //             Commands.waitSeconds(2.5),
+    //             m_drivetrain.xBrakeCmd(),
+    //             Commands.waitSeconds(2.5),
+    //             m_drivetrain.applyRequest(() ->
+    //                 drive.withVelocityX(kMaxTranslationSpeed.unaryMinus())
+    //                     .withVelocityY(0)
+    //                     .withRotationalRate(0)
+    //             ),
+    //             Commands.waitSeconds(2.5),
+    //             m_drivetrain.xBrakeCmd(),
+    //             Commands.waitSeconds(2.5),
+    //             m_drivetrain.applyRequest(() ->
+    //                 drive.withVelocityX(0)
+    //                     .withVelocityY(0)
+    //                     .withRotationalRate(kMaxAngularRate)
+    //             ),
+    //             Commands.waitSeconds(2.5),
+    //             m_drivetrain.xBrakeCmd(),
+    //             Commands.waitSeconds(2.5),
+    //             m_drivetrain.applyRequest(() ->
+    //                 drive.withVelocityX(0)
+    //                     .withVelocityY(0)
+    //                     .withRotationalRate(0)
+    //             )
+    //         )
+    //     );
+    // }
     @Override
     public void simulationInit() {
         // FuelSim.getInstance().start();

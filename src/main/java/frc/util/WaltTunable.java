@@ -1,9 +1,9 @@
 package frc.util;
 
-import edu.wpi.first.networktables.BooleanEntry;
-import edu.wpi.first.networktables.DoubleEntry;
-import edu.wpi.first.networktables.NetworkTableEvent;
-import edu.wpi.first.networktables.NetworkTableInstance;
+import org.wpilib.networktables.BooleanEntry;
+import org.wpilib.networktables.DoubleEntry;
+import org.wpilib.networktables.NetworkTableEvent;
+import org.wpilib.networktables.NetworkTableInstance;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -36,6 +36,7 @@ public class WaltTunable {
     private final List<DoubleConsumer> m_onChange = new CopyOnWriteArrayList<>();
 
     // Must hold references to prevent GC from killing the listeners
+    private final double m_default;
     private final DoubleEntry m_valueEntry;
     private final BooleanEntry m_enabledEntry;
 
@@ -45,10 +46,11 @@ public class WaltTunable {
 
     public WaltTunable(String key, double defaultValue, boolean defaultEnabled) {
         m_value = defaultValue;
+        m_default = defaultValue;
         m_enabled = defaultEnabled;
 
         var inst = NetworkTableInstance.getDefault();
-        var kinds = EnumSet.of(NetworkTableEvent.Kind.kValueRemote);
+        var kinds = EnumSet.of(NetworkTableEvent.Kind.VALUE_REMOTE);
 
         m_valueEntry = inst.getDoubleTopic(key + "/value").getEntry(defaultValue);
         m_valueEntry.setDefault(defaultValue);
@@ -85,6 +87,10 @@ public class WaltTunable {
     /** Convenience: returns the value if enabled, otherwise the provided fallback. */
     public double getOr(double fallback) {
         return m_enabled ? m_value : fallback;
+    }
+
+    public double getOrDefault() {
+        return m_enabled ? m_value : m_default;
     }
 
     /**

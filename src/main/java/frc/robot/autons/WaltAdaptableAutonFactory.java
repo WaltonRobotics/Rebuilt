@@ -1,17 +1,15 @@
 package frc.robot.autons;
 
-import static frc.robot.Constants.IntakeK.kIntakeRollersIntakeVolts;
-
 import java.util.Set;
 import java.util.function.Supplier;
 
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import org.wpilib.system.Timer;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
+import org.wpilib.command2.button.Trigger;
 import frc.robot.Constants.AutonK;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Superstructure;
@@ -251,7 +249,6 @@ public class WaltAdaptableAutonFactory {
         return Commands.runOnce(() -> log_autonEventMarker.accept(update));
     }
 
-    /* CHECK IF TURRET IS ABLE TO SHOOT FOR PASSING PLEASEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
     public void setUpTrajTriggers(AutoTrajectory traj, double shooterTimeout, boolean SOTM) {
         //---TRIGGER ACTIONS
         traj.atTime(kIntakeWaypoint).onTrue(

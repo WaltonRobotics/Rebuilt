@@ -1,14 +1,14 @@
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.*;
+import static org.wpilib.units.Units.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.units.measure.*;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.kinematics.ChassisVelocities;
+import org.wpilib.units.measure.*;
 
 import frc.robot.subsystems.shooter.ShotCalculator.ShotData;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotDataLerp;
@@ -33,14 +33,14 @@ class ShotCalcTest {
     private static Pose2d MID_POSE;     // ~3.9m from hub
     private static Pose2d FAR_POSE;     // ~5.7m from hub
 
-    private static final ChassisSpeeds ZERO_SPEEDS = new ChassisSpeeds(0, 0, 0);
-    private static final ChassisSpeeds TRANSLATING_SPEEDS = new ChassisSpeeds(2.0, 1.0, 0);
-    private static final ChassisSpeeds ROTATING_SPEEDS = new ChassisSpeeds(0, 0, 1.0);
-    private static final ChassisSpeeds COMBINED_SPEEDS = new ChassisSpeeds(1.5, -0.5, 0.5);
+    private static final ChassisVelocities ZERO_SPEEDS = new ChassisVelocities(0, 0, 0);
+    private static final ChassisVelocities TRANSLATING_SPEEDS = new ChassisVelocities(2.0, 1.0, 0);
+    private static final ChassisVelocities ROTATING_SPEEDS = new ChassisVelocities(0, 0, 1.0);
+    private static final ChassisVelocities COMBINED_SPEEDS = new ChassisVelocities(1.5, -0.5, 0.5);
 
     @BeforeAll
     static void setup() {
-        HAL.initialize(500, 0);
+        HAL.initialize();
 
         // These depend on FieldConstants which loads AprilTag layout
         HUB_TARGET = frc.robot.FieldConstants.Hub.blueInnerCenterPoint;
@@ -50,7 +50,7 @@ class ShotCalcTest {
         double hubX = HUB_TARGET.getX();
         double hubY = HUB_TARGET.getY();
 
-        CLOSE_POSE = new Pose2d(hubX - 1.5, hubY, Rotation2d.kZero);
+        CLOSE_POSE = new Pose2d(hubX - 1.5, hubY, Rotation2d.ZERO);
         MID_POSE = new Pose2d(hubX - 3.9, hubY + 1.0, Rotation2d.fromDegrees(15));
         FAR_POSE = new Pose2d(hubX - 5.7, hubY - 1.5, Rotation2d.fromDegrees(-20));
     }
@@ -126,7 +126,7 @@ class ShotCalcTest {
         @Test
         void samePosition_returnsSmallDistance() {
             // Robot right at the hub X,Y — distance should just be the turret transform offset
-            Pose2d atHub = new Pose2d(HUB_TARGET.getX(), HUB_TARGET.getY(), Rotation2d.kZero);
+            Pose2d atHub = new Pose2d(HUB_TARGET.getX(), HUB_TARGET.getY(), Rotation2d.ZERO);
             Distance d = ShotCalculator.getDistanceToTarget(atHub, HUB_TARGET);
             // Should be small but nonzero due to turret offset
             assertTrue(d.in(Meters) < 1.0);
@@ -137,8 +137,8 @@ class ShotCalcTest {
         void isConsistent_withDifferentHeadings() {
             // Robot heading shouldn't drastically change the 2D distance
             // (turret transform rotates with robot, so there IS some effect)
-            Pose2d heading0 = new Pose2d(2.0, 4.0, Rotation2d.kZero);
-            Pose2d heading90 = new Pose2d(2.0, 4.0, Rotation2d.kCCW_90deg);
+            Pose2d heading0 = new Pose2d(2.0, 4.0, Rotation2d.ZERO);
+            Pose2d heading90 = new Pose2d(2.0, 4.0, Rotation2d.CCW_90DEG);
             Distance d0 = ShotCalculator.getDistanceToTarget(heading0, HUB_TARGET);
             Distance d90 = ShotCalculator.getDistanceToTarget(heading90, HUB_TARGET);
             // Both should be in a similar ballpark (within turret offset range ~0.17m)
@@ -206,7 +206,7 @@ class ShotCalcTest {
         @Test
         void movingRobot_targetShiftsOppositeToVelocity() {
             Translation3d target = new Translation3d(5, 4, 1.5);
-            ChassisSpeeds speeds = new ChassisSpeeds(2.0, 0, 0); // moving +x at 2 m/s
+            ChassisVelocities speeds = new ChassisVelocities(2.0, 0, 0); // moving +x at 2 m/s
             Translation3d predicted = ShotCalculator.predictTargetPos(
                 target, speeds, Seconds.of(1.0));
 
@@ -228,7 +228,7 @@ class ShotCalcTest {
         @Test
         void movingInY_shiftsY() {
             Translation3d target = new Translation3d(5, 4, 1.5);
-            ChassisSpeeds speeds = new ChassisSpeeds(0, 3.0, 0); // moving +y at 3 m/s
+            ChassisVelocities speeds = new ChassisVelocities(0, 3.0, 0); // moving +y at 3 m/s
             Translation3d predicted = ShotCalculator.predictTargetPos(
                 target, speeds, Seconds.of(0.5));
             assertEquals(5.0, predicted.getX(), 1e-9);
@@ -355,7 +355,7 @@ class ShotCalcTest {
 
         /** Build a pose at roughly `dist` meters from the hub, facing it. */
         private Pose2d poseAtDistance(double dist) {
-            return new Pose2d(HUB_TARGET.getX() - dist, HUB_TARGET.getY(), Rotation2d.kZero);
+            return new Pose2d(HUB_TARGET.getX() - dist, HUB_TARGET.getY(), Rotation2d.ZERO);
         }
 
         /** Euclidean XY shift between the predicted target and the actual target. */
@@ -370,7 +370,7 @@ class ShotCalcTest {
         @Test
         void nearMinDistance_lowSpeed_smallShift() {
             Pose2d pose = poseAtDistance(1.3);
-            ChassisSpeeds slow = new ChassisSpeeds(0.5, 0, 0);
+            ChassisVelocities slow = new ChassisVelocities(0.5, 0, 0);
             ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 pose, slow, HUB_TARGET, 5);
             assertShotDataValid(shot);
@@ -382,7 +382,7 @@ class ShotCalcTest {
         @Test
         void nearMinDistance_highSpeed_largerShift() {
             Pose2d pose = poseAtDistance(1.3);
-            ChassisSpeeds fast = new ChassisSpeeds(3.0, 1.5, 0);
+            ChassisVelocities fast = new ChassisVelocities(3.0, 1.5, 0);
             ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 pose, fast, HUB_TARGET, 5);
             assertShotDataValid(shot);
@@ -397,7 +397,7 @@ class ShotCalcTest {
             double prevShift = 0;
             for (double vx = 0.5; vx <= 4.0; vx += 0.5) {
                 ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
-                    pose, new ChassisSpeeds(vx, 0, 0), HUB_TARGET, 5);
+                    pose, new ChassisVelocities(vx, 0, 0), HUB_TARGET, 5);
                 assertShotDataValid(shot);
                 double shift = predShift(shot);
                 assertTrue(shift >= prevShift - 0.01,
@@ -412,7 +412,7 @@ class ShotCalcTest {
         @Test
         void nearMaxDistance_lowSpeed_smallShift() {
             Pose2d pose = poseAtDistance(7.0);
-            ChassisSpeeds slow = new ChassisSpeeds(0.5, 0, 0);
+            ChassisVelocities slow = new ChassisVelocities(0.5, 0, 0);
             ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 pose, slow, HUB_TARGET, 5);
             assertShotDataValid(shot);
@@ -424,7 +424,7 @@ class ShotCalcTest {
         @Test
         void nearMaxDistance_highSpeed_largerShift() {
             Pose2d pose = poseAtDistance(7.0);
-            ChassisSpeeds fast = new ChassisSpeeds(3.0, 1.5, 0);
+            ChassisVelocities fast = new ChassisVelocities(3.0, 1.5, 0);
             ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 pose, fast, HUB_TARGET, 5);
             assertShotDataValid(shot);
@@ -439,7 +439,7 @@ class ShotCalcTest {
             double prevShift = 0;
             for (double vx = 0.5; vx <= 4.0; vx += 0.5) {
                 ShotDataLerp shot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
-                    pose, new ChassisSpeeds(vx, 0, 0), HUB_TARGET, 5);
+                    pose, new ChassisVelocities(vx, 0, 0), HUB_TARGET, 5);
                 assertShotDataValid(shot);
                 double shift = predShift(shot);
                 assertTrue(shift >= prevShift - 0.01,
@@ -471,7 +471,7 @@ class ShotCalcTest {
 
         @Test
         void farShot_largerShiftThanClose_atSameSpeed() {
-            ChassisSpeeds speed = new ChassisSpeeds(2.0, 0, 0);
+            ChassisVelocities speed = new ChassisVelocities(2.0, 0, 0);
             ShotDataLerp closeShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
                 poseAtDistance(1.5), speed, HUB_TARGET, 5);
             ShotDataLerp farShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
@@ -489,7 +489,7 @@ class ShotCalcTest {
         void lateralVelocity_shiftsYComponent() {
             Pose2d pose = poseAtDistance(4.0);
             ShotDataLerp shotY = ShotCalculator.iterativeMovingShotFromInterpolationMap(
-                pose, new ChassisSpeeds(0, 2.0, 0), HUB_TARGET, 5);
+                pose, new ChassisVelocities(0, 2.0, 0), HUB_TARGET, 5);
             assertShotDataValid(shotY);
             double dy = Math.abs(shotY.getTarget().getY() - HUB_TARGET.getY());
             assertTrue(dy > 0.1,

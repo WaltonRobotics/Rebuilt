@@ -13,14 +13,14 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import org.wpilib.math.filter.Debouncer;
+import org.wpilib.math.filter.Debouncer.DebounceType;
 
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.wpilib.units.measure.Angle;
+import org.wpilib.units.measure.Current;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.FunctionalCommand;
+import org.wpilib.command2.SubsystemBase;
 import frc.robot.Constants.ShooterK;
 import frc.util.SignalManager;
 import frc.util.WaltLogger;
@@ -41,24 +41,27 @@ public class Hood extends SubsystemBase {
     private final DoubleLogger log_hoodPositionDeg = WaltLogger.logDouble(kLogTab, "positionDeg"); //for debugging purposes
     private final DoubleLogger log_hoodCLErr = WaltLogger.logDouble(kLogTab, "closedLoopErr");
     private final BooleanLogger log_hoodAtPos = WaltLogger.logBoolean(kLogTab, "hoodAtPos");
+    private final BooleanLogger log_hoodStatorCurrentCheck = WaltLogger.logBoolean(kLogTab, "statorCurrentFlag");
 
-    private Debouncer m_currentDebouncer = new Debouncer(0.125, DebounceType.kRising);
+    private Debouncer m_currentDebouncer = new Debouncer(0.125, DebounceType.RISING);
 
     private final StatusSignal<Current> sig_hoodStatorCurrent = m_hood.getStatorCurrent();
     private final StatusSignal<Angle> sig_hoodPos = m_hood.getPosition();
     private final StatusSignal<Double> sig_hoodCLErr = m_hood.getClosedLoopError();
 
-    private BooleanSupplier m_currentSpike = () -> sig_hoodStatorCurrent.getValueAsDouble() > 5.0;
+    private BooleanSupplier m_currentSpike = () -> sig_hoodStatorCurrent.getValueAsDouble() > 3.0;
 
     private final StaticBrake m_BrakeReq = new StaticBrake();
 
     private boolean m_isHoodHomed = false;
     private boolean m_hoodAtPos = false;
+    private double m_commandedPosRots = 0.0;
 
     public Hood() {
         m_hood.getConfigurator().apply(kHoodTalonFXSConfiguration);
 
         SignalManager.register(kShooterBus, sig_hoodStatorCurrent, sig_hoodPos, sig_hoodCLErr);
+    
 
         m_hood.setPosition(0);
         m_isHoodHomed = true;
@@ -70,6 +73,7 @@ public class Hood extends SubsystemBase {
 
     // ---HOOD
     public void setHoodPos(double rots) {
+        m_commandedPosRots = rots;
         m_hood.setControl(m_hoodPVRequest.withPosition(rots));
         log_hoodControlPos.accept(rots);
     }
@@ -88,7 +92,8 @@ public class Hood extends SubsystemBase {
 
     private void refreshHoodAtPos() {
         log_hoodCLErr.accept(sig_hoodCLErr.getValueAsDouble());
-        m_hoodAtPos = sig_hoodPos.isNear(0, kHoodMaxErrD);
+        // m_hoodAtPos = Math.abs(sig_hoodPos.getValueAsDouble() - m_commandedPosRots) <= kHoodMaxErrD;
+        m_hoodAtPos = sig_hoodCLErr.getValueAsDouble() <= kHoodMaxErrD; // all in rotations
         log_hoodAtPos.accept(m_hoodAtPos);
     }
 
@@ -127,13 +132,14 @@ public class Hood extends SubsystemBase {
     }
 
     public void setHoodNeutralMode(NeutralModeValue value) {
-        m_hood.setNeutralMode(value);
+        // m_hood.setNeutralMode(value);
     }
 
     @Override
     public void periodic() {
         double posRots = sig_hoodPos.getValueAsDouble();
         refreshHoodAtPos();
+        log_hoodStatorCurrentCheck.accept(m_currentSpike);
         log_hoodCurrentPos.accept(getHoodAngleDeg(posRots));
         log_hoodPositionDeg.accept(posRots * 360.0);
     }

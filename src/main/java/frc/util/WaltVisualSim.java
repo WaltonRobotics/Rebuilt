@@ -1,18 +1,18 @@
 // package frc.util;
 
-// import static edu.wpi.first.units.Units.Degrees;
+// import static org.wpilib.units.Units.Degrees;
 
 // import com.ctre.phoenix6.hardware.TalonFX;
 
-// import edu.wpi.first.math.geometry.Rotation2d;
-// import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-// import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-// import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-// import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-// import edu.wpi.first.wpilibj.util.Color;
-// import edu.wpi.first.wpilibj.util.Color8Bit;
-// import edu.wpi.first.wpilibj2.command.Command;
-// import edu.wpi.first.wpilibj2.command.Commands;
+// import org.wpilib.math.geometry.Rotation2d;
+// import org.wpilib.smartdashboard.Mechanism2d;
+// import org.wpilib.smartdashboard.MechanismLigament2d;
+// import org.wpilib.smartdashboard.MechanismRoot2d;
+// import org.wpilib.smartdashboard.SmartDashboard;
+// import org.wpilib.util.Color;
+// import org.wpilib.util.Color8Bit;
+// import org.wpilib.command2.Command;
+// import org.wpilib.command2.Commands;
 // import frc.robot.subsystems.Indexer;
 // import frc.robot.subsystems.Intake;
 // import frc.robot.subsystems.Shooter;
@@ -54,30 +54,30 @@
 
 //         //---INTAKE
 //         m_intakeArmPosition = intakeRoot.append(
-//             new MechanismLigament2d("intakeArmPosition", .4, 90, 2, new Color8Bit(Color.kOrange))
+//             new MechanismLigament2d("intakeArmPosition", .4, 90, 2, new Color8Bit(Color.ORANGE))
 //         );
 //         m_intakeRollerVelocity = m_intakeArmPosition.append(
-//             new MechanismLigament2d("intakeRollerVelocity", 0, 0, 2, new Color8Bit(Color.kPeachPuff))
+//             new MechanismLigament2d("intakeRollerVelocity", 0, 0, 2, new Color8Bit(Color.PEACH_PUFF))
 //         );
 //         m_intakeArmStartAngle = new Rotation2d(Degrees.of(90));
 
 //         //---INDEXER
 //         m_spindexerVelocity = indexerRoot.append(
-//             new MechanismLigament2d("spindexerVelocity", 0, 180, 2, new Color8Bit(Color.kCornflowerBlue))
+//             new MechanismLigament2d("spindexerVelocity", 0, 180, 2, new Color8Bit(Color.CORNFLOWER_BLUE))
 //         );
 //         m_tunnelVelocity = indexerRoot.append(
-//             new MechanismLigament2d("tunnelVelocity", 0, 90, 2, new Color8Bit(Color.kAzure))
+//             new MechanismLigament2d("tunnelVelocity", 0, 90, 2, new Color8Bit(Color.AZURE))
 //         );
 
 //         //---SHOOTER
 //         // m_turretPosition = turretRoot.append(
-//         //     new MechanismLigament2d("turretPosition", .4, 180, 2, new Color8Bit(Color.kTomato))
+//         //     new MechanismLigament2d("turretPosition", .4, 180, 2, new Color8Bit(Color.TOMATO))
 //         // );
 //         // m_hoodPosition = shooterRoot.append(
-//         //     new MechanismLigament2d("hoodPosition", .4, 0, 2, new Color8Bit(Color.kDarkSalmon))
+//         //     new MechanismLigament2d("hoodPosition", .4, 0, 2, new Color8Bit(Color.DARK_SALMON))
 //         // );
 //         m_shooterVelocity = shooterRoot.append(
-//             new MechanismLigament2d("shooterVelocity", 0, 90, 2, new Color8Bit(Color.kFirebrick))
+//             new MechanismLigament2d("shooterVelocity", 0, 90, 2, new Color8Bit(Color.FIREBRICK))
 //         );
        
 //         // m_hoodStartAngle = new Rotation2d(Degrees.of(0));
@@ -164,7 +164,7 @@
 //     // public Command setHoodPosition() {
 //     //     return Commands.run(
 //     //         () -> {
-//     //             m_hoodPosition.setAngle(m_hoodStartAngle.minus(new Rotation2d(Rotations.of(m_shooter.getHoodSimEncoder().getAngularPositionRotations()))));
+//     //             m_hoodPosition.setAngle(m_hoodStartAngle.minus(new Rotation2d(Rotations.of(m_shooter.getHoodSimEncoder().getAngularPosition()))));
 //     //         }
 //     //     );
 //     // }

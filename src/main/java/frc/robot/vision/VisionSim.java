@@ -1,6 +1,6 @@
 package frc.robot.vision;
 
-import static frc.robot.Constants.FieldK.kTagLayout;
+import static frc.robot.Constants.FieldK.kFilteredTagField;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -9,10 +9,10 @@ import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.smartdashboard.Field2d;
 import frc.robot.Robot;
 
 public class VisionSim {
@@ -22,7 +22,7 @@ public class VisionSim {
     /* CONSTRUCTOR */
     public VisionSim() {
         m_photonVisionSim = new VisionSystemSim("main");
-        m_photonVisionSim.addAprilTags(kTagLayout);
+        m_photonVisionSim.addAprilTags(kFilteredTagField);
     }
 
     /* METHODS */

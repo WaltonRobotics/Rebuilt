@@ -6,19 +6,16 @@ import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.networktables.BooleanPublisher;
-import edu.wpi.first.networktables.BooleanTopic;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import org.wpilib.math.util.MathUtil;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.kinematics.ChassisVelocities;
+import org.wpilib.math.kinematics.SwerveDriveKinematics;
+import org.wpilib.system.Notifier;
+import org.wpilib.system.Timer;
+import org.wpilib.driverstation.Alliance;
 import frc.util.WaltDriverStation;
 import frc.robot.Constants.ShooterK;
 import frc.robot.Constants.WpiK;
@@ -33,7 +30,7 @@ import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.Pose3dLogger;
 import frc.util.WaltLogger.Translation3dArrayLogger;
 
-import static edu.wpi.first.units.Units.*;
+import static org.wpilib.units.Units.*;
 import static frc.robot.Constants.ShooterK.*;
 
 import frc.util.WaltTunable;
@@ -60,7 +57,6 @@ public class ShooterCalc {
     // private static final Pose3dLogger log_turretFieldPose = WaltLogger.logPose3d(kLogTab, "turretFieldPose");
     private final BooleanLogger log_robotPastOurZoneX = WaltLogger.logBoolean(kLogTab, "robotInOurZone");
     private final BooleanLogger log_robotInHubPassingZone = WaltLogger.logBoolean(kLogTab, "robotInHubPassingZone");
-    private final BooleanLogger log_canTurretShoot = WaltLogger.logBoolean(kLogTab, "canTurretShoot");
     private final BooleanLogger log_inTrenchZone = WaltLogger.logBoolean(kLogTab, "inTrenchZone");
     private final BooleanLogger log_underTrench = WaltLogger.logBoolean(kLogTab, "underTrench");
 
@@ -94,7 +90,7 @@ public class ShooterCalc {
     private final ShotCalcOutputs kEmptyShotCalcOutputs = new ShotCalcOutputs(kEmptyAzimuthCalcDetails, kEmptyShotData, 0, 0, 0);
 
     private volatile boolean m_useStaticShot = true;
-    private static volatile Translation3d m_aimTarget = Translation3d.kZero;
+    private static volatile Translation3d m_aimTarget = Translation3d.ZERO;
     private volatile ShotCalcOutputs m_shotCalcOutputs = kEmptyShotCalcOutputs;
     private static volatile boolean m_isPassingFlag = false;
     private static final BooleanSupplier m_isPassing = () -> m_isPassingFlag;
@@ -104,7 +100,7 @@ public class ShooterCalc {
     private final Notifier m_notifier = new Notifier(this::calcCallback);
     private final Timer m_calcTimer = new Timer();
 
-    private boolean isRed = WaltDriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+    private boolean isRed = WaltDriverStation.getAlliance().orElse(Alliance.BLUE) == Alliance.RED;
     // private double robotX;
     // private double robotY;
     private boolean robotInNoPassingZone;
@@ -141,41 +137,21 @@ public class ShooterCalc {
         return m_underTrench;
     }
 
-    /**
-     * first checks if we're passing. If we're not passing, then we can shoot whenever
-     * If we are passing, it checks if we're NOT in the unable-to-pass range. If we're not in it, then the turret can shoot!
-     * 
-     * lowk should be checking if we are IN THE RANGE rather than greater than the outsides, but this is cope for now cuz sadness
-     */
-    private void refreshCanTurretShoot() {
-        if (isPassing().getAsBoolean()) {
-            if (m_turretPosRotsSup.getAsDouble() > kTurretMinNotAbleToPassRange && m_turretPosRotsSup.getAsDouble() < kTurretMaxNotAbleToPassRange/* && !robotInNoPassingZone */) {
-                m_canTurretShoot = true;
-            } else {
-                m_canTurretShoot = false;
-            }
-            log_canTurretShoot.accept(m_canTurretShoot);
-        } else {
-            m_canTurretShoot = true;    //the turret can shoot anytime we are not passing
-            log_canTurretShoot.accept(m_canTurretShoot);
-        }
-    }
-
 
     private void calcCallback() {
         m_calcTimer.restart();
         // getters from outside
         SwerveDriveState swerveState = m_threadsafeSwerveDriveStateSup.get();
         Pose2d robotPose = swerveState.Pose;
-        ChassisSpeeds robotChassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
-            m_swerveKinematics.toChassisSpeeds(swerveState.ModuleStates), robotPose.getRotation());
+        ChassisVelocities robotChassisVelocities =  m_swerveKinematics
+            .toChassisVelocities(swerveState.ModuleVelocities)
+            .toFieldRelative(robotPose.getRotation());
         double turretPositionRots = m_turretPosRotsSup.getAsDouble();
         Pose3d turretPose = new Pose3d(robotPose).transformBy(kTurretTransform);
 
         m_underTrench = underTrench(turretPose.toPose2d());
         m_aimTarget = calculateTarget(robotPose);
-        m_shotCalcOutputs = calcShot(robotPose, m_useStaticShot, m_aimTarget, turretPositionRots, robotChassisSpeeds);
-        refreshCanTurretShoot();
+        m_shotCalcOutputs = calcShot(robotPose, m_useStaticShot, m_aimTarget, turretPositionRots, robotChassisVelocities);
 
         // Logging
         log_globalShotTarget.accept(m_aimTarget);
@@ -201,7 +177,7 @@ public class ShooterCalc {
      */
     private Translation3d calculateTarget(Pose2d robotPose) {
         // m_currentTarget = AllianceFlipUtil.apply(target);
-        isRed = WaltDriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+        isRed = WaltDriverStation.getAlliance().orElse(Alliance.BLUE) == Alliance.RED;
         Translation3d theTarget = FieldConstants.Hub.blueInnerCenterPoint;
 
         double robotX = robotPose.getX();
@@ -231,7 +207,7 @@ public class ShooterCalc {
     }
 
     private boolean underTrench(Pose2d turretPose) {
-        isRed = WaltDriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+        isRed = WaltDriverStation.getAlliance().orElse(Alliance.BLUE) == Alliance.RED;
 
         double robotX = turretPose.getX();
         double robotY = turretPose.getY();
@@ -303,7 +279,7 @@ public class ShooterCalc {
     // private static final Rotation3d kTurretRealPoseRotation =
     //     new Rotation3d(0, 0, -(kTurretAngleOffset.plus(Rotation2d.kPi)).getRadians());
 
-    public static AzimuthCalcDetails calcAzimuth(Translation3d target, Pose2d robotPose, double turretHeading, ChassisSpeeds fieldSpeeds) {
+    public static AzimuthCalcDetails calcAzimuth(Translation3d target, Pose2d robotPose, double turretHeading, ChassisVelocities fieldSpeeds) {
         // Compute turret pivot position and zero direction with raw doubles
         // (eliminates Pose3d(robotPose).transformBy() + Rotation2d allocations)
         double headingRad = robotPose.getRotation().getRadians();
@@ -323,8 +299,8 @@ public class ShooterCalc {
         double fieldYawRad = Math.atan2(toTargetY, toTargetX);
 
         //vx | vy is turret pivot not absolute field position
-        double vx = fieldSpeeds.vxMetersPerSecond - (turretY - robotY) * fieldSpeeds.omegaRadiansPerSecond; //-ry * omega
-        double vy = fieldSpeeds.vyMetersPerSecond + (turretX - robotX) * fieldSpeeds.omegaRadiansPerSecond; //+rx * omega
+        double vx = fieldSpeeds.vx - (turretY - robotY) * fieldSpeeds.omega; //-ry * omega
+        double vy = fieldSpeeds.vy + (turretX - robotX) * fieldSpeeds.omega; //+rx * omega
 
         // Direction in rotations: normalize to [-0.5, 0.5] first (matches Rotation2d.minus behavior),
         // then clamp to turret range
@@ -359,16 +335,16 @@ public class ShooterCalc {
 
         // double d2 = toTargetX * toTargetX + toTargetY * toTargetY;
         // double turretFFRadPerSec = d2 > 0
-        //     ? (toTargetY * fieldSpeeds.vxMetersPerSecond - toTargetX * fieldSpeeds.vyMetersPerSecond) / d2
-        //         - fieldSpeeds.omegaRadiansPerSecond
+        //     ? (toTargetY * fieldSpeeds.vx - toTargetX * fieldSpeeds.vy) / d2
+        //         - fieldSpeeds.omega
         //     : 0.0;
 
 
         double distance = Math.hypot(toTargetX, toTargetY);
-        double tangentialVel = (toTargetX * vx - toTargetY * vy) / distance;
+        double tangentialVel = (toTargetY * vx - toTargetX * vy) / distance;
         double turretFFRadPerSec = tangentialVel / distance;
 
-        turretFFRadPerSec -= fieldSpeeds.omegaRadiansPerSecond;
+        turretFFRadPerSec -= fieldSpeeds.omega;
 
         AzimuthCalcDetails calcDetails = new AzimuthCalcDetails(
             turretReferenceRots, turretFFRadPerSec,
@@ -384,49 +360,72 @@ public class ShooterCalc {
         ShotDataLerp shotData,
         double turretReferenceRots,
         double hoodReferenceRots,
-        double shooterReferenceRps
+        double shooterReferenceRps,
+        double shotConfidence
     ) {
+        // old callers that don't pass confidence just get 0.0
+        public ShotCalcOutputs(AzimuthCalcDetails turretCalcDetails, ShotDataLerp shotData,
+                double turretReferenceRots, double hoodReferenceRots, double shooterReferenceRps) {
+            this(turretCalcDetails, shotData, turretReferenceRots, hoodReferenceRots, shooterReferenceRps, 0.0);
+        }
+
         private static final String kCalcTab = "/ShotCalcOutputs";
 
         private static final DoubleLogger log_turretReferenceRots = new DoubleLogger(kLogTab + kCalcTab, "turretReferenceRots");
         private static final DoubleLogger log_hoodReferenceRots = new DoubleLogger(kLogTab + kCalcTab, "hoodReferenceRots");
         private static final DoubleLogger log_shooterReferenceRPS = new DoubleLogger(kLogTab + kCalcTab, "shooterReferenceRPS");
+        private static final DoubleLogger log_shotConfidence = new DoubleLogger(kLogTab + kCalcTab, "shotConfidence");
 
         public void acceptLogging(ShotCalcOutputs outputs) {
             log_turretReferenceRots.accept(outputs.turretReferenceRots);
             log_hoodReferenceRots.accept(outputs.hoodReferenceRots);
             log_shooterReferenceRPS.accept(outputs.shooterReferenceRps);
+            log_shotConfidence.accept(outputs.shotConfidence);
         }
     }
 
     /**
      * Calculates the ideal shot to put the FUEL™ into the HUB™
-     * Accounts for moving speeds
-     * 
-     * @param robotPose current Robot position.
+     * Accounts for moving speeds with latency-compensated pose prediction.
      */
     public static ShotCalcOutputs calcShot(
         Pose2d robotPose,
         boolean staticShot,
         Translation3d target,
         double turretPositionRots,
-        ChassisSpeeds chassisSpeeds
+        ChassisVelocities ChassisVelocities
     ) {
         // How fast the robot is currently going, (CURRENT ROBOT VELOCITY)
-        // double speedMps = Math.hypot(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond);
-        ChassisSpeeds fieldSpeeds = (staticShot /*|| speedMps < 0.1*/) ? WpiK.kZeroChassisSpeeds : chassisSpeeds;
-        // The Calculated shot itself, according to the current robotPose, robotSpeeds,
-        // and the currentTarget
-        ShotDataLerp calculatedShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
-            robotPose, fieldSpeeds, target, 8);
+        // double speedMps = Math.hypot(ChassisVelocities.vx, ChassisVelocities.vy);
+        ChassisVelocities fieldSpeeds = staticShot ? WpiK.kZeroChassisVelocities : ChassisVelocities;
 
-        // The turret angle according to the Calculated shot
-        AzimuthCalcDetails azCalcDetails = calcAzimuth(calculatedShot.getTarget(), robotPose, turretPositionRots, fieldSpeeds);
+        // predict where the robot WILL be when the shot actually fires (accounts for latency)
+        Pose2d compensatedPose = ShotCalculator.compensatePoseForLatency(robotPose, fieldSpeeds);
+
+        // run the SOTM solver against the predicted pose
+        ShotDataLerp calculatedShot = ShotCalculator.iterativeMovingShotFromInterpolationMap(
+            compensatedPose, fieldSpeeds, target, 8);
+
+        // figure out where the turret needs to point
+        AzimuthCalcDetails azCalcDetails = calcAzimuth(calculatedShot.getTarget(), compensatedPose, turretPositionRots, fieldSpeeds);
 
         double turretReferenceRots = azCalcDetails.turretReferenceRots();
         double hoodReferenceRots = calculatedShot.hoodAngle() / (2.0 * Math.PI);
         double shooterReferenceRPS = calculatedShot.exitVelocity() / (2.0 * Math.PI);
-        ShotCalcOutputs outputs = new ShotCalcOutputs(azCalcDetails, calculatedShot, turretReferenceRots, hoodReferenceRots, shooterReferenceRPS);
+
+        // how far off is the turret from where we want it? feeds into confidence
+        double headingErrorRad = azCalcDetails.fieldYawRad() - azCalcDetails.currentFieldYawRad();
+        double speed = Math.hypot(fieldSpeeds.vx, fieldSpeeds.vy);
+        double distance = Math.hypot(
+            target.getX() - compensatedPose.getX(),
+            target.getY() - compensatedPose.getY());
+
+        // compute confidence score — just for logging right now, doesn't block anything
+        double confidence = ShotCalculator.computeShotConfidence(
+            calculatedShot.getSolverQuality(), speed, headingErrorRad, distance);
+
+        ShotCalcOutputs outputs = new ShotCalcOutputs(
+            azCalcDetails, calculatedShot, turretReferenceRots, hoodReferenceRots, shooterReferenceRPS, confidence);
         outputs.acceptLogging(outputs);
         return outputs;
     }

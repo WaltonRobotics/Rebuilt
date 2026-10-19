@@ -3,35 +3,36 @@ package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.CoastOut;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 
-import edu.wpi.first.units.measure.AngularAcceleration;
-import edu.wpi.first.units.measure.AngularVelocity;
+import org.wpilib.units.measure.AngularAcceleration;
+import org.wpilib.units.measure.AngularVelocity;
 import com.ctre.phoenix6.signals.ControlModeValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
+import org.wpilib.math.util.MathUtil;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.kinematics.ChassisVelocities;
+import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.LinearSystem;
 
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.Tracer;
-import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import org.wpilib.system.Timer;
+import org.wpilib.system.Tracer;
+import org.wpilib.simulation.FlywheelSim;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
+import org.wpilib.command2.SubsystemBase;
+import org.wpilib.command2.button.Trigger;
 
-import static edu.wpi.first.units.Units.Hertz;
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static org.wpilib.units.Units.Hertz;
+import static org.wpilib.units.Units.Rotations;
+import static org.wpilib.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK.*;
 
 import java.util.function.DoubleSupplier;
@@ -52,7 +53,7 @@ public class Shooter extends SubsystemBase {
         new WaltTunable("/Shooter/shooterRPSOverride", kShooterRPSd);
     private static final WaltTunable kHoodRotsOverride =
         new WaltTunable("/Shooter/hoodRotsOverride", 0.0);
-    private static final double kHoodLockedPosRots = Rotations.of(0.33).magnitude();
+    private static final double kHoodLockedPosRots = Rotations.of(0.721).magnitude();
 
     private final Tracer m_periodicTracer = new Tracer();
     /* VARIABLES */
@@ -64,6 +65,35 @@ public class Shooter extends SubsystemBase {
     private boolean m_shotDropSeen = false;
 
     private final Timer m_shotRecoveryTimer = new Timer();
+
+    private static final WaltTunable kCopeTurretRots = 
+        new WaltTunable("/Shooter/Turret/turretRots", 0.03);
+    private static final WaltTunable kShooterRPSBoost = 
+        new WaltTunable("Shooter/Flywheel/RPSBoost", 0.75);
+
+    // Recovery bump temporarily overshoot the velocity setpoint after a ball
+    // steals energy from the flywheel, so PID recovers faster.
+    private double m_recoveryBumpRPS = 0.0;
+    private static final double kRecoveryBumpRPS = 6.0; // RPS to add on shot detect (tune this)
+    private static final WaltTunable kRecoveryBumpRPSOverride = 
+        new WaltTunable("/Shooter/bumpRPSOverride", kRecoveryBumpRPS);
+    private static final double kRecoveryBumpClearThreshold = 1.0; // clear bump when CL error is within this
+    private static final WaltTunable kRecoveryBumpClearOverride =
+        new WaltTunable("/Shooter/kRecoveryBumpClearOverride", kRecoveryBumpClearThreshold);
+
+    // bang bang -- full send when below target, hold duty when at/above. enable via NT
+    // DONT USE (NOT TUNED)
+    private static final WaltTunable kBangBangEnabled =
+        new WaltTunable("/Shooter/bangBang/enabled", 0.0); // >0 = enabled
+    private static final WaltTunable kBangBangHoldDuty =
+        new WaltTunable("/Shooter/bangBang/holdDutyCycle", 0.15);
+    private static final WaltTunable kBangBangDeadband =
+        new WaltTunable("/Shooter/bangBang/deadbandRPS", 0.5);
+    private final DutyCycleOut m_bangBangFullReq = new DutyCycleOut(1.0);
+
+    // overshoot -- always command X% above calc'd RPS so the flywheel has energy margin
+    private static final WaltTunable kOvershootPct =
+        new WaltTunable("/Shooter/overshootPct", 0.035); // e.g. 0.07 = 7% overshoot
 
     private int m_fuelStored = 8;
 
@@ -89,6 +119,11 @@ public class Shooter extends SubsystemBase {
     private double m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
     private double m_calcHoodRots = kHoodRotsd;
     private double m_driverRPSTweak = 0.0;
+    private double m_shotConfidence = 0.0; // updated every cycle from the shot calculator
+    private double m_manualRpsAdjustment = kRPSAdjustmentDefault;
+
+    // threshold for isShotConfident() — not gating anything yet, just for telemetry
+    private static final double kMinShotConfidence = 30.0;
 
     private int m_ballsShot = 0;
 
@@ -97,7 +132,7 @@ public class Shooter extends SubsystemBase {
     private final StatusSignal<AngularAcceleration> sig_shooterAAccel = m_shooterA.getAcceleration();
     private final StatusSignal<ControlModeValue> sig_shooterACtrlMode = m_shooterA.getControlMode();
 
-    // ---LOGIC BOOLEANS
+    // LOGIC
     private final Trigger trg_inShootCtrlMode = new Trigger(() -> {return sig_shooterACtrlMode.getValue() == ControlModeValue.VelocityVoltage; });
     private final Trigger trg_ballDetected = new Trigger(() -> detectShot()).and(trg_inShootCtrlMode);
     private final Trigger trg_shotDropSeen = new Trigger(() -> m_shotDropSeen);
@@ -109,11 +144,13 @@ public class Shooter extends SubsystemBase {
         .and(trg_debounceHit);
 
     /* SIM OBJECTS */
-    private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(
-            DCMotor.getKrakenX44(2), kShooterMoI, kShooterGearing), DCMotor.getKrakenX60Foc(2) // returns gearbox
-    );
 
-    // private final DCMotorSim m_turretSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(
+    // 2027-TODO: figure out new LinearSystem generator!!!
+    // private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystem.createFlywheelSystem(
+            // DCMotor.getKrakenX44(2), kShooterMoI, kShooterGearing), DCMotor.getKrakenX60Foc(2) // returns gearbox
+    // );
+
+    // private final DCMotorSim m_turretSim = new DCMotorSim(LinearSystem.createDCMotorSystem(
     //         DCMotor.getKrakenX44Foc(1), kTurretMoI, kTurretGearing), DCMotor.getKrakenX44Foc(1) // returns gearbox
     // );
 
@@ -133,10 +170,16 @@ public class Shooter extends SubsystemBase {
 
     private final DoubleLogger log_ballsShot = new DoubleLogger("Shooter/Flywheel", "balls shot");
     private final DoubleLogger log_calcFlywheelVelocity = new DoubleLogger("Shooter/Flywheel", "calcFlywheelVelocity");
-    private final DoubleLogger log_driverAddedRPS = WaltLogger.logDouble(kLogTab, "driverAddedRPS");
+    private final DoubleLogger log_recoveryBump = new DoubleLogger("Shooter/Flywheel", "recoveryBumpRPS");
+    private final BooleanLogger log_bangBangActive = WaltLogger.logBoolean("Shooter/Flywheel", "bangBangActive");
+    private final DoubleLogger log_overshootRPS = new DoubleLogger("Shooter/Flywheel", "overshootRPS");
+    private final DoubleLogger log_shotConfidence = WaltLogger.logDouble(kLogTab, "shotConfidence");
+    private final BooleanLogger log_shotConfident = WaltLogger.logBoolean(kLogTab, "shotConfident");
+
+    private final DoubleLogger log_shotAdjustmentRps = WaltLogger.logDouble(kLogTab, "shotAdjRps");
 
     /* CONSTRUCTOR */
-    public Shooter(Supplier<Pose2d> poseSupplier, Supplier<SwerveDriveState> threadsafeSwerveStateSup, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
+    public Shooter(Supplier<Pose2d> poseSupplier, Supplier<SwerveDriveState> threadsafeSwerveStateSup, Supplier<ChassisVelocities> fieldSpeedsSupplier) {
         m_hood = new Hood();
         m_turret = new Turret();
         m_threadsafeSwerveSup = threadsafeSwerveStateSup;
@@ -157,7 +200,7 @@ public class Shooter extends SubsystemBase {
         m_currentFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
         m_latestFlywheelAccelerationRotPerSec = sig_shooterAAccel.getValueAsDouble();
 
-        trg_ballDetected.onTrue(Commands.runOnce(() -> { m_shotDropSeen = true; m_shotRecoveryTimer.restart(); m_ballsShot++;}));
+        trg_ballDetected.onTrue(Commands.runOnce(() -> { m_shotDropSeen = true; m_shotRecoveryTimer.restart(); m_ballsShot++; m_recoveryBumpRPS = kRecoveryBumpRPSOverride.get(); }));
         trg_ballDetected.onFalse(Commands.runOnce(() -> { m_shotRecoveryTimer.restart(); }));
         trg_inShootCtrlMode.onFalse(Commands.runOnce(() -> { m_shotDropSeen = false; m_shotRecoveryTimer.stop(); m_shotRecoveryTimer.reset(); }));
 
@@ -180,10 +223,6 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> setShooterVelocity(supp_RPS.get()));
     }
 
-    public void setShooterVelocitySupp(Supplier<AngularVelocity> supp_RPS) {
-        run(() -> setShooterVelocity(supp_RPS.get()));
-    }
-
     public Command shootFromCalc() {
         return run(() -> setShooterVelocity(m_calcFlywheelVelocityRotPerSec));
     }
@@ -196,30 +235,6 @@ public class Shooter extends SubsystemBase {
         return m_hood.run(() -> m_hood.setHoodPos(kHoodRotsHalfwayD));
     }
 
-    public Command driverRPSIncreaseWhileHeldCmd() {
-        return Commands.runOnce(() -> {
-            driverRPSAlterStatic(true);
-        }).finallyDo(() -> driverResetRPSAlter());
-    }
-
-    public Command driverRPSAlterDynamic(boolean increase) {
-        return Commands.runOnce(() -> {
-            m_driverRPSTweak = increase ? (m_calcFlywheelVelocityRotPerSec * 0.05) : (m_calcFlywheelVelocityRotPerSec * -0.05);
-            log_driverAddedRPS.accept(m_driverRPSTweak);
-        });
-    }
-
-    public Command driverRPSAlterStatic(boolean increase) {
-        return Commands.runOnce(() -> {
-            m_driverRPSTweak += kDriverRPSIncreaseD * (increase ? 1 : -1);
-            log_driverAddedRPS.accept(m_driverRPSTweak);
-        });
-    }
-
-    public Command driverResetRPSAlter() {
-        return Commands.runOnce(() -> m_driverRPSTweak = 0);
-    }
-
     public void setShooterVelocity(AngularVelocity RPS) {
         setShooterVelocity(RPS.in(RotationsPerSecond));
     }
@@ -229,8 +244,26 @@ public class Shooter extends SubsystemBase {
             // cope to get clErr to 0
             m_shooterA.setControl(m_veloTQFOCReq.withVelocity(0));
             m_shooterA.setControl(m_motorIdleReq);
+            m_recoveryBumpRPS = 0.0;
+            return;
+        }
+
+        // overshoot -- pad the setpoint so we have energy margin when balls steal RPM
+        // double overshoot = kOvershootPct.enabled() ? rotPerSec * kOvershootPct.get() : 0.0; --------- UNCOMMENT IF TUNING BAD OR WANT TO RETURN TO NO OVERSHOOT
+        double overshoot = rotPerSec * kOvershootPct.get();
+        double commandedRPS = rotPerSec + m_recoveryBumpRPS + overshoot;
+
+        if (kBangBangEnabled.enabled() && kBangBangEnabled.get() > 0) {
+            // bang bang -- skip PIDF entirely, just full send or hold
+            // need to tune still, dont use
+            double deadband = kBangBangDeadband.get();
+            if (m_currentFlywheelVelocityRotPerSec < commandedRPS - deadband) {
+                m_shooterA.setControl(m_bangBangFullReq.withOutput(1.0));
+            } else {
+                m_shooterA.setControl(m_bangBangFullReq.withOutput(kBangBangHoldDuty.get()));
+            }
         } else {
-            m_shooterA.setControl(m_veloTQFOCReq.withVelocity(rotPerSec));
+            m_shooterA.setControl(m_veloTQFOCReq.withVelocity(commandedRPS));
         }
     }
 
@@ -241,6 +274,15 @@ public class Shooter extends SubsystemBase {
 
     public boolean isShooterSpunUp() {
         return m_isShooterSpunUp;
+    }
+
+    // does NOT block firing — just tells you if the shot calc thinks this is a good shot
+    public boolean isShotConfident() {
+        return m_shotConfidence >= kMinShotConfidence;
+    }
+
+    public double getShotConfidence() {
+        return m_shotConfidence;
     }
 
     /* GETTERS */
@@ -281,6 +323,14 @@ public class Shooter extends SubsystemBase {
         return accelDrop;
     }
 
+    public void adjustRpsBy(double rpsReq) {
+        m_manualRpsAdjustment += rpsReq;
+    }
+
+    public void unadjustRps() {
+        m_manualRpsAdjustment = kRPSAdjustmentDefault;
+    }
+
     // /**
     //  * Launches SIMULATION FUEL™ at the current Flywheel Velocity, current Hood
     //  * Angle, and the
@@ -314,6 +364,7 @@ public class Shooter extends SubsystemBase {
         m_latestFlywheelAccelerationRotPerSec = sig_shooterAAccel.getValueAsDouble();
 
         ShotCalcOutputs calcData = m_shooterCalc.getLatestShotCalcOutputs();
+        m_shotConfidence = calcData.shotConfidence();
 
         m_periodicTracer.addEpoch("Stashing ShotCalc data");
         log_shooterClosedLoopError.accept(sig_shooterCLErr.getValueAsDouble());
@@ -321,24 +372,23 @@ public class Shooter extends SubsystemBase {
         // set turret reference
         if (m_turret.isTurretHomed()) {
             var turretReference = calcData.turretReferenceRots();
-
             // set outputs
             var turretVelocityFF = calcData.turretCalcDetails().turretVelocityFF();
             if (m_turret.getTurretLocked()) {
-                m_turret.setTurretPos(m_turret.getTurretLockAngleRots(), 0.0);
+                m_turret.setTurretPos(m_turret.getTurretLockAngleRots() + kCopeTurretRots.getOr(0.03), 0.0);
                 m_calcFlywheelVelocityRotPerSec = kShooterRPSd;
             } else {
                 // NOT LOCKED
                 if (m_turret.getHoldTurretAtIntake()) {
                     // m_turret.setTurretPos(Rotations.of(-0.250));
                 } else {
-                    m_turret.setTurretPos(turretReference, turretVelocityFF);
+                    m_turret.setTurretPos(turretReference + kCopeTurretRots.getOr(0.03), turretVelocityFF);
                     m_calcFlywheelVelocityRotPerSec = kShooterRPSOverride.enabled()
                         ? kShooterRPSOverride.get()
-                        : calcData.shooterReferenceRps();
+                        : calcData.shooterReferenceRps() + kShooterRPSBoost.getOr(0) + m_manualRpsAdjustment;
                     if (kAllowDriverRPSTweak) { // ENABLE THIS TO ALLOW DRIVER RPS TWEAK
                         m_calcFlywheelVelocityRotPerSec += m_driverRPSTweak;
-                        m_calcFlywheelVelocityRotPerSec = MathUtil.clamp(m_calcFlywheelVelocityRotPerSec, 0, kShooterMaxRPSd);    //clamp here or clamp only when setShooterVel is called?
+                        m_calcFlywheelVelocityRotPerSec = Math.clamp(m_calcFlywheelVelocityRotPerSec, 0, kShooterMaxRPSd);    //clamp here or clamp only when setShooterVel is called?
                     }
                 }
             }
@@ -363,6 +413,11 @@ public class Shooter extends SubsystemBase {
 
         m_periodicTracer.addEpoch("Setting Hood & Turret References");
 
+        // Clear recovery bump once flywheel is back within threshold of setpoint
+        if (m_recoveryBumpRPS > 0.0 && Math.abs(sig_shooterCLErr.getValueAsDouble()) <= kRecoveryBumpClearOverride.get()) {
+            m_recoveryBumpRPS = 0.0;
+        }
+
         refreshShooterSpunUp();
 
         m_periodicTracer.addEpoch("Refresh shooterSpunUp");
@@ -374,9 +429,15 @@ public class Shooter extends SubsystemBase {
         log_turretPositionRots.accept(m_latestTurretPositionRots);
         log_spunUp.accept(m_isShooterSpunUp);
         log_calcFlywheelVelocity.accept(m_calcFlywheelVelocityRotPerSec);
+        log_recoveryBump.accept(m_recoveryBumpRPS);
+        log_bangBangActive.accept(kBangBangEnabled.enabled() && kBangBangEnabled.get() > 0);
+        log_overshootRPS.accept(m_calcFlywheelVelocityRotPerSec * kOvershootPct.getOrDefault());
         log_ballDetected.accept(trg_ballDetected.getAsBoolean());
         log_ballShotDebounce.accept(trg_ballShotDebounced.getAsBoolean());
+        log_shotConfidence.accept(m_shotConfidence);
+        log_shotConfident.accept(isShotConfident());
 
+        log_shotAdjustmentRps.accept(m_manualRpsAdjustment);
 
         // m_periodicTracer.addEpoch("Logging");
 
@@ -385,6 +446,7 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        WaltMotorSim.updateSimFX(m_shooterA, m_shooterSim);
+        // 2027-TODO: figure out new LinearSystem generator!!!
+        // WaltMotorSim.updateSimFX(m_shooterA, m_shooterSim);
     }
 }

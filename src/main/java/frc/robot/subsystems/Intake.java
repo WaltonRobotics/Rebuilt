@@ -10,31 +10,26 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.sim.ChassisReference;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static org.wpilib.units.Units.Degrees;
+import static org.wpilib.units.Units.Rotations;
+import static org.wpilib.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.kRioBus;
 import static frc.robot.Constants.IntakeK.*;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.networktables.DoubleSubscriber;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.wpilib.math.filter.Debouncer;
+import org.wpilib.math.filter.Debouncer.DebounceType;
+import org.wpilib.units.measure.Angle;
+import org.wpilib.units.measure.AngularVelocity;
+import org.wpilib.units.measure.Current;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
+import org.wpilib.command2.FunctionalCommand;
+import org.wpilib.command2.SubsystemBase;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltMotorSim;
@@ -45,10 +40,11 @@ import frc.util.WaltLogger;
 public class Intake extends SubsystemBase {
     /* CLASS VARIABLES */
     //---MOTORS + CONTROL REQUESTS
-    private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID); //x60Foc
+    // private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID, kRioBus); //x60Foc
+    private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID, kRioBus);
 
-    private final TalonFX m_intakeRollersA = new TalonFX(kIntakeRollersA_CANID); //x60Foc
-    private final TalonFX m_intakeRollersB = new TalonFX(kIntakeRollersB_CANID); //x60Foc
+    private final TalonFX m_intakeRollersA = new TalonFX(kIntakeRollersA_CANID, kRioBus); //x60Foc
+    private final TalonFX m_intakeRollersB = new TalonFX(kIntakeRollersB_CANID, kRioBus); //x60Foc
 
     private MotionMagicVoltage m_MMVReq = new MotionMagicVoltage(0).withEnableFOC(true);
     private VelocityVoltage m_VelVoltReq = new VelocityVoltage(0).withEnableFOC(true);
@@ -66,31 +62,32 @@ public class Intake extends SubsystemBase {
     
     private VoltageOut m_intakeArmZeroingReq = new VoltageOut(0);
 
-    private Debouncer m_currentDebouncer = new Debouncer(0.100, DebounceType.kRising);
-    private Debouncer m_velocityDebouncer = new Debouncer(0.125, DebounceType.kRising);
+    private Debouncer m_currentDebouncer = new Debouncer(0.100, DebounceType.RISING);
+    private Debouncer m_velocityDebouncer = new Debouncer(0.125, DebounceType.RISING);
 
     private boolean m_isIntakeArmHomed = false;
 
     public final BooleanSupplier intakeHomedSupp = () -> m_isIntakeArmHomed;
 
     /* SIM OBJECTS */
-    private final DCMotorSim m_intakeArmSim = new DCMotorSim(
-        LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX60Foc(1),
-            kIntakeArmMOI,
-            kIntakeArmGearing
-        ),
-        DCMotor.getKrakenX60Foc(1)
-    );
+    // 2027-TODO: figure out new LinearSystem generator!!!
+    // private final DCMotorSim m_intakeArmSim = new DCMotorSim(
+    //     LinearSystem.createDCMotorSystem(
+    //         DCMotor.getKrakenX60Foc(1),
+    //         kIntakeArmMOI,
+    //         kIntakeArmGearing
+    //     ),
+    //     DCMotor.getKrakenX60Foc(1)
+    // );
 
-    private final DCMotorSim m_intakeRollersSim = new DCMotorSim(
-        LinearSystemId.createDCMotorSystem(
-            DCMotor.getKrakenX60Foc(2),
-            kIntakeRollersMOI,
-            kIntakeRollersGearing
-        ),
-        DCMotor.getKrakenX60Foc(2) // returns gearbox
-    );
+    // private final DCMotorSim m_intakeRollersSim = new DCMotorSim(
+    //     LinearSystem.createDCMotorSystem(
+    //         DCMotor.getKrakenX60Foc(2),
+    //         kIntakeRollersMOI,
+    //         kIntakeRollersGearing
+    //     ),
+    //     DCMotor.getKrakenX60Foc(2) // returns gearbox
+    // );
 
     /* LOGGERS */
     private final DoubleLogger log_intakeArmRots = WaltLogger.logDouble(kLogTab, "intakeArmRots");
@@ -147,7 +144,7 @@ public class Intake extends SubsystemBase {
     }
 
      public void setIntakeArmNeutralMode(NeutralModeValue value) {
-        m_intakeArm.setNeutralMode(value);
+        // m_intakeArm.setNeutralMode(value);
     }
 
     public Command startIntakeRollers(double volts) {
@@ -195,7 +192,7 @@ public class Intake extends SubsystemBase {
             m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(0));
             m_intakeArm.setPosition(0);
             removeDefaultCommand();
-            setIntakeArmPosCmd(IntakeArmPosition.RETRACTED);
+            setIntakeArmPos(IntakeArmPosition.RETRACTED);
             m_isIntakeArmHomed = true;
             log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
         };
@@ -218,15 +215,16 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        WaltMotorSim.updateSimFX(m_intakeArm, m_intakeArmSim);
-        WaltMotorSim.updateSimFX(m_intakeRollersA, m_intakeRollersSim);
+        // 2027-TODO: figure out new LinearSystem generator!!!
+        // WaltMotorSim.updateSimFX(m_intakeArm, m_intakeArmSim);
+        // WaltMotorSim.updateSimFX(m_intakeRollersA, m_intakeRollersSim);
     }
 
     /* ENUMS */
     public enum IntakeArmPosition{
         RETRACTED(Rotations.of(0.061514).in(Degrees)),
         DEPLOYED(Rotations.of(0.289062 * 0.86).in(Degrees)),
-        SHIMMY(Rotations.of(0.126025).in(Degrees)),
+        SHIMMY(Rotations.of(0.11).in(Degrees)),
         SAFE((DEPLOYED.rots.minus(Rotations.of(0.06))).in(Degrees));
 
         public Angle degs;

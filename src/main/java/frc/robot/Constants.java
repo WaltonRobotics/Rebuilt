@@ -1,22 +1,23 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.InchesPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Seconds;
-import static frc.robot.Constants.IndexerK.kSpindexerShootRPSD;
+import static org.wpilib.units.Units.Amps;
+import static org.wpilib.units.Units.Degrees;
+import static org.wpilib.units.Units.Inches;
+import static org.wpilib.units.Units.InchesPerSecondPerSecond;
+import static org.wpilib.units.Units.Meters;
+import static org.wpilib.units.Units.MetersPerSecondPerSecond;
+import static org.wpilib.units.Units.RadiansPerSecond;
+import static org.wpilib.units.Units.Rotations;
+import static org.wpilib.units.Units.RotationsPerSecond;
+import static org.wpilib.units.Units.Seconds;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+
+// import org.wpilib.hardware.hal.CANBusMap;
 
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -38,60 +39,68 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.apriltag.AprilTag;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.Time;
+import org.wpilib.fields.Field;
+import org.wpilib.fields.FieldTag;
+import org.wpilib.fields.Fields;
+// import org.wpilib.vision.apriltag.AprilTag;
+// import org.wpilib.vision.apriltag.AprilTagFieldLayout;
+// import org.wpilib.vision.apriltag.AprilTagFields;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.kinematics.ChassisVelocities;
+import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.util.Units;
+import org.wpilib.units.measure.Angle;
+import org.wpilib.units.measure.AngularVelocity;
+import org.wpilib.units.measure.Current;
+import org.wpilib.units.measure.Distance;
+import org.wpilib.units.measure.Time;
+
 import frc.util.AllianceFlipUtil;
 import frc.util.VisionUtil;
 
 public class Constants {
-    public static final boolean kDebugLoggingEnabled = false;
+    public static final boolean kDebugLoggingEnabled = true;
     public static final boolean kDataLoggingEnabled = true;
     public static final double kSimPeriodicUpdateInterval = 0.020;
 
-    public static final CANBus kRioBus = CANBus.roboRIO();
+    // public static final CANBus kRioBus = new CANBus(CANPort.CAN_S4);
+    public static final CANBus kRioBus = new CANBus("can_s4");
     public static final CANBus kCanivoreBus = new CANBus("fd");
     public static final CANBus kShooterBus = new CANBus("shooter");
 
     public static final class MotorK {
-        public static final double kX60MaxRadPerSec = DCMotor.getKrakenX60(1).freeSpeedRadPerSec;
+        public static final double kX60MaxRadPerSec = DCMotor.getKrakenX60(1).freeSpeed;
         public static final AngularVelocity kX60MaxVelocity = RadiansPerSecond.of(kX60MaxRadPerSec);
-        public static final double kX60FOCMaxRadPerSec = DCMotor.getKrakenX60Foc(1).freeSpeedRadPerSec;
+        public static final double kX60FOCMaxRadPerSec = DCMotor.getKrakenX60Foc(1).freeSpeed;
         public static final AngularVelocity kX60FOCMaxVelocity = RadiansPerSecond.of(kX60FOCMaxRadPerSec);
 
-        public static final double kX44MaxRadPerSec = DCMotor.getKrakenX44(1).freeSpeedRadPerSec;
+        public static final double kX44MaxRadPerSec = DCMotor.getKrakenX44(1).freeSpeed;
         public static final AngularVelocity kX44MaxVelocity = RadiansPerSecond.of(kX44MaxRadPerSec);
-        public static final double kX44FOCMaxRadPerSec = DCMotor.getKrakenX44Foc(1).freeSpeedRadPerSec;
+        public static final double kX44FOCMaxRadPerSec = DCMotor.getKrakenX44Foc(1).freeSpeed;
         public static final AngularVelocity kX44FOCMaxVelocity = RadiansPerSecond.of(kX44FOCMaxRadPerSec);
     }
     public static class WpiK {
-        public static final ChassisSpeeds kZeroChassisSpeeds = new ChassisSpeeds(0, 0, 0);
+        public static final ChassisVelocities kZeroChassisVelocities = new ChassisVelocities(0, 0, 0);
     }
     public static class ShooterK {
         public static final String kLogTab = "Shooter";
         public static final Rotation2d kTurretAngleOffset = Rotation2d.fromRotations(0.106 + 0.0067); //4.87        //0.132324  // was 0.12, decreased 0.014 (~5deg) to fix consistent rightward aim error
         public static final Rotation3d kTurretAngleOffset3d = new Rotation3d(kTurretAngleOffset);
         public static final Translation3d kTurretTranslation = new Translation3d(Inches.of(-4.744), Inches.of(-4.239), Inches.of(15.769));
-        public static final Transform3d kTurretTransformNoRotation = new Transform3d(kTurretTranslation, Rotation3d.kZero);
+        public static final Transform3d kTurretTransformNoRotation = new Transform3d(kTurretTranslation, Rotation3d.ZERO);
         public static final Transform3d kTurretTransform = new Transform3d(kTurretTranslation, kTurretAngleOffset3d);
         public static final Distance kInchesAboveFunnel = Inches.of(20);// distance the ball must travel above the funnel opening to arc correctly into the hub
-        public static final Angle kTurretBarfPos = Rotations.of(-0.113);
+        public static final Angle kTurretBarfPos = Rotations.of(-0.113 + 0.03);
 
         public static final boolean kUseStaticShot = false;
         public static final boolean kAllowDriverRPSTweak = false;
+
+        public static final double kRPSAdditionOnButton = 0.5;
+        public static final double kRPSAdjustmentDefault = 3.0; // mean of first used match is 3.75
 
         // private static final Pose3dLogger log_turretTransform = WaltLogger.logPose3d(kLogTab, "TurretTransformRaw");
         // static {
@@ -138,7 +147,7 @@ public class Constants {
         public static final double kShooterMoI = 0.000349 * 2.5;  //J for 5 3" 0.53lb flywheels
         public static final double kTurretMoI = 0.104506595;
 
-        public static final double kShooterGearing = 1/1;
+        public static final double kShooterGearing = 1.0/1;
         public static final double kTurretGearing = 41.66666666/1;
         public static final double kHoodGearing = 25.0/1;
 
@@ -156,7 +165,7 @@ public class Constants {
         public static final AngularVelocity kShooterMaxRPS = MotorK.kX44MaxVelocity.div(kShooterGearing);
         public static final double kShooterMaxRPSd = kShooterMaxRPS.in(RotationsPerSecond);
         public static final AngularVelocity kShooterRPS = kShooterMaxRPS.times(0.65);   //Kraken X44 Max RPM: 7758
-        public static final double kShooterRPSd = 42.90 + 1.25;
+        public static final double kShooterRPSd = 51;
         public static final AngularVelocity kShooterAutonCloseRPS = kShooterMaxRPS.times(0.60);  //auton pose is closer to the hub than teleop scoring
         public static final AngularVelocity kShooterAuton_EndSweep_RPS = kShooterMaxRPS.times(0.70); // end of sweep paths
         public static final AngularVelocity kShooterBarfRPS = kShooterMaxRPS.times(0.37);
@@ -415,18 +424,32 @@ public class Constants {
         public static final double kFieldLengthMeters = Units.inchesToMeters(651.22); 
         public static final double kFieldWidthMeters = Units.inchesToMeters(317.69);
 
-        public static final Pose2d kLeftResetPose = new Pose2d(0.478, 8 - 0.392, Rotation2d.kZero);
-        public static final Pose2d kRightResetPose = new Pose2d(0.478, 0.392, Rotation2d.kZero);
+        public static final Pose2d kLeftResetPose = new Pose2d(0.478, 8 - 0.392, Rotation2d.ZERO);
+        public static final Pose2d kRightResetPose = new Pose2d(0.478, 0.392, Rotation2d.ZERO);
 
-        public static final AprilTagFieldLayout kTagLayout;
+        // public static final AprilTagFieldLayout kTagLayout;
+
+        public static final List<FieldTag> kTagLayout;
+        public static final Field kFilteredTagField;
 
         //Ignore trench April Tags
         static {
-            HashSet<Integer> excludedAprilTagsID = new HashSet<> (Arrays.asList(1, 6, 7, 12, 17, 22, 23, 28));
-            AprilTagFieldLayout fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
-            List<AprilTag> tags = new ArrayList<> (fieldLayout.getTags());
-            tags.removeIf(tag -> excludedAprilTagsID.contains(tag.ID));
-            kTagLayout = new AprilTagFieldLayout(tags, fieldLayout.getFieldLength(), fieldLayout.getFieldWidth());
+            HashSet<Integer> excludedAprilTagsID = new HashSet<>(Arrays.asList(1, 6, 7, 12, 17, 22, 23, 28));
+            Field fieldLayout = Field.loadField(Fields.FRC_2026_REBUILT_WELDED);
+            List<FieldTag> tags = new ArrayList<>(fieldLayout.getTags());
+            tags.removeIf(tag -> excludedAprilTagsID.contains(tag.getID()));
+            kTagLayout = tags;
+            //i think this should work????
+            kFilteredTagField = new Field(
+                fieldLayout.name,
+                fieldLayout.season,
+                fieldLayout.game,
+                fieldLayout.fieldImage,
+                fieldLayout.getFieldLength(),
+                fieldLayout.getFieldWidth(),
+                fieldLayout.program,
+                tags
+            );
         }
     }
 
@@ -441,6 +464,8 @@ public class Constants {
         public static final Distance kBumperHeight = Inches.of(4.5);
         public static final double kRobotSpeedIntakingLimit = 0.31;
         public static final double kRobotEvasionLimit = 1.5;
+
+        public static final boolean kSingleDriverMode = false;
     }
 
     public static class SuperstructureK {
@@ -452,7 +477,7 @@ public class Constants {
 
         /* MOTOR CONSTANTS */
         public static final double kIntakeArmMOI = 0.0209;
-        public static final double kIntakeArmGearing = 125/1;
+        public static final double kIntakeArmGearing = 125.0/1;
 
         public static final double kIntakeRollersMOI = 0.0001; // 0.00343880857
         public static final double kIntakeRollersGearing = 12.0/30;
@@ -544,7 +569,6 @@ public class Constants {
         public static final String kLogTab = "Indexer";
         
         /* IDS */
-        //TODO: Make ids accurate
         public static final int kSpindexerCANID = 10;
         public static final int kTunnelCANID = 11;
 
@@ -555,16 +579,18 @@ public class Constants {
         public static final double kTunnelMOI = 0.000215968064;
       
         public static final AngularVelocity kSpindexerMaxRPS = MotorK.kX60MaxVelocity.div(kSpindexerGearing);
-        public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.10);
+        public static final AngularVelocity kSpindexerIntakeRPS = kSpindexerMaxRPS.times(-0.20);
         public static final AngularVelocity kSpindexerShootRPS = kSpindexerMaxRPS.times(0.85);
         public static final double kSpindexerMaxRPSD = kSpindexerMaxRPS.in(RotationsPerSecond);
-        public static final double kSpindexerShootRPSD = kSpindexerShootRPS.in(RotationsPerSecond);
+        public static final double kSpindexerShootRPSD = 13.0; //kSpindexerShootRPS.in(RotationsPerSecond); (RETUNED FOR MORE BPS + CONSISTENCY @ 9/24)
         public static final double kSpindexerIntakeRPSD = kSpindexerIntakeRPS.in(RotationsPerSecond);
 
         public static final AngularVelocity kTunnelMaxRPS = MotorK.kX60FOCMaxVelocity.div(kTunnelGearing);
         public static final AngularVelocity kTunnelShootRPS = kTunnelMaxRPS.times(0.77);    //9V
+        public static final AngularVelocity kTunnelIntakeRPS = kTunnelMaxRPS.times(-0.20);
         public static final double kTunnelMaxRPSD    = kTunnelMaxRPS.in(RotationsPerSecond);
-        public static final double kTunnelShootRPSD = kTunnelShootRPS.in(RotationsPerSecond);
+        public static final double kTunnelShootRPSD = 30.0;    //kTunnelShootRPS.in(RotationsPerSecond); (RETUNED FOR MORE BPS + CONSISTENCY@ 9/24)
+        public static final double kTunnelIntakeRPSD = kTunnelIntakeRPS.in(RotationsPerSecond);
 
         public static final AngularVelocity kTunnelSpunUpMinimum = RotationsPerSecond.of(10);
         public static final double kTunnelSpunUpMinimumD = 10.0;
@@ -580,7 +606,6 @@ public class Constants {
         public static final double kSpindexerFromShooterRatio = (kR_bigFlywheel + kR_smallFlywheel) / (2.0 * kR_spindexerFloor);
 
         /* CONFIGS */
-        //TODO: Make transfer configs accurate
         private static final Slot0Configs kSpindexerSlot0Configs = new Slot0Configs()
             .withKS(0.420)
             .withKV(0.560)
@@ -647,112 +672,55 @@ public class Constants {
         public static final double kGearOneToothCount = 10;
         public static final double kGearTwoToothCount = 19;
 
-        public static final double kLCMAtHomeRots = 0.251; // measure: turretLCMPos log value when turret is at home
-        public static final double kEncAMagnetOffset = 0.320556640625;
-        public static final double kEncBOffset = 0.529614; // measure: encB reading when turret is at encA=0 //NEW ONE
+        public static final double kLCMAtHomeRots = 0.04778; //0.251 // measure: turretLCMPos log value when turret is at home // 0.251; RETUNED 9/3/26
+        public static final double kEncAMagnetOffset = 0.19458; // 0.; RETUNED 9/3/26
+        public static final double kEncBOffset = 0.680272; // measure: encB reading when turret is at encA=0  //0.; RETUNED 9/3/26 ; 
     }
+    
     public static class AutonK {
         public static final String kLogTab = "Auton";
 
-        public static final Pose2d kRightNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
-            Meters.of(2.251265048980713), new Rotation2d(0));
-        public static final Pose2d kRightDepotPose = new Pose2d(Meters.of(1.1576627492904663), 
-            Meters.of(5.958622932434082), new Rotation2d(Math.PI));
+        public static final double kShootingTimeout = 4;
+        public static final double kSOTMTimeout = 100;
 
-        public static final Pose2d kLeftNeutralPose = new Pose2d(Meters.of(6.924767017364502), 
-            Meters.of(5.437880039215088), new Rotation2d(0));
+        public static final String kPreheatTrajectory = "PreHeat";
 
-        public static final double kIntakeTimeout = 7.5;
-        public static final double kShootingTimeout = 4; //12
-        public static final double kSOTMTimeout = 100; //12
-        public static final double kSweepShootingTimeout = 20;
-
-        public static final double kFollowDelay = 2;
-
-        /* OLD PATHS */
-        //---RIGHT FIRST CYCLES
-        public static final String kRightOneJab = "RIGHT_one_jab";
-        public static final String kRightOneTrench = "RIGHT_one_trench";
-        public static final String kRightOneDefense = "RIGHT_one_defense";
-        public static final String kRightOneReverse = "RIGHT_one_reverse";
-
-        //---RIGHT SECOND CYCLES
-        public static final String kRightTwoSotmDepot = "RIGHT_two_sotmDepot";
-        public static final String kRightTwoDepot = "RIGHT_two_depot";
-        public static final String kRightTwoSweep = "RIGHT_two_sweep";
-        public static final String kRightTwoPassing = "RIGHT_two_passing";
-        public static final String kRightTwoJab = "RIGHT_two_jab";
-        public static final String kRightTwoReverse = "RIGHT_two_reverse";
-
-        //---LEFT FIRST CYCLES
-        public static final String kLeftOneJab = "LEFT_one_jab";
-        public static final String kLeftOneTrench = "LEFT_one_trench";
-        public static final String kLeftOneDefense = "LEFT_one_defense";
-        public static final String kLeftOneReverse = "LEFT_one_reverse";
-
-        //---LEFT SECOND CYCLES
-        public static final String kLeftTwoSotmDepot = "LEFT_two_sotmDepot";
-        public static final String kLeftTwoDepot = "LEFT_two_depot";
-        public static final String kLeftTwoSweep = "LEFT_two_sweep";
-        public static final String kLeftTwoPassing = "LEFT_two_passing";
-        public static final String kLeftTwoJab = "LEFT_two_jab";
-        public static final String kLeftTwoReverse = "LEFT_two_reverse";
-
-        //---MISC
-        public static final String kRightOneCircle = "RIGHT_one_circle";
-        public static final String kLeftOneSweepAndDepot = "LEFT_one_sweepAndDepot";
-        public static final String kLeftThreeDepotToBump = "LEFT_three_depotToBump";
-        public static final String kRightThreeDepotToBump = "RIGHT_three_depotToBump";
-
-        //---STRESS TEST
-        public static final String kRightStressTestLong = "RIGHT_stress_test_long";
-        public static final String kRightStressTestOverlap = "RIGHT_stress_test_overlap";
-      
-        /* NEW PATHS */
+        /* PATHS */
         //---BUMP RETURN PATHS
         public static final String kRightOneBumpReturn = "RIGHT_one_bumpReturn";
-        public static final String kRightOneBumpReturnFollow = "RIGHT_one_bumpReturnFollow";
         public static final String kLeftOneBumpReturn = "LEFT_one_bumpReturn";
-        public static final String kLeftOneBumpReturnFollow = "LEFT_one_bumpReturnFollow";
         public static final String kRightTwoBumpReturn = "RIGHT_two_bumpReturn";
         public static final String kLeftTwoBumpReturn = "LEFT_two_bumpReturn";
         public static final String kRightTwoBumpToTrench = "RIGHT_two_bumpToTrench";
         public static final String kLeftTwoBumpToTrench = "LEFT_two_bumpToTrench";
+
+        public static final String kLeftOneBumpReturnFollow = "LEFT_one_bumpReturnFollow";
+
+        //---FAST BUMP RETURN PATHS
+        public static final String kRightOneBumpReturnFast = "RIGHT_one_bumpReturnFast";
+        public static final String kLeftOneBumpReturnFast = "LEFT_one_bumpReturnFast";
+        public static final String kRightTwoBumpReturnFast = "RIGHT_two_bumpReturnFast";
+        public static final String kLeftTwoBumpReturnFast = "LEFT_two_bumpReturnFast";
+        public static final String kRightTwoBumpToTrenchFast = "RIGHT_two_bumpToTrenchFast";
+        public static final String kLeftTwoBumpToTrenchFast = "LEFT_two_bumpToTrenchFast";
 
         //---TRENCH RETURN PATHS
         public static final String kRightOneTrenchReturn = "RIGHT_one_trenchReturn";
         public static final String kLeftOneTrenchReturn = "LEFT_one_trenchReturn";
         public static final String kRightTwoTrenchReturn = "RIGHT_two_trenchReturn";
         public static final String kLeftTwoTrenchReturn = "LEFT_two_trenchReturn";
-        public static final String kRightOneBumpTrenchReturn = "RIGHT_one_bumpReverseToTrench";
-        public static final String kLeftOneBumpTrenchReturn = "LEFT_one_bumpReverseToTrench";
-        
-        //---OUTPOST PATHS
-        public static final String kRightOneTrenchToOutpost = "RIGHT_one_trenchToOutpost";
-        public static final String kRightTwoTrenchToOutpost = "RIGHT_two_trenchToOutpost";
-        public static final String kRightTwoOutpostToTrench = "RIGHT_two_outpostToTrench";
-        public static final String kRightOneBumpToOutpost = "RIGHT_one_bumpToOutpost";
-        public static final String kRightTwoBumpToOutpost = "RIGHT_two_bumpToOutpost";
-        public static final String kRightTwoOutpostToBump = "RIGHT_two_outpostToBump";
 
         //---DEPOT PATHS
-        public static final String kLeftOneTrenchToDepot = "LEFT_one_trenchToDepot";
         public static final String kLeftTwoTrenchToDepot = "LEFT_two_trenchToDepot";
         public static final String kLeftTwoDepotToTrench = "LEFT_two_depotToTrench";
         public static final String kLeftOneBumpToDepot = "LEFT_one_bumpToDepot";
         public static final String kLeftTwoBumpToDepot = "LEFT_two_bumpToDepot";
-        public static final String kLeftTwoDepotToBump = "LEFT_two_depotToBump";
+        public static final String kLeftTwoDepotSweep = "LEFT_two_depotSweep";
 
         //---MISC
         public static final String kRightOneSelfPass = "RIGHT_one_selfPass";
         public static final String kLeftOneSelfPass = "LEFT_one_selfPass";
         public static final String kRightTwoGoOut = "RIGHT_two_goOut";
         public static final String kLeftTwoGoOut = "LEFT_two_goOut";
-        public static final String kRightBumpPreload = "RIGHT_one_bumpPreload";
-        public static final String kLeftBumpPreload = "LEFT_one_bumpPreload";
-        public static final String kRightTrenchPreload = "RIGHT_one_trenchPreload";
-        public static final String kLeftTrenchPreload = "LEFT_one_trenchPreload";
-
-        public static final String kCenterPreload = "CENTER_one_preload";
     }
 }

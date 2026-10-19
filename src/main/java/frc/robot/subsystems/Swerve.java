@@ -1,13 +1,12 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.*;
+import static org.wpilib.units.Units.*;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.photonvision.targeting.PhotonTrackedTarget;
+// import org.photonvision.targeting.PhotonTrackedTarget;
 
 import com.ctre.phoenix6.SignalLogger;
-import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -20,27 +19,24 @@ import com.ctre.phoenix6.swerve.SwerveRequest.SwerveDriveBrake;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.Subsystem;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import org.wpilib.math.linalg.Matrix;
+import org.wpilib.math.controller.PIDController;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Translation2d;
+import org.wpilib.math.kinematics.ChassisVelocities;
+import org.wpilib.math.kinematics.SwerveDriveKinematics;
+import org.wpilib.math.numbers.N1;
+import org.wpilib.math.numbers.N3;
+import org.wpilib.driverstation.Alliance;
+import org.wpilib.driverstation.RobotState;
+import org.wpilib.system.Notifier;
+import org.wpilib.system.RobotController;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Subsystem;
+import org.wpilib.command2.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
-import frc.robot.vision.Detection;
+// import frc.robot.vision.Detection;
 import frc.util.WaltDriverStation;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.DoubleLogger;
@@ -59,11 +55,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private double m_lastSimTime;
 
     public SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(getModuleLocations());
-    private final StatusSignal<Angle> sig_gyroRoll = getPigeon2().getRoll();
-    private final StatusSignal<Angle> sig_gyroYaw = getPigeon2().getYaw();
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
-    private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
+    private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.ZERO;
     /* Red alliance sees forward as 180 degrees (toward blue alliance wall) */
     private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
     /* Keep track if we've ever applied the operator perspective before or not */
@@ -77,11 +71,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private final PIDController m_pathXController = new PIDController(4.69, 0, 0);
     private final PIDController m_pathYController = new PIDController(4.69, 0, 0);
     private final PIDController m_pathThetaController = new PIDController(4.68, 0, 0);
-    private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds = new SwerveRequest.ApplyFieldSpeeds()
+    private final SwerveRequest.ApplyFieldVelocity m_pathApplyFieldSpeeds = new SwerveRequest.ApplyFieldVelocity()
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.Position);
 
-    private final Detection detection = new Detection();
+    // private final Detection detection = new Detection();
 
     private final DoubleLogger log_absoluteRobotSpeed = new WaltLogger.DoubleLogger("Swerve", "absoluteRobotSpeed");
     private final DoubleLogger log_vxMPS = new DoubleLogger("Swerve", "vxMPS");
@@ -274,22 +268,22 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
          * Otherwise, only check and apply the operator perspective if the DS is disabled.
          * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
          */
-        if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
+        if (!m_hasAppliedOperatorPerspective || RobotState.isDisabled()) {
             WaltDriverStation.getAlliance().ifPresent(allianceColor -> {
-                setOperatorPerspectiveForward(
-                    allianceColor == Alliance.Red
-                        ? kRedAlliancePerspectiveRotation
-                        : kBlueAlliancePerspectiveRotation
+                setOperatorForwardDirection(
+                    allianceColor == Alliance.RED
+                    ? kRedAlliancePerspectiveRotation
+                    : kBlueAlliancePerspectiveRotation
                 );
                 m_hasAppliedOperatorPerspective = true;
             });
         }
 
         var state = getState();
-        var speeds = m_kinematics.toChassisSpeeds(state.ModuleStates);
-        log_vxMPS.accept(speeds.vxMetersPerSecond);
-        log_vyMPS.accept(speeds.vyMetersPerSecond);
-        log_absoluteRobotSpeed.accept(Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
+        var speeds = m_kinematics.toChassisVelocities(state.ModuleVelocities);
+        log_vxMPS.accept(speeds.vx);
+        log_vyMPS.accept(speeds.vy);
+        log_absoluteRobotSpeed.accept(Math.hypot(speeds.vx, speeds.vy));
     }
 
     private void startSimThread() {
@@ -316,7 +310,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      */
     @Override
     public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
-        super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds));
+        super.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds);
     }
 
     /**
@@ -338,7 +332,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         double timestampSeconds,
         Matrix<N3, N1> visionMeasurementStdDevs
     ) {
-        super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+        super.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
     }
 
     /**
@@ -349,11 +343,12 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      */
     @Override
     public Optional<Pose2d> samplePoseAt(double timestampSeconds) {
-        return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
+        return super.samplePoseAt(timestampSeconds);
     }
 
-    public ChassisSpeeds getChassisSpeeds() {
-        return m_kinematics.toChassisSpeeds(getState().ModuleStates);
+    public ChassisVelocities getChassisVelocities() {
+        // 2027-TODO: figure out swerveState!!!
+        return m_kinematics.toChassisVelocities(getState().ModuleVelocities);
     }
 
     private void followPath(SwerveSample sample) {
@@ -364,26 +359,29 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         // var speed = getState().Speeds;
         var targetSpeeds = sample.getChassisSpeeds();
 
-        targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(
+        targetSpeeds.vx += m_pathXController.calculate(
             pose.getX(), sample.x
         );
-        targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(
+        targetSpeeds.vy += m_pathYController.calculate(
             pose.getY(), sample.y
         );
-        targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(
+        targetSpeeds.omega += m_pathThetaController.calculate(
             pose.getRotation().getRadians(), sample.heading
         );
 
         setControl(
-            m_pathApplyFieldSpeeds.withSpeeds(targetSpeeds)
+            m_pathApplyFieldSpeeds.withVelocity(targetSpeeds)
                 .withWheelForceFeedforwardsX(sample.moduleForcesX())
                 .withWheelForceFeedforwardsY(sample.moduleForcesY())
         );
     }
 
+    public SwerveRequest.SwerveDriveBrake getStopReq() {
+        return new SwerveDriveBrake();
+    }
+
     public Command xBrakeCmd() {
-        final SwerveRequest.SwerveDriveBrake stopReq = new SwerveDriveBrake();
-        return runOnce(() -> setControl(stopReq));
+        return runOnce(() -> setControl(getStopReq()));
     }
 
 
@@ -423,88 +421,149 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     /**
-     * @param desPose Posd2d to move to
-     * @return a Command that makes the robot move to the desired Pose2d
+     * Drives the robot to a target Pose2d (courtesy of 2056 OP Robotics)
+     * 
+     * @param target Target Pose2d (translation + heading to face)
+     * @param tolerance Distance tolerance in meters to consider "at point"
+     * @param maxVel Maximum translation speed (m/s)
+     * @param maxRVel Maximum rotational speed (rad/s)
+     * @param robotCenterComp Center-of-rotation offset as Translation2d for robot-specific compensation (unused for now)
+     * @param isContinuous If true, drive at maxVel without slowing (for waypoint chaining)
+     * @return Command that ends when within tolerance (or runs until interrupted if isContinuous)
      */
-    public Command roboToPose(Pose2d desPose, double tolerance) {
-        return Commands.runOnce(() -> {
-            Pose2d curPose = getState().Pose;
-            double xSpeed = m_pathXController.calculate(curPose.getX(), desPose.getX());
-            double ySpeed = m_pathYController.calculate(curPose.getY(), desPose.getY());
-            double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), desPose.getRotation().getRadians());
-            setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
-        }).andThen(Commands.waitUntil(() -> isNearPose(getState().Pose, desPose, tolerance)))
-          .andThen(() -> setControl(swreq_drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0)));
+    public Command driveToPoint(
+        Pose2d target, 
+        double tolerance, 
+        double maxVel, 
+        double maxRVel, 
+        // Translation2d robotCenterComp, 
+        boolean isContinuous
+    ) {
+        m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+        return runEnd(() -> {
+            Pose2d pose = getState().Pose;
+            Translation2d diff = target.getTranslation().minus(pose.getTranslation());
+            double distance = diff.getNorm();
+
+           // isContinuous skips deceleration for waypoint chaining.
+            double translationMag = isContinuous
+                ? maxVel
+                : Math.min(-m_pathXController.calculate(distance, 0.0), maxVel);
+
+            double xVel = distance > 1e-6 ? translationMag * diff.getX() / distance : 0;
+            double yVel = distance > 1e-6 ? translationMag * diff.getY() / distance : 0;
+
+            // Rotation PID with continuous-input heading error, clamped to maxRVel
+            double rVel = Math.clamp(
+                m_pathThetaController.calculate(
+                    pose.getRotation().getRadians(),
+                    target.getRotation().getRadians()
+                ),
+                -maxRVel, maxRVel
+            );
+
+            setControl(
+                swreq_drive
+                .withVelocityX(xVel)
+                .withVelocityY(yVel)
+                .withRotationalRate(rVel)
+                .withCenterOfRotation(diff)
+            );
+        }, () -> setControl(
+            swreq_drive
+            .withVelocityX(0)
+            .withVelocityY(0)
+            .withRotationalRate(0)
+        )).until(() -> {
+            Translation2d diff = target.getTranslation().minus(getState().Pose.getTranslation());
+            return diff.getNorm() < tolerance;
+        });
     }
 
-    public boolean isNearPose(Pose2d curPose, Pose2d desPose, double translationTolerance, double rotationTolerance) {
-        return isNearTranslation(curPose.getTranslation(), desPose.getTranslation(), translationTolerance)
-            && isNearRotation(curPose.getRotation(), desPose.getRotation(), rotationTolerance);
-    }
+    // /**
+    //  * @param desPose Posd2d to move to
+    //  * @return a Command that makes the robot move to the desired Pose2d
+    //  */
+    // public Command roboToPose(Pose2d desPose, double tolerance) {
+    //     return Commands.runOnce(() -> {
+    //         Pose2d curPose = getState().Pose;
+    //         double xSpeed = m_pathXController.calculate(curPose.getX(), desPose.getX());
+    //         double ySpeed = m_pathYController.calculate(curPose.getY(), desPose.getY());
+    //         double thetaSpeed = m_pathThetaController.calculate(curPose.getRotation().getRadians(), desPose.getRotation().getRadians());
+    //         setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
+    //     }).andThen(Commands.waitUntil(() -> isNearPose(getState().Pose, desPose, tolerance)))
+    //       .andThen(() -> setControl(swreq_drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0)));
+    // }
 
-    public boolean isNearPose(Pose2d curPose, Pose2d desPose, double translationTolerance) {
-        return isNearTranslation(curPose.getTranslation(), desPose.getTranslation(), translationTolerance);
-    }
+    // public boolean isNearPose(Pose2d curPose, Pose2d desPose, double translationTolerance, double rotationTolerance) {
+    //     return isNearTranslation(curPose.getTranslation(), desPose.getTranslation(), translationTolerance)
+    //         && isNearRotation(curPose.getRotation(), desPose.getRotation(), rotationTolerance);
+    // }
 
-    /**
-     * @param desRotation Rotation2d to turn to
-     * @return a Command that makes the robot turn to the desired Rotation2d
-     */
-    public Command roboToRotation(Rotation2d desRotation, double tolerance) {
-        return Commands.runOnce(() -> {
-            Rotation2d curRotation = getState().Pose.getRotation();
-            double thetaSpeed = m_pathThetaController.calculate(curRotation.getRadians(), desRotation.getRadians());
-            setControl(swreq_drive.withRotationalRate(thetaSpeed));
-        }).andThen(Commands.waitUntil(() -> isNearRotation(getState().Pose.getRotation(), desRotation, tolerance)))
-          .andThen(() -> setControl(swreq_drive.withRotationalRate(0)));
-    }
+    // public boolean isNearPose(Pose2d curPose, Pose2d desPose, double translationTolerance) {
+    //     return isNearTranslation(curPose.getTranslation(), desPose.getTranslation(), translationTolerance);
+    // }
 
-    public boolean isNearRotation(Rotation2d curRotation, Rotation2d desRotation, double tolerance) {
-        return Math.abs(MathUtil.angleModulus(curRotation.getRadians() - desRotation.getRadians())) <= tolerance;
-    }
+    // /**
+    //  * @param desRotation Rotation2d to turn to
+    //  * @return a Command that makes the robot turn to the desired Rotation2d
+    //  */
+    // public Command roboToRotation(Rotation2d desRotation, double tolerance) {
+    //     return Commands.runOnce(() -> {
+    //         Rotation2d curRotation = getState().Pose.getRotation();
+    //         double thetaSpeed = m_pathThetaController.calculate(curRotation.getRadians(), desRotation.getRadians());
+    //         setControl(swreq_drive.withRotationalRate(thetaSpeed));
+    //     }).andThen(Commands.waitUntil(() -> isNearRotation(getState().Pose.getRotation(), desRotation, tolerance)))
+    //       .andThen(() -> setControl(swreq_drive.withRotationalRate(0)));
+    // }
 
-    /**
-     * @param desTranslation Translation2d to go to
-     * @return a Command that makes the robot go to the desired Translation2d
-     */
-    public Command roboToTranslation(Translation2d desTranslation, double tolerance) {
-        return Commands.runOnce(() -> {
-            Translation2d curTranslation = getState().Pose.getTranslation();
-            double xSpeed = m_pathXController.calculate(curTranslation.getX(), desTranslation.getX());
-            double ySpeed = m_pathYController.calculate(curTranslation.getY(), desTranslation.getY());
-            setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed));
-        }).andThen(Commands.waitUntil(() -> isNearTranslation(getState().Pose.getTranslation(), desTranslation, tolerance)))
-          .andThen(() -> setControl(swreq_drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0)));
-    }
+    // public boolean isNearRotation(Rotation2d curRotation, Rotation2d desRotation, double tolerance) {
+    //     return Math.abs(MathUtil.angleModulus(curRotation.getRadians() - desRotation.getRadians())) <= tolerance;
+    // }
 
-    public boolean isNearTranslation(Translation2d curTranslation, Translation2d desTranslation, double tolerance) {
-        return Math.hypot(
-            desTranslation.getX() - curTranslation.getX(),
-            desTranslation.getY() - curTranslation.getY()
-        ) <= tolerance;
-    }
+    // /**
+    //  * @param desTranslation Translation2d to go to
+    //  * @return a Command that makes the robot go to the desired Translation2d
+    //  */
+    // public Command roboToTranslation(Translation2d desTranslation, double tolerance) {
+    //     return Commands.runOnce(() -> {
+    //         Translation2d curTranslation = getState().Pose.getTranslation();
+    //         double xSpeed = m_pathXController.calculate(curTranslation.getX(), desTranslation.getX());
+    //         double ySpeed = m_pathYController.calculate(curTranslation.getY(), desTranslation.getY());
+    //         setControl(swreq_drive.withVelocityX(xSpeed).withVelocityY(ySpeed));
+    //     }).andThen(Commands.waitUntil(() -> isNearTranslation(getState().Pose.getTranslation(), desTranslation, tolerance)))
+    //       .andThen(() -> setControl(swreq_drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0)));
+    // }
 
-    /**
-     * robot goes to detected target
-     */
-    public Command swerveToObject() {   
-        PhotonTrackedTarget target = detection.getClosestObject();
-        Pose2d destination = detection.targetToPose(getState().Pose, target);
-        detection.addFuel(destination);
+    // public boolean isNearTranslation(Translation2d curTranslation, Translation2d desTranslation, double tolerance) {
+    //     return Math.hypot(
+    //         desTranslation.getX() - curTranslation.getX(),
+    //         desTranslation.getY() - curTranslation.getY()
+    //     ) <= tolerance;
+    // }
+
+    // /**
+    //  * robot goes to detected target
+    //  */
+    // public Command swerveToObject() {   
+    //     PhotonTrackedTarget target = detection.getClosestObject();
+    //     Pose2d destination = detection.targetToPose(getState().Pose, target);
+    //     detection.addFuel(destination);
         
-        return roboToPose(destination, 0.1);
-    }
+    //     return roboToPose(destination, 0.1);
+    // }
 
-    public static Pose2d faceFuelPose(Pose2d robotPose, Pose2d fuelLocation) {
-        double dx = fuelLocation.getX() - robotPose.getX();
-        double dy = fuelLocation.getY() - robotPose.getY();
+    // public static Pose2d faceFuelPose(Pose2d robotPose, Pose2d fuelLocation) {
+    //     double dx = fuelLocation.getX() - robotPose.getX();
+    //     double dy = fuelLocation.getY() - robotPose.getY();
 
-        Rotation2d desiredRotation = new Rotation2d(Math.atan2(dy, dx)).plus(Rotation2d.fromDegrees(180));
+    //     Rotation2d desiredRotation = new Rotation2d(Math.atan2(dy, dx)).plus(Rotation2d.fromDegrees(180));
 
-        return new Pose2d(
-            fuelLocation.getX(),
-            fuelLocation.getY(),
-            desiredRotation
-        );
-    }
+    //     return new Pose2d(
+    //         fuelLocation.getX(),
+    //         fuelLocation.getY(),
+    //         desiredRotation
+    //     );
+    // }
 }

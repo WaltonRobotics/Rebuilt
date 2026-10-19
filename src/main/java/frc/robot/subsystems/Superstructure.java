@@ -1,21 +1,21 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
+import org.wpilib.command2.SubsystemBase;
 import frc.robot.Constants.IndexerK;
 import frc.robot.Constants.IntakeK;
 import frc.robot.subsystems.Intake.IntakeArmPosition;
 import frc.robot.subsystems.shooter.Shooter;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static org.wpilib.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.ShooterK;
+import static frc.robot.Constants.IndexerK.kSpindexerShootRPSD;
+import static frc.robot.Constants.IndexerK.kTunnelShootRPSD;
 import static frc.robot.Constants.IntakeK.kIntakeRollersIntakeVolts;
 import static frc.robot.Constants.IntakeK.kIntakeRollersShimmyVolts;
 
 import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 
 public class Superstructure extends SubsystemBase {
     /* SUBSYSTEMS */
@@ -44,7 +44,8 @@ public class Superstructure extends SubsystemBase {
             () -> {
                 boolean shooting = isShooting.getAsBoolean();
                 // m_shooter.m_turret.setIntaking(!shooting);
-                m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPSD : IndexerK.kSpindexerIntakeRPSD);
+                m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPSD : IndexerK.kSpindexerIntakeRPSD); 
+                m_indexer.setTunnelVelocity(shooting ? IndexerK.kTunnelShootRPSD : IndexerK.kTunnelIntakeRPSD);
             })
         ).finallyDo(
             () -> {
@@ -55,6 +56,7 @@ public class Superstructure extends SubsystemBase {
                     m_intake.setIntakeRollersVelocity(0);
                 if (!shooting) {
                     m_indexer.setSpindexerVelocity(0);
+                    m_indexer.setTunnelVelocity(0);
                 }
             }
         );
@@ -110,10 +112,10 @@ public class Superstructure extends SubsystemBase {
                 Commands.waitUntil(() -> m_shooter.m_hood.atPosition()).withTimeout(ShooterK.kHoodAtPosTimeout),
                 Commands.waitUntil(() -> (m_shooter.isShooterSpunUp() && (m_shooter.getShooterVelocityRotPerSec() >= ShooterK.kShooterSpunUpMinimumD))).withTimeout(ShooterK.kShooterSpunUpTimeout),
                 Commands.parallel(
-                    Commands.run(() -> m_indexer.setTunnelVelocity(Indexer.tunnelRPSFromShooter(m_shooter.getShooterDesiredRotPerSecSupp()).getAsDouble())),
+                    Commands.run(() -> m_indexer.setTunnelVelocity(kTunnelShootRPSD)),
                     Commands.sequence(
                         Commands.waitUntil(() -> (m_indexer.isTunnelSpunUp()) && (m_indexer.getTunnelVelocityRotPerSec() >= IndexerK.kTunnelSpunUpMinimumD)).withTimeout(IndexerK.kTunnelSpunUpTimeout),
-                        Commands.run(() -> m_indexer.setSpindexerVelocity(Indexer.spindexerRPSFromShooter(m_shooter.getShooterDesiredRotPerSecSupp()).getAsDouble()))
+                        Commands.run(() -> m_indexer.setSpindexerVelocity(kSpindexerShootRPSD))
                     )
                 )
             )
@@ -126,8 +128,8 @@ public class Superstructure extends SubsystemBase {
 
     public Command activateHoodShotCalc() {
         return m_shooter.hoodFromCalc()
-        .finallyDo(() -> {
-            hoodBackToSafe();
+            .finallyDo(() -> {
+                hoodBackToSafe();
         });
     }
 
@@ -206,14 +208,13 @@ public class Superstructure extends SubsystemBase {
     }
 
     public Command intakeShimmy(BooleanSupplier isShooting) {
-       return Commands.repeatingSequence(
-            intake(isShooting, () -> true).withTimeout(0.5),
+        return Commands.repeatingSequence(
+            intake(isShooting, () -> true).withTimeout(0.2),
             m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED),
-            Commands.waitSeconds(0.5)
-       )
-       .finallyDo(() -> {
-            m_intake.stopIntakeRollers();
-       });
+            Commands.waitSeconds(0.2)
+        ).finallyDo(
+            () -> m_intake.setIntakeRollersVelocity(0)
+        );
     }
 
     /**
