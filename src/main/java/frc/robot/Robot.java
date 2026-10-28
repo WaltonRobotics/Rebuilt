@@ -25,6 +25,7 @@ import choreo.auto.AutoFactory;
 
 import org.wpilib.math.filter.SlewRateLimiter;
 import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.units.measure.AngularVelocity;
 import org.wpilib.units.measure.LinearVelocity;
 import org.wpilib.system.DataLogManager;
@@ -156,6 +157,8 @@ public class Robot extends TimedRobot {
 
     private final Trigger trg_lockShooting = m_driver.getHID().povUp();
     private final Trigger trg_unlockShooting = m_driver.getHID().povDown();
+
+    private final Trigger trg_toPose = m_driver.a();
 
     //---MANIPULATOR BUTTONS
     private final Trigger trg_intake = RobotK.kSingleDriverMode ? m_driver.leftTrigger().and(trg_driverOverride.negate()) : m_manipulator.rightTrigger().and(trg_NOTmanipOverride);
@@ -406,6 +409,9 @@ public class Robot extends TimedRobot {
         trg_reduceRPS.onTrue(Commands.runOnce(() -> m_shooter.adjustRpsBy(-kRPSAdditionOnButton)));
         trg_unadjustRps.onTrue(Commands.runOnce(() -> m_shooter.unadjustRps()));
 
+        Pose2d testPoint = new Pose2d(2, 2, Rotation2d.ZERO);
+
+        trg_toPose.whileTrue(m_drivetrain.driveToPoint(testPoint, 0.1, kMaxTranslationMps * 0.5, kMaxAngularRps * 0.5, false));
     
 
         //---OLD RUMBLE LOGIC

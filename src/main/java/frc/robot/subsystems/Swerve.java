@@ -468,7 +468,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 .withVelocityX(xVel)
                 .withVelocityY(yVel)
                 .withRotationalRate(rVel)
-                .withCenterOfRotation(diff)
+                // .withCenterOfRotation(diff)
             );
         }, () -> setControl(
             swreq_drive
