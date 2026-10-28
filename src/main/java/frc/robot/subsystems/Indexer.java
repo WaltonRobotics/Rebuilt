@@ -101,7 +101,6 @@ public class Indexer implements Mechanism {
         SignalManager.register(Constants.kCanivoreBus, sig_spindexerVelo, sig_tunnelVelo, sig_tunnelCLErr, sig_spindexerStatorCurrent, sig_spindexerSupplyCurrent);
 
         Scheduler.getDefault().addPeriodic(this::periodic);
-        Scheduler.getDefault().addPeriodic(this::simulationPeriodic);
 
         initSim();
     }
