@@ -424,7 +424,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      * Drives the robot to a target Pose2d (courtesy of 2056 OP Robotics)
      * 
      * @param target Target Pose2d (translation + heading to face)
-     * @param tolerance Distance tolerance in meters to consider "at point"
+     * @param tTolerance Distance tolerance in meters to consider "at point"
+     * @param rTolerance Angle tolerance in radians to consider "at point"
      * @param maxVel Maximum translation speed (m/s)
      * @param maxRVel Maximum rotational speed (rad/s)
      * @param robotCenterComp Center-of-rotation offset as Translation2d for robot-specific compensation (unused for now)
@@ -433,7 +434,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      */
     public Command driveToPoint(
         Pose2d target, 
-        double tolerance, 
+        double tTolerance,
+        double rTolerance,
         double maxVel, 
         double maxRVel, 
         // Translation2d robotCenterComp, 
@@ -476,8 +478,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             .withVelocityY(0)
             .withRotationalRate(0)
         )).until(() -> {
-            Translation2d diff = target.getTranslation().minus(getState().Pose.getTranslation());
-            return diff.getNorm() < tolerance;
+            Translation2d tDiff = target.getTranslation().minus(getState().Pose.getTranslation());
+            Rotation2d rDiff = target.getRotation().minus(getState().Pose.getRotation());
+            return tDiff.getNorm() < tTolerance && Math.abs(rDiff.getRadians()) < rTolerance;
         });
     }
 

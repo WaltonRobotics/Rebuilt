@@ -51,9 +51,9 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.Constants.RobotK;
 import frc.robot.Constants.ShooterK;
 import frc.robot.autons.WaltAdaptableAutonFactory;
-import frc.robot.autons.WaltPointToPointAutonFactory;
+// import frc.robot.autons.WaltPointToPointAutonFactory;
 import frc.robot.dashboards.AutonChooser;
-import frc.robot.dashboards.BasicAutonChooser;
+// import frc.robot.dashboards.BasicAutonChooser;
 import frc.robot.dashboards.AutonChooser;
 import frc.robot.autons.WaltAdaptableAutonFactory;
 import frc.robot.generated.TunerConstants;
@@ -129,7 +129,7 @@ public class Robot extends TimedRobot {
     //---AUTONS
     private final AutoFactory m_autoFactory = m_drivetrain.createAutoFactory();
     private final WaltAdaptableAutonFactory m_adpatableAutonFactory = new WaltAdaptableAutonFactory(m_superstructure, m_autoFactory, m_intake, m_shooter, m_drivetrain);
-    private final WaltPointToPointAutonFactory m_pointToPointAutonFactory = new WaltPointToPointAutonFactory(m_superstructure, m_intake, m_shooter, m_drivetrain);
+    // private final WaltPointToPointAutonFactory m_pointToPointAutonFactory = new WaltPointToPointAutonFactory(m_superstructure, m_intake, m_shooter, m_drivetrain);
     //---VISION
 
 
@@ -411,7 +411,7 @@ public class Robot extends TimedRobot {
 
         Pose2d testPoint = new Pose2d(2, 2, Rotation2d.ZERO);
 
-        trg_toPose.whileTrue(m_drivetrain.driveToPoint(testPoint, 0.1, kMaxTranslationMps * 0.5, kMaxAngularRps * 0.5, false));
+        trg_toPose.whileTrue(m_drivetrain.driveToPoint(testPoint, 0.1, 0.1, kMaxTranslationMps * 0.5, kMaxAngularRps * 0.5, false));
     
 
         //---OLD RUMBLE LOGIC
