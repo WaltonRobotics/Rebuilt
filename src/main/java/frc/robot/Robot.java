@@ -12,6 +12,9 @@ import static frc.robot.Constants.RobotK.*;
 import static frc.robot.Constants.ShooterK.kRPSAdditionOnButton;
 
 import java.util.Optional;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
 import org.photonvision.EstimatedRobotPose;
 
 import com.ctre.phoenix6.CANBus;
@@ -26,6 +29,7 @@ import choreo.auto.AutoFactory;
 import org.wpilib.math.filter.SlewRateLimiter;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Transform2d;
 import org.wpilib.units.measure.AngularVelocity;
 import org.wpilib.units.measure.LinearVelocity;
 import org.wpilib.system.DataLogManager;
@@ -198,6 +202,8 @@ public class Robot extends TimedRobot {
     private final DoubleLogger log_driverStickY = WaltLogger.logDouble(kLogTab, "driverStickY");
     private final DoubleLogger log_driverStickX = WaltLogger.logDouble(kLogTab, "driverStickX");
     private final DoubleLogger log_driverStickTurn = WaltLogger.logDouble(kLogTab, "driverStickTurn");
+
+    private Pose2d testPoint = new Pose2d(2.5, 2, Rotation2d.ZERO);
 
     //NOT DISPLAYING
     // private final StringLogger log_currentShift = WaltLogger.logString("Util/Shift", "currentShift");
@@ -409,9 +415,21 @@ public class Robot extends TimedRobot {
         trg_reduceRPS.onTrue(Commands.runOnce(() -> m_shooter.adjustRpsBy(-kRPSAdditionOnButton)));
         trg_unadjustRps.onTrue(Commands.runOnce(() -> m_shooter.unadjustRps()));
 
-        Pose2d testPoint = new Pose2d(2, 2, Rotation2d.ZERO);
+        Pose2dLogger log = new Pose2dLogger(kLogTab, "OD Pose");
 
-        trg_toPose.whileTrue(m_drivetrain.driveToPoint(testPoint, 0.1, 0.1, kMaxTranslationMps * 0.5, kMaxAngularRps * 0.5, false));
+        Supplier<Pose2d> supplyPose = () -> testPoint;
+
+        trg_toPose.whileTrue(
+            Commands.parallel(
+                Commands.run(() -> {
+                    if (testPoint.getY() < 6) {
+                        testPoint = testPoint.transformBy(new Transform2d(0, 0.05, Rotation2d.ZERO));
+                    }
+                    log.accept(testPoint);
+                }),
+                m_drivetrain.driveToPoint(supplyPose, 0.1, 0.1, kMaxTranslationMps * 0.5, kMaxAngularRps * 0.5, true)
+            )
+        ).onFalse(Commands.runOnce(() -> {testPoint = new Pose2d(2.5, 2, Rotation2d.ZERO);}));
     
 
         //---OLD RUMBLE LOGIC

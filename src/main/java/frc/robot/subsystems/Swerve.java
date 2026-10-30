@@ -433,7 +433,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      * @return Command that ends when within tolerance (or runs until interrupted if isContinuous)
      */
     public Command driveToPoint(
-        Pose2d target, 
+        Supplier<Pose2d> target, 
         double tTolerance,
         double rTolerance,
         double maxVel, 
@@ -445,7 +445,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
         return runEnd(() -> {
             Pose2d pose = getState().Pose;
-            Translation2d diff = target.getTranslation().minus(pose.getTranslation());
+            Translation2d diff = target.get().getTranslation().minus(pose.getTranslation());
             double distance = diff.getNorm();
 
            // isContinuous skips deceleration for waypoint chaining.
@@ -460,7 +460,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             double rVel = Math.clamp(
                 m_pathThetaController.calculate(
                     pose.getRotation().getRadians(),
-                    target.getRotation().getRadians()
+                    target.get().getRotation().getRadians()
                 ),
                 -maxRVel, maxRVel
             );
@@ -478,8 +478,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             .withVelocityY(0)
             .withRotationalRate(0)
         )).until(() -> {
-            Translation2d tDiff = target.getTranslation().minus(getState().Pose.getTranslation());
-            Rotation2d rDiff = target.getRotation().minus(getState().Pose.getRotation());
+            Translation2d tDiff = target.get().getTranslation().minus(getState().Pose.getTranslation());
+            Rotation2d rDiff = target.get().getRotation().minus(getState().Pose.getRotation());
             return tDiff.getNorm() < tTolerance && Math.abs(rDiff.getRadians()) < rTolerance;
         });
     }
