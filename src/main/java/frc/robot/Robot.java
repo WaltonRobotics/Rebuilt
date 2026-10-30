@@ -38,13 +38,12 @@ import org.wpilib.system.RobotController;
 import org.wpilib.framework.TimedRobot;
 import org.wpilib.system.Timer;
 import org.wpilib.system.Tracer;
-import org.wpilib.command2.Command;
-import org.wpilib.command2.CommandScheduler;
-import org.wpilib.command2.Commands;
-import org.wpilib.command2.button.CommandNiDsXboxController;
-import org.wpilib.command2.button.CommandXboxController;
-import org.wpilib.command2.button.RobotModeTriggers;
-import org.wpilib.command2.button.Trigger;
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Scheduler;
+import org.wpilib.command3.button.CommandNiDsXboxController;
+import org.wpilib.command3.button.CommandXboxController;
+import org.wpilib.command3.button.RobotModeTriggers;
+import org.wpilib.command3.Trigger;
 
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.Constants.RobotK;
@@ -356,7 +355,7 @@ public class Robot extends TimedRobot {
         trg_shoot
             // .and(() -> m_shooter.m_turret.atPosition())
             .and(trg_snappingBack.negate())
-            .whileTrue(m_superstructure.activateOuttakeShotCalc());
+            .whileTrue(m_superstructure.activateShooterShotCalc());
 
         trg_shoot
             .and(trg_snappingBack)

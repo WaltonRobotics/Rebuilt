@@ -262,15 +262,15 @@ public class WaltAdaptableAutonFactory {
         traj.atTime(kShootWaypoint).and(() -> !SOTM).onTrue(
             // stopShoot acts as an override STOP SHOOTING to continue the pathing whereas the debounceTrg can help us move on faster if we're already outta balls
             Commands.race(
-                m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg()),
+                m_superstructure.activateShooterShotCalc().until(m_shooter.getBallShotDebounceTrg()),
                 Commands.waitSeconds(shooterTimeout)
             )
-            // (m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg())).withTimeout(shooterTimeout)
+            // (m_superstructure.activateShooterShotCalc().until(m_shooter.getBallShotDebounceTrg())).withTimeout(shooterTimeout)
         );
 
         traj.atTime(kShootWaypoint).and(() -> SOTM).onTrue(
             // stopShoot acts as an override STOP SHOOTING to continue the pathing whereas the debounceTrg can help us move on faster if we're already outta balls
-            m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg().or(trg_isAtStopShoot))
+            m_superstructure.activateShooterShotCalc().until(m_shooter.getBallShotDebounceTrg().or(trg_isAtStopShoot))
         );
 
         traj.atTime(kShootWaypoint).onTrue(
@@ -307,7 +307,7 @@ public class WaltAdaptableAutonFactory {
         );
 
         traj.atTime(kIntakeAndShootWaypoint).onTrue(
-            m_superstructure.activateOuttakeShotCalc().until(traj.atTime(kStopIntakeAndShootWaypoint))
+            m_superstructure.activateShooterShotCalc().until(traj.atTime(kStopIntakeAndShootWaypoint))
         );
 
         //---TRIGGER LOGGERS
