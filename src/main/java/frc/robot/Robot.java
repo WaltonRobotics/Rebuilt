@@ -1,4 +1,3 @@
-
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
@@ -38,13 +37,12 @@ import org.wpilib.system.RobotController;
 import org.wpilib.framework.TimedRobot;
 import org.wpilib.system.Timer;
 import org.wpilib.system.Tracer;
-import org.wpilib.command2.Command;
-import org.wpilib.command2.CommandScheduler;
-import org.wpilib.command2.Commands;
-import org.wpilib.command2.button.CommandNiDsXboxController;
-import org.wpilib.command2.button.CommandXboxController;
-import org.wpilib.command2.button.RobotModeTriggers;
-import org.wpilib.command2.button.Trigger;
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Scheduler;
+import org.wpilib.command3.button.CommandNiDsXboxController;
+import org.wpilib.command3.button.CommandXboxController;
+import org.wpilib.command3.button.RobotModeTriggers;
+import org.wpilib.command3.Trigger;
 
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.Constants.RobotK;
@@ -356,7 +354,7 @@ public class Robot extends TimedRobot {
         trg_shoot
             // .and(() -> m_shooter.m_turret.atPosition())
             .and(trg_snappingBack.negate())
-            .whileTrue(m_superstructure.activateOuttakeShotCalc());
+            .whileTrue(m_superstructure.activateShooterShotCalc());
 
         trg_shoot
             .and(trg_snappingBack)
@@ -365,23 +363,23 @@ public class Robot extends TimedRobot {
         trg_shoot
             .and(trg_singlePlayer)
             .whileTrue(
-                m_superstructure.intakeShimmy(() -> true)
+                m_superstructure.intakeShimmy()
             ).debounce(3);
 
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
 
         trg_intake.and(trg_shoot).and(trg_emergencyBarf.negate()).whileTrue(
-            m_superstructure.intake(() -> true, () -> false)
+            m_superstructure.intake(() -> true)
         );
 
         trg_intake.and(trg_shoot.negate()).and(trg_emergencyBarf.negate()).whileTrue(
-            m_superstructure.intake(() -> false, () -> false)
+            m_superstructure.intake(() -> false)
         );
 
         trg_retractIntake.onTrue(m_superstructure.retractIntake());
-        trg_intakeShimmy.whileTrue(m_superstructure.intakeShimmy(() -> false));
-        trg_intakeShimmy.and(trg_shoot).whileTrue(m_superstructure.intakeShimmy(() -> true));
+        trg_intakeShimmy.whileTrue(m_superstructure.intakeShimmy());
+        trg_intakeShimmy.and(trg_shoot).whileTrue(m_superstructure.intakeShimmy());
 
         trg_emergencyBarf.whileTrue(m_superstructure.emergencyBarf());
         trg_emergencyIntakeOnlyBarf.whileTrue(m_superstructure.emergencyBarfOnlyIntake());

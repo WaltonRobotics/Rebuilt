@@ -7,9 +7,8 @@ import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import org.wpilib.system.Timer;
-import org.wpilib.command2.Command;
-import org.wpilib.command2.Commands;
-import org.wpilib.command2.button.Trigger;
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Trigger;
 import frc.robot.Constants.AutonK;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Superstructure;
@@ -252,7 +251,7 @@ public class WaltAdaptableAutonFactory {
     public void setUpTrajTriggers(AutoTrajectory traj, double shooterTimeout, boolean SOTM) {
         //---TRIGGER ACTIONS
         traj.atTime(kIntakeWaypoint).onTrue(
-            m_superstructure.intake(() -> false, () -> false).until(trg_isAtStopIntake)
+            m_superstructure.intake(() -> false).until(trg_isAtStopIntake)
         );
 
         // traj.atTime(kIntakeWaypoint).onTrue(
@@ -262,15 +261,15 @@ public class WaltAdaptableAutonFactory {
         traj.atTime(kShootWaypoint).and(() -> !SOTM).onTrue(
             // stopShoot acts as an override STOP SHOOTING to continue the pathing whereas the debounceTrg can help us move on faster if we're already outta balls
             Commands.race(
-                m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg()),
+                m_superstructure.activateShooterShotCalc().until(m_shooter.getBallShotDebounceTrg()),
                 Commands.waitSeconds(shooterTimeout)
             )
-            // (m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg())).withTimeout(shooterTimeout)
+            // (m_superstructure.activateShooterShotCalc().until(m_shooter.getBallShotDebounceTrg())).withTimeout(shooterTimeout)
         );
 
         traj.atTime(kShootWaypoint).and(() -> SOTM).onTrue(
             // stopShoot acts as an override STOP SHOOTING to continue the pathing whereas the debounceTrg can help us move on faster if we're already outta balls
-            m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg().or(trg_isAtStopShoot))
+            m_superstructure.activateShooterShotCalc().until(m_shooter.getBallShotDebounceTrg().or(trg_isAtStopShoot))
         );
 
         traj.atTime(kShootWaypoint).onTrue(
@@ -303,11 +302,11 @@ public class WaltAdaptableAutonFactory {
         );
 
         traj.atTime(kIntakeAndShootWaypoint).onTrue(
-            m_superstructure.intake(() -> true, () -> false).until(traj.atTime(kStopIntakeAndShootWaypoint))
+            m_superstructure.intake(() -> true).until(traj.atTime(kStopIntakeAndShootWaypoint))
         );
 
         traj.atTime(kIntakeAndShootWaypoint).onTrue(
-            m_superstructure.activateOuttakeShotCalc().until(traj.atTime(kStopIntakeAndShootWaypoint))
+            m_superstructure.activateShooterShotCalc().until(traj.atTime(kStopIntakeAndShootWaypoint))
         );
 
         //---TRIGGER LOGGERS
