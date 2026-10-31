@@ -77,8 +77,8 @@ public class Superstructure implements Mechanism {
             boolean shooting = isShooting.getAsBoolean();
             m_intake.setIntakeRollersVelocity(0);
             if (!shooting) {
-                 m_indexer.setSpindexerVelocity(0);
-                  m_indexer.setTunnelVelocity(0);
+                m_indexer.setSpindexerVelocity(0);
+                m_indexer.setTunnelVelocity(0);
             }
         }).named("intake");
     }
@@ -317,9 +317,8 @@ public class Superstructure implements Mechanism {
                 intakeShimmyTimer.restart();
             }
             boolean isDeployed = (intakeShimmyTimer.get()) % 0.4 < 0.2;
-            m_intake.setIntakeArmPos(isDeployed ? IntakeArmPosition.DEPLOYED : IntakeArmPosition.RETRACTED);
             m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersShimmyVolts);
-
+            m_intake.setIntakeArmPos(isDeployed ? IntakeArmPosition.DEPLOYED : IntakeArmPosition.RETRACTED);
         }).whenExited(() -> {
             m_intake.setIntakeRollersVelocity(0);
             intakeShimmyTimer.stop();
