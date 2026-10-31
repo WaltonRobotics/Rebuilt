@@ -169,7 +169,7 @@ public class Intake implements Mechanism {
 
     public Command setIntakeRollersVelocityCmd(double volts) {
         return run(coroutine -> {
-            setIntakeRollersVelocityCmd(volts);
+            setIntakeRollersVelocity(volts);
         }).named("setIntakeRollersVelocityCmd");
     }
 

@@ -1,8 +1,9 @@
-
 package frc.robot.subsystems;
 
 import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;
+import org.wpilib.system.Timer;
+
 import frc.robot.Constants.IndexerK;
 import frc.robot.Constants.IntakeK;
 import frc.robot.Constants.ShooterK;
@@ -31,7 +32,7 @@ public class Superstructure implements Mechanism {
      * @param isShooting is if the robot is shooting
      * @return the intake Command
      */
-    public Command intake(BooleanSupplier isShooting, BooleanSupplier isShimmying) {
+    public Command intake(BooleanSupplier isShooting) {
         // return Commands.sequence(
         //     m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED),
         //     Commands.waitUntil(() -> m_intake.isIntakeArmAtDest()).withTimeout(0.25),
@@ -56,39 +57,43 @@ public class Superstructure implements Mechanism {
         //         }
         //     }
         // );
-        return Command.requiring(m_indexer, m_intake).executing(coroutine -> {
-            coroutine.await(m_intake.setIntakeArmPosCmd(IntakeArmPosition.DEPLOYED));
+
+        return m_intake.run(coroutine -> {
+            m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
             coroutine.waitUntil(() -> m_intake.isIntakeArmAtDest(), Seconds.of(0.25));
-            coroutine.await(m_intake.setIntakeRollersVelocityCmd(
-                isShimmying.getAsBoolean() ? 
-                IntakeK.kIntakeRollersShimmyVolts :
-                IntakeK.kIntakeRollersIntakeVolts
-            ));
-            coroutine.await(
-                m_indexer.runRepeatedly(() -> {
-                    boolean shooting = isShooting.getAsBoolean();
-                    m_indexer.setSpindexerVelocity(shooting ? IndexerK.kSpindexerShootRPSD : IndexerK.kSpindexerIntakeRPSD); 
-                    m_indexer.setTunnelVelocity(shooting ? IndexerK.kTunnelShootRPSD : IndexerK.kTunnelIntakeRPSD);
-                }).whenCanceled(() -> {
-                    boolean shooting = isShooting.getAsBoolean();
-                    boolean shimmying = isShimmying.getAsBoolean();
-                    if (!shimmying)
-                        m_intake.setIntakeRollersVelocity(0);
-                    if (!shooting) {
-                        m_indexer.setSpindexerVelocity(0);
-                        m_indexer.setTunnelVelocity(0);
-                    }
-                }).named("intakeIndexing")
-            );
+            m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersIntakeVolts);
+
+            if (!isShooting.getAsBoolean()) { // intakeIndex only when not shooting, as during shooting the shot occupies indexer
+                coroutine.await(
+                    m_indexer.runRepeatedly(() -> {
+                        m_indexer.setSpindexerVelocity(IndexerK.kSpindexerIntakeRPSD); 
+                        m_indexer.setTunnelVelocity(IndexerK.kTunnelIntakeRPSD);
+                    }).named("intakeIndexing")
+                );
+            }
+
+            coroutine.park();
+        }).whenExited(() -> {
+            boolean shooting = isShooting.getAsBoolean();
+            m_intake.setIntakeRollersVelocity(0);
+            if (!shooting) {
+                 m_indexer.setSpindexerVelocity(0);
+                  m_indexer.setTunnelVelocity(0);
+            }
         }).named("intake");
     }
 
-    // public Command retractIntake() {
-    //     return Commands.sequence(
-    //         m_intake.stopIntakeRollers(),
-    //         m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
-    //     );
-    // }
+    public Command retractIntake() {
+        // return Commands.sequence(
+        //     m_intake.stopIntakeRollers(),
+        //     m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED)
+        // );
+
+        return m_intake.run(coroutine -> {
+            coroutine.await(m_intake.stopIntakeRollers());
+            coroutine.await(m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED));
+        }).named("retractIntake");
+    }
 
     // /**
     //  * Turns on spinner and exhaust and sets shooter speed to RPS.
@@ -162,7 +167,8 @@ public class Superstructure implements Mechanism {
                 IndexerK.kTunnelSpunUpTimeout
             );
             coroutine.await(m_indexer.setSpindexerVelocityCmd(RotationsPerSecond.of(IndexerK.kSpindexerShootRPSD)));
-        }).whenCanceled(() -> {
+            coroutine.park();
+        }).whenExited(() -> {
             deactivateShooter();
             hoodBackToSafe();
         }).named("activateShooterShotCalc");
@@ -176,7 +182,7 @@ public class Superstructure implements Mechanism {
 
         return m_shooter.run(coroutine -> {
             coroutine.await(m_shooter.hoodFromCalc());
-        }).whenCanceled(() -> {
+        }).whenExited(() -> {
             hoodBackToSafe();
         }).named("activateHoodShotCalc");
     }
@@ -189,7 +195,7 @@ public class Superstructure implements Mechanism {
 
         return m_shooter.run(coroutine -> {
             coroutine.await(m_shooter.shootFromCalc());
-        }).whenCanceled(() -> {
+        }).whenExited(() -> {
             turnOffFlywheel();
         }).named("spinUpFlywheel");
     }
@@ -209,7 +215,7 @@ public class Superstructure implements Mechanism {
                 m_shooter.hoodFromCalc(),
                 m_shooter.shootFromCalc()
             );
-        }).whenCanceled(() -> {
+        }).whenExited(() -> {
             hoodBackToSafe();
             turnOffFlywheel();
         }).named("hoodAndFlywheelShotCalc");
@@ -254,7 +260,7 @@ public class Superstructure implements Mechanism {
         //     }
         // );
 
-        return Command.requiring(m_shooter, m_indexer).executing(coroutine -> {
+        return Command.requiring(m_shooter, m_indexer, m_intake).executing(coroutine -> {
             m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
             m_shooter.m_turret.lockAndSetTurretLockPos(ShooterK.kTurretBarfPos.magnitude());
             m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPSD);
@@ -262,7 +268,7 @@ public class Superstructure implements Mechanism {
             m_shooter.setShooterVelocity(ShooterK.kShooterBarfRPS);
             m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersBarfVolts);
             coroutine.park();
-        }).whenCanceled(() -> {
+        }).whenExited(() -> {
             m_intake.setIntakeRollersVelocity(0);
             m_shooter.m_turret.setTurretLock(false);
             m_shooter.setShooterVelocity(RotationsPerSecond.zero());
@@ -290,12 +296,12 @@ public class Superstructure implements Mechanism {
             m_intake.setIntakeArmPos(IntakeArmPosition.DEPLOYED);
             m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersBarfVolts);
             coroutine.park();
-        }).whenCanceled(() -> {
+        }).whenExited(() -> {
             m_intake.setIntakeRollersVelocity(0);
         }).named("emergencyBarfOnlyIntake");
     }
 
-    public Command intakeShimmy(BooleanSupplier isShooting) {
+    public Command intakeShimmy() {
         // return Commands.repeatingSequence(
         //     intake(isShooting, () -> true).withTimeout(0.2),
         //     m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED),
@@ -304,12 +310,19 @@ public class Superstructure implements Mechanism {
         //     () -> m_intake.setIntakeRollersVelocity(0)
         // );
 
-        return m_intake.run(coroutine -> {
-            runRepeatedly(() -> {
-                intake(isShooting, () -> true).withTimeout(Seconds.of(0.2)),
-                m_intake.setIntakeArmPosCmd(IntakeArmPosition.RETRACTED),
-                coroutine.wait(Seconds.of(0.2))
-            });
+        Timer intakeShimmyTimer = new Timer();
+
+        return m_intake.runRepeatedly(() -> {
+            if (!intakeShimmyTimer.isRunning()) {
+                intakeShimmyTimer.restart();
+            }
+            boolean isDeployed = (intakeShimmyTimer.get()) % 0.4 < 0.2;
+            m_intake.setIntakeArmPos(isDeployed ? IntakeArmPosition.DEPLOYED : IntakeArmPosition.RETRACTED);
+            m_intake.setIntakeRollersVelocity(IntakeK.kIntakeRollersShimmyVolts);
+
+        }).whenExited(() -> {
+            m_intake.setIntakeRollersVelocity(0);
+            intakeShimmyTimer.stop();
         }).named("intakeShimmy");
     }
 
@@ -338,19 +351,19 @@ public class Superstructure implements Mechanism {
         //     }
         // );
 
-        return Command.requiring(m_shooter, m_indexer).executing(coroutine -> {
-            m_indexer.setSpindexerVelocity(IndexerK.kSpindexerIntakeRPSD * -1);
+        return Command.noRequirements(coroutine -> {
+            m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPSD * -1);
             m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPSD * -1);
             if (!isShooting.getAsBoolean()) {
                 m_shooter.setShooterVelocity(ShooterK.kShooterRPS.unaryMinus());
             }
             coroutine.park();
-        }).whenCanceled(() -> {
+        }).whenExited(() -> {
             if (!isShooting.getAsBoolean()) {
                 m_shooter.setShooterVelocity(RotationsPerSecond.zero());
                 m_indexer.setSpindexerVelocity(0);
                 m_indexer.setTunnelVelocity(0);
-            } else if (isShooting.getAsBoolean()) {
+            } else {
                 m_indexer.setSpindexerVelocity(IndexerK.kSpindexerShootRPSD);
                 m_indexer.setTunnelVelocity(IndexerK.kTunnelShootRPSD);
             }
@@ -363,9 +376,6 @@ public class Superstructure implements Mechanism {
      * @return
      */
     public Command intakeTo(IntakeArmPosition pos) {
-        // return m_intake.setIntakeArmPosCmd(pos);
-        return m_intake.run(coroutine -> {
-            m_intake.setIntakeArmPosCmd(pos);
-        }).named("intakeTo");
+        return m_intake.setIntakeArmPosCmd(pos);
     }
 }

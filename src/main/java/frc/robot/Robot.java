@@ -1,4 +1,3 @@
-
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
@@ -364,23 +363,23 @@ public class Robot extends TimedRobot {
         trg_shoot
             .and(trg_singlePlayer)
             .whileTrue(
-                m_superstructure.intakeShimmy(() -> true)
+                m_superstructure.intakeShimmy()
             ).debounce(3);
 
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
 
         trg_intake.and(trg_shoot).and(trg_emergencyBarf.negate()).whileTrue(
-            m_superstructure.intake(() -> true, () -> false)
+            m_superstructure.intake(() -> true)
         );
 
         trg_intake.and(trg_shoot.negate()).and(trg_emergencyBarf.negate()).whileTrue(
-            m_superstructure.intake(() -> false, () -> false)
+            m_superstructure.intake(() -> false)
         );
 
         trg_retractIntake.onTrue(m_superstructure.retractIntake());
-        trg_intakeShimmy.whileTrue(m_superstructure.intakeShimmy(() -> false));
-        trg_intakeShimmy.and(trg_shoot).whileTrue(m_superstructure.intakeShimmy(() -> true));
+        trg_intakeShimmy.whileTrue(m_superstructure.intakeShimmy());
+        trg_intakeShimmy.and(trg_shoot).whileTrue(m_superstructure.intakeShimmy());
 
         trg_emergencyBarf.whileTrue(m_superstructure.emergencyBarf());
         trg_emergencyIntakeOnlyBarf.whileTrue(m_superstructure.emergencyBarfOnlyIntake());
