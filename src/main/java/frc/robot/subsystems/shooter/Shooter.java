@@ -18,6 +18,10 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.kinematics.ChassisVelocities;
+import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Models;
+import org.wpilib.simulation.DCMotorSim;
+import org.wpilib.simulation.FlywheelSim;
 import org.wpilib.system.Timer;
 import org.wpilib.system.Tracer;
 import org.wpilib.command3.Command;
@@ -139,15 +143,13 @@ public class Shooter implements Mechanism {
         .and(trg_debounceHit);
 
     /* SIM OBJECTS */
+    private final FlywheelSim m_shooterSim = new FlywheelSim(Models.flywheelFromPhysicalConstants(
+        DCMotor.getKrakenX44(2), kShooterMoI, kShooterGearing), DCMotor.getKrakenX60Foc(2) // returns gearbox
+    );
 
-    // 2027-TODO: figure out new LinearSystem generator!!!
-    // private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystem.createFlywheelSystem(
-            // DCMotor.getKrakenX44(2), kShooterMoI, kShooterGearing), DCMotor.getKrakenX60Foc(2) // returns gearbox
-    // );
-
-    // private final DCMotorSim m_turretSim = new DCMotorSim(LinearSystem.createDCMotorSystem(
-    //         DCMotor.getKrakenX44Foc(1), kTurretMoI, kTurretGearing), DCMotor.getKrakenX44Foc(1) // returns gearbox
-    // );
+    private final DCMotorSim m_turretSim = new DCMotorSim(Models.singleJointedArmFromPhysicalConstants(
+        DCMotor.getKrakenX44Foc(1), kTurretMoI, kTurretGearing), DCMotor.getKrakenX44Foc(1) // returns gearbox
+    );
 
     /* LOGGERS */
     private final DoubleLogger log_shooterVelocityRPS = WaltLogger.logDouble("Shooter/Flywheel", "velocityRPS");
@@ -244,14 +246,10 @@ public class Shooter implements Mechanism {
             .named("ShootFromCalc");
     }
 
-    // TODO: migrate hood to Mechanism, then use m_hood.runRepeatedly() with proper requirement
     /** Continuous: drive the hood position from the shot calculator every cycle. */
     public Command hoodFromCalc() {
-        return Command.noRequirements(co -> {
-            while (co.yield()) {
-                m_hood.setHoodPos(m_calcHoodRots);
-            }
-        }).named("HoodFromCalc");
+        return m_hood.runRepeatedly(() -> m_hood.setHoodPos(m_calcHoodRots))
+            .named("HoodFromCalc");
     }
 
     // ==================== HARDWARE SETTERS ====================
@@ -464,8 +462,7 @@ public class Shooter implements Mechanism {
         // m_periodicTracer.printEpochs();
     }
 
-    // 2027-TODO: figure out new LinearSystem generator!!!
-    // private void simulationPeriodic() {
-    //     WaltMotorSim.updateSimFX(m_shooterA, m_shooterSim);
-    // }
+    private void simulationPeriodic() {
+        WaltMotorSim.updateSimFX(m_shooterA, m_shooterSim);
+    }
 }
