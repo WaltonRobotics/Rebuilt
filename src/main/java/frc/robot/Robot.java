@@ -1,4 +1,3 @@
-
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
@@ -38,13 +37,12 @@ import org.wpilib.system.RobotController;
 import org.wpilib.framework.TimedRobot;
 import org.wpilib.system.Timer;
 import org.wpilib.system.Tracer;
-import org.wpilib.command2.Command;
-import org.wpilib.command2.CommandScheduler;
-import org.wpilib.command2.Commands;
-import org.wpilib.command2.button.CommandNiDsXboxController;
-import org.wpilib.command2.button.CommandXboxController;
-import org.wpilib.command2.button.RobotModeTriggers;
-import org.wpilib.command2.button.Trigger;
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Scheduler;
+import org.wpilib.command3.button.CommandNiDsXboxController;
+import org.wpilib.command3.button.CommandXboxController;
+import org.wpilib.command3.button.RobotModeTriggers;
+import org.wpilib.command3.Trigger;
 
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.Constants.RobotK;
@@ -276,7 +274,7 @@ public class Robot extends TimedRobot {
         m_preheaterCommand = AutonChooser.getPreheater();
 
         // 2027-TODO: figure out auton/choreo!!!
-        CommandScheduler.getInstance().schedule(m_preheaterCommand);
+        Scheduler.getDefault().schedule(m_preheaterCommand);
 
         long tEnd = System.nanoTime();
         System.out.printf("[INIT PROFILE] preheater cmd build:      %7.1f ms%n", (tEnd - tPrev) * 1e-6);
@@ -351,12 +349,15 @@ public class Robot extends TimedRobot {
         trg_unlimitFps.onTrue(WaltCamera.setFpsLimitCmd(false));
 
         /* BUTTON BIDNDS */
-        m_driver.leftBumper().and(trg_driverOverride).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));    // Reset the field-centric heading on left bumper press.
+        // m_driver.leftBumper().and(trg_driverOverride).onTrue(m_drivetrain.runOnce(m_drivetrain::seedFieldCentric));    // Reset the field-centric heading on left bumper press.
+        m_driver.leftBumper().and(trg_driverOverride).onTrue(m_drivetrain.run(coroutine -> {
+            m_drivetrain.seedFieldCentric();
+        }).named("resetFieldCentricHeading"));
 
         trg_shoot
             // .and(() -> m_shooter.m_turret.atPosition())
             .and(trg_snappingBack.negate())
-            .whileTrue(m_superstructure.activateOuttakeShotCalc());
+            .whileTrue(m_superstructure.activateShooterShotCalc());
 
         trg_shoot
             .and(trg_snappingBack)
@@ -365,23 +366,23 @@ public class Robot extends TimedRobot {
         trg_shoot
             .and(trg_singlePlayer)
             .whileTrue(
-                m_superstructure.intakeShimmy(() -> true)
-            ).debounce(3);
+                m_superstructure.intakeShimmy()
+            ).debounce(Seconds.of(3));
 
         // snapshot on each shoot press
         trg_shoot.onTrue(WaltCamera.takeSnapshotCmd());
 
         trg_intake.and(trg_shoot).and(trg_emergencyBarf.negate()).whileTrue(
-            m_superstructure.intake(() -> true, () -> false)
+            m_superstructure.intake(() -> true)
         );
 
         trg_intake.and(trg_shoot.negate()).and(trg_emergencyBarf.negate()).whileTrue(
-            m_superstructure.intake(() -> false, () -> false)
+            m_superstructure.intake(() -> false)
         );
 
         trg_retractIntake.onTrue(m_superstructure.retractIntake());
-        trg_intakeShimmy.whileTrue(m_superstructure.intakeShimmy(() -> false));
-        trg_intakeShimmy.and(trg_shoot).whileTrue(m_superstructure.intakeShimmy(() -> true));
+        trg_intakeShimmy.whileTrue(m_superstructure.intakeShimmy());
+        trg_intakeShimmy.and(trg_shoot).whileTrue(m_superstructure.intakeShimmy());
 
         trg_emergencyBarf.whileTrue(m_superstructure.emergencyBarf());
         trg_emergencyIntakeOnlyBarf.whileTrue(m_superstructure.emergencyBarfOnlyIntake());
@@ -394,18 +395,36 @@ public class Robot extends TimedRobot {
 
         trg_homeIntake.onTrue(m_intake.intakeArmCurrentSenseHoming());
         trg_homeHood.onTrue(m_shooter.m_hood.hoodCurrentSenseHomingCmd());
-        trg_reseedTurret.onTrue(Commands.runOnce(() -> m_shooter.m_turret.homeTurret(true)));
+        // trg_reseedTurret.onTrue(Commands.runOnce(() -> m_shooter.m_turret.homeTurret(true)));
+        trg_reseedTurret.onTrue(m_shooter.run(coroutine -> {
+            m_shooter.m_turret.homeTurret(true);
+        }).named("trg_reseedTurret"));
 
         trg_lockShooting.onTrue(m_shooter.m_turret.setTurretLockCmd(true));
         trg_unlockShooting.onTrue(m_shooter.m_turret.setTurretLockCmd(false));
 
-        trg_resetPoseLeft.onTrue(Commands.runOnce(() -> m_drivetrain.resetPose(kLeftResetPose)));
-        trg_resetPoseRight.onTrue(Commands.runOnce(() -> m_drivetrain.resetPose(kRightResetPose)));
+        // trg_resetPoseLeft.onTrue(Commands.runOnce(() -> m_drivetrain.resetPose(kLeftResetPose)));
+        trg_resetPoseLeft.onTrue(m_drivetrain.run(coroutine -> {
+            m_drivetrain.resetPose(kLeftResetPose);
+        }).named("trg_resetPoseLeft"));
 
-        trg_addRPS.onTrue(Commands.runOnce(() -> m_shooter.adjustRpsBy(kRPSAdditionOnButton)));
-        trg_reduceRPS.onTrue(Commands.runOnce(() -> m_shooter.adjustRpsBy(-kRPSAdditionOnButton)));
-        trg_unadjustRps.onTrue(Commands.runOnce(() -> m_shooter.unadjustRps()));
+        // trg_resetPoseRight.onTrue(Commands.runOnce(() -> m_drivetrain.resetPose(kRightResetPose)));
+        trg_resetPoseRight.onTrue(m_drivetrain.run(coroutine -> {
+            m_drivetrain.resetPose(kRightResetPose);
+        }).named("trg_resetPoseRight"));
 
+        // trg_addRPS.onTrue(Commands.runOnce(() -> m_shooter.adjustRpsBy(kRPSAdditionOnButton)));
+        trg_addRPS.onTrue(m_shooter.run(coroutine -> {
+            m_shooter.adjustRpsBy(kRPSAdditionOnButton);
+        }).named("trg_addRPS"));
+        // trg_reduceRPS.onTrue(Commands.runOnce(() -> m_shooter.adjustRpsBy(-kRPSAdditionOnButton)));
+        trg_reduceRPS.onTrue(m_shooter.run(coroutine -> {
+            m_shooter.adjustRpsBy(-kRPSAdditionOnButton);
+        }).named("trg_reduceRPS"));
+        // trg_unadjustRps.onTrue(Commands.runOnce(() -> m_shooter.unadjustRps()));
+        trg_unadjustRps.onTrue(m_shooter.run(coroutine -> {
+            m_shooter.unadjustRps();;
+        }).named("trg_unadjustRPS"));
     
 
         //---OLD RUMBLE LOGIC
@@ -454,7 +473,8 @@ public class Robot extends TimedRobot {
         m_perfMonitor.loopStart();
         m_periodicTracer.addEpoch("Entry (Unused Time)");
         SignalManager.refreshAll();
-        CommandScheduler.getInstance().run();
+        // CommandScheduler.getInstance().run();
+        Scheduler.getDefault().run();
         m_periodicTracer.addEpoch("CommandScheduler");
 
         SwerveDriveState driveState = m_drivetrain.getState();
@@ -636,7 +656,8 @@ public class Robot extends TimedRobot {
         SwerveDriveState robotState = m_drivetrain.getState();
         Pose2d robotPose = robotState.Pose;
         WaltCamera.m_visionSim.simulationPeriodic(robotPose);
-        m_drivetrain.simulationPeriodic();
+        // m_drivetrain.simulationPeriodic();
+        // no equivalent and it was empty either way lol
         m_shooter.simulationPeriodic();
         m_intake.simulationPeriodic();
         m_indexer.simulationPeriodic();

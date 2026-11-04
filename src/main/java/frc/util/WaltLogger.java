@@ -17,8 +17,7 @@ import org.wpilib.datalog.*;
 import org.wpilib.util.function.BooleanConsumer;
 import org.wpilib.system.DataLogManager;
 import org.wpilib.system.Timer;
-import org.wpilib.command2.Command;
-import org.wpilib.command2.Commands;
+import org.wpilib.command3.Command;
 import frc.robot.Constants;
 
 public class WaltLogger {
@@ -31,7 +30,10 @@ public class WaltLogger {
     }
 
     public static Command timedPrintCmd(String label) {
-        return Commands.runOnce(() -> timedPrint(label));
+        // return Commands.runOnce(() -> timedPrint(label));
+        return Command.noRequirements(coroutine -> {
+            timedPrint(label);
+        }).named("timePrintCmd");
     }
 
     private static boolean shouldPublishNt() {

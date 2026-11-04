@@ -2,9 +2,9 @@ package frc.robot.subsystems.shooter;
 
 import static frc.robot.Constants.kShooterBus;
 import static frc.robot.Constants.ShooterK.*;
+import static org.wpilib.units.Units.Seconds;
 
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.PositionVoltage;
@@ -18,16 +18,17 @@ import org.wpilib.math.filter.Debouncer.DebounceType;
 
 import org.wpilib.units.measure.Angle;
 import org.wpilib.units.measure.Current;
-import org.wpilib.command2.Command;
-import org.wpilib.command2.FunctionalCommand;
-import org.wpilib.command2.SubsystemBase;
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Mechanism;
+import org.wpilib.command3.Scheduler;
+
 import frc.robot.Constants.ShooterK;
 import frc.util.SignalManager;
 import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
-public class Hood extends SubsystemBase {
+public class Hood implements Mechanism {
     private static final String kLogTab = "Shooter/Hood";
     private static final double kAbsoluteToPhysicalAngleRatio =
         (kPhysicalHoodMaxPosition_double - kPhysicalHoodMinPosition_double) / (360.0 * (kHoodMaxRots_double - kHoodMinRots_double));
@@ -61,12 +62,13 @@ public class Hood extends SubsystemBase {
         m_hood.getConfigurator().apply(kHoodTalonFXSConfiguration);
 
         SignalManager.register(kShooterBus, sig_hoodStatorCurrent, sig_hoodPos, sig_hoodCLErr);
-    
 
         m_hood.setPosition(0);
         m_isHoodHomed = true;
         log_hoodHomed.accept(m_isHoodHomed);
         setHoodPos(0.05); //really really low position to see that this is working
+
+        Scheduler.getDefault().addPeriodic(this::periodic);
 
         // setDefaultCommand(hoodCurrentSenseHomingCmd());
     }
@@ -79,7 +81,11 @@ public class Hood extends SubsystemBase {
     }
 
     public Command setHoodPosCmd(double rots) {
-        return runOnce(() -> setHoodPos(rots));
+        // return runOnce(() -> setHoodPos(rots));
+
+        return run(coroutine -> {
+            setHoodPos(rots);
+        }).named("setHoodPosCmd");
     }
 
     private static double getHoodAngleDeg(double posRots) {
@@ -101,41 +107,69 @@ public class Hood extends SubsystemBase {
         return m_hoodAtPos;
     }
 
+    /**
+     * home the hood by sensing the current idk man<br>
+     * 
+     * NOTE: removeDefaultCommand, now known as setDefaultCommand(idle()), was not implemented because the default
+     * command in the constructor is commented out. in the future, if it is uncommented, keep in mind that running
+     * setDefaultCommand in a Command makes it only the default command for as long as the command is active.
+     * afterwards, it reverts back to the previous default command.
+     * 
+     * @see org.wpilib.command3.Scheduler#setDefaultCommand()
+     */
     public Command hoodCurrentSenseHomingCmd(){
-        Runnable init = () -> {
+        // Runnable init = () -> {
+        //     m_hood.getConfigurator().apply(ShooterK.kHoodTalonFXSConfigurationNoSoftLimit);
+        //     m_hood.setControl(m_hoodZeroReq.withOutput(kHoodHomingVoltage));
+        //     m_isHoodHomed = false;
+        //     log_hoodHomed.accept(m_isHoodHomed);
+        // };
+
+        // Consumer<Boolean> end = (Boolean interrupted) -> {
+        //     if (interrupted) {
+        //         m_hood.setControl(m_BrakeReq);
+        //         WaltLogger.timedPrint("HoodHoming INTERRUPTED!!!!");
+        //         log_hoodHomed.accept(m_isHoodHomed);
+        //         return;
+        //     }
+
+        //     m_hood.setPosition(kHoodAbsoluteMinRots);
+        //     m_hood.setControl(m_BrakeReq);
+        //     removeDefaultCommand();
+        //     m_isHoodHomed = true;
+        //     m_hood.getConfigurator().apply(ShooterK.kHoodTalonFXSConfiguration);
+        //     log_hoodHomed.accept(m_isHoodHomed);
+        // };
+
+        // BooleanSupplier isFinished = () -> 
+        //     m_currentDebouncer.calculate(m_currentSpike.getAsBoolean());
+
+        // return new FunctionalCommand(init, () -> {}, end, isFinished, this).withTimeout(5);
+
+        return run(coroutine -> {
             m_hood.getConfigurator().apply(ShooterK.kHoodTalonFXSConfigurationNoSoftLimit);
             m_hood.setControl(m_hoodZeroReq.withOutput(kHoodHomingVoltage));
             m_isHoodHomed = false;
             log_hoodHomed.accept(m_isHoodHomed);
-        };
 
-        Consumer<Boolean> end = (Boolean interrupted) -> {
-            if (interrupted) {
-                m_hood.setControl(m_BrakeReq);
-                WaltLogger.timedPrint("HoodHoming INTERRUPTED!!!!");
-                log_hoodHomed.accept(m_isHoodHomed);
-                return;
-            }
+            coroutine.waitUntil(() -> m_currentDebouncer.calculate(m_currentSpike.getAsBoolean()));
 
-            m_hood.setPosition(kHoodAbsoluteMinRots);
+            m_hood.setPosition(kHoodAbsoluteMinRots); // Success code starts here, if it fails command goes to whenCanceled
             m_hood.setControl(m_BrakeReq);
-            removeDefaultCommand();
             m_isHoodHomed = true;
             m_hood.getConfigurator().apply(ShooterK.kHoodTalonFXSConfiguration);
             log_hoodHomed.accept(m_isHoodHomed);
-        };
-
-        BooleanSupplier isFinished = () -> 
-            m_currentDebouncer.calculate(m_currentSpike.getAsBoolean());
-
-        return new FunctionalCommand(init, () -> {}, end, isFinished, this).withTimeout(5);
+        }).whenCanceled(() -> {
+            m_hood.setControl(m_BrakeReq);
+            WaltLogger.timedPrint("HoodHoming INTERRUPTED!!!!");
+            log_hoodHomed.accept(m_isHoodHomed);
+        }).named("hoodCurrentSenseHomingCmd").withTimeout(Seconds.of(5));
     }
 
     public void setHoodNeutralMode(NeutralModeValue value) {
         // m_hood.setNeutralMode(value);
     }
 
-    @Override
     public void periodic() {
         double posRots = sig_hoodPos.getValueAsDouble();
         refreshHoodAtPos();

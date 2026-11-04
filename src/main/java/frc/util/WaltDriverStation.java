@@ -3,15 +3,21 @@ package frc.util;
 import java.util.Optional;
 import org.wpilib.driverstation.MatchState;
 import org.wpilib.driverstation.Alliance;
-import org.wpilib.command2.Commands;
-import org.wpilib.command2.button.RobotModeTriggers;
+import org.wpilib.command3.Command;
+import org.wpilib.command3.button.RobotModeTriggers;
 
 public final class WaltDriverStation {
     private static Optional<Alliance> m_cachedAlliance = Optional.empty();
 
     static {
-        RobotModeTriggers.autonomous().onTrue(Commands.runOnce(WaltDriverStation::cacheAlliance));
-        RobotModeTriggers.teleop().onTrue(Commands.runOnce(WaltDriverStation::cacheAlliance));
+        // RobotModeTriggers.autonomous().onTrue(Commands.runOnce(WaltDriverStation::cacheAlliance));
+        RobotModeTriggers.autonomous().onTrue(Command.noRequirements(coroutine -> {
+            cacheAlliance();
+        }).named("cacheAlliance"));
+        // RobotModeTriggers.teleop().onTrue(Commands.runOnce(WaltDriverStation::cacheAlliance));
+        RobotModeTriggers.teleop().onTrue(Command.noRequirements(coroutine -> {
+            cacheAlliance();
+        }).named("cacheAlliance"));
     }
 
     private WaltDriverStation() {}

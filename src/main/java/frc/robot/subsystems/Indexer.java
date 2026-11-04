@@ -9,9 +9,13 @@ import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 
 import org.wpilib.units.measure.AngularVelocity;
 import org.wpilib.units.measure.Current;
-import org.wpilib.command2.Command;
-import org.wpilib.command2.Commands;
-import org.wpilib.command2.SubsystemBase;
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Mechanism;
+import org.wpilib.command3.Scheduler;
+import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Models;
+import org.wpilib.simulation.DCMotorSim;
+
 import static org.wpilib.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.IndexerK.*;
 
@@ -25,7 +29,7 @@ import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
-public class Indexer extends SubsystemBase {
+public class Indexer implements Mechanism {
     /* CLASS VARIABLES */
     //---MOTORS + CONTROL REQUESTS
     private final TalonFX m_spindexer = new TalonFX(kSpindexerCANID, Constants.kCanivoreBus); // X60Foc
@@ -41,25 +45,23 @@ public class Indexer extends SubsystemBase {
     private final CoastOut m_tunnelMotorIdleReq = new CoastOut();
 
     /* SIM OBJECTS */
-    // 2027-TODO: figure out new LinearSystem generator!!!
-    // private final DCMotorSim m_spindexerSim = new DCMotorSim(
-    //     LinearSystem.createDCMotorSystem(
-    //         DCMotor.getKrakenX60Foc(1),
-    //         kSpindexerMOI,
-    //         kSpindexerGearing
-    //     ),
-    //     DCMotor.getKrakenX60Foc(1)
-    // );
+    private final DCMotorSim m_spindexerSim = new DCMotorSim(
+        Models.singleJointedArmFromPhysicalConstants(
+            DCMotor.getKrakenX60Foc(1),
+            kSpindexerMOI,
+            kSpindexerGearing     
+        ),
+        DCMotor.getKrakenX60Foc(1)
+    );
 
-    // private final DCMotorSim m_tunnelSim = new DCMotorSim(
-    //     LinearSystem.createDCMotorSystem(
-    //         DCMotor.getKrakenX60Foc(1),
-    //         kTunnelMOI,
-    //         kTunnelGearing
-    //     ),
-    //     DCMotor.getKrakenX60Foc(1)
-    // );
-
+    private final DCMotorSim m_tunnelSim = new DCMotorSim(
+        Models.singleJointedArmFromPhysicalConstants(
+            DCMotor.getKrakenX60Foc(1),
+            kTunnelMOI,
+            kTunnelGearing     
+        ),
+        DCMotor.getKrakenX60Foc(1)
+    );
     
     /* TUNABLES */
     private static final WaltTunable kTunnelRatioMultiplier = new WaltTunable("/Indexer/Tunnel/tunnelRatioScalar", 1.0);
@@ -98,6 +100,8 @@ public class Indexer extends SubsystemBase {
 
         SignalManager.register(Constants.kCanivoreBus, sig_spindexerVelo, sig_tunnelVelo, sig_tunnelCLErr, sig_spindexerStatorCurrent, sig_spindexerSupplyCurrent);
 
+        Scheduler.getDefault().addPeriodic(this::periodic);
+
         initSim();
     }
 
@@ -110,17 +114,17 @@ public class Indexer extends SubsystemBase {
     /* COMMANDS */
     //---STARTS AND STOPS
     public Command startIndexerCmd() {
-        return Commands.sequence(
+        return Command.sequence(
             startTunnelCmd(),
             startSpindexerCmd()
-        );
+        ).named("startIndexerCmd");
     }
 
     public Command stopIndexerCmd() {
-        return Commands.sequence(
+        return Command.sequence(
             stopTunnelCmd(),
             stopSpindexerCmd()
-        );
+        ).named("stopIndexerCmd");
     }
 
     public Command startSpindexerCmd() {
@@ -195,7 +199,9 @@ public class Indexer extends SubsystemBase {
     }
 
     public Command setSpindexerVelocityCmd(AngularVelocity RPS) {
-        return runOnce(() -> setSpindexerVelocity(RPS.in(RotationsPerSecond)));
+        return run(coroutine -> {
+            setSpindexerVelocity(RPS.in(RotationsPerSecond));
+        }).named("setSpindexerVelocityCmd");
     }
 
     //---TUNNEL
@@ -214,7 +220,9 @@ public class Indexer extends SubsystemBase {
     }
 
     public Command setTunnelVelocityCmd(AngularVelocity RPS) {
-        return runOnce(() -> setTunnelVelocity(RPS.in(RotationsPerSecond)));
+        return run(coroutine -> {
+            setTunnelVelocity(RPS.in(RotationsPerSecond));
+        }).named("setTunnelVelocityCmd");
     }
 
     //STATICS for conversions
@@ -227,7 +235,6 @@ public class Indexer extends SubsystemBase {
     }
 
     /* PERIODICS */
-    @Override
     public void periodic() {
         log_spindexerRPS.accept(sig_spindexerVelo.getValueAsDouble());
         log_spindexerStatorCurrent.accept(sig_spindexerStatorCurrent.getValueAsDouble());
@@ -235,9 +242,8 @@ public class Indexer extends SubsystemBase {
         refreshTunnelState();
     }
 
-    // @Override
-    // public void simulationPeriodic() {
-    //     WaltMotorSim.updateSimFX(m_tunnel, m_tunnelSim);
-    //     WaltMotorSim.updateSimFX(m_spindexer, m_spindexerSim);
-    // }
+    public void simulationPeriodic() {
+        WaltMotorSim.updateSimFX(m_tunnel, m_tunnelSim);
+        WaltMotorSim.updateSimFX(m_spindexer, m_spindexerSim);
+    }
 }

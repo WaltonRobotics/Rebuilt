@@ -16,19 +16,18 @@ import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
-import org.wpilib.math.util.MathUtil;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.kinematics.ChassisVelocities;
 import org.wpilib.math.system.DCMotor;
-import org.wpilib.math.system.LinearSystem;
-
+import org.wpilib.math.system.Models;
+import org.wpilib.simulation.DCMotorSim;
+import org.wpilib.simulation.FlywheelSim;
 import org.wpilib.system.Timer;
 import org.wpilib.system.Tracer;
-import org.wpilib.simulation.FlywheelSim;
-import org.wpilib.command2.Command;
-import org.wpilib.command2.Commands;
-import org.wpilib.command2.SubsystemBase;
-import org.wpilib.command2.button.Trigger;
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Mechanism;
+import org.wpilib.command3.Scheduler;
+import org.wpilib.command3.Trigger;
 
 import static org.wpilib.units.Units.Hertz;
 import static org.wpilib.units.Units.Rotations;
@@ -47,7 +46,7 @@ import frc.util.WaltLogger;
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 
-public class Shooter extends SubsystemBase {
+public class Shooter implements Mechanism {
     // NT-tunable overrides for LERP table building (default off)
     private static final WaltTunable kShooterRPSOverride =
         new WaltTunable("/Shooter/shooterRPSOverride", kShooterRPSd);
@@ -59,7 +58,7 @@ public class Shooter extends SubsystemBase {
     /* VARIABLES */
     // boolean m_useShotCalculator = true;
 
-    private double m_currentFlywheelVelocityRotPerSec;
+    private double m_currentFlywheelVelocityRotPerSec; //gabi waz here
     private double m_latestFlywheelAccelerationRotPerSec;
     private boolean m_isShooterSpunUp = false;
     private boolean m_shotDropSeen = false;
@@ -144,15 +143,13 @@ public class Shooter extends SubsystemBase {
         .and(trg_debounceHit);
 
     /* SIM OBJECTS */
+    private final FlywheelSim m_shooterSim = new FlywheelSim(Models.flywheelFromPhysicalConstants(
+        DCMotor.getKrakenX44(2), kShooterMoI, kShooterGearing), DCMotor.getKrakenX60Foc(2) // returns gearbox
+    );
 
-    // 2027-TODO: figure out new LinearSystem generator!!!
-    // private final FlywheelSim m_shooterSim = new FlywheelSim(LinearSystem.createFlywheelSystem(
-            // DCMotor.getKrakenX44(2), kShooterMoI, kShooterGearing), DCMotor.getKrakenX60Foc(2) // returns gearbox
-    // );
-
-    // private final DCMotorSim m_turretSim = new DCMotorSim(LinearSystem.createDCMotorSystem(
-    //         DCMotor.getKrakenX44Foc(1), kTurretMoI, kTurretGearing), DCMotor.getKrakenX44Foc(1) // returns gearbox
-    // );
+    private final DCMotorSim m_turretSim = new DCMotorSim(Models.singleJointedArmFromPhysicalConstants(
+        DCMotor.getKrakenX44Foc(1), kTurretMoI, kTurretGearing), DCMotor.getKrakenX44Foc(1) // returns gearbox
+    );
 
     /* LOGGERS */
     private final DoubleLogger log_shooterVelocityRPS = WaltLogger.logDouble("Shooter/Flywheel", "velocityRPS");
@@ -200,10 +197,23 @@ public class Shooter extends SubsystemBase {
         m_currentFlywheelVelocityRotPerSec = sig_shooterAVelo.getValueAsDouble();
         m_latestFlywheelAccelerationRotPerSec = sig_shooterAAccel.getValueAsDouble();
 
-        trg_ballDetected.onTrue(Commands.runOnce(() -> { m_shotDropSeen = true; m_shotRecoveryTimer.restart(); m_ballsShot++; m_recoveryBumpRPS = kRecoveryBumpRPSOverride.get(); }));
-        trg_ballDetected.onFalse(Commands.runOnce(() -> { m_shotRecoveryTimer.restart(); }));
-        trg_inShootCtrlMode.onFalse(Commands.runOnce(() -> { m_shotDropSeen = false; m_shotRecoveryTimer.stop(); m_shotRecoveryTimer.reset(); }));
-
+        // Trigger bindings (no mechanism requirement)
+        trg_ballDetected.onTrue(
+            Command.noRequirements(co -> {
+                m_shotDropSeen = true;
+                m_shotRecoveryTimer.restart();
+                m_ballsShot++;
+            }).named("OnBallDetected"));
+        trg_ballDetected.onFalse(
+            Command.noRequirements(co -> {
+                m_shotRecoveryTimer.restart();
+            }).named("OnBallLost"));
+        trg_inShootCtrlMode.onFalse(
+            Command.noRequirements(co -> {
+                m_shotDropSeen = false;
+                m_shotRecoveryTimer.stop();
+                m_shotRecoveryTimer.reset();
+            }).named("OnShootCtrlModeExit"));
         // m_turretVisualizer = new TurretVisualizer(
         //         () -> new Pose3d(m_poseSupplier.get().rotateAround(
         //                 poseSupplier.get().getTranslation(), new Rotation2d(turretTurnPosition)))
@@ -212,29 +222,37 @@ public class Shooter extends SubsystemBase {
 
         // m_fuelSim = FuelSim.getInstance();
         initSim();
+
+    // replaces @Override periodic()
+        Scheduler.getDefault().addPeriodic(this::sideloadedPeriodic);
     }
 
-    // ---SHOOTER (Velocity Control)
+
+    /** set flywheel to a fixed velocity, then release the mechanism. */
     public Command setShooterVelocityCmd(AngularVelocity RPS) {
-        return runOnce(() -> setShooterVelocity(RPS));
+        return run(co -> setShooterVelocity(RPS))
+            .named("SetShooterVelocity");
     }
 
+    /** set flywheel velocity from a supplier. */
     public Command setShooterVelocityCmdSupp(Supplier<AngularVelocity> supp_RPS) {
-        return runOnce(() -> setShooterVelocity(supp_RPS.get()));
+        return run(co -> setShooterVelocity(supp_RPS.get()))
+            .named("SetShooterVelocitySupp");
     }
 
+    /** drive the flywheel continuously from the shot calculator every cycle. */
     public Command shootFromCalc() {
-        return run(() -> setShooterVelocity(m_calcFlywheelVelocityRotPerSec));
+        return runRepeatedly(() -> setShooterVelocity(m_calcFlywheelVelocityRotPerSec))
+            .named("ShootFromCalc");
     }
 
+    /** Continuous: drive the hood position from the shot calculator every cycle. */
     public Command hoodFromCalc() {
-        return m_hood.run(() -> m_hood.setHoodPos(m_calcHoodRots));
+        return m_hood.runRepeatedly(() -> m_hood.setHoodPos(m_calcHoodRots))
+            .named("HoodFromCalc");
     }
 
-    public Command hoodToHalfway() {
-        return m_hood.run(() -> m_hood.setHoodPos(kHoodRotsHalfwayD));
-    }
-
+    // ==================== HARDWARE SETTERS ====================
     public void setShooterVelocity(AngularVelocity RPS) {
         setShooterVelocity(RPS.in(RotationsPerSecond));
     }
@@ -352,9 +370,9 @@ public class Shooter extends SubsystemBase {
                 TalonFXSimState.MotorType.KrakenX60);
     }
 
-    /* PERIODICS */
-    @Override
-    public void periodic() {
+    // ==================== SIDELOADED PERIODIC ====================
+    // runs every scheduler cycle via Scheduler.addPeriodic() - NOT tied to mechanism ownership
+    private void sideloadedPeriodic() {
         m_periodicTracer.addEpoch("Entry (Unused Time)");
 
         // Cache all signals at the top so every consumer in this loop sees the same values
@@ -444,9 +462,7 @@ public class Shooter extends SubsystemBase {
         // m_periodicTracer.printEpochs();
     }
 
-    @Override
     public void simulationPeriodic() {
-        // 2027-TODO: figure out new LinearSystem generator!!!
-        // WaltMotorSim.updateSimFX(m_shooterA, m_shooterSim);
+        WaltMotorSim.updateSimFX(m_shooterA, m_shooterSim);
     }
 }

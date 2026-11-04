@@ -1,5 +1,7 @@
 package frc.robot.autons;
 
+import static org.wpilib.units.Units.Seconds;
+
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -7,9 +9,8 @@ import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import org.wpilib.system.Timer;
-import org.wpilib.command2.Command;
-import org.wpilib.command2.Commands;
-import org.wpilib.command2.button.Trigger;
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Trigger;
 import frc.robot.Constants.AutonK;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Superstructure;
@@ -72,12 +73,18 @@ public class WaltAdaptableAutonFactory {
     }
 
     private Command waitIntakeHomedCmd() {
-        return Commands.waitUntil(m_intake.intakeHomedSupp);
+        // return Commands.waitUntil(m_intake.intakeHomedSupp);
+        return Command.waitUntil(m_intake.intakeHomedSupp).named("waitIntakeHomedCmd");
     }
 
     private Command homingCmd() {
-        return Commands.sequence(tp("intakeArmHoming.START"), waitIntakeHomedCmd(), tp("intakeArmHoming.END"))
-            .withTimeout(5);
+        // return Commands.sequence(tp("intakeArmHoming.START"), waitIntakeHomedCmd(), tp("intakeArmHoming.END"))
+        //     .withTimeout(5);
+        return Command.sequence(
+            tp("intakeArmHoming.START"),
+            waitIntakeHomedCmd(),
+            tp("intakeArmHoming.END")
+        ).named("homingCmd").withTimeout(Seconds.of(5));
     }
 
     public AutoRoutine preheater() {
@@ -105,7 +112,7 @@ public class WaltAdaptableAutonFactory {
             names.length, (System.nanoTime() - totalStart) * 1e-6);
     }
 
-    //thank you grac
+    // thank you grac
     private static Command printLater(Supplier<String> stringSup) {
 		return Commands.defer(() -> {
 			return Commands.print(stringSup.get());
@@ -252,7 +259,7 @@ public class WaltAdaptableAutonFactory {
     public void setUpTrajTriggers(AutoTrajectory traj, double shooterTimeout, boolean SOTM) {
         //---TRIGGER ACTIONS
         traj.atTime(kIntakeWaypoint).onTrue(
-            m_superstructure.intake(() -> false, () -> false).until(trg_isAtStopIntake)
+            m_superstructure.intake(() -> false).until(trg_isAtStopIntake)
         );
 
         // traj.atTime(kIntakeWaypoint).onTrue(
@@ -262,15 +269,15 @@ public class WaltAdaptableAutonFactory {
         traj.atTime(kShootWaypoint).and(() -> !SOTM).onTrue(
             // stopShoot acts as an override STOP SHOOTING to continue the pathing whereas the debounceTrg can help us move on faster if we're already outta balls
             Commands.race(
-                m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg()),
+                m_superstructure.activateShooterShotCalc().until(m_shooter.getBallShotDebounceTrg()),
                 Commands.waitSeconds(shooterTimeout)
             )
-            // (m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg())).withTimeout(shooterTimeout)
+            // (m_superstructure.activateShooterShotCalc().until(m_shooter.getBallShotDebounceTrg())).withTimeout(shooterTimeout)
         );
 
         traj.atTime(kShootWaypoint).and(() -> SOTM).onTrue(
             // stopShoot acts as an override STOP SHOOTING to continue the pathing whereas the debounceTrg can help us move on faster if we're already outta balls
-            m_superstructure.activateOuttakeShotCalc().until(m_shooter.getBallShotDebounceTrg().or(trg_isAtStopShoot))
+            m_superstructure.activateShooterShotCalc().until(m_shooter.getBallShotDebounceTrg().or(trg_isAtStopShoot))
         );
 
         traj.atTime(kShootWaypoint).onTrue(
@@ -303,11 +310,11 @@ public class WaltAdaptableAutonFactory {
         );
 
         traj.atTime(kIntakeAndShootWaypoint).onTrue(
-            m_superstructure.intake(() -> true, () -> false).until(traj.atTime(kStopIntakeAndShootWaypoint))
+            m_superstructure.intake(() -> true).until(traj.atTime(kStopIntakeAndShootWaypoint))
         );
 
         traj.atTime(kIntakeAndShootWaypoint).onTrue(
-            m_superstructure.activateOuttakeShotCalc().until(traj.atTime(kStopIntakeAndShootWaypoint))
+            m_superstructure.activateShooterShotCalc().until(traj.atTime(kStopIntakeAndShootWaypoint))
         );
 
         //---TRIGGER LOGGERS

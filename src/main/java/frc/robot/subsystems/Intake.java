@@ -13,23 +13,26 @@ import com.ctre.phoenix6.sim.ChassisReference;
 import static org.wpilib.units.Units.Degrees;
 import static org.wpilib.units.Units.Rotations;
 import static org.wpilib.units.Units.RotationsPerSecond;
+import static org.wpilib.units.Units.Seconds;
 import static frc.robot.Constants.kRioBus;
 import static frc.robot.Constants.IntakeK.*;
 
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 
 import com.ctre.phoenix6.controls.VoltageOut;
 
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
+import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Models;
+import org.wpilib.simulation.DCMotorSim;
 import org.wpilib.units.measure.Angle;
 import org.wpilib.units.measure.AngularVelocity;
 import org.wpilib.units.measure.Current;
-import org.wpilib.command2.Command;
-import org.wpilib.command2.Commands;
-import org.wpilib.command2.FunctionalCommand;
-import org.wpilib.command2.SubsystemBase;
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Mechanism;
+import org.wpilib.command3.Scheduler;
+
 import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltMotorSim;
@@ -37,7 +40,7 @@ import frc.robot.Robot;
 import frc.util.SignalManager;
 import frc.util.WaltLogger;
 
-public class Intake extends SubsystemBase {
+public class Intake implements Mechanism {
     /* CLASS VARIABLES */
     //---MOTORS + CONTROL REQUESTS
     // private final TalonFX m_intakeArm = new TalonFX(kIntakeArmCANID, kRioBus); //x60Foc
@@ -70,24 +73,24 @@ public class Intake extends SubsystemBase {
     public final BooleanSupplier intakeHomedSupp = () -> m_isIntakeArmHomed;
 
     /* SIM OBJECTS */
-    // 2027-TODO: figure out new LinearSystem generator!!!
-    // private final DCMotorSim m_intakeArmSim = new DCMotorSim(
-    //     LinearSystem.createDCMotorSystem(
-    //         DCMotor.getKrakenX60Foc(1),
-    //         kIntakeArmMOI,
-    //         kIntakeArmGearing
-    //     ),
-    //     DCMotor.getKrakenX60Foc(1)
-    // );
+    
+    private final DCMotorSim m_intakeArmSim = new DCMotorSim(
+        Models.singleJointedArmFromPhysicalConstants(
+            DCMotor.getKrakenX60Foc(1),
+            kIntakeArmMOI,
+            kIntakeArmGearing
+        ),
+        DCMotor.getKrakenX60Foc(1)
+    );
 
-    // private final DCMotorSim m_intakeRollersSim = new DCMotorSim(
-    //     LinearSystem.createDCMotorSystem(
-    //         DCMotor.getKrakenX60Foc(2),
-    //         kIntakeRollersMOI,
-    //         kIntakeRollersGearing
-    //     ),
-    //     DCMotor.getKrakenX60Foc(2) // returns gearbox
-    // );
+    private final DCMotorSim m_intakeRollersSim = new DCMotorSim(
+        Models.singleJointedArmFromPhysicalConstants(
+            DCMotor.getKrakenX60Foc(2),
+            kIntakeRollersMOI,
+            kIntakeRollersGearing
+        ),
+        DCMotor.getKrakenX60Foc(2)
+    );
 
     /* LOGGERS */
     private final DoubleLogger log_intakeArmRots = WaltLogger.logDouble(kLogTab, "intakeArmRots");
@@ -114,6 +117,8 @@ public class Intake extends SubsystemBase {
             // setDefaultCommand(intakeArmHome());
         }
 
+        Scheduler.getDefault().addPeriodic(this::periodic);
+
         initSim();
     }
 
@@ -132,7 +137,9 @@ public class Intake extends SubsystemBase {
     }
 
     public Command setIntakeArmPosCmd(Angle rots) {
-        return runOnce(() -> setIntakeArmPos(rots));
+        return run(coroutine -> {
+            setIntakeArmPos(rots);
+        }).named("setIntakeArmPosCmd");
     }
 
     public void setIntakeArmPos(Angle rots) {
@@ -161,51 +168,43 @@ public class Intake extends SubsystemBase {
     }
 
     public Command setIntakeRollersVelocityCmd(double volts) {
-        return runOnce(() -> setIntakeRollersVelocity(volts));
+        return run(coroutine -> {
+            setIntakeRollersVelocity(volts);
+        }).named("setIntakeRollersVelocityCmd");
     }
 
     // TESTING TO SEE IF WE CAN JUST SAY 0 AS 0
     public Command intakeArmHome() {
-        return Commands.parallel(
-            Commands.sequence(
-                runOnce(() -> m_intakeArm.setPosition(0)),
+        return Command.noRequirements(coroutine -> {
+            m_intakeArm.setPosition(0);
 
-                runOnce(() -> m_isIntakeArmHomed = true),
-                runOnce(() -> log_isIntakeArmHomed.accept(m_isIntakeArmHomed)),
-
-                runOnce(() -> removeDefaultCommand())
-            )
-        );
+            m_isIntakeArmHomed = true;
+            log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
+        }).named("intakeArmHome");
     }
 
     public Command intakeArmCurrentSenseHoming() {
-        Runnable init = () -> {
+        return run(coroutine -> {
             m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(-3.25));
 
             m_isIntakeArmHomed = false;
             log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
-        };
 
-        Runnable execute = () -> {};
+            coroutine.waitUntil(() ->
+                m_currentDebouncer.calculate(m_currentSpike.getAsBoolean()) &&
+                m_velocityDebouncer.calculate(m_veloIsNearZero.getAsBoolean()),
+                Seconds.of(3)
+            );
 
-        Consumer<Boolean> onEnd = (Boolean interrupted) -> {
             m_intakeArm.setControl(m_intakeArmZeroingReq.withOutput(0));
             m_intakeArm.setPosition(0);
-            removeDefaultCommand();
             setIntakeArmPos(IntakeArmPosition.RETRACTED);
             m_isIntakeArmHomed = true;
             log_isIntakeArmHomed.accept(m_isIntakeArmHomed);
-        };
-
-        BooleanSupplier isFinished = () ->
-            m_currentDebouncer.calculate(m_currentSpike.getAsBoolean()) &&
-            m_velocityDebouncer.calculate(m_veloIsNearZero.getAsBoolean());
-
-        return new FunctionalCommand(init, execute, onEnd, isFinished, this).withTimeout(3).withName("intakeArm homing");
+        }).named("intakeArmCurrentSenseHoming");
     }
 
     /* PERIODICS */
-    @Override
     public void periodic() {
         log_targetIntakeArmRots.accept(m_MMVReq.Position);
         log_targetIntakeRollersRPS.accept(m_voltsReq.Output);
@@ -213,11 +212,9 @@ public class Intake extends SubsystemBase {
         log_intakeArmRots.accept(sig_intakeArmPos.getValueAsDouble());
     }
 
-    @Override
     public void simulationPeriodic() {
-        // 2027-TODO: figure out new LinearSystem generator!!!
-        // WaltMotorSim.updateSimFX(m_intakeArm, m_intakeArmSim);
-        // WaltMotorSim.updateSimFX(m_intakeRollersA, m_intakeRollersSim);
+        WaltMotorSim.updateSimFX(m_intakeArm, m_intakeArmSim);
+        WaltMotorSim.updateSimFX(m_intakeRollersA, m_intakeRollersSim);
     }
 
     /* ENUMS */

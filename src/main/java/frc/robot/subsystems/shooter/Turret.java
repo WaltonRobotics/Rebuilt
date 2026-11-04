@@ -9,8 +9,8 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import org.wpilib.units.measure.Angle;
 import org.wpilib.units.measure.AngularVelocity;
 import org.wpilib.hardware.rotation.DutyCycleEncoder;
-import org.wpilib.command2.Command;
-import org.wpilib.command2.SubsystemBase;
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Mechanism;
 import frc.robot.Constants;
 
 import static org.wpilib.units.Units.*;
@@ -25,7 +25,7 @@ import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleLogger;
 import frc.util.WaltLogger.Pose3dLogger;
 
-public class Turret extends SubsystemBase {
+public class Turret implements Mechanism {
     private static final double kTurretMaxRotsFromHomeDeg = kTurretMaxRotsFromHome.in(Degrees);
     private boolean m_holdTurretAtIntakePos = false;
     private boolean m_turretLocked = false;
@@ -129,11 +129,19 @@ public class Turret extends SubsystemBase {
     }
 
     public Command setTurretLockCmd(boolean locked) {
-        return runOnce(() -> setTurretLock(locked));
+        // return runOnce(() -> setTurretLock(locked));
+        
+        return run(coroutine -> {
+            setTurretLock(locked);
+        }).named("setTurretLockCMd");
     }
 
     public Command setTurretPosCmd(Angle rots) {
-        return runOnce(() -> setTurretPos(rots));
+        // return runOnce(() -> setTurretPos(rots));
+
+        return run(coroutine -> {
+            setTurretPos(rots);
+        }).named("setTurretPosCmd");
     }
 
     public void setTurretPos(Angle rots) {

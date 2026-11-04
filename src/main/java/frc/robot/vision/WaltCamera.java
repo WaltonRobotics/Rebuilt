@@ -22,8 +22,7 @@ import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N3;
 import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.networktables.StructArrayPublisher;
-import org.wpilib.command2.Command;
-import org.wpilib.command2.Commands;
+import org.wpilib.command3.Command;
 import frc.robot.Robot;
 import frc.util.VisionUtil;
 import frc.util.WaltLogger;
@@ -74,11 +73,19 @@ public class WaltCamera extends PhotonCamera {
     }
 
     public static Command takeSnapshotCmd() {
-        return Commands.runOnce(WaltCamera::takeSnapshot);
+        // return Commands.runOnce(WaltCamera::takeSnapshot);
+
+        return Command.noRequirements(coroutine -> {
+            takeSnapshot();
+        }).named("takeSnapshotCmd");
     }
 
     public static Command setFpsLimitCmd(boolean limited) {
-        return Commands.runOnce(() -> setFpsLimit(limited));
+        // return Commands.runOnce(() -> setFpsLimit(limited));
+
+        return Command.noRequirements(coroutine -> {
+            setFpsLimit(limited);
+        }).named("setFpsLimitCmd");
     }
 
     public final PhotonCameraSim m_sim;
