@@ -462,7 +462,7 @@ public class Shooter implements Mechanism {
         // m_periodicTracer.printEpochs();
     }
 
-    private void simulationPeriodic() {
+    public void simulationPeriodic() {
         WaltMotorSim.updateSimFX(m_shooterA, m_shooterSim);
     }
 }

@@ -9,8 +9,7 @@ import org.wpilib.tunable.Tunables;
 import choreo.auto.AutoChooser;
 
 import org.wpilib.driverstation.DriverStationErrors;
-import org.wpilib.command2.Command;
-import org.wpilib.command2.Commands;
+import org.wpilib.command3.Command;
 import frc.robot.Constants.AutonK;
 import frc.robot.autons.WaltAdaptableAutonFactory;
 import frc.robot.autons.WaltAdaptableAutonFactory.AdaptableAutonInfo;
@@ -269,7 +268,9 @@ public class AutonChooser {
 
     public static Command getPreheater() {
         if (m_adaptableAutonFactory == null) {
-            return Commands.print("Tried to preheat before factory init!");
+            // return Commands.print("Tried to preheat before factory init!");
+            System.out.println("Tried to preheat before factory init!");
+            return Command.noRequirements(coroutine -> {}).named("preheatBeforeInitNothing");
         }
 
         // return m_adaptableAutonFactory.preheater().cmd().ignoringDisable(true);

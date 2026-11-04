@@ -1,5 +1,7 @@
 package frc.robot.autons;
 
+import static org.wpilib.units.Units.Seconds;
+
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -71,12 +73,18 @@ public class WaltAdaptableAutonFactory {
     }
 
     private Command waitIntakeHomedCmd() {
-        return Commands.waitUntil(m_intake.intakeHomedSupp);
+        // return Commands.waitUntil(m_intake.intakeHomedSupp);
+        return Command.waitUntil(m_intake.intakeHomedSupp).named("waitIntakeHomedCmd");
     }
 
     private Command homingCmd() {
-        return Commands.sequence(tp("intakeArmHoming.START"), waitIntakeHomedCmd(), tp("intakeArmHoming.END"))
-            .withTimeout(5);
+        // return Commands.sequence(tp("intakeArmHoming.START"), waitIntakeHomedCmd(), tp("intakeArmHoming.END"))
+        //     .withTimeout(5);
+        return Command.sequence(
+            tp("intakeArmHoming.START"),
+            waitIntakeHomedCmd(),
+            tp("intakeArmHoming.END")
+        ).named("homingCmd").withTimeout(Seconds.of(5));
     }
 
     public AutoRoutine preheater() {
@@ -104,7 +112,7 @@ public class WaltAdaptableAutonFactory {
             names.length, (System.nanoTime() - totalStart) * 1e-6);
     }
 
-    //thank you grac
+    // thank you grac
     private static Command printLater(Supplier<String> stringSup) {
 		return Commands.defer(() -> {
 			return Commands.print(stringSup.get());
