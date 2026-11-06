@@ -24,9 +24,13 @@ import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.networktables.StructArrayPublisher;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.Commands;
+
+import frc.robot.Constants.FieldK;
+import frc.robot.Constants.VisionK;
 import frc.robot.Robot;
 import frc.util.VisionUtil;
 import frc.util.WaltLogger;
+import frc.util.WaltLogger.BooleanLogger;
 import frc.util.WaltLogger.DoubleArrayLogger;
 import frc.util.WaltLogger.IntLogger;
 import frc.util.WaltLogger.Pose2dLogger;
@@ -48,6 +52,8 @@ public class WaltCamera extends PhotonCamera {
         new WaltCamera("BL_HAT", VisionK.kBackLeftCTR),
         new WaltCamera("BR_HAT", VisionK.kBackRightCTR)
     ));
+
+    public static final WaltCamera m_intakeCam = new WaltCamera("INTAKE", VisionK.kIntakeCTR);
 
     public static void setFpsLimit(boolean limited) {
         int fpsLimit = limited ? kGlobalFpsLimit : kGlobalFps;
@@ -94,6 +100,7 @@ public class WaltCamera extends PhotonCamera {
     private final DoubleArrayLogger log_stdDevs;
     private final IntLogger log_numResults;
     private final StructArrayPublisher<Pose3d> log_camPoseAndTag;
+    private final BooleanLogger log_isConnected;
 
     private Matrix<N3, N1> m_curStdDevs;
 
@@ -112,6 +119,7 @@ public class WaltCamera extends PhotonCamera {
             .getStructArrayTopic(ntPrefix + "estPoseAndTag", Pose3d.struct).publish();
         log_stdDevs = WaltLogger.logDoubleArray(ntPrefix, "stdDevs");
         log_numResults = WaltLogger.logInt(ntPrefix, "numResults");
+        log_isConnected = WaltLogger.logBoolean(ntPrefix, "isConnected");
 
         log_camTransform.accept(robotToCam);
 
@@ -155,6 +163,8 @@ public class WaltCamera extends PhotonCamera {
             log_camPose.accept(visionEst.get().estimatedPose.toPose2d());
         }
 
+        //idk where else to put this but this ticks every loop
+        log_isConnected.accept(this.isConnected());
         return visionEst;
     }
 

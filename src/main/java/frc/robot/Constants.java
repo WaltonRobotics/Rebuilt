@@ -383,6 +383,12 @@ public class Constants {
         public static final Transform3d kFrontRightCTR = VisionUtil.transformToRobo(8.875, -12.18175, 20.45, 180, -20, -45);
         public static final Transform3d kBackLeftCTR = VisionUtil.transformToRobo(-11.375, 11.875, 20.5625, 0, -20, 135);
         public static final Transform3d kBackRightCTR = VisionUtil.transformToRobo(-12.455, -12.055, 18.25, 180,-20, -135);
+        // double check
+        public static final Transform3d kIntakeCTR = VisionUtil.transformToRobo(kFrontLeftCTR.getX(), 0, 21.930452, 0, -20, 0);
+
+        public static final double kFuelClumpToleranceDeg = 6.0;
+        public static final double kFuelDiameterIn = 5.91;
+        public static final double kFuelDiameterMeters = Units.inchesToMeters(kFuelDiameterIn);
         //Initialize cameras
         // static {
         //     kCameras[0] = new Camera(

@@ -5,17 +5,24 @@ import java.util.List;
 import java.util.Optional;
 
 import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Transform2d;
+import org.wpilib.math.geometry.Translation2d;
+
 import frc.robot.Robot;
+import static frc.robot.Constants.VisionK.*;
+import static org.wpilib.units.Units.Rotation;
 
 
 public class Detection {
     /* CLASS VARIABLES */
-    private final List<WaltCamera> m_cameras = WaltCamera.AllCameras;
+    // private final List<WaltCamera> m_cameras = WaltCamera.AllCameras;
+    private final WaltCamera m_camera = WaltCamera.m_intakeCam;
     private final VisionSim m_visionSim = new VisionSim();
 
     private List<PhotonTrackedTarget> m_targetList = new LinkedList<>();
@@ -24,11 +31,27 @@ public class Detection {
     /**
      * loops through the pipeline results and adds target data results to a list of targetData
      */
+    // private void processCameraData() {
+    //     List<PhotonPipelineResult> results = new LinkedList<>();
+    //     for(PhotonCamera camera : m_cameras) {
+    //         results.addAll(camera.getAllUnreadResults());
+    //     }
+
+    //     for (PhotonPipelineResult result : results) {
+    //         if (result.hasTargets()) {
+    //             Optional<PhotonTrackedTarget> bestTarget = Optional.of(result.getBestTarget());
+
+    //             if (bestTarget.isPresent()) {
+    //                 m_targetList.add(bestTarget.get()); 
+    //             }
+    //         }
+    //     }
+    // }
+
     private void processCameraData() {
         List<PhotonPipelineResult> results = new LinkedList<>();
-        for(PhotonCamera camera : m_cameras) {
-            results.addAll(camera.getAllUnreadResults());
-        }
+        
+        results.addAll(m_camera.getAllUnreadResults());
 
         for (PhotonPipelineResult result : results) {
             if (result.hasTargets()) {
@@ -69,17 +92,62 @@ public class Detection {
         return closestTarget;
     }
 
-    public Pose2d targetToPose(Pose2d robotPose, PhotonTrackedTarget fuel) {
-        Transform2d fuelTransform = new Transform2d(
-            fuel.getBestCameraToTarget().getMeasureX(), fuel.getBestCameraToTarget().getMeasureY(), fuel.getBestCameraToTarget().getRotation().toRotation2d()
-        );
-        
-        Pose2d fuelPose = robotPose.transformBy(fuelTransform);
+    public PhotonTrackedTarget getLargestCluster() {
+        m_targetList.clear();
+        processCameraData();
 
-        return fuelPose;
+        //center b/c want to go to the center whenever toPose-ing, and also best place for comparison
+        PhotonTrackedTarget bestClusterCenter = null;
+        //weight the cluster based off area
+        double maxClusterWeight = 0;
+        
+
+        if (!m_targetList.isEmpty()) {
+            for (PhotonTrackedTarget primaryTarget : m_targetList) {
+                double currentClusterWeight = primaryTarget.getArea();
+
+                for (PhotonTrackedTarget secondaryTarget : m_targetList) {
+                    if (primaryTarget == secondaryTarget) continue;
+
+                    //calc the difference in targets (how far they are from each other)
+                    double deltaYaw = Math.abs(primaryTarget.yaw - secondaryTarget.yaw);
+                    double deltaPitch = Math.abs(primaryTarget.pitch - secondaryTarget.pitch);
+
+                    if (deltaPitch <= kFuelClumpToleranceDeg && deltaYaw <= kFuelClumpToleranceDeg) {
+                        currentClusterWeight += secondaryTarget.area;
+                    }
+                }
+
+                if (currentClusterWeight > maxClusterWeight) {
+                    maxClusterWeight = currentClusterWeight;
+                    bestClusterCenter = primaryTarget;
+                }
+            }
+        }
+
+        return bestClusterCenter != null ? bestClusterCenter : new PhotonTrackedTarget();
     }
 
-    public void addFuel(Pose2d destination) {
+    public double getDistanceToObject(PhotonTrackedTarget target) {
+        double distanceMeters = PhotonUtils.calculateDistanceToTargetMeters(
+            kIntakeCTR.getZ(), kFuelDiameterMeters / 2.0, kIntakeCTR.getRotation().getY(), Math.toRadians(target.getPitch()));
+
+        return distanceMeters;
+    }
+
+    public Pose2d targetToPose(Pose2d robotPose, PhotonTrackedTarget fuel) {
+        double distance = getDistanceToObject(fuel);
+        
+        Translation2d cameraToTargetTranslation = PhotonUtils.estimateCameraToTargetTranslation(distance, Rotation2d.fromDegrees(fuel.yaw));
+
+        Translation2d robotToTargetTranslation = cameraToTargetTranslation.plus(kIntakeCTR.getTranslation().toTranslation2d());
+
+        Transform2d fieldTransform = new Transform2d(robotToTargetTranslation, Rotation2d.fromDegrees(fuel.yaw));
+
+        return robotPose.transformBy(fieldTransform);
+    }
+
+    public void simAddFuel(Pose2d destination) {
         m_visionSim.getSimDebugField().getObject("fuel").setPose(destination);
     }
 }
